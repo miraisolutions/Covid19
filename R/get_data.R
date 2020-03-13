@@ -186,6 +186,7 @@ get_timeseries_country_data <- function(data, country){
 #'
 #' @importFrom dplyr group_by
 #' @importFrom dplyr ungroup
+#' @importFrom dplyr filter
 #' @importFrom dplyr summarize
 #' @importFrom dplyr arrange
 #' @importFrom dplyr desc
@@ -195,9 +196,10 @@ get_timeseries_country_data <- function(data, country){
 #' @export
 aggregate_country_data <- function(data){
   country_df <- data %>%
-    select(-Province.State) %>%
+    filter( date == max(date)) %>%
+    select(-Province.State, -Lat, -Long) %>%
     group_by(Country.Region) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active)) %>%
+    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), contagion_day = max(contagion_day)) %>%
     arrange(desc(confirmed)) %>%
     ungroup()
 }

@@ -19,17 +19,15 @@ mod_global_ui <- function(id){
       column(3,valueBoxOutput(ns("recovered"))),
       column(3,valueBoxOutput(ns("active")))
     ),
-    br(),
     fluidRow(
-      div(DTOutput(ns("dt_global")), style = "margin: 50px;"),
+      div(DTOutput(ns("dt_global")), style = "margin: 50px;")
     ),
-    br(),
     fluidRow(
       column(4,
-             div(h2("Global Covid-19 time evolution"), align = "center"),
+             div(h3("Global Covid-19 time evolution - log10"), align = "center"),
              plotOutput(ns("global_line_plot"))),
       column(4,
-             div(h2("Confirmed cases for top 10 countries"), align = "center"),
+             div(h3("Confirmed cases for top 10 countries - log10"), align = "center"),
              plotOutput(ns("top_n_line_plot"))),
       column(4,
              div(DTOutput(ns("dt_top10")), style = "margin: 20px;"))
@@ -39,10 +37,11 @@ mod_global_ui <- function(id){
 
 #' global Server Function
 #'
+#' @param orig_data reactive data.frame
+#'
 #' @importFrom shinydashboard valueBox
 #' @importFrom shinydashboard renderValueBox
 #' @importFrom dplyr filter
-#' @importFrom dplyr top_n
 #' @importFrom dplyr mutate
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyr starts_with
@@ -50,15 +49,10 @@ mod_global_ui <- function(id){
 #' @importFrom DT datatable
 #'
 #' @noRd
-mod_global_server <- function(input, output, session){
+mod_global_server <- function(input, output, session, orig_data){
   ns <- session$ns
 
   # Datasets ----
-
-  orig_data <- reactive({
-    get_timeseries_full_data() %>%
-      get_timeseries_by_contagion_day_data()
-  })
 
   global <- reactive({
     orig_data() %>%
@@ -75,15 +69,15 @@ mod_global_server <- function(input, output, session){
       aggregate_country_data()
   })
 
-  world_top_10 <- reactive({
+  world_top_5 <- reactive({
     world() %>%
-      top_n(10)
+      head(5)
   })
 
-  world_top_10_confirmed <- reactive({
+  world_top_5_confirmed <- reactive({
     orig_data() %>%
       aggregate_province_timeseries_data() %>%
-      filter(Country.Region %in% country_tot$Country.Region) %>%
+      filter(Country.Region %in% world_top_5()$Country.Region) %>%
       select(Country.Region, date, confirmed)
   })
 
@@ -118,15 +112,17 @@ mod_global_server <- function(input, output, session){
     df <- global() %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
       mutate(status = as.factor(status)) %>%
+      mutate(value = log10(value)) %>%
       capitalize_names_df()
 
     df %>% time_evol_line_plot()
   })
 
   output$top_n_line_plot <- renderPlot({
-    df <- world_top_10_confirmed() %>%
+    df <- world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
       mutate(value = confirmed) %>%
+      mutate(value = log10(value)) %>%
       capitalize_names_df()
 
     df %>% time_evol_line_plot()
@@ -144,7 +140,7 @@ mod_global_server <- function(input, output, session){
   )
 
   output$dt_top10 <- renderDT(
-    datatable(world_top_10(),
+    datatable(world(),
               rownames = FALSE,
               selection = "single",
               filter = 'bottom',

@@ -12,7 +12,14 @@ app_ui <- function(request) {
     # List the first level UI elements here
     fluidPage(
       useShinydashboard(),
-      h1("Covid19"),
+      fluidRow(
+      column(10,
+             h1("Covid19")
+             ),
+      column(1, offset = 10,
+             textOutput("last_update")
+             )
+      ),
       tabsetPanel(
         id = "main_ui",
         tabPanel("Global",

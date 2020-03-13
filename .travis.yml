@@ -3,3 +3,14 @@
 language: R
 cache: packages
 warnings_are_errors: false
+
+deploy:
+  provider: script
+  script:
+  - >-
+    Rscript
+    -e 'account_info <- lapply(paste0("SHINYAPPS_", c("ACCOUNT", "TOKEN", "SECRET")), Sys.getenv)'
+    -e 'do.call(rsconnect::setAccountInfo, account_info)'
+    -e 'rsconnect::deployApp(appName = "Covid19")'
+  on:
+    branch: master

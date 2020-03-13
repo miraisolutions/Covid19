@@ -4,27 +4,22 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
+#' @importFrom shiny NS tagList
 mod_country_comparison_ui <- function(id){
   ns <- NS(id)
   tagList(
- 
+
   )
 }
-    
+
 #' country_comparison Server Function
 #'
-#' @noRd 
-mod_country_comparison_server <- function(input, output, session){
+#' @param orig_data reactive data.frame
+#'
+#' @noRd
+mod_country_comparison_server <- function(input, output, session, orig_data){
   ns <- session$ns
- 
+
 }
-    
-## To be copied in the UI
-# mod_country_comparison_ui("country_comparison_ui_1")
-    
-## To be copied in the server
-# callModule(mod_country_comparison_server, "country_comparison_ui_1")
- 

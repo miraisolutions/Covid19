@@ -4,27 +4,151 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
+#' @importFrom shiny NS tagList
 mod_country_ui <- function(id){
   ns <- NS(id)
   tagList(
- 
+    selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
+
+    fluidRow(
+      column(6,
+             column(6,
+                    div(h3("Confirmed"), align = "center", style = "red"),
+                    plotOutput(ns("bar_confirmed"))
+             ),
+             column(6,
+                    div(h3("Active"), align = "center", style = "orange"),
+                    plotOutput(ns("bar_active"))
+             ),
+             column(6,
+                    div(h3("Deaths"), align = "center", style = "black"),
+                    plotOutput(ns("bar_deaths"))
+             ),
+             column(6,
+                    div(h3("Recovered"), align = "center", style = "green"),
+                    plotOutput(ns("bar_recovered"))
+             )
+      ),
+      column(6,
+             div(h3("Covid-19 time evolution - log10"), align = "center", style = "green"),
+             plotOutput(ns("line_plot")),
+             div(DTOutput(ns("dt_country")), style = "margin: 50px;")
+      )
+    )
   )
 }
-    
+
 #' country Server Function
 #'
-#' @noRd 
-mod_country_server <- function(input, output, session){
+#' @param orig_data reactive data.frame
+#'
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr distinct
+#' @importFrom dplyr mutate
+#' @importFrom dplyr arrange
+#' @importFrom dplyr desc
+#' @importFrom tidyr pivot_longer
+#' @importFrom tidyr starts_with
+#'
+#' @noRd
+mod_country_server <- function(input, output, session, orig_data){
   ns <- session$ns
- 
+
+  countries <- reactive({
+    orig_data() %>%
+      select(Country.Region) %>%
+      distinct()
+  })
+
+  observe(
+    updateSelectInput(session, "select_country", choices = countries()$Country.Region, selected = "Switzerland")
+  )
+
+  observeEvent(input$select_country, {
+
+    # Data ----
+    country_data <- reactive({orig_data() %>%
+        aggregate_province_timeseries_data() %>%
+        filter(Country.Region == input$select_country) %>%
+        arrange(desc(date))
+    })
+
+    confirmed_data <- reactive({
+      country_data() %>%
+        select(Country.Region, contagion_day, confirmed) %>%
+        mutate(status = as.factor(Country.Region)) %>%
+        mutate(value = confirmed) %>%
+        capitalize_names_df()
+    })
+
+    deaths_data <- reactive({
+      country_data() %>%
+        select(Country.Region, contagion_day, confirmed) %>%
+        mutate(status = as.factor(Country.Region)) %>%
+        mutate(value = confirmed) %>%
+        capitalize_names_df()
+    })
+
+    active_data <- reactive({
+      country_data() %>%
+        select(Country.Region, contagion_day, confirmed) %>%
+        mutate(status = as.factor(Country.Region)) %>%
+        mutate(value = confirmed) %>%
+        capitalize_names_df()
+    })
+
+    recovered_data <- reactive({
+      country_data() %>%
+        select(Country.Region, contagion_day, confirmed) %>%
+        mutate(status = as.factor(Country.Region)) %>%
+        mutate(value = confirmed) %>%
+        capitalize_names_df()
+    })
+
+    # tables ----
+    output$dt_country <- renderDT(
+      datatable(country_data(),
+                rownames = FALSE,
+                selection = "single",
+                filter = 'bottom',
+                escape = FALSE,
+                plugins = 'natural',
+                options = getTableOptions(maxrowsperpage = 5))
+    )
+
+    # plots ----
+
+    output$line_plot <- renderPlot({
+      df <- country_data() %>%
+        select(-Country.Region, -contagion_day) %>%
+        pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
+        mutate(status = as.factor(status)) %>%
+        mutate(value = log10(value)) %>%
+        capitalize_names_df()
+
+      df %>% time_evol_line_plot()
+    }, height = 300)
+
+    output$bar_confirmed <- renderPlot({
+      confirmed_data() %>% from_contagion_day_bar_plot()
+    }, height = 300)
+    output$bar_deaths <- renderPlot({
+      deaths_data() %>% from_contagion_day_bar_plot()
+    }, height = 300)
+    output$bar_active <- renderPlot({
+      active_data() %>% from_contagion_day_bar_plot()
+    }, height = 300)
+    output$bar_recovered <- renderPlot({
+      recovered_data() %>% from_contagion_day_bar_plot()
+    }, height = 300)
+  })
+
+
+
 }
-    
-## To be copied in the UI
-# mod_country_ui("country_ui_1")
-    
-## To be copied in the server
-# callModule(mod_country_server, "country_ui_1")
- 
+
+
+
