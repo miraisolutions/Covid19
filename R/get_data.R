@@ -1,3 +1,5 @@
+# Data taken from here https://github.com/CSSEGISandData/COVID-19
+
 #' Data Urls confirmed_timeseries
 #' @rdname DataUrls
 #'
