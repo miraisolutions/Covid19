@@ -59,3 +59,21 @@ basic_plot_theme <- function() {
     legend.key = element_rect(fill = alpha("white", 0.0))
   )
 }
+
+#' Get table options.
+#'@rdname getTableOptions
+#' @description Returns option list for datatable.
+#' @param scrollX Param to allow scrollX. Default TRUE
+#' @param maxrowsperpage Maximum number of rows to display per page. Default 5.
+#'
+#' @export
+getTableOptions <- function(scrollX = TRUE,
+                            maxrowsperpage = 10) {
+  options <- list(
+    search = list(caseInsensitive = TRUE),
+    searchHighlight = TRUE,
+    processing = 0,
+    scrollX = scrollX,
+    pageLength = maxrowsperpage
+  )
+}

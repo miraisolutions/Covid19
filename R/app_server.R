@@ -9,6 +9,4 @@ app_server <- function( input, output, session ) {
   callModule(mod_global_server, "global")
   callModule(mod_country_server, "country")
   callModule(mod_country_comparison_server, "country_comparison")
-
-
 }

@@ -3,6 +3,7 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom shinyWidgets useShinydashboard
 #' @noRd
 app_ui <- function(request) {
   tagList(
@@ -10,6 +11,7 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # List the first level UI elements here
     fluidPage(
+      useShinydashboard(),
       h1("Covid19"),
       tabsetPanel(
         id = "main_ui",

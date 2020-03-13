@@ -11,7 +11,9 @@ Imports:
     processx,
     dplyr,
     tidyr,
-    ggplot2
+    ggplot2,
+    shinydashboard,
+    plotly
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
