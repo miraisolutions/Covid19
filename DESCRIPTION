@@ -13,7 +13,8 @@ Imports:
     tidyr,
     ggplot2,
     shinydashboard,
-    plotly
+    plotly,
+    rmarkdown
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
