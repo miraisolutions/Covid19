@@ -26,10 +26,10 @@ mod_global_ui <- function(id){
     fluidRow(
       column(4,
              div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotlyOutput(ns("global_line_plot"))),
+             plotOutput(ns("global_line_plot"))),
       column(4,
              div(h3("Confirmed cases for top 10 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotlyOutput(ns("top_n_line_plot"))),
+             plotOutput(ns("top_n_line_plot"))),
       column(4,
              div(DTOutput(ns("dt_top10")), style = "margin-left: 20px;margin-right: 20px;"))
     )
@@ -111,24 +111,22 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # plots ----
-  output$global_line_plot <- renderPlotly({
+  output$global_line_plot <- renderPlot({
     df <- global() %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
       mutate(status = as.factor(status)) %>%
-      mutate(value = log10(value)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
+    df %>% time_evol_line_plot()  %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
   })
 
-  output$top_n_line_plot <- renderPlotly({
+  output$top_n_line_plot <- renderPlot({
     df <- world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
       mutate(value = confirmed) %>%
-      mutate(value = log10(value)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
+    df %>% time_evol_line_plot() %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
   })
 
   # tables ----
