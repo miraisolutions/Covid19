@@ -57,7 +57,7 @@ test_that("get_date_data returns expected headers", {
 
 test_that("aggregate_country_data returns expected headers", {
   df <- aggregate_country_data(data)
-  expect_equal(names(df), c("Country.Region", "confirmed", "deaths", "recovered", "active"))
+  expect_equal(names(df), c("Country.Region", "confirmed", "deaths", "recovered", "active", "contagion_day"))
   expect_false(any(df$active < 0))
 })
 
