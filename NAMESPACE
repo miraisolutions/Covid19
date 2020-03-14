@@ -2,6 +2,7 @@
 
 export("%>%")
 export("%notin%")
+export(add_log_scale)
 export(aggregate_country_data)
 export(aggregate_province_timeseries_data)
 export(basic_plot_theme)

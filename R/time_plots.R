@@ -50,6 +50,21 @@ time_evol_line_plot <- function(df) {
   p
 }
 
+#' Transform y to log scale
+#' @rdname add_log_scale
+#'
+#' @param p ggplot object
+#'
+#' @import ggplot2
+#'
+#' @return p ggplot object
+#'
+#' @export
+add_log_scale <- function(p){
+  p <- p + scale_y_continuous(trans = 'log10')
+  p
+}
+
 #' Evolution from contagion day
 #' @rdname from_contagion_day_bar_plot
 #'
@@ -74,6 +89,8 @@ time_evol_line_plot <- function(df) {
 #'
 #' df %>% from_contagion_day_bar_plot()
 #' }
+#'
+#' @return p ggplot object
 #'
 #' @export
 from_contagion_day_bar_plot <- function(df){

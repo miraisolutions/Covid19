@@ -33,7 +33,7 @@ mod_country_ui <- function(id){
              )
       ),
       column(6,
-             div(h3("Covid-19 time evolution - log10"), align = "center", style = "green"),
+             div(h3("Covid-19 time evolution"), align = "center", style = "green"),
              plotlyOutput(ns("line_plot"), height = "300px"),
              div(DTOutput(ns("dt_country")), style = "margin: 50px;")
       )
@@ -128,10 +128,9 @@ mod_country_server <- function(input, output, session, orig_data){
         select(-Country.Region, -contagion_day) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
         mutate(status = as.factor(status)) %>%
-        mutate(value = log10(value)) %>%
         capitalize_names_df()
 
-      df %>% time_evol_line_plot() %>% ggplotly()
+      df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
     })
 
     output$bar_confirmed <- renderPlotly({

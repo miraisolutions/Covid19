@@ -25,10 +25,10 @@ mod_global_ui <- function(id){
     ),
     fluidRow(
       column(4,
-             div(h3("Global Covid-19 time evolution - log10"), align = "center"),
+             div(h3("Global Covid-19 time evolution - log scale"), align = "center"),
              plotlyOutput(ns("global_line_plot"))),
       column(4,
-             div(h3("Confirmed cases for top 10 countries - log10"), align = "center"),
+             div(h3("Confirmed cases for top 10 countries - log scale"), align = "center"),
              plotlyOutput(ns("top_n_line_plot"))),
       column(4,
              div(DTOutput(ns("dt_top10")), style = "margin: 20px;"))
@@ -118,7 +118,7 @@ mod_global_server <- function(input, output, session, orig_data){
       mutate(value = log10(value)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot() %>% ggplotly()
+    df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
   })
 
   output$top_n_line_plot <- renderPlotly({
@@ -128,7 +128,7 @@ mod_global_server <- function(input, output, session, orig_data){
       mutate(value = log10(value)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot() %>% ggplotly()
+    df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
   })
 
   # tables ----

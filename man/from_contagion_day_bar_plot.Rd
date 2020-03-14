@@ -11,6 +11,8 @@ from_contagion_day_bar_plot(df)
 }
 \value{
 barplot of given variable by contagion
+
+p ggplot object
 }
 \description{
 Evolution from contagion day
