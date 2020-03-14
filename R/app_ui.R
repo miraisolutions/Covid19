@@ -12,14 +12,18 @@ app_ui <- function(request) {
     # List the first level UI elements here
     fluidPage(
       useShinydashboard(),
+      # Header ----
       fluidRow(
-      column(10,
-             h1("Covid19")
-             ),
-      column(1, offset = 10,
-             textOutput("last_update")
-             )
+        id = "header",
+        div(style = "margin-left:3%; margin-bottom:10px;",
+            a(
+              div(h1("Covid19"), style = "color:white!important;"),
+              href = "https://github.com/miraisolutions/Covid19"
+            ),
+            textOutput("last_update")
+        )
       ),
+      # body ----
       tabsetPanel(
         id = "main_ui",
         tabPanel("Global",
@@ -31,6 +35,26 @@ app_ui <- function(request) {
         tabPanel("Countries Comparison",
                  id = "tab_global",
                  mod_country_comparison_ui("country_comparison"))
+      ),
+      # Footer ----
+      fluidRow(
+        id = "footer",
+        a(
+          id = "git-footer",
+          href = "https://github.com/miraisolutions/SmaRP.git",
+          target = "_blank",
+          icon("github-square", "fa-2x")
+        ),
+        a(
+          href = "http://www.mirai-solutions.com",
+          target = "_blank",
+          img(
+            id = "mirai-footer",
+            src = "mirai.png",
+            align = "right",
+            height = "100px"
+          )
+        )
       )
     )
   )

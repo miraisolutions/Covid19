@@ -1,0 +1,376 @@
+
+body {
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: black;
+}
+
+#header {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 25px;
+  padding-right: 25px;
+  margin-bottom: 10px;
+  background-color: #009edb;
+  background-image: url("illu-header-data.png");
+  background-repeat: repeat;
+  background-position: 0 200px;
+  background-size: auto 400px;
+}
+
+#sticker-header {
+  float: left;
+  margin-right: 15px;
+  height: 90px;
+}
+
+#footer {
+  padding-top: 15px;
+  padding-bottom: 10px;
+  padding-left: 25px;
+  padding-right: 25px;
+  margin-top: 25px;
+  border-top: 1px solid #000000;
+}
+
+#git-footer {
+  float: left;
+}
+
+#mirai-footer {
+  float: right;
+  height: 32px;
+}
+
+#main{
+  padding: 0;
+}
+
+#title{
+  margin-top: 20px;
+}
+
+#subtitle{
+  margin-top: 3px;
+  margin-bottom: 10px;
+}
+
+h5 {
+  font-family: inherit;
+  font-size: 12px;
+  color: black;
+}
+
+h4 {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: bold;
+  color: black;
+}
+
+#disclaimer{
+  float: right;
+  font-family: inherit;
+  color: #737373;
+  font-size: 12px;
+  text-align: left;
+  margin-left: auto;
+  margin-right: 10%;
+  margin-top: 25px;
+}
+
+/* define style only when non-empty, similar to .pre, so that no empty box is
+shown before the textOutput is populated */
+#Totals:not(:empty) {
+  font-family: inherit;
+  color: #008cc3;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #f5f5f5;
+  text-align: center;
+  padding: 9.5px; /* same as .pre */
+  /* same size as the plots */
+  width: 800px;
+  max-width: 100%;
+}
+
+#table {
+  overflow-x: scroll;
+}
+
+h2 {
+  font-family: inherit;
+  color: #ea8b5b;
+  font-size: 30px;
+  text-align: left;
+  font-weight: bold;
+  display: inline;
+}
+
+#version {
+  font-family: inherit;
+  color: #000000;
+  font-size: 12px;
+}
+
+h3 {
+  font-family: inherit;
+  color: #000000;
+  font-size: 18px;
+  text-align: left;
+  font-weight: bold;
+  display: inline;
+}
+
+a {
+  font-size: 14px;
+  color: #008cc3;
+  text-align: left;
+  font-weight: normal;
+}
+
+small {
+  font-size: 12px;
+  color: #737373;
+}
+
+
+label {
+  font-weight: normal;
+}
+
+/* fix inline radio multiline spacing */
+.form-control, .selectize-input {
+  padding: 7px 10px;
+  font: inherit;
+  border-radius: 3px;
+}
+
+.datepicker {
+  font: inherit; /* inherit from body */
+}
+
+
+/* fix inline radio multiline spacing */
+.radio-inline+.radio-inline {
+  margin-left: 0;
+}
+.radio-inline {
+  padding-right: 15px;
+}
+
+/* vertical radio/checkbox alignment to text */
+input[type=checkbox], input[type=radio] {
+  margin: 1px 0 0;
+}
+
+.checkbox, .radio {
+  margin: 0;
+}
+
+
+/* button style same as panels */
+/*
+.btn-smarp {
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 3px;
+  border: 1px solid #008cc3;
+  border-top: 3px solid #008cc3;
+  box-shadow: 0 1px 1px rgba(0,0,0,.1);
+}
+.btn.btn-smarp: hover, .btn.btn-smarp: active, .btn.btn-smarp: focus {
+  border-color: #008cc3;
+}
+*/
+
+/* tabsetPanel style */
+.nav-tabs {
+  border-bottom: 1px solid #FF9966;
+/*
+  border-bottom: 0 solid #008cc3;
+*/
+}
+.tab-content {
+  padding: 10px;
+  padding-top: 15px;
+/*
+  padding: 6px 12px;
+  border: 1px solid #008cc3;
+  border-radius: 3px;
+  border-top-left-radius: 0;
+  box-shadow: 0 1px 1px rgba(0,0,0,.1);
+*/
+}
+.tabbable > .nav > li > a {
+  margin-left: 20px;
+  min-width: 100px;
+/*
+  font-size: 13px;
+  font-weight: bold;
+  background-color: white;
+  padding: 8px 15px;
+  min-width: 100px;
+  margin-right: 2px;
+  border-radius: 3px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+*/
+}
+.tabbable > .nav > li[class=active] > a {
+  color: white;
+  background-color: #FF9966;
+  border-color: #FF9966;
+/*
+  color: inherit;
+  border: 1px solid #008cc3;
+  border-bottom: 1px solid white;
+  border-top: 3px solid #008cc3;
+*/
+}
+.tabbable > .nav > li:not([class=active]) > a {
+  border-top: 1px solid #DDD;
+  border-right: 1px solid #DDD;
+  border-left: 1px solid #DDD;
+/*
+  color: #666666;
+  border: 1px solid #D7DBDD;
+  border-bottom: 1px solid #008cc3;
+  border-top: 3px solid #D7DBDD;
+*/
+}
+
+
+/*
+Plots
+  * limit the width to 100%
+  * adjust the height depending on the browser size
+*/
+
+#plot_t {
+  width: 800px;
+  height: 400px;
+  max-width: 100%;
+}
+#plot_final {
+  width: 800px;
+  height: 130px;
+  max-width: 100%;
+}
+@media(max-width: 1099px) { /* standard Bootstrap's media size */
+  #plot_t {
+    height: calc(400px * 0.9);
+  }
+  #plot_final {
+    height: calc(130px * 0.9);
+  }
+}
+@media(max-width: 991px) { /* standard Bootstrap's media size */
+  #plot_t {
+    height: calc(400px * 0.8);
+  }
+  #plot_final {
+    height: calc(130px * 0.8);
+  }
+}
+@media(max-width: 767px) { /* standard Bootstrap's media size */
+  /* all vertical */
+  #plot_t {
+    height: calc(400px * 0.8);
+  }
+  #plot_final {
+    height: calc(130px * 0.8);
+  }
+}
+@media(max-width: 511px) { /* custom media size */
+  /* tiny all vertical */
+  #plot_t {
+    height: calc(400px * 0.65);
+  }
+  #plot_final {
+    height: calc(130px * 0.65);
+  }
+}
+
+
+/* Custom collapsible SmaRPanel */
+
+div.panel-smarp {
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  border-top: 3px solid;
+  box-shadow: 0 1px 1px rgba(0,0,0,.1);
+  border-color: #FF9966;
+}
+
+div.panel-heading-smarp {
+  padding: 10px;
+  background-color: white !important;
+  border: 0;
+  min-height: 35px;
+}
+
+div.panel-title-smarp {
+  position: relative;
+  padding-right: 20px; /* leave space for the collapse icons */
+  color: black;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+div.panel-body-smarp {
+  padding: 10px;
+  margin: 0;
+}
+
+/* Shiny inputs in panels should span full width as in shinydashboard. */
+div.panel-body-smarp .shiny-input-container {
+  width: auto;
+}
+
+
+/* Collapse / expand button */
+
+.btn-collapse-smarp {
+  font-size: 12px;
+  /* top-right position within relative .panel-title-smarp */
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 5px;
+  /* remove button border and bg, use !important to apply to pseudo-classes */
+  border: 0 !important;
+  background-color: transparent !important;
+  /* same as boxPlus */
+  color: #97a0b3 !important;
+}
+
+.btn-collapse-smarp:hover,
+.btn-collapse-smarp:active {
+  /* same as boxPlus, but not for focus */
+  color: #606c84 !important;
+}
+
+/* collapse icon */
+.btn-collapse-smarp:after {
+  font-family: "Font Awesome 5 Free"; font-weight: 900;
+  content: "\f068"; /* fa-minus */
+}
+/* expand icon */
+.btn-collapse-smarp.collapsed:after {
+  content: "\f067"; /* fa-plus */
+}
+
+
+/* shinydashboard boxes custom */
+.small-box p {
+  font-size:20px !important;
+  }
+
+.small-box h3 {
+  font-size:28px !important;
+  color: white !important;
+}

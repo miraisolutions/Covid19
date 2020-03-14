@@ -15,23 +15,23 @@ mod_global_ui <- function(id){
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     fluidRow(
-      column(3,valueBoxOutput(ns("confirmed"))),
+      column(3, valueBoxOutput(ns("confirmed"))),
       column(3,valueBoxOutput(ns("death"))),
       column(3,valueBoxOutput(ns("recovered"))),
       column(3,valueBoxOutput(ns("active")))
     ),
     fluidRow(
-      div(DTOutput(ns("dt_global")), style = "margin: 50px;")
+      div(DTOutput(ns("dt_global")), style = "margin-left: 50px;margin-right: 50px;")
     ),
     fluidRow(
       column(4,
-             div(h3("Global Covid-19 time evolution - log scale"), align = "center"),
+             div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              plotlyOutput(ns("global_line_plot"))),
       column(4,
-             div(h3("Confirmed cases for top 10 countries - log scale"), align = "center"),
+             div(h3("Confirmed cases for top 10 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              plotlyOutput(ns("top_n_line_plot"))),
       column(4,
-             div(DTOutput(ns("dt_top10")), style = "margin: 20px;"))
+             div(DTOutput(ns("dt_top10")), style = "margin-left: 20px;margin-right: 20px;"))
     )
   )
 }
