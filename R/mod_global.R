@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList
 #' @importFrom shinydashboard valueBoxOutput
 #' @importFrom DT DTOutput
+#' @importFrom plotly plotlyOutput
 mod_global_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -25,10 +26,10 @@ mod_global_ui <- function(id){
     fluidRow(
       column(4,
              div(h3("Global Covid-19 time evolution - log10"), align = "center"),
-             plotOutput(ns("global_line_plot"))),
+             plotlyOutput(ns("global_line_plot"))),
       column(4,
              div(h3("Confirmed cases for top 10 countries - log10"), align = "center"),
-             plotOutput(ns("top_n_line_plot"))),
+             plotlyOutput(ns("top_n_line_plot"))),
       column(4,
              div(DTOutput(ns("dt_top10")), style = "margin: 20px;"))
     )
@@ -47,6 +48,8 @@ mod_global_ui <- function(id){
 #' @importFrom tidyr starts_with
 #' @importFrom DT renderDT
 #' @importFrom DT datatable
+#' @importFrom plotly renderPlotly
+#' @importFrom plotly ggplotly
 #'
 #' @noRd
 mod_global_server <- function(input, output, session, orig_data){
@@ -108,24 +111,24 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # plots ----
-  output$global_line_plot <- renderPlot({
+  output$global_line_plot <- renderPlotly({
     df <- global() %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
       mutate(status = as.factor(status)) %>%
       mutate(value = log10(value)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot()
+    df %>% time_evol_line_plot() %>% ggplotly()
   })
 
-  output$top_n_line_plot <- renderPlot({
+  output$top_n_line_plot <- renderPlotly({
     df <- world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
       mutate(value = confirmed) %>%
       mutate(value = log10(value)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot()
+    df %>% time_evol_line_plot() %>% ggplotly()
   })
 
   # tables ----

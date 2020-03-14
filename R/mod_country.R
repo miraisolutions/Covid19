@@ -7,6 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @importFrom plotly plotlyOutput
 mod_country_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -16,24 +17,24 @@ mod_country_ui <- function(id){
       column(6,
              column(6,
                     div(h3("Confirmed"), align = "center", style = "red"),
-                    plotOutput(ns("bar_confirmed"))
+                    plotlyOutput(ns("bar_confirmed"), height = "300px")
              ),
              column(6,
                     div(h3("Active"), align = "center", style = "orange"),
-                    plotOutput(ns("bar_active"))
+                    plotlyOutput(ns("bar_active"), height = "300px")
              ),
              column(6,
                     div(h3("Deaths"), align = "center", style = "black"),
-                    plotOutput(ns("bar_deaths"))
+                    plotlyOutput(ns("bar_deaths"), height = "300px")
              ),
              column(6,
                     div(h3("Recovered"), align = "center", style = "green"),
-                    plotOutput(ns("bar_recovered"))
+                    plotlyOutput(ns("bar_recovered"), height = "300px")
              )
       ),
       column(6,
              div(h3("Covid-19 time evolution - log10"), align = "center", style = "green"),
-             plotOutput(ns("line_plot")),
+             plotlyOutput(ns("line_plot"), height = "300px"),
              div(DTOutput(ns("dt_country")), style = "margin: 50px;")
       )
     )
@@ -52,6 +53,7 @@ mod_country_ui <- function(id){
 #' @importFrom dplyr desc
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyr starts_with
+#' @importFrom plotly renderPlotly
 #'
 #' @noRd
 mod_country_server <- function(input, output, session, orig_data){
@@ -121,7 +123,7 @@ mod_country_server <- function(input, output, session, orig_data){
 
     # plots ----
 
-    output$line_plot <- renderPlot({
+    output$line_plot <- renderPlotly({
       df <- country_data() %>%
         select(-Country.Region, -contagion_day) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
@@ -129,21 +131,21 @@ mod_country_server <- function(input, output, session, orig_data){
         mutate(value = log10(value)) %>%
         capitalize_names_df()
 
-      df %>% time_evol_line_plot()
-    }, height = 300)
+      df %>% time_evol_line_plot() %>% ggplotly()
+    })
 
-    output$bar_confirmed <- renderPlot({
-      confirmed_data() %>% from_contagion_day_bar_plot()
-    }, height = 300)
-    output$bar_deaths <- renderPlot({
-      deaths_data() %>% from_contagion_day_bar_plot()
-    }, height = 300)
-    output$bar_active <- renderPlot({
-      active_data() %>% from_contagion_day_bar_plot()
-    }, height = 300)
-    output$bar_recovered <- renderPlot({
-      recovered_data() %>% from_contagion_day_bar_plot()
-    }, height = 300)
+    output$bar_confirmed <- renderPlotly({
+      confirmed_data() %>% from_contagion_day_bar_plot() %>% ggplotly()
+    })
+    output$bar_deaths <- renderPlotly({
+      deaths_data() %>% from_contagion_day_bar_plot() %>% ggplotly()
+    })
+    output$bar_active <- renderPlotly({
+      active_data() %>% from_contagion_day_bar_plot() %>% ggplotly()
+    })
+    output$bar_recovered <- renderPlotly({
+      recovered_data() %>% from_contagion_day_bar_plot() %>% ggplotly()
+    })
   })
 
 
