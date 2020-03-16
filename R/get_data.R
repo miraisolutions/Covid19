@@ -47,7 +47,7 @@ get_timeseries_data <- function() {
 #'
 #' @export
 get_daily_data <- function(date) {
-    data <- read.csv(file = paste0(daily_url, date, ".csv"), stringsAsFactors = FALSE)
+  data <- read.csv(file = paste0(daily_url, date, ".csv"), stringsAsFactors = FALSE)
 }
 
 #' Get timeseries single data
@@ -58,7 +58,7 @@ get_daily_data <- function(date) {
 #'
 #' @export
 get_timeseries_single_data <- function(param) {
-    data <- read.csv(file = eval(as.symbol(paste0(param,"_timeseries_csv_url"))), stringsAsFactors = FALSE)
+  data <- read.csv(file = eval(as.symbol(paste0(param,"_timeseries_csv_url"))), stringsAsFactors = FALSE)
 }
 
 
@@ -99,7 +99,6 @@ get_timeseries_full_data <- function() {
     left_join(deaths, by = join_by_cols) %>%
     left_join(recovered, by = join_by_cols) %>%
     mutate(active = confirmed - deaths - recovered)
-
 }
 
 
@@ -111,12 +110,15 @@ get_timeseries_full_data <- function() {
 #' @return data tibble of confirmed, deaths, active and recovered, each for Province.State, Country.Region, Lat, Long, contagion_day and day
 #'
 #' @importFrom dplyr mutate
+#'@importFrom dplyr mutate_if
 #' @importFrom dplyr arrange
 #' @importFrom dplyr case_when
 #' @importFrom dplyr group_by
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr select
 #' @importFrom dplyr n
+#' @importFrom dplyr lag
+#'@importFrom tidyr replace_na
 #'
 #' @export
 get_timeseries_by_contagion_day_data <- function(data) {
@@ -136,8 +138,15 @@ get_timeseries_by_contagion_day_data <- function(data) {
       TRUE ~ tmp
     )) %>%
     select(-incremental, -offset, -no_contagion, -tmp) %>%
+    mutate(new_confirmed = confirmed - lag(confirmed)) %>%
+    mutate(new_deaths = deaths - lag(deaths)) %>%
+    mutate(new_active = active - lag(active)) %>%
+    mutate(new_recovered = recovered - lag(recovered)) %>%
+    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
+    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
-
 }
 
 #' Global data timeseries
@@ -147,7 +156,9 @@ get_timeseries_by_contagion_day_data <- function(data) {
 #'
 #' @importFrom dplyr group_by
 #' @importFrom dplyr ungroup
-#' @importFrom dplyr summarize
+#' @importFrom dplyr summarize_at
+#' @importFrom dplyr mutate
+#' @importFrom dplyr lag
 #'
 #' @return global tibble of global confirmed, deaths, active and recovered, for each day
 #'
@@ -155,7 +166,9 @@ get_timeseries_by_contagion_day_data <- function(data) {
 get_timeseries_global_data <- function(data){
   global <- data %>%
     group_by(date) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active)) %>%
+    summarize_at(c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered"), sum) %>%
+    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
+    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
     ungroup()
 }
 
@@ -169,6 +182,10 @@ get_timeseries_global_data <- function(data){
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr summarize
 #' @importFrom dplyr filter
+#' @importFrom dplyr mutate
+#' @importFrom dplyr arrange
+#' @importFrom dplyr desc
+#' @importFrom dplyr lag
 #'
 #' @return country_df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -177,7 +194,10 @@ get_timeseries_country_data <- function(data, country){
   country_df <- data %>%
     filter(Country.Region == country) %>%
     group_by(date) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), contagion_day = max(contagion_day)) %>%
+    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
+    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
+    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    arrange(desc(date)) %>%
     ungroup()
 }
 
@@ -201,7 +221,7 @@ aggregate_country_data <- function(data){
     filter( date == max(date)) %>%
     select(-Province.State, -Lat, -Long) %>%
     group_by(Country.Region) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), contagion_day = max(contagion_day)) %>%
+    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
     arrange(desc(confirmed)) %>%
     ungroup()
 }
@@ -214,6 +234,10 @@ aggregate_country_data <- function(data){
 #' @importFrom dplyr group_by
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr summarize
+#' @importFrom dplyr mutate
+#' @importFrom dplyr arrange
+#' @importFrom dplyr desc
+#' @importFrom dplyr lag
 #'
 #' @return df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -222,7 +246,10 @@ aggregate_province_timeseries_data <- function(data){
   df <- data %>%
     select(-Province.State) %>%
     group_by(Country.Region, date) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), contagion_day = max(contagion_day)) %>%
+    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
+    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
+    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    arrange(desc(date)) %>%
     ungroup()
 }
 
@@ -236,6 +263,10 @@ aggregate_province_timeseries_data <- function(data){
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr summarize
 #' @importFrom dplyr filter
+#' @importFrom dplyr mutate
+#' @importFrom dplyr arrange
+#' @importFrom dplyr desc
+#' @importFrom dplyr lag
 #'
 #' @return province_df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -244,7 +275,10 @@ get_timeseries_province_data <- function(data, province){
   province_df <- data %>%
     filter(Province.State == province) %>%
     group_by(date) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active)) %>%
+    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
+    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
+    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    arrange(desc(date)) %>%
     ungroup()
 }
 
@@ -258,6 +292,7 @@ get_timeseries_province_data <- function(data, province){
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr summarize
 #' @importFrom dplyr filter
+#' @importFrom dplyr lag
 #'
 #' @return global tibble of confirmed, deaths, active and recovered for each day
 #'
@@ -265,6 +300,8 @@ get_timeseries_province_data <- function(data, province){
 get_date_data <- function(data, date){
   date_df <- data %>%
     group_by(date) %>%
-    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active)) %>%
+    summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
+    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
+    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
     ungroup()
 }

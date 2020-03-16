@@ -21,15 +21,16 @@ mod_global_ui <- function(id){
       column(3,valueBoxOutput(ns("active")))
     ),
     fluidRow(
-      column(4,
+      column(6,
              div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotOutput(ns("global_line_plot"))),
-      column(4,
+             plotOutput(ns("global_line_plot"))
+             ),
+      column(6,
              div(h3("Confirmed cases for top 10 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotOutput(ns("top_n_line_plot"))),
-      column(4,
-             div(DTOutput(ns("dt_top10")), style = "margin-left: 20px;margin-right: 20px;"))
-    )
+             plotOutput(ns("top_n_line_plot"))
+             )
+    ),
+    div(DTOutput(ns("dt_top10")), style = "margin-left: 20px;margin-right: 20px;")
   )
 }
 
@@ -40,9 +41,11 @@ mod_global_ui <- function(id){
 #' @importFrom shinydashboard valueBox
 #' @importFrom shinydashboard renderValueBox
 #' @importFrom dplyr filter
+#' @importFrom dplyr select
 #' @importFrom dplyr mutate
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyr starts_with
+#' @importFrom tidyr ends_with
 #' @importFrom DT renderDT
 #' @importFrom DT datatable
 #' @importFrom plotly renderPlotly
@@ -56,7 +59,8 @@ mod_global_server <- function(input, output, session, orig_data){
 
   global <- reactive({
     orig_data() %>%
-      get_timeseries_global_data()
+      get_timeseries_global_data() %>%
+      select(-ends_with("rate"))
   })
 
   global_today <- reactive({
@@ -103,13 +107,14 @@ mod_global_server <- function(input, output, session, orig_data){
   output$active <- renderValueBox({
     valueBox("Active",
              global_today()$active,
-             color = "orange",
+             color = "light-blue",
              width = 3)
   })
 
   # plots ----
   output$global_line_plot <- renderPlot({
     df <- global() %>%
+      select(- starts_with("new_")) %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
       mutate(status = as.factor(status)) %>%
       capitalize_names_df()

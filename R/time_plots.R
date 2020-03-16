@@ -65,6 +65,21 @@ add_log_scale <- function(p){
   p
 }
 
+#' Remove legend
+#' @rdname remove_legend
+#'
+#' @param p ggplot object
+#'
+#' @import ggplot2
+#'
+#' @return p ggplot object
+#'
+#' @export
+remove_legend <- function(p){
+  p <- p + theme(legend.position = "none")
+  p
+}
+
 #' Evolution from contagion day
 #' @rdname from_contagion_day_bar_plot
 #'

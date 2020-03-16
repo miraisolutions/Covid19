@@ -55,6 +55,8 @@ basic_plot_theme <- function() {
     axis.line.y = element_line(color = "grey45", size = 0.5),
     axis.text.x = element_text(size = 14),
     axis.text.y = element_text(size = 14),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
     legend.title =  element_blank(),
     legend.key = element_rect(fill = alpha("white", 0.0))
   )
