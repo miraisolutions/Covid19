@@ -88,25 +88,25 @@ mod_country_server <- function(input, output, session, orig_data){
 
     deaths_data <- reactive({
       country_data() %>%
-        select(Country.Region, contagion_day, confirmed) %>%
+        select(Country.Region, contagion_day, deaths) %>%
         mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = confirmed) %>%
+        mutate(value = deaths) %>%
         capitalize_names_df()
     })
 
     active_data <- reactive({
       country_data() %>%
-        select(Country.Region, contagion_day, confirmed) %>%
+        select(Country.Region, contagion_day, active) %>%
         mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = confirmed) %>%
+        mutate(value = active) %>%
         capitalize_names_df()
     })
 
     recovered_data <- reactive({
       country_data() %>%
-        select(Country.Region, contagion_day, confirmed) %>%
+        select(Country.Region, contagion_day, recovered) %>%
         mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = confirmed) %>%
+        mutate(value = recovered) %>%
         capitalize_names_df()
     })
 
