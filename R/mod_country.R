@@ -13,6 +13,14 @@ mod_country_ui <- function(id){
   tagList(
     selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
 
+    tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
+    fluidRow(
+      column(3, valueBoxOutput(ns("confirmed"))),
+      column(3,valueBoxOutput(ns("death"))),
+      column(3,valueBoxOutput(ns("recovered"))),
+      column(3,valueBoxOutput(ns("active")))
+    ),
+
     fluidRow(
       column(6,
              column(6,
@@ -78,6 +86,11 @@ mod_country_server <- function(input, output, session, orig_data){
         arrange(desc(date))
     })
 
+    country_data_today <- reactive({
+      country_data() %>%
+        filter(date == max(date))
+    })
+
     confirmed_data <- reactive({
       country_data() %>%
         select(Country.Region, contagion_day, confirmed) %>%
@@ -108,6 +121,32 @@ mod_country_server <- function(input, output, session, orig_data){
         mutate(status = as.factor(Country.Region)) %>%
         mutate(value = recovered) %>%
         capitalize_names_df()
+    })
+
+    # Boxes ----
+    output$confirmed <- renderValueBox({
+      valueBox("Confirmed",
+               country_data_today()$confirmed,
+               color = "red",
+               width = 3)
+    })
+    output$death <- renderValueBox({
+      valueBox("Deaths",
+               country_data_today()$deaths,
+               color = "black",
+               width = 3)
+    })
+    output$recovered <- renderValueBox({
+      valueBox("Recovered",
+               country_data_today()$recovered,
+               color = "green",
+               width = 3)
+    })
+    output$active <- renderValueBox({
+      valueBox("Active",
+               country_data_today()$active,
+               color = "orange",
+               width = 3)
     })
 
     # tables ----
