@@ -229,7 +229,7 @@ mod_country_server <- function(input, output, session, orig_data){
         mutate(status = as.factor(status)) %>%
         capitalize_names_df()
 
-      df %>% time_evol_line_plot() %>% add_log_scale()
+      df %>% time_evol_area_plot() %>% add_log_scale() %>% fix_colors()
     })
 
     output$line_plot_new <- renderPlot({
@@ -240,7 +240,7 @@ mod_country_server <- function(input, output, session, orig_data){
         mutate(status = as.factor(status)) %>%
         capitalize_names_df()
 
-      df %>% time_evol_line_plot()
+      df %>% time_evol_area_plot() %>% fix_colors()
     })
 
     output$bar_confirmed <- renderPlotly({

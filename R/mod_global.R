@@ -119,7 +119,7 @@ mod_global_server <- function(input, output, session, orig_data){
       mutate(status = as.factor(status)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot()  %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
+    df %>% time_evol_area_plot() %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
   })
 
   output$top_n_line_plot <- renderPlot({
