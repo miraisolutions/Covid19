@@ -20,7 +20,13 @@ app_ui <- function(request) {
               div(h1("Covid19"), style = "color:white!important;"),
               href = "https://github.com/miraisolutions/Covid19"
             ),
-            textOutput("last_update")
+            a(
+              div(
+                style = "color:black!important;",
+                p("Data Repository by Johns Hopkins CSSE: ",
+                  textOutput("last_update", inline = TRUE))),
+                href = "https://github.com/CSSEGISandData/COVID-19"
+            )
         )
       ),
       # body ----
