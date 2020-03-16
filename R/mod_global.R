@@ -21,9 +21,6 @@ mod_global_ui <- function(id){
       column(3,valueBoxOutput(ns("active")))
     ),
     fluidRow(
-      div(DTOutput(ns("dt_global")), style = "margin-left: 50px;margin-right: 50px;")
-    ),
-    fluidRow(
       column(4,
              div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              plotOutput(ns("global_line_plot"))),
@@ -130,21 +127,11 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # tables ----
-  output$dt_global <- renderDT(
-    datatable(global(),
-              rownames = FALSE,
-              selection = "single",
-              filter = 'bottom',
-              escape = FALSE,
-              plugins = 'natural',
-              options = getTableOptions())
-  )
-
   output$dt_top10 <- renderDT(
     datatable(world(),
               rownames = FALSE,
               selection = "single",
-              filter = 'bottom',
+              #filter = 'bottom',
               escape = FALSE,
               plugins = 'natural',
               options = getTableOptions())

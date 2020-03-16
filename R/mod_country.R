@@ -115,7 +115,7 @@ mod_country_server <- function(input, output, session, orig_data){
       datatable(country_data(),
                 rownames = FALSE,
                 selection = "single",
-                filter = 'bottom',
+                # filter = 'bottom',
                 escape = FALSE,
                 plugins = 'natural',
                 options = getTableOptions(maxrowsperpage = 5))
