@@ -52,9 +52,7 @@ jobs:
 
 # Deployment to shinyapps.io
       - name: Deploy to shinyapps.io
-#        if: github.ref == 'refs/heads/master'
-# temp to test on feature branch
-        if: github.ref == 'refs/heads/feature/9_deploy_with_shiny_actions'
+        if: github.ref == 'refs/heads/master'
         env:
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}

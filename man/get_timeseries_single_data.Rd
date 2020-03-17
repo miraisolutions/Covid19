@@ -7,7 +7,7 @@
 get_timeseries_single_data(param)
 }
 \arguments{
-\item{type}{data to be returned. Character string. Expected values c("confirmed", "deaths", "recovered")}
+\item{param}{character string}
 }
 \value{
 data data.frame for Province.State, Country.Region, Lat, Long, and day
