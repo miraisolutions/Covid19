@@ -47,7 +47,7 @@ app_ui <- function(request) {
         id = "footer",
         a(
           id = "git-footer",
-          href = "https://github.com/miraisolutions/SmaRP.git",
+          href = "https://github.com/miraisolutions/Covid19.git",
           target = "_blank",
           icon("github-square", "fa-2x")
         ),
