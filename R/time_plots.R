@@ -170,6 +170,20 @@ from_contagion_day_bar_plot <- function(df){
   p
 }
 
+#' Evolution from contagion day facet
+#'
+#' @param df data.frame to plot
+#'
+#' @return barplot facet
+#'
+#' @import ggplot2
+from_contagion_day_bar_facet_plot <- function(df){
+  p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
+    geom_bar(stat = "identity") +
+    basic_plot_theme() +
+    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4)
+  p
+}
 
 #' Evolution by_date
 #' @rdname date_bar_plot

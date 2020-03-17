@@ -107,7 +107,7 @@ mod_country_server <- function(input, output, session, orig_data){
     # Data ----
     country_data <- reactive({orig_data() %>%
         aggregate_province_timeseries_data() %>%
-        filter(Country.Region == input$select_country) %>%
+        filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
         select(-ends_with("rate")) %>%
         arrange(desc(date))
