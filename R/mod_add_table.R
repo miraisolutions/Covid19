@@ -1,0 +1,44 @@
+#' add_table UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#'
+#' @noRd
+#'
+#' @importFrom shiny NS tagList
+mod_add_table_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+    div(DTOutput(ns("table")), style = "margin-left: 20px;margin-right: 20px;"),
+    # Add button to download report
+    downloadButton(ns("download_table"), label = "Download")
+  )
+}
+
+#' add_table Server Function
+#' @param df data.frame reactive input to table
+#'
+#'
+#' @noRd
+mod_add_table_server <- function(input, output, session, df){
+  ns <- session$ns
+  output$table <- renderDT(
+    datatable(df(),
+              rownames = FALSE,
+              selection = "single",
+              #filter = 'bottom',
+              escape = FALSE,
+              plugins = 'natural',
+              options = getTableOptions())
+  )
+
+  # generate output report
+  output$download_table <- downloadHandler(filename = function() {
+    paste("data-", Sys.Date(), ".csv", sep = "")
+  },
+  content = function(file) {
+    write.csv(df(), file)
+  }
+  )
+}

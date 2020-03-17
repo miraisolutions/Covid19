@@ -67,7 +67,7 @@ mod_country_ui <- function(id){
              )
       ),
       column(6,
-             div(DTOutput(ns("dt_country")), style = "margin: 50px;")
+             mod_add_table_ui(ns("add_table_country"))
       )
     )
   )
@@ -209,15 +209,7 @@ mod_country_server <- function(input, output, session, orig_data){
     })
 
     # tables ----
-    output$dt_country <- renderDT(
-      datatable(country_data(),
-                rownames = FALSE,
-                selection = "single",
-                # filter = 'bottom',
-                escape = FALSE,
-                plugins = 'natural',
-                options = getTableOptions(maxrowsperpage = 5))
-    )
+    callModule(mod_add_table_server, "add_table_country", country_data)
 
     # plots ----
 
