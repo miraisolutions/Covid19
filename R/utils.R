@@ -79,3 +79,10 @@ getTableOptions <- function(scrollX = TRUE,
     pageLength = maxrowsperpage
   )
 }
+
+#' load countries  data
+#' @import rgdal
+load_countries_data <- function(){
+  # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
+  download.file(url = "https://github.com/DrFabach/Corona/blob/master/shapeFile.RData", destfile = "./inst/shapeFile.RData")
+}

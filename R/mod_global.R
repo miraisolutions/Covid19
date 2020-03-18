@@ -10,6 +10,7 @@
 #' @importFrom shinydashboard valueBoxOutput
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
+#' @importFrom leaflet leafletOutput
 mod_global_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -21,14 +22,25 @@ mod_global_ui <- function(id){
       column(3,valueBoxOutput(ns("active")))
     ),
     fluidRow(
+      leafletOutput(ns("map"), width = "100%", height = "93%"),
+      absolutePanel(id = ns("input_date_control"),class = "panel panel-default", top = 300, left = 30, draggable = F,
+                    div(style = "margin:10px;",
+                        radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed"),
+                        uiOutput(ns("slider_ui")),
+                        helpText("The detail of each country can be obtained by clicking on it.")
+                    )
+
+      )
+    ),
+    fluidRow(
       column(6,
              div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              plotOutput(ns("global_line_plot"))
-             ),
+      ),
       column(6,
              div(h3("Confirmed cases for top 10 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              plotOutput(ns("top_n_line_plot"))
-             )
+      )
     ),
     div(DTOutput(ns("dt_top10")), style = "margin-left: 20px;margin-right: 20px;")
   )
@@ -50,6 +62,8 @@ mod_global_ui <- function(id){
 #' @importFrom DT datatable
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
+#' @import leaflet
+#' @import RColorBrewer
 #'
 #' @noRd
 mod_global_server <- function(input, output, session, orig_data){
@@ -109,6 +123,11 @@ mod_global_server <- function(input, output, session, orig_data){
              global_today()$active,
              color = "light-blue",
              width = 3)
+  })
+
+  # map ----
+  output$slider_ui <- renderUI({
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(global()$date), max = max(global()$date), value = max(global()$date), dragRange = FALSE)
   })
 
   # plots ----

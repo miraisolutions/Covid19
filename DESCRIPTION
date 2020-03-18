@@ -19,7 +19,8 @@ Imports:
     DT,
     shinyWidgets,
     googleVis,
-    RColorBrewer
+    RColorBrewer,
+    leaflet
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
