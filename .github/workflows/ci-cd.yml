@@ -26,7 +26,6 @@ jobs:
           key: ${{ runner.os }}-r-${{ hashFiles('depends.Rds') }}
           restore-keys: ${{ runner.os }}-r-
 
-# Install system dependencies
       - name: Install system dependencies
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
@@ -62,4 +61,3 @@ jobs:
           do.call(rsconnect::setAccountInfo, account_info)
           rsconnect::deployApp(appName = "Covid19")
         shell: Rscript {0}
-
