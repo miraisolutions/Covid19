@@ -52,7 +52,8 @@ get_daily_data <- function(date) {
 
 #' Get timeseries single data
 #' @rdname get_timeseries_single_data
-#' @param type data to be returned. Character string. Expected values c("confirmed", "deaths", "recovered")
+#'
+#' @param param character string
 #'
 #' @return data data.frame for Province.State, Country.Region, Lat, Long, and day
 #'
