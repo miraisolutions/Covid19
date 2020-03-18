@@ -37,14 +37,15 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
       select(-Country.Region, -date) %>%
       arrange(contagion_day) %>%
       pivot_longer(cols = -contagion_day, names_to = "status_all", values_to = "value") %>%
-      mutate(bool_new = case_when(
-        grepl("new_", .$status_all) ~ TRUE,
-        TRUE ~ FALSE
-      )) %>%
+      mutate(bool_new = factor(case_when(
+        grepl("new_", .$status_all) ~ "new",
+        TRUE ~ "total"
+      ), levels = c("total", "new"))) %>%
       mutate(status = factor(gsub("new_", "", .$status_all), levels = statuses)) %>%
       select(-status_all)
 
-    df %>% from_contagion_day_bar_facet_plot()
+    df %>%
+      from_contagion_day_bar_facet_plot()
 
   })
 

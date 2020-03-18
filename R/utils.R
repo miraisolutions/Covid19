@@ -70,7 +70,7 @@ basic_plot_theme <- function() {
 #'
 #' @export
 getTableOptions <- function(scrollX = TRUE,
-                            maxrowsperpage = 10) {
+                            maxrowsperpage = 5) {
   options <- list(
     search = list(caseInsensitive = TRUE),
     searchHighlight = TRUE,

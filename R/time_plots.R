@@ -177,12 +177,28 @@ from_contagion_day_bar_plot <- function(df){
 #' @return barplot facet
 #'
 #' @import ggplot2
+#' @importFrom grid grid.draw
+#'
+#' @export
 from_contagion_day_bar_facet_plot <- function(df){
   p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
     basic_plot_theme() +
-    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4)
-  p
+    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
+    theme(strip.text = element_text(colour = 'white'))
+
+  # color top strip based on status
+  # reference: https://github.com/tidyverse/ggplot2/issues/2096
+  g <- ggplot_gtable(ggplot_build(p))
+  strip_both <- which(grepl('strip-', g$layout$name))
+  fills <- c("red","black","green","blue")
+  k <- 1
+  for (i in strip_both) {
+    j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+    g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+    k <- k + 1
+  }
+  grid.draw(g)
 }
 
 #' Evolution by_date
