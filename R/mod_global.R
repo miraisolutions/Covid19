@@ -23,11 +23,11 @@ mod_global_ui <- function(id){
     fluidRow(
       column(6,
              div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotlyOutput(ns("global_line_plot"))
+             plotlyOutput(ns("global_line_plot"), height = 400)
              ),
       column(6,
              div(h3("Confirmed cases for top 5 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotOutput(ns("top_n_line_plot"))
+             plotlyOutput(ns("top_n_line_plot"), height = 400)
              )
     ),
     mod_add_table_ui(ns("add_table_world"))
@@ -123,13 +123,13 @@ mod_global_server <- function(input, output, session, orig_data){
     df %>% time_evol_area_plot() %>% ggplotly() #%>% add_log_scale() %>% ggplotly()
   })
 
-  output$top_n_line_plot <- renderPlot({
+  output$top_n_line_plot <- renderPlotly({
     df <- world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
       mutate(value = confirmed) %>%
       capitalize_names_df()
 
-    df %>% time_evol_line_plot() %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
+    df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
   })
 
   # tables ----

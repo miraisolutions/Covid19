@@ -7,6 +7,7 @@
 #' @return line plot of given variable by date
 #'
 #' @import ggplot2
+#' @import RColorBrewer
 #'
 #' @examples
 #' \dontrun{
@@ -45,8 +46,9 @@
 #' @export
 time_evol_line_plot <- function(df) {
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status)) +
-    geom_line(size = 2) +
-    basic_plot_theme()
+    geom_line(size = 1) +
+    basic_plot_theme() +
+    scale_colour_brewer(palette = "Dark2")
   p
 }
 
@@ -184,6 +186,7 @@ from_contagion_day_bar_plot <- function(df){
 from_contagion_day_bar_facet_plot <- function(df){
   p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
+    scale_fill_manual(values = c("total" = "#ea8b5b", "new" = "#C8C8C8")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
     theme(strip.text = element_text(colour = 'white'))
@@ -192,7 +195,7 @@ from_contagion_day_bar_facet_plot <- function(df){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- c("red","black","green","blue")
+  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -248,10 +251,10 @@ date_bar_plot <- function(df){
 #' @export
 fix_colors <- function(p){
   p <- p +
-    scale_color_manual(values = c("confirmed" = "red", "deaths" = "black","recovered" = "green" , "active" = "blue",
-                                  "new_confirmed" = "red", "new_deaths" = "black","new_recovered" = "green" , "new_active" = "blue")) +
-    scale_fill_manual(values = c("confirmed" = "red", "deaths" = "black","recovered" = "green" , "active" = "blue",
-                                  "new_confirmed" = "red", "new_deaths" = "black","new_recovered" = "green" , "new_active" = "blue"))
+    scale_color_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
+                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")) +
+    scale_fill_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
+                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc"))
 
   p
 }

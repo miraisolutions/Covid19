@@ -26,8 +26,8 @@ mod_country_ui <- function(id){
     ),
     fluidRow(
       column(6,
-             div(h3("Total Cases - log scale"), align = "center",
-                 plotOutput(ns("line_plot"), height = "400px")
+             div(h3("Total Cases"), align = "center",
+                 plotlyOutput(ns("line_plot"), height = "400px")
              )
       ),
       column(6,
@@ -177,15 +177,15 @@ mod_country_server <- function(input, output, session, orig_data){
 
     # plots ----
 
-    output$line_plot <- renderPlot({
+    output$line_plot <- renderPlotly({
       df <- country_data() %>%
         select(-Country.Region, -contagion_day) %>%
-        select(-starts_with("new")) %>%
+        select(-starts_with("new"), -confirmed) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
         mutate(status = as.factor(status)) %>%
         capitalize_names_df()
 
-      df %>% time_evol_area_plot() %>% add_log_scale() %>% fix_colors()
+      df %>% time_evol_area_plot() %>% fix_colors() %>% ggplotly()
     })
 
     output$barplots <- renderUI({
