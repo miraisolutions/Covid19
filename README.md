@@ -5,8 +5,8 @@
 
 <!-- badges: start -->
 
-[![Travis build
-status](https://travis-ci.com/miraisolutions/Covid19.svg?branch=master)](https://travis-ci.com/miraisolutions/Covid19)
+[![R build
+status](https://github.com/miraisolutions/Covid19/workflows/CI-CD/badge.svg)](https://github.com/miraisolutions/Covid19/actions)
 <!-- badges: end -->
 
 The goal of Covid19 is to fetch coronavirus data from the Johns Hopkins

@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 # Covid19
 
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.com/miraisolutions/Covid19.svg?branch=master)](https://travis-ci.com/miraisolutions/Covid19)
+[![R build status](https://github.com/miraisolutions/Covid19/workflows/CI-CD/badge.svg)](https://github.com/miraisolutions/Covid19/actions)
 <!-- badges: end -->
 
 The goal of Covid19 is to fetch coronavirus data from the Johns Hopkins University Center for Systems Science and Engineering (JHU CSSE), available [here](https://github.com/CSSEGISandData/COVID-19) and to analyze them. 

@@ -97,8 +97,9 @@ time_evol_line_plot <- function(df) {
 #'
 #' @export
 time_evol_area_plot <- function(df) {
+
   p <- ggplot(df, aes(x = Date, y = Value)) +
-    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = position_dodge(0.8)) +
+    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'stack') +
     basic_plot_theme()
   p <- p %>%
     fix_colors()

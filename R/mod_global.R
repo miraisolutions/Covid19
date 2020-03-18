@@ -22,8 +22,8 @@ mod_global_ui <- function(id){
     ),
     fluidRow(
       column(6,
-             div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotOutput(ns("global_line_plot"))
+             div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             plotlyOutput(ns("global_line_plot"))
              ),
       column(6,
              div(h3("Confirmed cases for top 5 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -112,14 +112,15 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # plots ----
-  output$global_line_plot <- renderPlot({
+  output$global_line_plot <- renderPlotly({
     df <- global() %>%
       select(- starts_with("new_")) %>%
+      select( - confirmed) %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
       mutate(status = as.factor(status)) %>%
       capitalize_names_df()
 
-    df %>% time_evol_area_plot() %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
+    df %>% time_evol_area_plot() %>% ggplotly() #%>% add_log_scale() %>% ggplotly()
   })
 
   output$top_n_line_plot <- renderPlot({
