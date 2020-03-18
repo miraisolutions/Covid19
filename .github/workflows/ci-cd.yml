@@ -8,17 +8,17 @@ jobs:
   CI-CD:
     runs-on: ubuntu-latest
     steps:
-# Default to cache dependencies
+
       - uses: actions/checkout@v2
 
       - uses: r-lib/actions/setup-r@master
 
+# Query and cache R package dependencies
       - name: Query dependencies
         run: |
           install.packages("remotes")
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
         shell: Rscript {0}
-
       - name: Cache R packages
         uses: actions/cache@v1
         with:
