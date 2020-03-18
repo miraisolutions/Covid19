@@ -49,7 +49,6 @@ jobs:
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
         shell: Rscript {0}
 
-# Deployment to shinyapps.io
       - name: Deploy to shinyapps.io
         if: github.ref == 'refs/heads/master'
         env:
