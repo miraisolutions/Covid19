@@ -44,8 +44,8 @@ jobs:
           remotes::install_cran(c("rcmdcheck", "rsconnect"))
         shell: Rscript {0}
 
-# Run RMD check, stop only for errors
-      - name: Check
+      - name: Check package
+        # Stop only for errors (for now)
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
         shell: Rscript {0}
 
