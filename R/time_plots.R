@@ -230,7 +230,7 @@ from_contagion_day_bar_plot <- function(df){
 #' @export
 from_contagion_day_bar_facet_plot <- function(df){
   p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", position = "dodge") +
     scale_fill_manual(values = c("total" = "#ea8b5b", "new" = "#C8C8C8")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +

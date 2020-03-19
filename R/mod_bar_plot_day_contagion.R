@@ -33,29 +33,16 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
 
 
   output$bar_plot_day_contagion <- renderPlot({
+
     df <- country_data() %>%
       select(-Country.Region, -date) %>%
-      arrange(contagion_day)
-
-    tmp <- sapply(statuses, function(s){
-      df[,s] - df[, paste0("new_", s)]
-    }) %>%
-      setNames(
-        paste0("diff_",statuses)
-      ) %>%
-      as.data.frame()
-
-    df <- df %>%
-      bind_cols(tmp) %>%
+      arrange(contagion_day) %>%
       pivot_longer(cols = -contagion_day, names_to = "status_all", values_to = "value") %>%
       mutate(bool_new = case_when(
         grepl("new_", .$status_all) ~ "new",
-        grepl("diff_", .$status_all) ~ "total",
-        TRUE ~ "todrop"
+        TRUE ~ "total"
       )) %>%
-      filter(bool_new != "todrop") %>%
       mutate(bool_new = factor(bool_new, levels = c("total", "new"))) %>%
-      mutate(status_all = gsub("diff_", "", .$status_all)) %>%
       mutate(status = factor(gsub("new_", "", .$status_all), levels = statuses)) %>%
       select(-status_all)
 
