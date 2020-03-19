@@ -23,11 +23,11 @@ mod_global_ui <- function(id){
     fluidRow(
       column(6,
              div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotlyOutput(ns("global_line_plot"), height = 400)
+             mod_plot_log_linear_ui(ns("plot_log_area_global"))
              ),
       column(6,
              div(h3("Confirmed cases for top 5 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotlyOutput(ns("top_n_line_plot"), height = 400)
+             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"))
              )
     ),
     mod_add_table_ui(ns("add_table_world"))
@@ -112,25 +112,26 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # plots ----
-  output$global_line_plot <- renderPlotly({
-    df <- global() %>%
-      select(- starts_with("new_")) %>%
-      select( - confirmed) %>%
+
+  df_global <- reactive({
+    global() %>%
+      select(-starts_with("new_")) %>%
+      select( -confirmed) %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
       mutate(status = as.factor(status)) %>%
       capitalize_names_df()
-
-    df %>% time_evol_area_plot() %>% ggplotly() #%>% add_log_scale() %>% ggplotly()
   })
 
-  output$top_n_line_plot <- renderPlotly({
-    df <- world_top_5_confirmed() %>%
+  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
+
+  df_top_n <- reactive({
+    world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
       mutate(value = confirmed) %>%
       capitalize_names_df()
-
-    df %>% time_evol_line_plot() %>% add_log_scale() %>% ggplotly()
   })
+
+  callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)

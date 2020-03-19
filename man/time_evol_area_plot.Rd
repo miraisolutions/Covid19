@@ -10,7 +10,7 @@ time_evol_area_plot(df)
 \item{df}{data.frame with column called Date and x column to plot}
 }
 \value{
-line plot of given variable by date
+area plot of given variable by date
 }
 \description{
 Time evolution as area plot

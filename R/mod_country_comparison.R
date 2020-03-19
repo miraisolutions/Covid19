@@ -13,7 +13,7 @@ mod_country_comparison_ui <- function(id){
     selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
 
     uiOutput(ns("barplots")),
-
+    uiOutput(ns("lineplots")),
     mod_add_table_ui(ns("add_table_countries"))
   )
 }
@@ -70,6 +70,13 @@ mod_country_comparison_server <- function(input, output, session, orig_data){
         callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data)
       })
     }
+
+    # Line plots ----
+    output$lineplots <- renderUI({
+      mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
+    })
+
+    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data)

@@ -59,7 +59,7 @@ time_evol_line_plot <- function(df) {
 #'
 #' @param df data.frame with column called Date and x column to plot
 #'
-#' @return line plot of given variable by date
+#' @return area plot of given variable by date
 #'
 #' @import ggplot2
 #'
@@ -106,6 +106,51 @@ time_evol_area_plot <- function(df) {
   p <- p %>%
     fix_colors()
   p
+}
+
+#' Time evolution as area plot facet
+#'
+#' @rdname time_evol_area_facet_plot
+#'
+#' @param df data.frame with column called Date and x column to plot
+#' @param log character string log or linear
+#'
+#' @return area plot by date
+#'
+#' @import ggplot2
+#' @import RColorBrewer
+#'
+#' @export
+time_evol_area_facet_plot <- function(df, log) {
+
+  p <-  ggplot(df, aes(x = date, y = value)) +
+    geom_area(aes(colour = Country.Region, fill = Country.Region), size = 2, alpha = 0.5, position = 'stack') +
+    basic_plot_theme() +
+    scale_fill_brewer(palette = "Dark2") +
+    scale_color_brewer(palette = "Dark2")
+
+  if (log == "log") {
+    p <- p %>%
+      add_log_scale()
+  }
+
+  p <- p +
+    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
+    theme(strip.text = element_text(colour = 'white'))
+
+  # color top strip based on status
+  # reference: https://github.com/tidyverse/ggplot2/issues/2096
+  g <- ggplot_gtable(ggplot_build(p))
+  strip_both <- which(grepl('strip-', g$layout$name))
+  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  k <- 1
+  for (i in strip_both) {
+    j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+    g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+    k <- k + 1
+  }
+  grid.draw(g)
+
 }
 
 #' Transform y to log scale
