@@ -3,11 +3,14 @@
 #' @rdname time_evol_line_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
+#' @param log logical for applying log scale
 #'
 #' @return line plot of given variable by date
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @importFrom  dplyr mutate
+#' @importFrom  dplyr case_when
 #'
 #' @examples
 #' \dontrun{
@@ -44,11 +47,25 @@
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df) {
+time_evol_line_plot <- function(df, log = F) {
+
+  if (log) {
+    df <- df %>%
+      mutate(Value = case_when(
+        Value == 0 ~ 1,
+        TRUE ~ Value
+      ))
+  }
+
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status)) +
     geom_line(size = 1) +
     basic_plot_theme() +
     scale_colour_brewer(palette = "Dark2")
+
+  if (log) {
+    p <- p %>%
+      add_log_scale()
+  }
   p
 }
 
@@ -58,10 +75,17 @@ time_evol_line_plot <- function(df) {
 #' @rdname time_evol_area_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
+#' @param log logical for applying log scale
 #'
 #' @return area plot of given variable by date
 #'
 #' @import ggplot2
+#' @importFrom  dplyr group_by
+#' @importFrom  dplyr ungroup
+#' @importFrom  dplyr arrange
+#' @importFrom  dplyr desc
+#' @importFrom  dplyr mutate
+#' @importFrom  dplyr case_when
 #'
 #' @examples
 #' \dontrun{
@@ -98,13 +122,34 @@ time_evol_line_plot <- function(df) {
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df) {
+time_evol_area_plot <- function(df, stack = F, log = F) {
+
+  if (stack) {
+    df <- df %>%
+      arrange(desc(Status)) %>%
+      group_by(Date) %>%
+      mutate(Value = cumsum(Value)) %>%
+      ungroup()
+  }
+
+  if (log) {
+    df <- df %>%
+      mutate(Value = ifelse(Value == 0, NA, Value))
+  }
+
 
   p <- ggplot(df, aes(x = Date, y = Value)) +
-    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'stack') +
+    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'dodge') +
     basic_plot_theme()
+
   p <- p %>%
     fix_colors()
+
+  if (log) {
+    p <- p %>%
+      add_log_scale()
+  }
+
   p
 }
 
@@ -119,12 +164,18 @@ time_evol_area_plot <- function(df) {
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @importFrom dplyr mutate
 #'
 #' @export
 time_evol_area_facet_plot <- function(df, log) {
 
+  if (log == "log") {
+    df <- df %>%
+      mutate(value = ifelse(value == 0, NA, value))
+  }
+
   p <-  ggplot(df, aes(x = date, y = value)) +
-    geom_area(aes(colour = Country.Region, fill = Country.Region), size = 2, alpha = 0.5, position = 'stack') +
+    geom_area(aes(colour = Country.Region, fill = Country.Region), size = 2, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     scale_fill_brewer(palette = "Dark2") +
     scale_color_brewer(palette = "Dark2")
@@ -164,7 +215,7 @@ time_evol_area_facet_plot <- function(df, log) {
 #'
 #' @export
 add_log_scale <- function(p){
-  p <- p + scale_y_continuous(trans = 'log10')
+  p <- p + scale_y_log10()  #scale_y_continuous(trans = 'log10')
   p
 }
 
@@ -231,7 +282,7 @@ from_contagion_day_bar_plot <- function(df){
 from_contagion_day_bar_facet_plot <- function(df){
   p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
-    scale_fill_manual(values = c("total" = "#ea8b5b", "new" = "#C8C8C8")) +
+    scale_fill_manual(values = c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
     theme(strip.text = element_text(colour = 'white'))

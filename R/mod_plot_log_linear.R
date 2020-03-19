@@ -31,20 +31,23 @@ mod_plot_log_linear_ui <- function(id){
 mod_plot_log_linear_server <- function(input, output, session, df, type){
   ns <- session$ns
 
+  log <- reactive({
+    input$radio_log_linear != "linear"
+  })
+
   observeEvent(input$radio_log_linear, {
     output$plot_log_linear <- renderPlotly({
 
       if (type == "area") {
-        p <- df() %>% time_evol_area_plot() %>% fix_colors()
+
+        p <- df() %>%
+          time_evol_area_plot(stack = T, log = log()) %>%
+          fix_colors()
       } else {
-        p <- df() %>% time_evol_line_plot()
+        p <- df() %>% time_evol_line_plot(log = log())
       }
 
-      if (input$radio_log_linear == "linear") {
       p <- p %>% ggplotly()
-      } else {
-        p <- p %>% add_log_scale() %>% ggplotly()
-      }
 
       p
     })

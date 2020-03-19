@@ -26,7 +26,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_area_global"))
              ),
       column(6,
-             div(h3("Confirmed cases for top 5 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h3("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"))
              )
     ),
