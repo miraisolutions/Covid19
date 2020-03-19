@@ -7,9 +7,10 @@
 #'
 #' @example man-roxygen/ex-mod_caseBoxes.R
 #'
-#' @rdname mod_caseBoxes
+#' @name mod_caseBoxes
 #' @keywords internal
-#'
+
+#' @rdname mod_caseBoxes
 #' @importFrom shiny NS tagList
 mod_caseBoxes_ui <- function(id) {
   ns <- NS(id)
@@ -27,7 +28,7 @@ mod_caseBoxes_ui <- function(id) {
 #'
 #' @param counts Reactive expression yielding the named vector of cases by type.
 #'
-#' @noRd
+#' @rdname mod_caseBoxes
 mod_caseBoxes_server <- function(input, output, session, counts) {
 
   output$confirmed <- renderUI({
