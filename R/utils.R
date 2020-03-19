@@ -4,16 +4,6 @@
 #' @export
 dplyr::`%>%`
 
-#' Variants of standard operators
-#' @rdname negations
-#' @description Negation of [`%in%`] from R's `base` library.
-#' @usage 'See the help for match in base R.'
-#' @param ... Arguments to [`%in%`].
-#' @export
-#' @md
-'%notin%' <- Negate('%in%')
-
-
 
 #' Capitalize first letter of all words in a string
 #'
