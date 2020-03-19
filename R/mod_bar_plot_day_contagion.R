@@ -20,8 +20,8 @@ mod_bar_plot_day_contagion_ui <- function(id){
 #'
 #' @importFrom dplyr select
 #' @importFrom dplyr  mutate
-#' @importFrom dplyr  case_when
-#' @importFrom dplyrbind_cols
+#' @importFrom dplyr case_when
+#' @importFrom dplyr bind_cols
 #' @importFrom tidyr pivot_longer
 #' @import ggplot2
 #'
