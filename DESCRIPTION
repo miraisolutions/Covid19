@@ -8,15 +8,11 @@ Imports:
     config,
     golem,
     shiny,
-    processx,
     dplyr,
     tidyr,
     ggplot2,
     plotly,
-    rmarkdown,
-    pkgload,
     DT,
-    googleVis,
     RColorBrewer,
     grid
 Encoding: UTF-8
@@ -25,4 +21,6 @@ RoxygenNote: 7.1.0
 URL: https://github.com/miraisolutions/Covid19
 BugReports: https://github.com/miraisolutions/Covid19/issues
 Suggests: 
-    testthat
+    testthat,
+    pkgload,
+
