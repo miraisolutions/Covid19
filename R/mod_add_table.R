@@ -24,7 +24,7 @@ mod_add_table_ui <- function(id){
 mod_add_table_server <- function(input, output, session, df){
   ns <- session$ns
   output$table <- renderDT(
-    datatable(df(),
+    datatable(df() %>% capitalize_names_df(),
               rownames = FALSE,
               selection = "single",
               #filter = 'bottom',

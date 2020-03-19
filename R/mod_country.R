@@ -22,49 +22,13 @@ mod_country_ui <- function(id){
     ),
 
     fluidRow(
-      column(3,
-             div(h3("Tot Confirmed Cases from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_confirmed"), height = "300px")
-      ),
-      column(3,
-             div(h3("Tot Active from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_active"), height = "300px")
-      ),
-      column(3,
-             div(h3("Tot Deaths from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_deaths"), height = "300px")
-      ),
-      column(3,
-             div(h3("Tot Recovered from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_recovered"), height = "300px")
-      ),
-      column(3,
-             div(h3("New Confirmed Cases from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_confirmed_new"), height = "300px")
-      ),
-      column(3,
-             div(h3("New Active from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_active_new"), height = "300px")
-      ),
-      column(3,
-             div(h3("New Deaths from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_deaths_new"), height = "300px")
-      ),
-      column(3,
-             div(h3("New Recovered from 1st day of Contagion"), align = "center"),
-             plotlyOutput(ns("bar_recovered_new"), height = "300px")
-      )
+      uiOutput(ns("barplots"))
     ),
     fluidRow(
-      column(3,
-             div(h3("Total Cases - log scale"), align = "center",
-                 plotOutput(ns("line_plot"), height = "400px")
-             )
-      ),
-      column(3,
-             div(h3("New Cases"), align = "center",
-                 plotOutput(ns("line_plot_new"), height = "400px")
-             )
+      column(6,
+             # div(h3("Total Cases"), align = "center",
+                 mod_plot_log_linear_ui(ns("plot_log_linear_tot"))
+             # )
       ),
       column(6,
              mod_add_table_ui(ns("add_table_country"))
@@ -107,7 +71,7 @@ mod_country_server <- function(input, output, session, orig_data){
     # Data ----
     country_data <- reactive({orig_data() %>%
         aggregate_province_timeseries_data() %>%
-        filter(Country.Region == input$select_country) %>%
+        filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
         select(-ends_with("rate")) %>%
         arrange(desc(date))
@@ -116,70 +80,6 @@ mod_country_server <- function(input, output, session, orig_data){
     country_data_today <- reactive({
       country_data() %>%
         filter(date == max(date))
-    })
-
-    confirmed_data <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, confirmed) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = confirmed) %>%
-        capitalize_names_df()
-    })
-
-    deaths_data <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, deaths) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = deaths) %>%
-        capitalize_names_df()
-    })
-
-    active_data <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, active) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = active) %>%
-        capitalize_names_df()
-    })
-
-    recovered_data <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, recovered) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = recovered) %>%
-        capitalize_names_df()
-    })
-
-    confirmed_data_new <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, new_confirmed) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = new_confirmed) %>%
-        capitalize_names_df()
-    })
-
-    deaths_data_new <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, new_deaths) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = new_deaths) %>%
-        capitalize_names_df()
-    })
-
-    active_data_new <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, new_active) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = new_active) %>%
-        capitalize_names_df()
-    })
-
-    recovered_data_new <- reactive({
-      country_data() %>%
-        select(Country.Region, contagion_day, new_recovered) %>%
-        mutate(status = as.factor(Country.Region)) %>%
-        mutate(value = new_recovered) %>%
-        capitalize_names_df()
     })
 
     # Boxes ----
@@ -213,52 +113,23 @@ mod_country_server <- function(input, output, session, orig_data){
 
     # plots ----
 
-    output$line_plot <- renderPlot({
-      df <- country_data() %>%
+    df_tot <- reactive({
+      country_data() %>%
         select(-Country.Region, -contagion_day) %>%
-        select(-starts_with("new")) %>%
+        select(-starts_with("new"), -confirmed) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
         mutate(status = as.factor(status)) %>%
         capitalize_names_df()
-
-      df %>% time_evol_area_plot() %>% add_log_scale() %>% fix_colors()
     })
 
-    output$line_plot_new <- renderPlot({
-      df <- country_data() %>%
-        select(-Country.Region, -contagion_day) %>%
-        select(date,starts_with("new_")) %>%
-        pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-        mutate(status = as.factor(status)) %>%
-        capitalize_names_df()
+    callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
 
-      df %>% time_evol_area_plot() %>% fix_colors()
+
+    output$barplots <- renderUI({
+      mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    output$bar_confirmed <- renderPlotly({
-      confirmed_data() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_deaths <- renderPlotly({
-      deaths_data() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_active <- renderPlotly({
-      active_data() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_recovered <- renderPlotly({
-      recovered_data() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_confirmed_new <- renderPlotly({
-      confirmed_data_new() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_deaths_new <- renderPlotly({
-      deaths_data_new() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_active_new <- renderPlotly({
-      active_data_new() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
-    output$bar_recovered_new <- renderPlotly({
-      recovered_data_new() %>% from_contagion_day_bar_plot() %>% remove_legend() %>% ggplotly()
-    })
+    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
 
   })
 

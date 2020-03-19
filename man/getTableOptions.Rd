@@ -4,7 +4,7 @@
 \alias{getTableOptions}
 \title{Get table options.}
 \usage{
-getTableOptions(scrollX = TRUE, maxrowsperpage = 10)
+getTableOptions(scrollX = TRUE, maxrowsperpage = 5)
 }
 \arguments{
 \item{scrollX}{Param to allow scrollX. Default TRUE}

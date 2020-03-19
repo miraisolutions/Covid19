@@ -4,13 +4,15 @@
 \alias{time_evol_area_plot}
 \title{Time evolution as area plot}
 \usage{
-time_evol_area_plot(df)
+time_evol_area_plot(df, stack = F, log = F)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
+
+\item{log}{logical for applying log scale}
 }
 \value{
-line plot of given variable by date
+area plot of given variable by date
 }
 \description{
 Time evolution as area plot

@@ -7,7 +7,15 @@
 \alias{recovered_timeseries_csv_url}
 \alias{daily_url}
 \title{Data Urls confirmed_timeseries}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+
+An object of class \code{character} of length 1.
+
+An object of class \code{character} of length 1.
+
+An object of class \code{character} of length 1.
+}
 \usage{
 confirmed_timeseries_csv_url
 

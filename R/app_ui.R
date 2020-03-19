@@ -56,7 +56,7 @@ app_ui <- function(request) {
           target = "_blank",
           img(
             id = "mirai-footer",
-            src = "mirai.png",
+            src = "www/mirai.png",
             align = "right",
             height = "100px"
           )

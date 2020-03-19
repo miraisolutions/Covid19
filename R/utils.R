@@ -13,6 +13,8 @@ dplyr::`%>%`
 #' @md
 '%notin%' <- Negate('%in%')
 
+
+
 #' Capitalize first letter of all words in a string
 #'
 #' @rdname capitalize_first_letter
@@ -34,10 +36,8 @@ capitalize_first_letter <- function(x) {
 #' @export
 capitalize_names_df <- function(df) {
   names(df) <- sapply(
-    sapply(names(df), gsub, pattern = "_", replacement = " "),
+    sapply(sapply(names(df), gsub, pattern = "\\.", replacement = " "), gsub, pattern = "_", replacement = " "),
     capitalize_first_letter)
-  #replace Id with ID
-  names(df)[names(df) == "Id"] <- "ID"
   df
 }
 
@@ -70,7 +70,7 @@ basic_plot_theme <- function() {
 #'
 #' @export
 getTableOptions <- function(scrollX = TRUE,
-                            maxrowsperpage = 10) {
+                            maxrowsperpage = 5) {
   options <- list(
     search = list(caseInsensitive = TRUE),
     searchHighlight = TRUE,

@@ -3,10 +3,14 @@
 #' @rdname time_evol_line_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
+#' @param log logical for applying log scale
 #'
 #' @return line plot of given variable by date
 #'
 #' @import ggplot2
+#' @import RColorBrewer
+#' @importFrom  dplyr mutate
+#' @importFrom  dplyr case_when
 #'
 #' @examples
 #' \dontrun{
@@ -43,10 +47,25 @@
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df) {
+time_evol_line_plot <- function(df, log = F) {
+
+  if (log) {
+    df <- df %>%
+      mutate(Value = case_when(
+        Value == 0 ~ 1,
+        TRUE ~ Value
+      ))
+  }
+
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status)) +
-    geom_line(size = 2) +
-    basic_plot_theme()
+    geom_line(size = 1) +
+    basic_plot_theme() +
+    scale_colour_brewer(palette = "Dark2")
+
+  if (log) {
+    p <- p %>%
+      add_log_scale()
+  }
   p
 }
 
@@ -56,10 +75,17 @@ time_evol_line_plot <- function(df) {
 #' @rdname time_evol_area_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
+#' @param log logical for applying log scale
 #'
-#' @return line plot of given variable by date
+#' @return area plot of given variable by date
 #'
 #' @import ggplot2
+#' @importFrom  dplyr group_by
+#' @importFrom  dplyr ungroup
+#' @importFrom  dplyr arrange
+#' @importFrom  dplyr desc
+#' @importFrom  dplyr mutate
+#' @importFrom  dplyr case_when
 #'
 #' @examples
 #' \dontrun{
@@ -96,14 +122,86 @@ time_evol_line_plot <- function(df) {
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df) {
+time_evol_area_plot <- function(df, stack = F, log = F) {
+
+  if (stack) {
+    df <- df %>%
+      arrange(desc(Status)) %>%
+      group_by(Date) %>%
+      mutate(Value = cumsum(Value)) %>%
+      ungroup()
+  }
+
+  if (log) {
+    df <- df %>%
+      mutate(Value = ifelse(Value == 0, NA, Value))
+  }
+
 
   p <- ggplot(df, aes(x = Date, y = Value)) +
-    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'stack') +
+    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'dodge') +
     basic_plot_theme()
+
   p <- p %>%
     fix_colors()
+
+  if (log) {
+    p <- p %>%
+      add_log_scale()
+  }
+
   p
+}
+
+#' Time evolution as area plot facet
+#'
+#' @rdname time_evol_area_facet_plot
+#'
+#' @param df data.frame with column called Date and x column to plot
+#' @param log character string log or linear
+#'
+#' @return area plot by date
+#'
+#' @import ggplot2
+#' @import RColorBrewer
+#' @importFrom dplyr mutate
+#'
+#' @export
+time_evol_area_facet_plot <- function(df, log) {
+
+  if (log == "log") {
+    df <- df %>%
+      mutate(value = ifelse(value == 0, NA, value))
+  }
+
+  p <-  ggplot(df, aes(x = date, y = value)) +
+    geom_area(aes(colour = Country.Region, fill = Country.Region), size = 2, alpha = 0.5, position = 'dodge') +
+    basic_plot_theme() +
+    scale_fill_brewer(palette = "Dark2") +
+    scale_color_brewer(palette = "Dark2")
+
+  if (log == "log") {
+    p <- p %>%
+      add_log_scale()
+  }
+
+  p <- p +
+    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
+    theme(strip.text = element_text(colour = 'white'))
+
+  # color top strip based on status
+  # reference: https://github.com/tidyverse/ggplot2/issues/2096
+  g <- ggplot_gtable(ggplot_build(p))
+  strip_both <- which(grepl('strip-', g$layout$name))
+  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  k <- 1
+  for (i in strip_both) {
+    j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+    g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+    k <- k + 1
+  }
+  grid.draw(g)
+
 }
 
 #' Transform y to log scale
@@ -117,7 +215,7 @@ time_evol_area_plot <- function(df) {
 #'
 #' @export
 add_log_scale <- function(p){
-  p <- p + scale_y_continuous(trans = 'log10')
+  p <- p + scale_y_log10()  #scale_y_continuous(trans = 'log10')
   p
 }
 
@@ -171,6 +269,37 @@ from_contagion_day_bar_plot <- function(df){
   p
 }
 
+#' Evolution from contagion day facet
+#'
+#' @param df data.frame to plot
+#'
+#' @return barplot facet
+#'
+#' @import ggplot2
+#' @importFrom grid grid.draw
+#'
+#' @export
+from_contagion_day_bar_facet_plot <- function(df){
+  p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
+    geom_bar(stat = "identity") +
+    scale_fill_manual(values = c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
+    basic_plot_theme() +
+    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
+    theme(strip.text = element_text(colour = 'white'))
+
+  # color top strip based on status
+  # reference: https://github.com/tidyverse/ggplot2/issues/2096
+  g <- ggplot_gtable(ggplot_build(p))
+  strip_both <- which(grepl('strip-', g$layout$name))
+  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  k <- 1
+  for (i in strip_both) {
+    j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+    g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+    k <- k + 1
+  }
+  grid.draw(g)
+}
 
 #' Evolution by_date
 #' @rdname date_bar_plot
@@ -218,10 +347,10 @@ date_bar_plot <- function(df){
 #' @export
 fix_colors <- function(p){
   p <- p +
-    scale_color_manual(values = c("confirmed" = "red", "deaths" = "black","recovered" = "green" , "active" = "blue",
-                                  "new_confirmed" = "red", "new_deaths" = "black","new_recovered" = "green" , "new_active" = "blue")) +
-    scale_fill_manual(values = c("confirmed" = "red", "deaths" = "black","recovered" = "green" , "active" = "blue",
-                                  "new_confirmed" = "red", "new_deaths" = "black","new_recovered" = "green" , "new_active" = "blue"))
+    scale_color_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
+                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")) +
+    scale_fill_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
+                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc"))
 
   p
 }
