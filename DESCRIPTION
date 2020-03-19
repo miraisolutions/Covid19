@@ -12,12 +12,10 @@ Imports:
     dplyr,
     tidyr,
     ggplot2,
-    shinydashboard,
     plotly,
     rmarkdown,
     pkgload,
     DT,
-    shinyWidgets,
     googleVis,
     RColorBrewer,
     grid
