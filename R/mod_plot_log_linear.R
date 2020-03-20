@@ -51,7 +51,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type){
 
       p <- p %>%
         ggplotly(tooltip = c("x", "y", "text")) %>%
-        layout(legend = list( x = 0.1, y = 1))
+        layout(legend = list( x = 0.1, y = 1, bgcolor = "transparent"))
 
       p
     })

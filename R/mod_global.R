@@ -87,7 +87,7 @@ mod_global_server <- function(input, output, session, orig_data){
       select(-starts_with("new_")) %>%
       select( -confirmed) %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-      mutate(status = as.factor(status)) %>%
+      mutate(status = factor(status, levels = c("active", "recovered", "deaths"))) %>%
       capitalize_names_df()
   })
 
