@@ -165,15 +165,14 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
       ungroup()
   }
 
-
-  p <- ggplot(df, aes(x = Date, y = Value)) +
+  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
     geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
-      axis.text.x = element_text(angle = 45),
+      axis.text.x = element_text(angle = 45)
     )
 
   p <- p %>%
