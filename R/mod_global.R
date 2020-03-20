@@ -82,12 +82,16 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # plots ----
 
+  levs <- reactive(
+    rev(sort_type_by_max(global_today()))
+  )
+
   df_global <- reactive({
     global() %>%
       select(-starts_with("new_")) %>%
       select( -confirmed) %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-      mutate(status = factor(status, levels = c("active", "recovered", "deaths"))) %>%
+      mutate(status = factor(status, levels = levs())) %>%
       capitalize_names_df()
   })
 

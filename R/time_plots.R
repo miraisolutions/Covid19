@@ -420,3 +420,6 @@ fix_legend_position <- function(p){
 }
 
 
+sort_type_by_max <- function(data) {
+  c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
+}
