@@ -47,7 +47,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type){
         p <- df() %>% time_evol_line_plot(log = log())
       }
 
-      p <- p %>% ggplotly()
+      p <- p %>% ggplotly(tooltip = c("y", "x", "colour"))
 
       p
     })

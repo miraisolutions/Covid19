@@ -128,18 +128,26 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
     df <- df %>%
       arrange(desc(Status)) %>%
       group_by(Date) %>%
-      mutate(Value = cumsum(Value)) %>%
+      mutate(ValueMax = cumsum(Value), ValueMin = dplyr::lag(ValueMax, default = 0)) %>%
       ungroup()
+  } else {
+    df <- df %>%
+      mutate(ValueMax = Value, ValueMin = 0)
   }
 
   if (log) {
     df <- df %>%
-      mutate(Value = ifelse(Value == 0, NA, Value))
+      mutate(
+        ValueMin = ifelse(Value == 0, NA, pmax(1L, ValueMin)),
+        ValueMax = ifelse(Value == 0, NA, ValueMax)
+      )
   }
 
 
   p <- ggplot(df, aes(x = Date, y = Value)) +
-    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'dodge') +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+    # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
+    # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme()
 
   p <- p %>%
@@ -346,11 +354,17 @@ date_bar_plot <- function(df){
 #'
 #' @export
 fix_colors <- function(p){
-  p <- p +
-    scale_color_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
-                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")) +
-    scale_fill_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
-                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc"))
 
+  colors <- c(
+    "confirmed" = "#dd4b39",
+    "deaths" = "black",
+    "recovered" = "#00a65a",
+    "active" = "#3c8dbc"
+  ) %>% c(stats::setNames(., sprintf("new_%s", names(.))))
+
+  # avoid warnings Scale for 'colour' is already present
+  p <- p +
+    suppressWarnings(scale_color_manual(values = colors)) +
+    suppressWarnings(scale_fill_manual(values = colors))
   p
 }
