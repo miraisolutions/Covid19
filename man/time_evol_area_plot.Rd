@@ -4,7 +4,7 @@
 \alias{time_evol_area_plot}
 \title{Time evolution as area plot}
 \usage{
-time_evol_area_plot(df, stack = F, log = F, text = paste0(text, ": ", Status))
+time_evol_area_plot(df, stack = F, log = F, text)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
