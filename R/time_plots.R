@@ -412,9 +412,10 @@ fix_colors <- function(p){
 #' @export
 fix_legend_position <- function(p){
   p <- p +
-# adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
-theme(legend.position = c(0.07, 0.9),
-      legend.background = element_rect(fill = "white", colour = NA))
+    # adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
+    theme(legend.position = "bottom",
+          legend.box = "horizontal",
+          legend.background = element_rect(fill = "white", colour = NA))
   p
 }
 
