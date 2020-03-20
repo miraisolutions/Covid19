@@ -389,12 +389,11 @@ date_bar_plot <- function(df){
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p){
+fix_colors <- function(p) {
+  # "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_recovered", "new_active"
   p <- p +
-    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
-  )) +
-    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
-  ))
+    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors))) +
+    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors)))
 
   p
 }
