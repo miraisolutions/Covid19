@@ -4,6 +4,7 @@
 #'
 #' @param df data.frame with column called Date and x column to plot
 #' @param log logical for applying log scale
+#' @param text element for tooltip
 #'
 #' @return line plot of given variable by date
 #'
@@ -47,7 +48,7 @@
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F) {
+time_evol_line_plot <- function(df, log = F, text = "") {
 
   if (log) {
     df <- df %>%
@@ -57,15 +58,20 @@ time_evol_line_plot <- function(df, log = F) {
       ))
   }
 
-  p <- ggplot(df, aes(x = Date, y = Value, colour = Status)) +
+  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line(size = 1) +
     basic_plot_theme() +
-    scale_colour_brewer(palette = "Dark2")
+    scale_colour_brewer(palette = "Dark2") +
+    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45),
+    )
 
   if (log) {
     p <- p %>%
       add_log_scale()
   }
+
   p
 }
 
@@ -77,6 +83,7 @@ time_evol_line_plot <- function(df, log = F) {
 #' @param df data.frame with column called Date and x column to plot
 #' @param stack logical for producing a stacked plot
 #' @param log logical for applying log scale
+#' @param text element for tooltip
 #'
 #' @return area plot of given variable by date
 #'
@@ -123,7 +130,7 @@ time_evol_line_plot <- function(df, log = F) {
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df, stack = F, log = F) {
+time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 
   if (stack) {
     df <- df %>%
@@ -149,7 +156,11 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
     geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
-    basic_plot_theme()
+    basic_plot_theme() +
+    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45),
+    )
 
   p <- p %>%
     fix_colors()
@@ -164,7 +175,7 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
 
 #' Time evolution as area plot facet
 #'
-#' @rdname time_evol_area_facet_plot
+#' @rdname time_evol_line_facet_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
 #' @param log character string log or linear
@@ -176,7 +187,7 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
 #' @importFrom dplyr mutate
 #'
 #' @export
-time_evol_area_facet_plot <- function(df, log) {
+time_evol_line_facet_plot <- function(df, log) {
 
   if (log == "log") {
     df <- df %>%
@@ -184,10 +195,18 @@ time_evol_area_facet_plot <- function(df, log) {
   }
 
   p <-  ggplot(df, aes(x = date, y = value)) +
-    geom_area(aes(colour = Country.Region, fill = Country.Region), size = 2, alpha = 0.5, position = 'dodge') +
+    geom_line(aes(colour = Country.Region), size = 2) +
+    # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
-    scale_fill_brewer(palette = "Dark2") +
-    scale_color_brewer(palette = "Dark2")
+    # scale_fill_brewer(palette = "Dark2") #+
+    scale_color_brewer(palette = "Dark2") +
+    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+    )
+
+  p <- p %>%
+    fix_legend_position()
 
   if (log == "log") {
     p <- p %>%
@@ -202,7 +221,7 @@ time_evol_area_facet_plot <- function(df, log) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -291,16 +310,19 @@ from_contagion_day_bar_plot <- function(df){
 from_contagion_day_bar_facet_plot <- function(df){
   p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
-    scale_fill_manual(values = c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
+    scale_fill_manual(values = new_total_colors) + #c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
     theme(strip.text = element_text(colour = 'white'))
+
+  p <- p %>%
+    fix_legend_position()
 
   # color top strip based on status
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -355,18 +377,31 @@ date_bar_plot <- function(df){
 #'
 #' @export
 fix_colors <- function(p){
-
-  colors <- c(
-    "confirmed" = "#dd4b39",
-    "deaths" = "black",
-    "recovered" = "#00a65a",
-    "active" = "#3c8dbc"
-  ) %>% c(stats::setNames(., sprintf("new_%s", names(.))))
-
-  # avoid warnings Scale for 'colour' is already present
   p <- p +
-    suppressWarnings(scale_color_manual(values = colors)) +
-    suppressWarnings(scale_fill_manual(values = colors))
+    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
+  )) +
+    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
+  ))
+
   p
 }
+
+#' Fix legend position
+#' @rdname fix_legend_position
+#'
+#' @param p ggplot object
+#'
+#' @import ggplot2
+#'
+#' @return p ggplot object
+#'
+#' @export
+fix_legend_position <- function(p){
+  p <- p +
+# adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
+theme(legend.position = c(0.07, 0.9),
+      legend.background = element_rect(fill = "white", colour = NA))
+  p
+}
+
 

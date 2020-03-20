@@ -57,13 +57,6 @@ mod_caseBoxes_server <- function(input, output, session, counts) {
   })
 }
 
-case_colors <- c(
-  "confirmed" = "#dd4b39",
-  "deaths" = "black",
-  "recovered" = "#00a65a",
-  "active" = "#3c8dbc"
-)
-
 countBox <- function(title, subtitle, color, background, width = "100%") {
   div(
     class = "count-box",

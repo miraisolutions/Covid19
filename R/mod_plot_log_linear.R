@@ -26,6 +26,7 @@ mod_plot_log_linear_ui <- function(id){
 #'
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
+#' @importFrom plotly layout
 #'
 #' @noRd
 mod_plot_log_linear_server <- function(input, output, session, df, type){
@@ -41,13 +42,16 @@ mod_plot_log_linear_server <- function(input, output, session, df, type){
       if (type == "area") {
 
         p <- df() %>%
-          time_evol_area_plot(stack = T, log = log()) %>%
+          time_evol_area_plot(stack = T, log = log(), text = "Status") %>%
           fix_colors()
       } else {
-        p <- df() %>% time_evol_line_plot(log = log())
+        p <- df() %>%
+          time_evol_line_plot(log = log(), text = "Country")
       }
 
-      p <- p %>% ggplotly(tooltip = c("y", "x", "colour"))
+      p <- p %>%
+        ggplotly(tooltip = c("x", "y", "text")) %>%
+        layout(legend = list( x = 0.1, y = 1, bgcolor = "transparent"))
 
       p
     })

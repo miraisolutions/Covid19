@@ -42,7 +42,7 @@ mod_lineplots_day_contagion_server <- function(input, output, session, countries
 
 
     df %>%
-      time_evol_area_facet_plot(log = input$radio_log_linear)
+      time_evol_line_facet_plot(log = input$radio_log_linear)
   })
 
 }
