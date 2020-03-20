@@ -20,10 +20,11 @@ mod_country_ui <- function(id){
     fluidRow(
       uiOutput(ns("barplots"))
     ),
+    hr(),
     fluidRow(
       column(6,
              # div(h3("Total Cases"), align = "center",
-                 mod_plot_log_linear_ui(ns("plot_log_linear_tot"))
+             mod_plot_log_linear_ui(ns("plot_log_linear_tot"))
              # )
       ),
       column(6,
