@@ -7,19 +7,13 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-#' @importFrom shinydashboard valueBoxOutput
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
 mod_global_ui <- function(id){
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
-    fluidRow(
-      column(3, valueBoxOutput(ns("confirmed"))),
-      column(3,valueBoxOutput(ns("death"))),
-      column(3,valueBoxOutput(ns("recovered"))),
-      column(3,valueBoxOutput(ns("active")))
-    ),
+    mod_caseBoxes_ui(ns("count-boxes")),
     fluidRow(
       column(6,
              div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -38,8 +32,6 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #'
-#' @importFrom shinydashboard valueBox
-#' @importFrom shinydashboard renderValueBox
 #' @importFrom dplyr filter
 #' @importFrom dplyr select
 #' @importFrom dplyr mutate
@@ -86,30 +78,7 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # Boxes ----
-  output$confirmed <- renderValueBox({
-    valueBox("Confirmed",
-             global_today()$confirmed,
-             color = "red",
-             width = 3)
-  })
-  output$death <- renderValueBox({
-    valueBox("Deaths",
-             global_today()$deaths,
-             color = "black",
-             width = 3)
-  })
-  output$recovered <- renderValueBox({
-    valueBox("Recovered",
-             global_today()$recovered,
-             color = "green",
-             width = 3)
-  })
-  output$active <- renderValueBox({
-    valueBox("Active",
-             global_today()$active,
-             color = "light-blue",
-             width = 3)
-  })
+  callModule(mod_caseBoxes_server, "count-boxes", global_today)
 
   # plots ----
 

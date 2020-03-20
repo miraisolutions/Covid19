@@ -75,6 +75,7 @@ time_evol_line_plot <- function(df, log = F) {
 #' @rdname time_evol_area_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
+#' @param stack logical for producing a stacked plot
 #' @param log logical for applying log scale
 #'
 #' @return area plot of given variable by date
@@ -368,3 +369,4 @@ fix_colors <- function(p){
     suppressWarnings(scale_fill_manual(values = colors))
   p
 }
+
