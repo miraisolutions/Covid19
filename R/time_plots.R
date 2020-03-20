@@ -144,11 +144,25 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
   }
 
   if (log) {
+    # fix 0s and use lead/lag to make sure there are no gaps
     df <- df %>%
+      arrange(Date) %>%
+      group_by(Status) %>%
       mutate(
-        ValueMin = ifelse(Value == 0, NA, pmax(1L, ValueMin)),
-        ValueMax = ifelse(Value == 0, NA, ValueMax)
-      )
+        ValueMax = case_when(
+          ValueMax == 0 & dplyr::lag(ValueMax, 1, 0) > 1 ~ 1,
+          ValueMax == 0 & dplyr::lead(ValueMax, 1, 0) > 1 ~ 1,
+          ValueMax == 0 ~ NA_real_,
+          TRUE ~ ValueMax
+        ),
+        ValueMin = case_when(
+          ValueMin = 0 & dplyr::lead(ValueMin, 1, 0) > 1 ~ 1,
+          ValueMin = 0 & dplyr::lag(ValueMin, 1, 0) > 1 ~ 1,
+          is.na(ValueMax) ~ NA_real_,
+          TRUE ~ pmax(1L, ValueMin)
+        )
+      ) %>%
+      ungroup()
   }
 
 
