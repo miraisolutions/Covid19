@@ -36,7 +36,7 @@ app_ui <- function(request) {
         tabPanel("Country",
                  id = "tab_global",
                  mod_country_ui("country")),
-        tabPanel("Countries Comparison",
+        tabPanel("Country Comparison",
                  id = "tab_global",
                  mod_country_comparison_ui("country_comparison"))
       ),
