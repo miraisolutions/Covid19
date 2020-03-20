@@ -156,7 +156,7 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
 
 #' Time evolution as area plot facet
 #'
-#' @rdname time_evol_area_facet_plot
+#' @rdname time_evol_line_facet_plot
 #'
 #' @param df data.frame with column called Date and x column to plot
 #' @param log character string log or linear
@@ -168,7 +168,7 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
 #' @importFrom dplyr mutate
 #'
 #' @export
-time_evol_area_facet_plot <- function(df, log) {
+time_evol_line_facet_plot <- function(df, log) {
 
   if (log == "log") {
     df <- df %>%
@@ -176,10 +176,13 @@ time_evol_area_facet_plot <- function(df, log) {
   }
 
   p <-  ggplot(df, aes(x = date, y = value)) +
-    geom_area(aes(colour = Country.Region, fill = Country.Region), size = 2, alpha = 0.5, position = 'dodge') +
+    geom_line(aes(colour = Country.Region), size = 2) +
+    # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
-    scale_fill_brewer(palette = "Dark2") +
-    scale_color_brewer(palette = "Dark2")
+    # scale_fill_brewer(palette = "Dark2") #+
+    scale_color_brewer(palette = "Dark2") +# adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
+    theme(legend.position = c(0.1, 0.9),
+          legend.background = element_rect(fill = "white", colour = NA))
 
   if (log == "log") {
     p <- p %>%
@@ -286,7 +289,9 @@ from_contagion_day_bar_facet_plot <- function(df){
     scale_fill_manual(values = c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
-    theme(strip.text = element_text(colour = 'white'))
+    theme(strip.text = element_text(colour = 'white')) + # adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
+  theme(legend.position = c(0.1, 0.9),
+        legend.background = element_rect(fill = "white", colour = NA))
 
   # color top strip based on status
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
