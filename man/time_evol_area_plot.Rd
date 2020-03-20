@@ -4,7 +4,7 @@
 \alias{time_evol_area_plot}
 \title{Time evolution as area plot}
 \usage{
-time_evol_area_plot(df, stack = F, log = F)
+time_evol_area_plot(df, stack = F, log = F, text = paste0(text, ": ", Status))
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
@@ -12,6 +12,8 @@ time_evol_area_plot(df, stack = F, log = F)
 \item{stack}{logical for producing a stacked plot}
 
 \item{log}{logical for applying log scale}
+
+\item{text}{element for tooltip}
 }
 \value{
 area plot of given variable by date

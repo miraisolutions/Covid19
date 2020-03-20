@@ -4,6 +4,7 @@
 #'
 #' @param df data.frame with column called Date and x column to plot
 #' @param log logical for applying log scale
+#' @param text element for tooltip
 #'
 #' @return line plot of given variable by date
 #'
@@ -47,7 +48,7 @@
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F) {
+time_evol_line_plot <- function(df, log = F, text) {
 
   if (log) {
     df <- df %>%
@@ -57,7 +58,7 @@ time_evol_line_plot <- function(df, log = F) {
       ))
   }
 
-  p <- ggplot(df, aes(x = Date, y = Value, colour = Status)) +
+  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line(size = 1) +
     basic_plot_theme() +
     scale_colour_brewer(palette = "Dark2")
@@ -78,6 +79,7 @@ time_evol_line_plot <- function(df, log = F) {
 #' @param df data.frame with column called Date and x column to plot
 #' @param stack logical for producing a stacked plot
 #' @param log logical for applying log scale
+#' @param text element for tooltip
 #'
 #' @return area plot of given variable by date
 #'
@@ -124,7 +126,7 @@ time_evol_line_plot <- function(df, log = F) {
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df, stack = F, log = F) {
+time_evol_area_plot <- function(df, stack = F, log = F, text) {
 
   if (stack) {
     df <- df %>%
@@ -140,7 +142,7 @@ time_evol_area_plot <- function(df, stack = F, log = F) {
   }
 
 
-  p <- ggplot(df, aes(x = Date, y = Value)) +
+  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
     geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'dodge') +
     basic_plot_theme()
 
