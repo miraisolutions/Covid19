@@ -66,6 +66,7 @@ time_evol_line_plot <- function(df, log = F) {
     p <- p %>%
       add_log_scale()
   }
+
   p
 }
 
@@ -180,9 +181,10 @@ time_evol_line_facet_plot <- function(df, log) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     # scale_fill_brewer(palette = "Dark2") #+
-    scale_color_brewer(palette = "Dark2") +# adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
-    theme(legend.position = c(0.1, 0.9),
-          legend.background = element_rect(fill = "white", colour = NA))
+    scale_color_brewer(palette = "Dark2")
+
+  p <- p %>%
+    fix_legend_position()
 
   if (log == "log") {
     p <- p %>%
@@ -197,7 +199,7 @@ time_evol_line_facet_plot <- function(df, log) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -286,18 +288,19 @@ from_contagion_day_bar_plot <- function(df){
 from_contagion_day_bar_facet_plot <- function(df){
   p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
-    scale_fill_manual(values = c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
+    scale_fill_manual(values = new_total_colors) + #c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
-    theme(strip.text = element_text(colour = 'white')) + # adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
-  theme(legend.position = c(0.1, 0.9),
-        legend.background = element_rect(fill = "white", colour = NA))
+    theme(strip.text = element_text(colour = 'white'))
+
+  p <- p %>%
+    fix_legend_position()
 
   # color top strip based on status
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -353,11 +356,30 @@ date_bar_plot <- function(df){
 #' @export
 fix_colors <- function(p){
   p <- p +
-    scale_color_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
-                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")) +
-    scale_fill_manual(values = c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc",
-                                  "new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc"))
+    scale_color_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
+  ) +
+    scale_fill_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
+  )
 
   p
 }
+
+#' Fix legend position
+#' @rdname fix_legend_position
+#'
+#' @param p ggplot object
+#'
+#' @import ggplot2
+#'
+#' @return p ggplot object
+#'
+#' @export
+fix_legend_position <- function(p){
+  p <- p +
+# adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
+theme(legend.position = c(0.07, 0.9),
+      legend.background = element_rect(fill = "white", colour = NA))
+  p
+}
+
 

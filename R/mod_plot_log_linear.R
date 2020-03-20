@@ -26,6 +26,7 @@ mod_plot_log_linear_ui <- function(id){
 #'
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
+#' @importFrom plotly layout
 #'
 #' @noRd
 mod_plot_log_linear_server <- function(input, output, session, df, type){
@@ -47,7 +48,9 @@ mod_plot_log_linear_server <- function(input, output, session, df, type){
         p <- df() %>% time_evol_line_plot(log = log())
       }
 
-      p <- p %>% ggplotly()
+      p <- p %>%
+        ggplotly() %>%
+        layout(legend = list( x = 0.1, y = 1))
 
       p
     })

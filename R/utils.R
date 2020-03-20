@@ -69,3 +69,31 @@ getTableOptions <- function(scrollX = TRUE,
     pageLength = maxrowsperpage
   )
 }
+
+#' Color Palette
+#'
+#' @export
+case_colors <- c(
+  "confirmed" = "#dd4b39",
+  "deaths" = "black",
+  "recovered" = "#00a65a",
+  "active" = "#3c8dbc"
+)
+
+#' Color Palette
+#'
+#' @export
+new_case_colors <- c(
+  "new_confirmed" = "#dd4b39",
+  "new_deaths" = "black",
+  "new_recovered" = "#00a65a",
+  "new_active" = "#3c8dbc"
+)
+
+#' Color Palette
+#'
+#' @export
+new_total_colors <- c(
+  "total" = "#C8C8C8",
+  "new" = "#ea8b5b"
+  )
