@@ -20,10 +20,11 @@ mod_country_ui <- function(id){
     fluidRow(
       uiOutput(ns("barplots"))
     ),
+    hr(),
     fluidRow(
       column(6,
              # div(h3("Total Cases"), align = "center",
-                 mod_plot_log_linear_ui(ns("plot_log_linear_tot"))
+             mod_plot_log_linear_ui(ns("plot_log_linear_tot"))
              # )
       ),
       column(6,
@@ -86,12 +87,15 @@ mod_country_server <- function(input, output, session, orig_data){
 
     # plots ----
 
+    levs <- reactive(
+      rev(sort_type_by_max(country_data_today()))
+    )
     df_tot <- reactive({
       country_data() %>%
         select(-Country.Region, -contagion_day) %>%
         select(-starts_with("new"), -confirmed) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-        mutate(status = factor(status, levels = c("active", "recovered", "deaths"))) %>%
+        mutate(status = factor(status, levels = levs())) %>%
         capitalize_names_df()
     })
 

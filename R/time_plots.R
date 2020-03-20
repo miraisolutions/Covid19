@@ -136,22 +136,43 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     df <- df %>%
       arrange(desc(Status)) %>%
       group_by(Date) %>%
-      mutate(Value = cumsum(Value)) %>%
+      mutate(ValueMax = cumsum(Value), ValueMin = dplyr::lag(ValueMax, default = 0)) %>%
       ungroup()
+  } else {
+    df <- df %>%
+      mutate(ValueMax = Value, ValueMin = 0)
   }
 
   if (log) {
+    # fix 0s and use lead/lag to make sure there are no gaps
     df <- df %>%
-      mutate(Value = ifelse(Value == 0, NA, Value))
+      arrange(Date) %>%
+      group_by(Status) %>%
+      mutate(
+        ValueMax = case_when(
+          ValueMax == 0 & dplyr::lag(ValueMax, 1, 0) > 1 ~ 1,
+          ValueMax == 0 & dplyr::lead(ValueMax, 1, 0) > 1 ~ 1,
+          ValueMax == 0 ~ NA_real_,
+          TRUE ~ ValueMax
+        ),
+        ValueMin = case_when(
+          ValueMin = 0 & dplyr::lead(ValueMin, 1, 0) > 1 ~ 1,
+          ValueMin = 0 & dplyr::lag(ValueMin, 1, 0) > 1 ~ 1,
+          is.na(ValueMax) ~ NA_real_,
+          TRUE ~ pmax(1L, ValueMin)
+        )
+      ) %>%
+      ungroup()
   }
 
-
   p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
-    geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'dodge') +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+    # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
+    # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
-      axis.text.x = element_text(angle = 45),
+      axis.text.x = element_text(angle = 45)
     )
 
   p <- p %>%
@@ -368,12 +389,11 @@ date_bar_plot <- function(df){
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p){
+fix_colors <- function(p) {
+  # "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_recovered", "new_active"
   p <- p +
-    scale_color_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
-  ) +
-    scale_fill_manual(values = c(case_colors, new_case_colors) #c("confirmed" = "#dd4b39", "deaths" = "black","recovered" = "#00a65a" , "active" = "#3c8dbc","new_confirmed" = "#dd4b39", "new_deaths" = "black","new_recovered" = "#00a65a" , "new_active" = "#3c8dbc")
-  )
+    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors))) +
+    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors)))
 
   p
 }
@@ -390,10 +410,14 @@ fix_colors <- function(p){
 #' @export
 fix_legend_position <- function(p){
   p <- p +
-# adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
-theme(legend.position = c(0.07, 0.9),
-      legend.background = element_rect(fill = "white", colour = NA))
+    # adjust legend position ref: https://stackoverflow.com/questions/7270900/position-legend-in-first-plot-of-facet
+    theme(legend.position = "bottom",
+          legend.box = "horizontal",
+          legend.background = element_rect(fill = "white", colour = NA))
   p
 }
 
 
+sort_type_by_max <- function(data) {
+  c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
+}
