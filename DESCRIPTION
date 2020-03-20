@@ -22,5 +22,4 @@ URL: https://github.com/miraisolutions/Covid19
 BugReports: https://github.com/miraisolutions/Covid19/issues
 Suggests: 
     testthat,
-    pkgload,
-
+    pkgload
