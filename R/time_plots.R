@@ -48,7 +48,7 @@
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F, text) {
+time_evol_line_plot <- function(df, log = F, text = "") {
 
   if (log) {
     df <- df %>%
@@ -61,7 +61,11 @@ time_evol_line_plot <- function(df, log = F, text) {
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line(size = 1) +
     basic_plot_theme() +
-    scale_colour_brewer(palette = "Dark2")
+    scale_colour_brewer(palette = "Dark2") +
+    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45),
+    )
 
   if (log) {
     p <- p %>%
@@ -126,7 +130,7 @@ time_evol_line_plot <- function(df, log = F, text) {
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df, stack = F, log = F, text) {
+time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 
   if (stack) {
     df <- df %>%
@@ -144,7 +148,11 @@ time_evol_area_plot <- function(df, stack = F, log = F, text) {
 
   p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
     geom_area(aes(colour = Status, fill = Status), size = 2, alpha = 0.5, position = 'dodge') +
-    basic_plot_theme()
+    basic_plot_theme() +
+    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45),
+    )
 
   p <- p %>%
     fix_colors()
@@ -183,7 +191,11 @@ time_evol_line_facet_plot <- function(df, log) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     # scale_fill_brewer(palette = "Dark2") #+
-    scale_color_brewer(palette = "Dark2")
+    scale_color_brewer(palette = "Dark2") +
+    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+    )
 
   p <- p %>%
     fix_legend_position()
