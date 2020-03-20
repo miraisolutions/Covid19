@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-.Rbuildignore
 dev
 rsconnect
 mystuff

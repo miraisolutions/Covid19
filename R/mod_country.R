@@ -14,12 +14,8 @@ mod_country_ui <- function(id){
     selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
 
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
-    fluidRow(
-      column(3, valueBoxOutput(ns("confirmed"))),
-      column(3,valueBoxOutput(ns("death"))),
-      column(3,valueBoxOutput(ns("recovered"))),
-      column(3,valueBoxOutput(ns("active")))
-    ),
+
+    mod_caseBoxes_ui(ns("count-boxes")),
 
     fluidRow(
       uiOutput(ns("barplots"))
@@ -83,30 +79,7 @@ mod_country_server <- function(input, output, session, orig_data){
     })
 
     # Boxes ----
-    output$confirmed <- renderValueBox({
-      valueBox("Confirmed",
-               country_data_today()$confirmed,
-               color = "red",
-               width = 3)
-    })
-    output$death <- renderValueBox({
-      valueBox("Deaths",
-               country_data_today()$deaths,
-               color = "black",
-               width = 3)
-    })
-    output$recovered <- renderValueBox({
-      valueBox("Recovered",
-               country_data_today()$recovered,
-               color = "green",
-               width = 3)
-    })
-    output$active <- renderValueBox({
-      valueBox("Active",
-               country_data_today()$active,
-               color = "light-blue",
-               width = 3)
-    })
+    callModule(mod_caseBoxes_server, "count-boxes", country_data_today)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_country", country_data)

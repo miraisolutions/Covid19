@@ -9,6 +9,8 @@ time_evol_area_plot(df, stack = F, log = F)
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
 
+\item{stack}{logical for producing a stacked plot}
+
 \item{log}{logical for applying log scale}
 }
 \value{
