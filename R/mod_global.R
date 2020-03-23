@@ -20,8 +20,8 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_area_global"))
              ),
       column(6,
-             div(h3("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"))
+             div(h3("Comparison from day of 100th contagion"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             mod_compare_top_countries_plot_ui(ns("plot_compare_100th"))
              )
     ),
     mod_add_table_ui(ns("add_table_world"))
@@ -97,14 +97,16 @@ mod_global_server <- function(input, output, session, orig_data){
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
 
-  df_top_n <- reactive({
-    world_top_5_confirmed() %>%
-      mutate(status = as.factor(Country.Region)) %>%
-      mutate(value = confirmed) %>%
-      capitalize_names_df()
-  })
+  # df_top_n <- reactive({
+  #   world_top_5_confirmed() %>%
+  #     mutate(status = as.factor(Country.Region)) %>%
+  #     mutate(value = confirmed) %>%
+  #     capitalize_names_df()
+  # })
+  #
+  # callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
-  callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
+  callModule(mod_compare_top_countries_plot_server, "plot_compare_100th", orig_data)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)
