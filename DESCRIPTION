@@ -1,6 +1,6 @@
 Package: Covid19
 Title: Covid-19 Data Analysis
-Version: 0.0.0.9000
+Version: 1.0.0.9000
 Authors@R: person('Francesca', 'Vitalini', email = 'fracnesca.vitalini@miria-solutions.com', role = c('cre', 'aut'))
 Description: Gather Covid-19 data and visualize via a shiny app.
 License: MIT + file LICENSE
