@@ -18,18 +18,18 @@ if (interactive()) {
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
 
-if (interactive()) {
-  library(shiny)
-  library(leaflet)
-  ui <- fluidPage(
-    leafletOutput("myMap", width = "100%", height = "800px")
-  )
-  server <- function(input, output, session) {
-    countries_data <- load_countries_data(destpath = "./inst")
-    map <- leaflet(data = countries_data) %>%
-      setView(0, 30, zoom = 3) %>%
-      addPolygons(data = countries_data)
-    output$myMap <- renderLeaflet({map})
-  }
-  runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
-}
+# if (interactive()) {
+#   library(shiny)
+#   library(leaflet)
+#   ui <- fluidPage(
+#     leafletOutput("myMap", width = "100%", height = "800px")
+#   )
+#   server <- function(input, output, session) {
+#     countries_data <- load_countries_data(destpath = "./inst")
+#     map <- leaflet(data = countries_data) %>%
+#       setView(0, 30, zoom = 3) %>%
+#       addPolygons(data = countries_data)
+#     output$myMap <- renderLeaflet({map})
+#   }
+#   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
+# }

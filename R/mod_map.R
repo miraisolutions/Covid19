@@ -136,11 +136,20 @@ mod_map_server <- function(input, output, session, data){
   })
 
   max_value <- reactive({
-    round(data_plot()$indicator)
+    max(data_clean()[,input$radio_choices])
   })
 
   pal2 <- reactive({
-    colorNumeric(c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0, max_value()))
+    # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
+    if (input$radio_choices == "confirmed") {
+      colorBin(palette = "Reds", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+    } else if (input$radio_choices == "deaths") {
+      colorBin(palette = "Greys", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+    } else if (input$radio_choices == "active") {
+      colorBin(palette = "Blues", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+    }  else if (input$radio_choices == "recovered") {
+      colorBin(palette = "Greens", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+    }
   })
 
   output$map <- renderLeaflet({
@@ -157,7 +166,7 @@ mod_map_server <- function(input, output, session, data){
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   weight = 1,
-                  popup = country_popup)
+                  popup = country_popup())
   })
 
   observeEvent(data_plot(),{
@@ -166,7 +175,7 @@ mod_map_server <- function(input, output, session, data){
       addLegend(position = "bottomright",
                 pal = pal2(),
                 opacity = 1,
-                values = max_value()
+                values = data_plot()$indicator
       )
   })
 

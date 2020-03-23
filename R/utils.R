@@ -118,5 +118,12 @@ load_countries_data <- function(destpath = "./inst"){
                               layer = "ne_50m_admin_0_countries",
                               encoding = "utf-8", use_iconv = T,
                               verbose = FALSE)
-
 }
+
+#' Round up to the next decine
+#' Ref: https://stackoverflow.com/questions/6461209/how-to-round-up-to-the-nearest-10-or-100-or-x
+#' @param x number to round
+#' @returns rounded up number
+#' @export
+roundUp <- function(x) 10^ceiling(log10(x))
+
