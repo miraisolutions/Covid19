@@ -96,10 +96,10 @@ new_case_colors <- c(
 new_total_colors <- c(
   "total" = "#C8C8C8",
   "new" = "#ea8b5b"
-  )
+)
 
 #' load countries  data
-#' @param destfile path to file
+#' @param destpath path to file
 #'
 #' @returns countries shapefile
 #'
@@ -115,8 +115,8 @@ load_countries_data <- function(destpath = "./inst"){
   }
 
   countries <- rgdal::readOGR(dsn = dsn_path,
-                       layer = "ne_50m_admin_0_countries",
-                       encoding = "utf-8", use_iconv = T,
-                       verbose = FALSE)
+                              layer = "ne_50m_admin_0_countries",
+                              encoding = "utf-8", use_iconv = T,
+                              verbose = FALSE)
 
 }

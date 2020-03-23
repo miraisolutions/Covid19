@@ -69,7 +69,10 @@ mod_country_comparison_server <- function(input, output, session, orig_data){
 
     # Line plots ----
     output$lineplots <- renderUI({
-      mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
+      tagList(
+        h2("Countries Comparison"),
+        mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
+      )
     })
 
     callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data)

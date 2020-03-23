@@ -11,12 +11,12 @@
 mod_map_ui <- function(id){
   ns <- NS(id)
   tagList(
-
-    leafletOutput(ns("map"), width = "100%", height = "93%"),
+    # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
+    leafletOutput(ns("map"), width = "100%", height = "800"),
     absolutePanel(id = ns("input_date_control"), class = "panel panel-default",
-                  top = 350, left = 30, draggable = F, fixed = T,
+                  top = 350, left = 30, draggable = F,
                   div(style = "margin:10px;",
-                      radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed"),
+                      radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
                       uiOutput(ns("slider_ui")),
                       helpText("The detail of each country can be obtained by clicking on it.")
                   )
@@ -29,9 +29,10 @@ mod_map_ui <- function(id){
 #'
 #' @param data reactive data.frame
 #'
+#' @example man-roxygen/ex-mod_map.R
+#'
 #' @import dplyr
 #' @import leaflet
-#' @import RColorBrewer
 #'
 #' @noRd
 mod_map_server <- function(input, output, session, data){
@@ -41,7 +42,7 @@ mod_map_server <- function(input, output, session, data){
   #load data
   countries_data <- load_countries_data(destpath = "./inst")
 
-  reactive({
+  data_clean <- reactive({
     data <- data()
     # align country names
     # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
@@ -90,10 +91,10 @@ mod_map_server <- function(input, output, session, data){
     data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
 
     data <- data %>%
-      filter(!is.na(country_name)) %>%
-      select(-`Province/State`, -Lat, -Long,-`Country/Region`)%>%group_by(Pays)%>%summarise_each(sum)
-  })
+      filter(!is.na(country_name))
 
+    data
+  })
 
   # UI controls ----
   output$slider_ui <- renderUI({
@@ -101,5 +102,72 @@ mod_map_server <- function(input, output, session, data){
   })
 
   # Map ----
+
+  # Data for a given date
+  data_date <- reactive({
+    data_clean() %>%
+      filter(date == req(input$slider_day)) %>%
+      select(-c(Country.Region, Province.State, Lat, Long, date, contagion_day)) %>%
+      group_by(country_name) %>%
+      summarise_each(sum)
+  })
+
+  data_plot <- reactive({
+    data_selected <- data_date() %>%
+      bind_cols(data_date()[,input$radio_choices] %>%
+                  setNames("indicator")) %>%
+      select(country_name, indicator)
+
+    data_plot <-  sp::merge(countries_data,
+                            data_selected,
+                            by.x = "NAME",
+                            by.y = "country_name",
+                            sort = FALSE)
+  })
+
+  country_popup <- reactive({
+    paste0("<strong>Country: </strong>",
+           data_plot()$NAME,
+           "<br><strong>",
+           "Value :",
+           " </strong>",
+           data_plot()[["indicator"]]
+    )
+  })
+
+  max_value <- reactive({
+    round(data_plot()$indicator)
+  })
+
+  pal2 <- reactive({
+    colorNumeric(c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0, max_value()))
+  })
+
+  output$map <- renderLeaflet({
+    # Using leaflet() to include non dynamic aspects of the map
+    leaflet(data = countries_data) %>%
+      setView(0, 30, zoom = 3)
+  })
+
+  # # update map with reactive part
+  observeEvent(data_plot(),{
+    leafletProxy("map", data = data_plot())  %>%
+      addPolygons(layerId = ~NAME,
+                  fillColor = pal2()(data_plot()$indicator),
+                  fillOpacity = 1,
+                  color = "#BDBDC3",
+                  weight = 1,
+                  popup = country_popup)
+  })
+
+  observeEvent(data_plot(),{
+    proxy <- leafletProxy("map", data = countries)
+    proxy %>% clearControls() %>%
+      addLegend(position = "bottomright",
+                pal = pal2(),
+                opacity = 1,
+                values = max_value()
+      )
+  })
 
 }

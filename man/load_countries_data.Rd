@@ -7,7 +7,7 @@
 load_countries_data(destpath = "./inst")
 }
 \arguments{
-\item{destfile}{path to file}
+\item{destpath}{path to file}
 }
 \value{
 countries shapefile

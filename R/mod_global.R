@@ -17,6 +17,7 @@ mod_global_ui <- function(id){
     fluidRow(
       mod_map_ui(ns("map_ui"))
     ),
+    hr(),
     fluidRow(
       column(6,
              div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -81,7 +82,7 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # map ----
 
-  callModule(mod_map_server, "map_ui", world)
+  callModule(mod_map_server, "map_ui", orig_data)
 
   # plots ----
 
