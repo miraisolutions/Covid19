@@ -125,7 +125,7 @@ h3 {
 }
 
 a {
-  font-size: 14px;
+  font-size: 16px;
   color: #008cc3;
   text-align: left;
   font-weight: normal;
@@ -171,20 +171,6 @@ input[type=checkbox], input[type=radio] {
 }
 
 
-/* button style same as panels */
-/*
-.btn-smarp {
-  font-size: 13px;
-  font-weight: bold;
-  border-radius: 3px;
-  border: 1px solid #008cc3;
-  border-top: 3px solid #008cc3;
-  box-shadow: 0 1px 1px rgba(0,0,0,.1);
-}
-.btn.btn-smarp: hover, .btn.btn-smarp: active, .btn.btn-smarp: focus {
-  border-color: #008cc3;
-}
-*/
 
 /* tabsetPanel style */
 .nav-tabs {
@@ -244,133 +230,22 @@ input[type=checkbox], input[type=radio] {
 
 
 /*
-Plots
-  * limit the width to 100%
-  * adjust the height depending on the browser size
+Count Boxes
+  * centered with a maximum width
+  * custom content font sizes, inheriting the box's font color
 */
 
-#plot_t {
-  width: 800px;
-  height: 400px;
-  max-width: 100%;
-}
-#plot_final {
-  width: 800px;
-  height: 130px;
-  max-width: 100%;
-}
-@media(max-width: 1099px) { /* standard Bootstrap's media size */
-  #plot_t {
-    height: calc(400px * 0.9);
-  }
-  #plot_final {
-    height: calc(130px * 0.9);
-  }
-}
-@media(max-width: 991px) { /* standard Bootstrap's media size */
-  #plot_t {
-    height: calc(400px * 0.8);
-  }
-  #plot_final {
-    height: calc(130px * 0.8);
-  }
-}
-@media(max-width: 767px) { /* standard Bootstrap's media size */
-  /* all vertical */
-  #plot_t {
-    height: calc(400px * 0.8);
-  }
-  #plot_final {
-    height: calc(130px * 0.8);
-  }
-}
-@media(max-width: 511px) { /* custom media size */
-  /* tiny all vertical */
-  #plot_t {
-    height: calc(400px * 0.65);
-  }
-  #plot_final {
-    height: calc(130px * 0.65);
-  }
-}
-
-
-/* Custom collapsible SmaRPanel */
-
-div.panel-smarp {
-  padding: 0;
-  border: 0;
-  border-radius: 3px;
-  border-top: 3px solid;
-  box-shadow: 0 1px 1px rgba(0,0,0,.1);
-  border-color: #FF9966;
-}
-
-div.panel-heading-smarp {
+.count-box {
   padding: 10px;
-  background-color: white !important;
-  border: 0;
-  min-height: 35px;
+  margin: 20px auto;
+  max-width: 300px;
 }
 
-div.panel-title-smarp {
-  position: relative;
-  padding-right: 20px; /* leave space for the collapse icons */
-  color: black;
-  font-size: 13px;
-  font-weight: bold;
+.count-box h3 {
+  font-size: 28px;
+  color: inherit;
 }
 
-div.panel-body-smarp {
-  padding: 10px;
-  margin: 0;
-}
-
-/* Shiny inputs in panels should span full width as in shinydashboard. */
-div.panel-body-smarp .shiny-input-container {
-  width: auto;
-}
-
-
-/* Collapse / expand button */
-
-.btn-collapse-smarp {
-  font-size: 12px;
-  /* top-right position within relative .panel-title-smarp */
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0 5px;
-  /* remove button border and bg, use !important to apply to pseudo-classes */
-  border: 0 !important;
-  background-color: transparent !important;
-  /* same as boxPlus */
-  color: #97a0b3 !important;
-}
-
-.btn-collapse-smarp:hover,
-.btn-collapse-smarp:active {
-  /* same as boxPlus, but not for focus */
-  color: #606c84 !important;
-}
-
-/* collapse icon */
-.btn-collapse-smarp:after {
-  font-family: "Font Awesome 5 Free"; font-weight: 900;
-  content: "\f068"; /* fa-minus */
-}
-/* expand icon */
-.btn-collapse-smarp.collapsed:after {
-  content: "\f067"; /* fa-plus */
-}
-
-
-/* shinydashboard boxes custom */
-.small-box p {
-  font-size:20px !important;
-  }
-
-.small-box h3 {
-  font-size:28px !important;
-  color: white !important;
+.count-box p {
+  font-size: 20px;
 }

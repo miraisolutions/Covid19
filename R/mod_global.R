@@ -7,7 +7,6 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-#' @importFrom shinydashboard valueBoxOutput
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
 #' @importFrom leaflet leafletOutput
@@ -15,12 +14,7 @@ mod_global_ui <- function(id){
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
-    fluidRow(
-      column(3, valueBoxOutput(ns("confirmed"))),
-      column(3,valueBoxOutput(ns("death"))),
-      column(3,valueBoxOutput(ns("recovered"))),
-      column(3,valueBoxOutput(ns("active")))
-    ),
+    mod_caseBoxes_ui(ns("count-boxes")),
     fluidRow(
       leafletOutput(ns("map"), width = "100%", height = "93%"),
       absolutePanel(id = ns("input_date_control"),class = "panel panel-default", top = 300, left = 30, draggable = F,
@@ -34,15 +28,15 @@ mod_global_ui <- function(id){
     ),
     fluidRow(
       column(6,
-             div(h3("Global Covid-19 time evolution - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotOutput(ns("global_line_plot"))
-      ),
+             div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             mod_plot_log_linear_ui(ns("plot_log_area_global"))
+             ),
       column(6,
-             div(h3("Confirmed cases for top 10 countries - log scale"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             plotOutput(ns("top_n_line_plot"))
-      )
+             div(h3("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"))
+             )
     ),
-    div(DTOutput(ns("dt_top10")), style = "margin-left: 20px;margin-right: 20px;")
+    mod_add_table_ui(ns("add_table_world"))
   )
 }
 
@@ -50,8 +44,6 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #'
-#' @importFrom shinydashboard valueBox
-#' @importFrom shinydashboard renderValueBox
 #' @importFrom dplyr filter
 #' @importFrom dplyr select
 #' @importFrom dplyr mutate
@@ -100,30 +92,7 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # Boxes ----
-  output$confirmed <- renderValueBox({
-    valueBox("Confirmed",
-             global_today()$confirmed,
-             color = "red",
-             width = 3)
-  })
-  output$death <- renderValueBox({
-    valueBox("Deaths",
-             global_today()$deaths,
-             color = "black",
-             width = 3)
-  })
-  output$recovered <- renderValueBox({
-    valueBox("Recovered",
-             global_today()$recovered,
-             color = "green",
-             width = 3)
-  })
-  output$active <- renderValueBox({
-    valueBox("Active",
-             global_today()$active,
-             color = "light-blue",
-             width = 3)
-  })
+  callModule(mod_caseBoxes_server, "count-boxes", global_today)
 
   # map ----
   output$slider_ui <- renderUI({
@@ -131,35 +100,33 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   # plots ----
-  output$global_line_plot <- renderPlot({
-    df <- global() %>%
-      select(- starts_with("new_")) %>%
-      pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-      mutate(status = as.factor(status)) %>%
-      capitalize_names_df()
 
-    df %>% time_evol_area_plot() %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
+  levs <- reactive(
+    rev(sort_type_by_max(global_today()))
+  )
+
+  df_global <- reactive({
+    global() %>%
+      select(-starts_with("new_")) %>%
+      select( -confirmed) %>%
+      pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
+      mutate(status = factor(status, levels = levs())) %>%
+      capitalize_names_df()
   })
 
-  output$top_n_line_plot <- renderPlot({
-    df <- world_top_5_confirmed() %>%
+  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
+
+  df_top_n <- reactive({
+    world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
       mutate(value = confirmed) %>%
       capitalize_names_df()
-
-    df %>% time_evol_line_plot() %>% add_log_scale() #%>% add_log_scale() %>% ggplotly()
   })
 
+  callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
+
   # tables ----
-  output$dt_top10 <- renderDT(
-    datatable(world(),
-              rownames = FALSE,
-              selection = "single",
-              #filter = 'bottom',
-              escape = FALSE,
-              plugins = 'natural',
-              options = getTableOptions())
-  )
+  callModule(mod_add_table_server, "add_table_world", world)
 
 }
 

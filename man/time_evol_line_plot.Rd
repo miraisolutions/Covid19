@@ -4,10 +4,14 @@
 \alias{time_evol_line_plot}
 \title{Time evolution as line plot}
 \usage{
-time_evol_line_plot(df)
+time_evol_line_plot(df, log = F, text = "")
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
+
+\item{log}{logical for applying log scale}
+
+\item{text}{element for tooltip}
 }
 \value{
 line plot of given variable by date

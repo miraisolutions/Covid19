@@ -4,14 +4,6 @@
 #' @export
 dplyr::`%>%`
 
-#' Variants of standard operators
-#' @rdname negations
-#' @description Negation of [`%in%`] from R's `base` library.
-#' @usage 'See the help for match in base R.'
-#' @param ... Arguments to [`%in%`].
-#' @export
-#' @md
-'%notin%' <- Negate('%in%')
 
 #' Capitalize first letter of all words in a string
 #'
@@ -34,10 +26,8 @@ capitalize_first_letter <- function(x) {
 #' @export
 capitalize_names_df <- function(df) {
   names(df) <- sapply(
-    sapply(names(df), gsub, pattern = "_", replacement = " "),
+    sapply(sapply(names(df), gsub, pattern = "\\.", replacement = " "), gsub, pattern = "_", replacement = " "),
     capitalize_first_letter)
-  #replace Id with ID
-  names(df)[names(df) == "Id"] <- "ID"
   df
 }
 
@@ -70,7 +60,7 @@ basic_plot_theme <- function() {
 #'
 #' @export
 getTableOptions <- function(scrollX = TRUE,
-                            maxrowsperpage = 10) {
+                            maxrowsperpage = 5) {
   options <- list(
     search = list(caseInsensitive = TRUE),
     searchHighlight = TRUE,
@@ -79,6 +69,34 @@ getTableOptions <- function(scrollX = TRUE,
     pageLength = maxrowsperpage
   )
 }
+
+#' Color Palette
+#'
+#' @export
+case_colors <- c(
+  "confirmed" = "#dd4b39",
+  "deaths" = "black",
+  "recovered" = "#00a65a",
+  "active" = "#3c8dbc"
+)
+
+#' Color Palette
+#'
+#' @export
+new_case_colors <- c(
+  "new_confirmed" = "#dd4b39",
+  "new_deaths" = "black",
+  "new_recovered" = "#00a65a",
+  "new_active" = "#3c8dbc"
+)
+
+#' Color Palette
+#'
+#' @export
+new_total_colors <- c(
+  "total" = "#C8C8C8",
+  "new" = "#ea8b5b"
+  )
 
 #' load countries  data
 #' @import rgdal
