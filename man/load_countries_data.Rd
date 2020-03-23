@@ -4,7 +4,13 @@
 \alias{load_countries_data}
 \title{load countries  data}
 \usage{
-load_countries_data()
+load_countries_data(destpath = "./inst")
+}
+\arguments{
+\item{destfile}{path to file}
+}
+\value{
+countries shapefile
 }
 \description{
 load countries  data

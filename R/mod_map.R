@@ -1,0 +1,105 @@
+#' map UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#'
+#' @noRd
+#'
+#' @import shiny
+#' @importFrom leaflet leafletOutput
+mod_map_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+
+    leafletOutput(ns("map"), width = "100%", height = "93%"),
+    absolutePanel(id = ns("input_date_control"), class = "panel panel-default",
+                  top = 350, left = 30, draggable = F, fixed = T,
+                  div(style = "margin:10px;",
+                      radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed"),
+                      uiOutput(ns("slider_ui")),
+                      helpText("The detail of each country can be obtained by clicking on it.")
+                  )
+    )
+
+  )
+}
+
+#' map Server Function
+#'
+#' @param data reactive data.frame
+#'
+#' @import dplyr
+#' @import leaflet
+#' @import RColorBrewer
+#'
+#' @noRd
+mod_map_server <- function(input, output, session, data){
+  ns <- session$ns
+
+  # Data ----
+  #load data
+  countries_data <- load_countries_data(destpath = "./inst")
+
+  reactive({
+    data <- data()
+    # align country names
+    # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
+    data$Country.Region[data$Country.Region == "Macau"] <- "Macao"
+    data$Country.Region[data$Country.Region == "Mainland China"] <- "China"
+    data$Country.Region[data$Country.Region == "South Korea"] <- "South Korea"
+    data$Country.Region[data$Country.Region == "North Macedonia"] <- "Macedonia"
+    data$Country.Region[data$Country.Region == "Czech Republic"] <- "Czechia"
+    data$Country.Region[data$Country.Region == "Dominican Republic"] <- "Dominican Rep."
+    data$Country.Region[data$Country.Region == "UK"] <- "United Kingdom"
+    data$Country.Region[data$Country.Region == "Gibraltar"] <- "United Kingdom"
+    data$Country.Region[data$Country.Region == "US"] <- "United States"
+    data$Country.Region[data$Country.Region == "Saint Barthelemy"] <- "St-Barthélemy"
+
+    data$Country.Region[data$Country.Region == "Faroe Islands"] <- "Faeroe Is."
+    data$Country.Region[data$Country.Region == "Bosnia and Herzegovina"] <- "Bosnia and Herz."
+    data$Country.Region[data$Country.Region == "Vatican City"] <- "Vatican"
+    data$Country.Region[data$Country.Region == "Korea, South"] <- "South Korea"
+    data$Country.Region[data$Country.Region == "Republic of Ireland"] <- "Ireland"
+    data$Country.Region[data$Country.Region == "Taiwan*"] <- "Taiwan"
+
+    data$Country.Region[data$Country.Region == "Congo (Kinshasa)"] <- "Congo"
+    data$Country.Region[data$Country.Region == "Cote d'Ivoire"] <- "Côte d'Ivoire"
+    data$Country.Region[data$Country.Region == "Reunion"] <- "France"
+    data$Country.Region[data$Country.Region == "Martinique"] <- "France"
+    data$Country.Region[data$Country.Region == "French Guiana"] <- "France"
+    data$Country.Region[data$Country.Region == "Holy See"] <- "Vatican"
+    data$Country.Region[data$Country.Region == "Cayman Islands"] <- "Cayman Is."
+    data$Country.Region[data$Country.Region == "Guadeloupe"] <- "France"
+    data$Country.Region[data$Country.Region == "Antigua and Barbuda"] <- "Antigua and Barb."
+
+    data$Country.Region[data$Country.Region == "Curacao"] <- "Curaçao"
+    data$Country.Region[data$Country.Region == "Guadeloupe"] <- "France"
+    data$Country.Region[data$Country.Region == "occupied Palestinian territory"] <- "Palestine"
+    data$Country.Region[data$Country.Region == "Congo (Brazzaville)"] <- "Congo"
+    data$Country.Region[data$Country.Region == "Equatorial Guinea"] <- "Guinea"
+    data$Country.Region[data$Country.Region == "Central African Republic"] <- "Central African Rep."
+    data$Country.Region[data$Country.Region == "Eswatini"] <- "eSwatini"
+
+    data$Country.Region[data$Country.Region == "Bahamas, The"] <- "Bahamas"
+    data$Country.Region[data$Country.Region == "Cape Verde"] <- "Cabo Verde"
+    data$Country.Region[data$Country.Region == "East Timor"] <- "Timor-Leste"
+    data$Country.Region[data$Country.Region == "Gambia, The"] <- "Gambia"
+    #Note Cruise Ship and Saint Vincent and the Grenadines not present in countries_data$NAME
+
+    data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
+
+    data <- data %>%
+      filter(!is.na(country_name)) %>%
+      select(-`Province/State`, -Lat, -Long,-`Country/Region`)%>%group_by(Pays)%>%summarise_each(sum)
+  })
+
+
+  # UI controls ----
+  output$slider_ui <- renderUI({
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(data()$date), max = max(data()$date), value = max(data()$date), dragRange = FALSE)
+  })
+
+  # Map ----
+
+}

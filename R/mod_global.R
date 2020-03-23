@@ -6,25 +6,16 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
-#' @importFrom leaflet leafletOutput
 mod_global_ui <- function(id){
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("count-boxes")),
     fluidRow(
-      leafletOutput(ns("map"), width = "100%", height = "93%"),
-      absolutePanel(id = ns("input_date_control"),class = "panel panel-default", top = 300, left = 30, draggable = F,
-                    div(style = "margin:10px;",
-                        radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed"),
-                        uiOutput(ns("slider_ui")),
-                        helpText("The detail of each country can be obtained by clicking on it.")
-                    )
-
-      )
+      mod_map_ui(ns("map_ui"))
     ),
     fluidRow(
       column(6,
@@ -44,18 +35,12 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #'
-#' @importFrom dplyr filter
-#' @importFrom dplyr select
-#' @importFrom dplyr mutate
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyr starts_with
-#' @importFrom tidyr ends_with
+#' @import dplyr
+#' @import tidyr
 #' @importFrom DT renderDT
 #' @importFrom DT datatable
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
-#' @import leaflet
-#' @import RColorBrewer
 #'
 #' @noRd
 mod_global_server <- function(input, output, session, orig_data){
@@ -95,9 +80,8 @@ mod_global_server <- function(input, output, session, orig_data){
   callModule(mod_caseBoxes_server, "count-boxes", global_today)
 
   # map ----
-  output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(global()$date), max = max(global()$date), value = max(global()$date), dragRange = FALSE)
-  })
+
+  callModule(mod_map_server, "map_ui", world)
 
   # plots ----
 

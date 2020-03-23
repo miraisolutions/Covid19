@@ -99,8 +99,24 @@ new_total_colors <- c(
   )
 
 #' load countries  data
-#' @import rgdal
-load_countries_data <- function(){
+#' @param destfile path to file
+#'
+#' @returns countries shapefile
+#'
+load_countries_data <- function(destpath = "./inst"){
   # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
-  download.file(url = "https://github.com/DrFabach/Corona/blob/master/shapeFile.RData", destfile = "./inst/shapeFile.RData")
+  url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
+  zip_path <- file.path(destpath,"ne_50m_admin_0_countries.zip")
+  dsn_path <- file.path(destpath, "ne_50m_admin_0_countries")
+
+  if (!file.exists(zip_path)) {
+    download.file(url = url, destfile = zip_path)
+    unzip(zip_path, exdir = dsn_path)
+  }
+
+  countries <- rgdal::readOGR(dsn = dsn_path,
+                       layer = "ne_50m_admin_0_countries",
+                       encoding = "utf-8", use_iconv = T,
+                       verbose = FALSE)
+
 }

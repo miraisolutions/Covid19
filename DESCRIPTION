@@ -15,7 +15,8 @@ Imports:
     DT,
     RColorBrewer,
     grid,
-    leaflet
+    leaflet,
+    rgdal
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0

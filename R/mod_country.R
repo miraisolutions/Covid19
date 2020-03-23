@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 #' @importFrom plotly plotlyOutput
 mod_country_ui <- function(id){
   ns <- NS(id)
@@ -38,15 +38,8 @@ mod_country_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #'
-#' @importFrom dplyr filter
-#' @importFrom dplyr select
-#' @importFrom dplyr distinct
-#' @importFrom dplyr mutate
-#' @importFrom dplyr arrange
-#' @importFrom dplyr desc
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyr starts_with
-#' @importFrom tidyr ends_with
+#' @import dplyr
+#' @import tidyr
 #' @importFrom plotly renderPlotly
 #'
 #' @noRd

@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 mod_country_comparison_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -22,11 +22,7 @@ mod_country_comparison_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #'
-#' @importFrom dplyr filter
-#' @importFrom dplyr select
-#' @importFrom dplyr arrange
-#' @importFrom dplyr desc
-#' @importFrom dplyr distinct
+#' @import dplyr
 #'
 #' @noRd
 mod_country_comparison_server <- function(input, output, session, orig_data){
