@@ -14,7 +14,7 @@ University Center for Systems Science and Engineering (JHU CSSE),
 available [here](https://github.com/CSSEGISandData/COVID-19) and to
 analyze them.
 
-The results are visualized as a shiny app.
+The results are visualized as a shiny app, available at https://mirai-solutions.ch/gallery/covid19
 
 ## Installation
 
