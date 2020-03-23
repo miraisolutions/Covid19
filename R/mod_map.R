@@ -98,7 +98,7 @@ mod_map_server <- function(input, output, session, data){
 
   # UI controls ----
   output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(data()$date), max = max(data()$date), value = max(data()$date), dragRange = FALSE)
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(data()$date), max = max(data()$date), value = max(data()$date), dragRange = FALSE, animate = T, step = 1)
   })
 
   # Map ----
