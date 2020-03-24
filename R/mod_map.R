@@ -10,7 +10,7 @@
 #' @importFrom leaflet leafletOutput
 mod_map_ui <- function(id){
   ns <- NS(id)
-  div(style = htmltools::css(position = "relative"),
+  div(style = "position: relative;",
       # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
       leafletOutput(ns("map"), width = "100%", height = "800"),
       absolutePanel(id = ns("input_date_control"), class = "panel panel-default",
