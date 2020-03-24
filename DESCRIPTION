@@ -3,7 +3,7 @@ Title: Covid-19 Data Analysis
 Version: 1.0.0.9000
 Authors@R: 
     c(person('Francesca', 'Vitalini', role = c('cre', 'aut'),
-             email = 'fracnesca.vitalini@mirai-solutions.com'),
+             email = 'francesca.vitalini@mirai-solutions.com'),
       person("Riccardo", "Porreca", role = ("aut"),
              email = "riccardo.porreca@mirai-solutions.com"),
       person("Gabriel", "Foix", role = ("aut"),
