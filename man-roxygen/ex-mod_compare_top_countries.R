@@ -1,6 +1,5 @@
 if (interactive()) {
   library(shiny)
-  long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
       Covid19:::golem_add_external_resources(),
@@ -13,7 +12,7 @@ if (interactive()) {
         get_timeseries_by_contagion_day_data() %>%
         select(-ends_with("rate"))
     })
-    callModule(mod_compare_top_countries_plot_server, "plot_compare_100th", orig_data)
+    callModule(Covid19:::mod_compare_top_countries_plot_server, "plot_compare_100th", orig_data)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

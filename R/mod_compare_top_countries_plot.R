@@ -12,9 +12,18 @@ mod_compare_top_countries_plot_ui <- function(id){
   ns <- NS(id)
   tagList(
     tagList(
-      radioButtons(inputId = ns("radio_indicator"), label = "",
-                   choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE),
-      plotlyOutput(ns("plot"), height = 400)
+      fluidRow(
+        column(8,
+               radioButtons(inputId = ns("radio_indicator"), label = "",
+                            choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
+        ),
+        column(4,
+               radioButtons(inputId = ns("radio_log_linear"), label = "",
+                            choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
+        )
+      ),
+      plotlyOutput(ns("plot"), height = 400),
+      p("Showing countries with at least 1000 cases and outbreaks linger than a week.")
     )
   )
 }
@@ -30,13 +39,14 @@ mod_compare_top_countries_plot_ui <- function(id){
 #' @importFrom plotly layout
 #' @import dplyr
 #' @import tidyr
-#' @import ggplot
+#' @import ggplot2
 #'
 #' @noRd
 mod_compare_top_countries_plot_server <- function(input, output, session, orig_data){
   ns <- session$ns
 
   # Data ----
+  #This only depends on the orig_data
   df_clean <- reactive({
     orig_data() %>%
       select(-c(Province.State, Lat, Long, contagion_day), -starts_with("new_")) %>%
@@ -57,33 +67,60 @@ mod_compare_top_countries_plot_server <- function(input, output, session, orig_d
         TRUE ~ tmp
       )) %>%
       filter(contagion_day >= 1) %>%
-      select(-c(incremental, offset, tmp))
+      select(-c(incremental, offset, tmp, -no_contagion)) %>%
+      ungroup()
   })
 
+
+
+  # Give DF standard structure; reacts to input$radio_indicator
   df <- reactive({
-    df_clean() %>%
+    df_tmp <- df_clean() %>%
       bind_cols(df_clean()[,input$radio_indicator] %>% setNames("Value")) %>%
-      mutate(Date = contagion_day) %>%
       mutate(Status = Country.Region ) %>%
-      group_by(Status) %>%
-      mutate(sel1 = ifelse(max(Date < 7), 1, 0)) %>%
-      filter(sel1 == 0) %>%
-      mutate(sel2 = ifelse(max(Value < 1000), 1, 0)) %>%
-      filter(sel2 == 0) %>%
+      mutate(Date = contagion_day ) %>%
       select(Status, Value, Date)
+
+    # Countries listed by their max value
+    countries <- df_tmp %>%
+      group_by(Status) %>%
+      filter(Value == max(Value)) %>%
+      filter(Date == max(Date)) %>%
+      ungroup() %>%
+      arrange(desc(Value))
+
+    #pick only those countries that have had more than 1000 cases and the outpbreak for more than one week
+    countries_filtered <- countries %>%
+      group_by(Status) %>%
+      filter(Date > 7) %>%
+      filter(Value > 1000) %>%
+      ungroup() %>%
+      arrange(desc(Value))
+
+    # Day of the country with max contagions after china
+    max_contagion_no_china <- countries_filtered$Date[2] %>% as.numeric()
+
+    df <- df_tmp %>%
+      filter(Status %in% as.vector(countries_filtered$Status)) %>% #pick only filtered countries
+      filter(Date <= max_contagion_no_china) %>% #cut china
+      mutate(Status = factor(Status, levels = as.vector(countries_filtered$Status))) #order by factor
+
+    df
+  })
+
+  log <- reactive({
+    input$radio_log_linear != "linear"
   })
 
   # Plot -----
   output$plot <- renderPlotly({
 
-    p <- ggplot(df(), aes(x = Date, y = Value, colour = Status, text = paste0("Country: ", Status))) +
-      geom_line(size = 1) +
-      basic_plot_theme() +
-      scale_colour_brewer(palette = "Dark2")
+    p <- plot_all_highlight_10(df(), log = log(), text = "Country")
 
     p <- p %>%
-      ggplotly(tooltip = c("x", "y", "text")) %>%
-      layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+      plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+    p
 
   })
 

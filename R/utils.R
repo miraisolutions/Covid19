@@ -97,3 +97,11 @@ new_total_colors <- c(
   "total" = "#C8C8C8",
   "new" = "#ea8b5b"
   )
+
+
+#' Sort type by max
+#'
+#' @param data
+sort_type_by_max <- function(data) {
+  c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
+}

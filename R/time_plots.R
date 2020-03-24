@@ -418,6 +418,48 @@ fix_legend_position <- function(p){
 }
 
 
-sort_type_by_max <- function(data) {
-  c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
+#' plot all countries but highlight first 10
+#'
+#' @param df data.frame with column called Date and Value column to plot
+#' @param log logical for applying log scale
+#' @param text element for tooltip
+#'
+#'
+#' @import ggplot2
+#'
+#' @export
+plot_all_highlight_10 <- function(df, log = F, text = "") {
+
+  #clean df for log case
+  if (log) {
+    df <- df %>%
+      mutate(Value = case_when(
+        Value == 0 ~ 1,
+        TRUE ~ Value
+      ))
+  }
+
+    df10 <- df %>%
+      filter(as.integer(Status) < 11) #pick top 10 countries, using factor level (factor is ordered by decreasing Value)
+
+
+    df10_max <- df10 %>%
+      group_by(Status) %>%
+      filter(Value == max(Value)) %>%
+      ungroup()
+
+  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
+    geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
+    basic_plot_theme() +
+    geom_line(data = df10, aes(x = Date, y = Value, colour = Status)) +
+    geom_point(data = df10, aes(x = Date, y = Value, colour = Status)) +
+    scale_color_manual(values = c("#581845","#dd4b39", "#E69F00", "#125704", "#65a60f", "#00a65a", "#041c57", "#56B4E9", "#a60f8a", "#e322a6"))
+
+    if (log) {
+      p <- p %>%
+        add_log_scale()
+    }
+
+  p
+
 }
