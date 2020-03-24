@@ -179,7 +179,7 @@ mod_map_server <- function(input, output, session, data){
   })
 
   observeEvent(data_plot(),{
-    proxy <- leafletProxy("map", data = countries)
+    proxy <- leafletProxy("map", data = countries_data)
     proxy %>% clearControls() %>%
       addLegend(position = "bottomright",
                 pal = pal2(),
