@@ -47,50 +47,7 @@ mod_map_server <- function(input, output, session, data){
   countries_data <- load_countries_data(destpath = "./inst")
 
   data_clean <- reactive({
-    data <- data()
-    # align country names
-    # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
-    data$Country.Region[data$Country.Region == "Macau"] <- "Macao"
-    data$Country.Region[data$Country.Region == "Mainland China"] <- "China"
-    data$Country.Region[data$Country.Region == "South Korea"] <- "South Korea"
-    data$Country.Region[data$Country.Region == "North Macedonia"] <- "Macedonia"
-    data$Country.Region[data$Country.Region == "Czech Republic"] <- "Czechia"
-    data$Country.Region[data$Country.Region == "Dominican Republic"] <- "Dominican Rep."
-    data$Country.Region[data$Country.Region == "UK"] <- "United Kingdom"
-    data$Country.Region[data$Country.Region == "Gibraltar"] <- "United Kingdom"
-    data$Country.Region[data$Country.Region == "US"] <- "United States"
-    data$Country.Region[data$Country.Region == "Saint Barthelemy"] <- "St-Barth\\u00e9lemy" # stringi::stri_escape_unicode("é")
-
-    data$Country.Region[data$Country.Region == "Faroe Islands"] <- "Faeroe Is."
-    data$Country.Region[data$Country.Region == "Bosnia and Herzegovina"] <- "Bosnia and Herz."
-    data$Country.Region[data$Country.Region == "Vatican City"] <- "Vatican"
-    data$Country.Region[data$Country.Region == "Korea, South"] <- "South Korea"
-    data$Country.Region[data$Country.Region == "Republic of Ireland"] <- "Ireland"
-    data$Country.Region[data$Country.Region == "Taiwan*"] <- "Taiwan"
-
-    data$Country.Region[data$Country.Region == "Congo (Kinshasa)"] <- "Congo"
-    data$Country.Region[data$Country.Region == "Cote d'Ivoire"] <- "C\\u00f4te d'Ivoire" # stringi::stri_escape_unicode("ô")
-    data$Country.Region[data$Country.Region == "Reunion"] <- "France"
-    data$Country.Region[data$Country.Region == "Martinique"] <- "France"
-    data$Country.Region[data$Country.Region == "French Guiana"] <- "France"
-    data$Country.Region[data$Country.Region == "Holy See"] <- "Vatican"
-    data$Country.Region[data$Country.Region == "Cayman Islands"] <- "Cayman Is."
-    data$Country.Region[data$Country.Region == "Guadeloupe"] <- "France"
-    data$Country.Region[data$Country.Region == "Antigua and Barbuda"] <- "Antigua and Barb."
-
-    data$Country.Region[data$Country.Region == "Curacao"] <- "Cura\\u00e7ao" # stringi::stri_escape_unicode("ç")
-    data$Country.Region[data$Country.Region == "Guadeloupe"] <- "France"
-    data$Country.Region[data$Country.Region == "occupied Palestinian territory"] <- "Palestine"
-    data$Country.Region[data$Country.Region == "Congo (Brazzaville)"] <- "Congo"
-    data$Country.Region[data$Country.Region == "Equatorial Guinea"] <- "Guinea"
-    data$Country.Region[data$Country.Region == "Central African Republic"] <- "Central African Rep."
-    data$Country.Region[data$Country.Region == "Eswatini"] <- "eSwatini"
-
-    data$Country.Region[data$Country.Region == "Bahamas, The"] <- "Bahamas"
-    data$Country.Region[data$Country.Region == "Cape Verde"] <- "Cabo Verde"
-    data$Country.Region[data$Country.Region == "East Timor"] <- "Timor-Leste"
-    data$Country.Region[data$Country.Region == "Gambia, The"] <- "Gambia"
-    #Note Cruise Ship and Saint Vincent and the Grenadines not present in countries_data$NAME
+    data <- data() %>% align_country_names()
 
     data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
 
@@ -198,4 +155,55 @@ mod_map_server <- function(input, output, session, data){
       )
   })
 
+}
+
+align_country_names <- function(data) {
+  # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
+  # Note Cruise Ship and Saint Vincent and the Grenadines not present in countries_data$NAME
+  data$Country.Region <- data$Country.Region %>%
+    recode(
+
+      "Macau" = "Macao",
+      "Mainland China" = "China",
+      "South Korea" = "South Korea",
+      "North Macedonia" = "Macedonia",
+      "Czech Republic" = "Czechia",
+      "Dominican Republic" = "Dominican Rep.",
+      "UK" = "United Kingdom",
+      "Gibraltar" = "United Kingdom",
+      "US" = "United States",
+      "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
+
+      "Faroe Islands" = "Faeroe Is.",
+      "Bosnia and Herzegovina" = "Bosnia and Herz.",
+      "Vatican City" = "Vatican",
+      "Korea, South" = "South Korea",
+      "Republic of Ireland" = "Ireland",
+      "Taiwan*" = "Taiwan",
+
+      "Congo (Kinshasa)" = "Congo",
+      "Cote d'Ivoire" = "C\\u00f4te d'Ivoire", # stringi::stri_escape_unicode("ô")
+      "Reunion" = "France",
+      "Martinique" = "France",
+      "French Guiana" = "France",
+      "Holy See" = "Vatican",
+      "Cayman Islands" = "Cayman Is.",
+      "Guadeloupe" = "France",
+      "Antigua and Barbuda" = "Antigua and Barb.",
+
+      "Curacao" = "Cura\\u00e7ao", # stringi::stri_escape_unicode("ç")
+      "Guadeloupe" = "France",
+      "occupied Palestinian territory" = "Palestine",
+      "Congo (Brazzaville)" = "Congo",
+      "Equatorial Guinea" = "Guinea",
+      "Central African Republic" = "Central African Rep.",
+      "Eswatini" = "eSwatini",
+
+      "Bahamas, The" = "Bahamas",
+      "Cape Verde" = "Cabo Verde",
+      "East Timor" = "Timor-Leste",
+      "Gambia, The" = "Gambia"
+
+    )
+  data
 }
