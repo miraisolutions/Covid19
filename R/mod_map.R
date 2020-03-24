@@ -166,7 +166,10 @@ mod_map_server <- function(input, output, session, data){
 
   output$map <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
-    leaflet(data = countries_data) %>%
+    leaflet(
+      data = countries_data,
+      options = leafletOptions(zoomControl = FALSE) # not needed, clashes with slider
+    ) %>%
       setView(0, 30, zoom = 3)
   })
 
