@@ -6,6 +6,9 @@
 \usage{
 sort_type_by_max(data)
 }
+\arguments{
+\item{data}{data to be sorted}
+}
 \description{
 Sort type by max
 }
