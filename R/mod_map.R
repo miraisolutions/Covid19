@@ -10,17 +10,17 @@
 #' @importFrom leaflet leafletOutput
 mod_map_ui <- function(id){
   ns <- NS(id)
-  tagList(
-    # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    leafletOutput(ns("map"), width = "100%", height = "800"),
-    absolutePanel(id = ns("input_date_control"), class = "panel panel-default",
-                  top = 350, left = 30, draggable = F,
-                  div(style = "margin:10px;",
-                      radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
-                      uiOutput(ns("slider_ui")),
-                      helpText("The detail of each country can be obtained by clicking on it.")
-                  )
-    )
+  div(style = htmltools::css(position = "relative"),
+      # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
+      leafletOutput(ns("map"), width = "100%", height = "800"),
+      absolutePanel(id = ns("input_date_control"), class = "panel panel-default",
+                    top = 10, left = 10, draggable = F,
+                    div(style = "margin:10px;",
+                        radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
+                        uiOutput(ns("slider_ui")),
+                        helpText("The detail of each country can be obtained by clicking on it.")
+                    )
+      )
 
   )
 }
@@ -125,9 +125,9 @@ mod_map_server <- function(input, output, session, data){
                             by.y = "country_name",
                             sort = FALSE)
 
-   data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
+    data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
 
-   data_plot
+    data_plot
   })
 
   country_popup <- reactive({
