@@ -1,9 +1,22 @@
 Package: Covid19
 Title: Covid-19 Data Analysis
 Version: 1.0.0.9000
-Authors@R: person('Francesca', 'Vitalini', email = 'fracnesca.vitalini@miria-solutions.com', role = c('cre', 'aut'))
+Authors@R: 
+    c(person('Francesca', 'Vitalini', role = c('cre', 'aut'),
+             email = 'fracnesca.vitalini@miria-solutions.com'),
+      person("Riccardo", "Porreca", role = ("aut"),
+             email = "riccardo.porreca@mirai-solutions.com"),
+      person("Gabriel", "Foix", role = ("aut"),
+             email = "gabriel.foix@mirai-solutions.com"),
+      person("Guido", "Maggio", role = ("aut"),
+             email = "guido.maggio@mirai-solutions.com"),
+      person("Mirai Solutions GmbH", role = "cph",
+             email = "info@mirai-solutions.com"))
 Description: Gather Covid-19 data and visualize via a shiny app.
-License: MIT + file LICENSE
+License: GPL-3
+URL: https://mirai-solutions.ch,
+    https://github.com/miraisolutions/Covid19#readme
+BugReports: https://github.com/miraisolutions/Covid19h/issues
 Imports: 
     config,
     golem,
