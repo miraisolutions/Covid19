@@ -14,18 +14,35 @@ app_ui <- function(request) {
       fluidRow(
         id = "header",
         div(style = "margin-left:3%; margin-bottom:10px;",
-            a(
-              div(h1("Covid19"), style = "color:white!important;"),
-              href = "https://github.com/miraisolutions/Covid19", target="_blank"
+            column(11,
+                   div(style = "display:inline", a(
+                     div(
+                       h1("Covid19"), style = "color:white!important;"),
+                     href = "https://github.com/miraisolutions/Covid19", target="_blank"
+                   ),
+                   a(
+                     p(id = "version", get_Covid19_version()),
+                     href = "https://github.com/miraisolutions/Covid19/blob/master/NEWS.md", target="_blank"
+                   )
+                   ),
+                   a(
+                     div(
+                       style = "color:black!important;",
+                       p("Data Repository by Johns Hopkins CSSE: ",
+                         textOutput("last_update", inline = TRUE))),
+                     href = "https://github.com/CSSEGISandData/COVID-19", target="_blank"
+                   )
             ),
-            a(
-              div(
-                style = "color:black!important;",
-                p("Data Repository by Johns Hopkins CSSE: ",
-                  textOutput("last_update", inline = TRUE))),
-                href = "https://github.com/CSSEGISandData/COVID-19", target="_blank"
-            )
-        )
+            column(1,
+                   div(style = "margin-bottom:20px;", a(
+                     href = "https://mirai-solutions.ch",
+                     target = "_blank",
+                     img(
+                       id = "Logo_inverted",
+                       src = "www/mirai_logo_inverted_manual.png",
+                       height = "100px",
+                       align = "right")
+                   ))))
       ),
       # body ----
       tabsetPanel(
