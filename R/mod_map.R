@@ -32,6 +32,7 @@ mod_map_ui <- function(id){
 #' @example man-roxygen/ex-mod_map.R
 #'
 #' @import dplyr
+#' @import tidyr
 #' @import leaflet
 #'
 #' @noRd
@@ -123,6 +124,10 @@ mod_map_server <- function(input, output, session, data){
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
+
+   data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
+
+   data_plot
   })
 
   country_popup <- reactive({
@@ -139,16 +144,20 @@ mod_map_server <- function(input, output, session, data){
     max(data_clean()[,input$radio_choices])
   })
 
+  domain <- reactive({
+    c(0,log(roundUp(max_value())))
+  })
+
   pal2 <- reactive({
     # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
     if (input$radio_choices == "confirmed") {
-      colorBin(palette = "Reds", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+      colorNumeric(palette = "Reds", domain = domain(), na.color = "#f2f5f3")
     } else if (input$radio_choices == "deaths") {
-      colorBin(palette = "Greys", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+      colorNumeric(palette = "Greys", domain = domain(), na.color = "#f2f5f3")
     } else if (input$radio_choices == "active") {
-      colorBin(palette = "Blues", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+      colorNumeric(palette = "Blues", domain = domain(), na.color = "#f2f5f3")
     }  else if (input$radio_choices == "recovered") {
-      colorBin(palette = "Greens", domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 10)
+      colorNumeric(palette = "Greens", domain = domain(), na.color = "#f2f5f3")
     }
   })
 
@@ -162,7 +171,7 @@ mod_map_server <- function(input, output, session, data){
   observeEvent(data_plot(),{
     leafletProxy("map", data = data_plot())  %>%
       addPolygons(layerId = ~NAME,
-                  fillColor = pal2()(data_plot()$indicator),
+                  fillColor = pal2()(log(data_plot()$indicator)),
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   weight = 1,
@@ -175,7 +184,11 @@ mod_map_server <- function(input, output, session, data){
       addLegend(position = "bottomright",
                 pal = pal2(),
                 opacity = 1,
-                values = data_plot()$indicator
+                # values = data_plot()$indicator
+                bins = log(10^(seq(2,log10(roundUp(max_value())),1))),
+                values = log(1:roundUp(max_value())),
+                data = log(1:roundUp(max_value())),
+                labFormat = labelFormat(transform = function(x) roundUp(exp(x)) ,suffix = " cases")
       )
   })
 
