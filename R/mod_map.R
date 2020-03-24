@@ -56,7 +56,7 @@ mod_map_server <- function(input, output, session, data){
     data$Country.Region[data$Country.Region == "UK"] <- "United Kingdom"
     data$Country.Region[data$Country.Region == "Gibraltar"] <- "United Kingdom"
     data$Country.Region[data$Country.Region == "US"] <- "United States"
-    data$Country.Region[data$Country.Region == "Saint Barthelemy"] <- "St-Barthélemy"
+    data$Country.Region[data$Country.Region == "Saint Barthelemy"] <- "St-Barth\\u00e9lemy" # stringi::stri_escape_unicode("é")
 
     data$Country.Region[data$Country.Region == "Faroe Islands"] <- "Faeroe Is."
     data$Country.Region[data$Country.Region == "Bosnia and Herzegovina"] <- "Bosnia and Herz."
@@ -66,7 +66,7 @@ mod_map_server <- function(input, output, session, data){
     data$Country.Region[data$Country.Region == "Taiwan*"] <- "Taiwan"
 
     data$Country.Region[data$Country.Region == "Congo (Kinshasa)"] <- "Congo"
-    data$Country.Region[data$Country.Region == "Cote d'Ivoire"] <- "Côte d'Ivoire"
+    data$Country.Region[data$Country.Region == "Cote d'Ivoire"] <- "C\\u00f4te d'Ivoire" # stringi::stri_escape_unicode("ô")
     data$Country.Region[data$Country.Region == "Reunion"] <- "France"
     data$Country.Region[data$Country.Region == "Martinique"] <- "France"
     data$Country.Region[data$Country.Region == "French Guiana"] <- "France"
@@ -75,7 +75,7 @@ mod_map_server <- function(input, output, session, data){
     data$Country.Region[data$Country.Region == "Guadeloupe"] <- "France"
     data$Country.Region[data$Country.Region == "Antigua and Barbuda"] <- "Antigua and Barb."
 
-    data$Country.Region[data$Country.Region == "Curacao"] <- "Curaçao"
+    data$Country.Region[data$Country.Region == "Curacao"] <- "Cura\\u00e7ao" # stringi::stri_escape_unicode("ç")
     data$Country.Region[data$Country.Region == "Guadeloupe"] <- "France"
     data$Country.Region[data$Country.Region == "occupied Palestinian territory"] <- "Palestine"
     data$Country.Region[data$Country.Region == "Congo (Brazzaville)"] <- "Congo"
