@@ -11,38 +11,57 @@ app_ui <- function(request) {
     # List the first level UI elements here
     fluidPage(
       # Header ----
-      fluidRow(
-        id = "header",
-        div(style = "margin-left:3%; margin-bottom:10px;",
-            column(11,
-                   div(style = "display:inline", a(
-                     div(
-                       h1("Covid19"), style = "color:white!important;"),
-                     href = "https://github.com/miraisolutions/Covid19", target="_blank"
-                   ),
-                   a(
-                     p(id = "version", get_Covid19_version()),
-                     href = "https://github.com/miraisolutions/Covid19/blob/master/NEWS.md", target="_blank"
+      fluidRow(id = "header",
+               div(style = "margin-left:3%; margin-bottom:10px;",
+                   fluidRow(
+                     column(11,
+                            fluidRow(
+                              # div(style = "display: inline-block;",
+                                  a(
+                                    div(
+                                      style = "color:white!important; display: inline-block;",
+                                      h1("Covid19")),
+                                    href = "https://github.com/miraisolutions/Covid19", target = "_blank"
+                                  ),
+                                  a(
+                                    div(
+                                      style = "color:white!important; display: inline-block;",
+                                      p(get_Covid19_version())),
+                                    href = "https://github.com/miraisolutions/Covid19/blob/master/NEWS.md", target = "_blank"
+                                  )#,
+                                  # a(
+                                  #   div(
+                                  #     style = "color:white!important; display: inline-block;",
+                                  #     p("by Mirai Solutions GmbH")),
+                                  #   href = "https://mirai-solutions.ch", target = "_blank"
+                                  # )
+                              # )
+                            ),
+                            fluidRow(
+                              a(
+                                div(
+                                  style = "color:black!important;",
+                                  p("Data Repository by Johns Hopkins CSSE: ",
+                                    textOutput("last_update", inline = TRUE))),
+                                href = "https://github.com/CSSEGISandData/COVID-19", target = "_blank"
+                              )
+                            )
+                     ),
+                     column(1,
+                            div(style = "margin:20px;",
+                                a(
+                                  href = "https://mirai-solutions.ch",
+                                  target = "_blank",
+                                  img(
+                                    id = "Logo_inverted",
+                                    src = "www/mirai_logo_inverted_manual.png",
+                                    height = "70px",
+                                    align = "right")
+                                )
+                            )
+                     )
                    )
-                   ),
-                   a(
-                     div(
-                       style = "color:black!important;",
-                       p("Data Repository by Johns Hopkins CSSE: ",
-                         textOutput("last_update", inline = TRUE))),
-                     href = "https://github.com/CSSEGISandData/COVID-19", target="_blank"
-                   )
-            ),
-            column(1,
-                   div(style = "margin-bottom:20px;", a(
-                     href = "https://mirai-solutions.ch",
-                     target = "_blank",
-                     img(
-                       id = "Logo_inverted",
-                       src = "www/mirai_logo_inverted_manual.png",
-                       height = "100px",
-                       align = "right")
-                   ))))
+               )
       ),
       # body ----
       tabsetPanel(
@@ -62,12 +81,12 @@ app_ui <- function(request) {
         id = "footer",
         a(
           id = "git-footer",
-          href = "https://github.com/miraisolutions/Covid19.git", target="_blank",
+          href = "https://github.com/miraisolutions/Covid19.git", target = "_blank",
           target = "_blank",
           icon("github-square", "fa-2x")
         ),
         a(
-          href = "http://www.mirai-solutions.com", target="_blank",
+          href = "http://www.mirai-solutions.com", target = "_blank",
           target = "_blank",
           img(
             id = "mirai-footer",
