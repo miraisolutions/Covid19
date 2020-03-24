@@ -8,19 +8,22 @@
 #'
 #' @import shiny
 #' @importFrom leaflet leafletOutput
+#' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
-  div(style = "position: relative;",
-      # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-      leafletOutput(ns("map"), width = "100%", height = "800"),
-      absolutePanel(id = ns("input_date_control"), class = "panel panel-default",
-                    top = 10, left = 10, draggable = F,
-                    div(style = "margin:10px;",
-                        radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
-                        uiOutput(ns("slider_ui")),
-                        helpText("The detail of each country can be obtained by clicking on it.")
-                    )
+  div(
+    style = "position: relative;",
+    # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
+    withSpinner(leafletOutput(ns("map"), width = "100%", height = "800")),
+    absolutePanel(
+      id = ns("input_date_control"), class = "panel panel-default",
+      top = 10, left = 10, draggable = F,
+      div(style = "margin:10px;",
+          radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
+          uiOutput(ns("slider_ui")),
+          helpText("The detail of each country can be obtained by clicking on it.")
       )
+    )
 
   )
 }

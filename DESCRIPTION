@@ -30,6 +30,7 @@ Imports:
     grid,
     leaflet,
     rgdal,
+    shinycssloaders,
     sp
 Encoding: UTF-8
 LazyData: true
