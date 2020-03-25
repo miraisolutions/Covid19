@@ -8,7 +8,7 @@ body {
 
 #header {
   padding-top: 25px;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
   padding-left: 25px;
   padding-right: 25px;
   margin-bottom: 10px;
@@ -23,15 +23,35 @@ body {
   float: left;
 }
 
+#title {
+  margin-top: 0;
+}
+
+#app-name {
+  font-family: inherit;
+  color: white;
+  font-size: 36px;
+  line-height: normal;
+}
+
+
+#version {
+  font-family: inherit;
+  color: white;
+  font-size: 16px;
+}
+
+#subtitle {
+  margin-top: 3px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: black;
+}
+
 #header-right {
   float: right;
 }
 
-#sticker-header {
-  float: left;
-  margin-right: 15px;
-  height: 90px;
-}
 
 #footer {
   padding-top: 15px;
@@ -44,6 +64,7 @@ body {
 
 #git-footer {
   float: left;
+  font-size: 16px;
 }
 
 #mirai-logo-header{
@@ -59,13 +80,19 @@ body {
   padding: 0;
 }
 
-#title {
-  margin-top: 0;
+
+
+.modal-body p {
+  margin: 0;
 }
 
-#subtitle{
-  margin-top: 3px;
-  margin-bottom: 10px;
+#btn_whatsnew{
+  color: white;
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0px 10px !important;
+  margin: -10px!important;
+  vertical-align: baseline !important;
 }
 
 h5 {
@@ -81,13 +108,6 @@ h4 {
   color: black;
 }
 
-h1 {
-  font-family: inherit;
-  color: white;
-  text-align: left;
-  display: inline;
-}
-
 h2 {
   font-family: inherit;
   color: #ea8b5b;
@@ -97,18 +117,12 @@ h2 {
   display: inline;
 }
 
-#version {
-  font-family: inherit;
-  color: white;
-  font-size: 16px;
-}
-
 h3 {
   font-family: inherit;
+  margin-top: 0;
   color: #000000;
   font-size: 16px;
   text-align: left;
-  display: inline;
 }
 
 #title a:hover, #title a:visited, #title a:link, #title a:active {
@@ -116,7 +130,6 @@ h3 {
 }
 
 a {
-  font-size: 16px;
   color: #008cc3;
   text-align: left;
   font-weight: normal;

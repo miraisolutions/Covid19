@@ -4,7 +4,9 @@
 \alias{load_countries_data}
 \title{load countries  data}
 \usage{
-load_countries_data(destpath = "./inst/countries_data/")
+load_countries_data(
+  destpath = system.file("./countries_data", package = "Covid19")
+)
 }
 \arguments{
 \item{destpath}{path to file}

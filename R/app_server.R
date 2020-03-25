@@ -5,6 +5,8 @@
 #' @import shiny
 #' @import dplyr
 #' @import tidyr
+#' @import markdown
+#'
 #' @noRd
 app_server <- function(input, output, session) {
 
@@ -24,4 +26,16 @@ app_server <- function(input, output, session) {
   callModule(mod_global_server, "global", orig_data = orig_data)
   callModule(mod_country_server, "country", orig_data = orig_data)
   callModule(mod_country_comparison_server, "country_comparison", orig_data = orig_data)
+
+  # what is new pop-up
+  observeEvent(input$btn_whatsnew, {
+    showModal(modalDialog(
+      title = "What's New:",
+      includeMarkdown("./NEWS.md"),
+      footer = modalButton("Dismiss"),
+      size = "l",
+      easyClose = TRUE,
+      fade = FALSE
+    ))
+  })
 }
