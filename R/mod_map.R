@@ -44,7 +44,7 @@ mod_map_server <- function(input, output, session, data){
 
   # Data ----
   #load data
-  countries_data <- load_countries_data(destpath = "./inst/countries_data")
+  countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   data_clean <- reactive({
     data <- data() %>% align_country_names()
@@ -85,8 +85,6 @@ mod_map_server <- function(input, output, session, data){
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
-
-    # data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
 
     data_plot
   })

@@ -103,7 +103,7 @@ new_total_colors <- c(
 #'
 #' @returns countries shapefile
 #'
-load_countries_data <- function(destpath = "./inst/countries_data/"){
+load_countries_data <- function(destpath = system.file("./countries_data", package = "Covid19")){
   # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
   url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
   zip_path <- file.path(destpath,"ne_50m_admin_0_countries.zip")
