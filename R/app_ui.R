@@ -20,23 +20,27 @@ app_ui <- function(request) {
             a(
               href = "https://github.com/miraisolutions/Covid19",
               target = "_blank",
-              h1("Covid19")
+              span(id = "app-name", "Covid19")
             ),
             a(
               href = "https://github.com/miraisolutions/Covid19/blob/master/NEWS.md",
               target = "_blank",
               span(id = "version", get_Covid19_version())
+            ),
+            actionButton(
+              inputId = "btn_whatsnew",
+              label = "",
+              icon = icon("exclamation-circle")
+              # style = "color: white; background-color: transparent; border-color: transparent; padding: 0px 10px !important; margin: -10px!important; vertical-align: baseline !important;"
             )
           ),
           a(
             href = "https://github.com/CSSEGISandData/COVID-19",
             target = "_blank",
-            div(
+            span(
               id = "subtitle",
-              h3(
-                "Data Repository by Johns Hopkins CSSE:",
-                textOutput("last_update", inline = TRUE)
-              )
+              "Data Repository by Johns Hopkins CSSE:",
+              textOutput("last_update", inline = TRUE)
             )
           )
         ), # end header-left

@@ -14,7 +14,8 @@ Imports:
     plotly,
     DT,
     RColorBrewer,
-    grid
+    grid,
+    markdown
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
