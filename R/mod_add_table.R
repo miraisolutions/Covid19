@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 mod_add_table_ui <- function(id){
   ns <- NS(id)
   tagList(

@@ -96,8 +96,29 @@ new_case_colors <- c(
 new_total_colors <- c(
   "total" = "#C8C8C8",
   "new" = "#ea8b5b"
-  )
+)
 
+#' load countries  data
+#' @param destpath path to file
+#'
+#' @returns countries shapefile
+#'
+load_countries_data <- function(destpath = system.file("./countries_data", package = "Covid19")){
+  # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
+  url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
+  zip_path <- file.path(destpath,"ne_50m_admin_0_countries.zip")
+  dsn_path <- file.path(destpath, "ne_50m_admin_0_countries")
+
+  if (!file.exists(zip_path)) {
+    download.file(url = url, destfile = zip_path)
+    unzip(zip_path, exdir = dsn_path)
+  }
+
+  countries <- rgdal::readOGR(dsn = dsn_path,
+                              layer = "ne_50m_admin_0_countries",
+                              encoding = "utf-8", use_iconv = T,
+                              verbose = FALSE)
+}
 
 #' Sort type by max
 #'
@@ -105,3 +126,11 @@ new_total_colors <- c(
 sort_type_by_max <- function(data) {
   c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
 }
+
+#' Round up to the next decine
+#' Ref: https://stackoverflow.com/questions/6461209/how-to-round-up-to-the-nearest-10-or-100-or-x
+#' @param x number to round
+#' @returns rounded up number
+#' @export
+roundUp <- function(x) 10^ceiling(log10(x))
+

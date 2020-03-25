@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
 mod_global_ui <- function(id){
@@ -14,6 +14,10 @@ mod_global_ui <- function(id){
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("count-boxes")),
+    fluidRow(
+      mod_map_ui(ns("map_ui"))
+    ),
+    hr(),
     fluidRow(
       column(6,
              div(h4("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -38,12 +42,8 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #'
-#' @importFrom dplyr filter
-#' @importFrom dplyr select
-#' @importFrom dplyr mutate
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyr starts_with
-#' @importFrom tidyr ends_with
+#' @import dplyr
+#' @import tidyr
 #' @importFrom DT renderDT
 #' @importFrom DT datatable
 #' @importFrom plotly renderPlotly
@@ -85,6 +85,10 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", global_today)
+
+  # map ----
+
+  callModule(mod_map_server, "map_ui", orig_data)
 
   # plots ----
 

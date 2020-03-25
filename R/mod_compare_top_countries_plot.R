@@ -13,7 +13,8 @@ mod_compare_top_countries_plot_ui <- function(id){
   tagList(
     tagList(
       fluidRow(
-        column(8,
+        column(7,
+               offset = 1,
                radioButtons(inputId = ns("radio_indicator"), label = "",
                             choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
         ),
@@ -23,7 +24,7 @@ mod_compare_top_countries_plot_ui <- function(id){
         )
       ),
       plotlyOutput(ns("plot"), height = 400),
-      p("Showing countries with at least 1000 cases and outbreaks linger than a week.")
+      p("Showing countries with at least 1000 cases and outbreaks linger than a week.", style = "margin-left:50px;")
     )
   )
 }
