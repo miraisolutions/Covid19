@@ -44,7 +44,7 @@ mod_map_server <- function(input, output, session, data){
 
   # Data ----
   #load data
-  countries_data <- load_countries_data(destpath = "./inst")
+  countries_data <- load_countries_data(destpath = "./inst/countries_data")
 
   data_clean <- reactive({
     data <- data() %>% align_country_names()
@@ -151,7 +151,7 @@ mod_map_server <- function(input, output, session, data){
                 bins = log(10^(seq(2,log10(roundUp(max_value())),1))),
                 values = log(1:roundUp(max_value())),
                 data = log(1:roundUp(max_value())),
-                labFormat = labelFormat(transform = function(x) roundUp(exp(x)) ,suffix = " cases")
+                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = " cases")
       )
   })
 

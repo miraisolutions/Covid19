@@ -4,7 +4,7 @@
 \alias{load_countries_data}
 \title{load countries  data}
 \usage{
-load_countries_data(destpath = "./inst")
+load_countries_data(destpath = "./inst/countries_data/")
 }
 \arguments{
 \item{destpath}{path to file}
