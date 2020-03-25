@@ -14,7 +14,7 @@ mod_map_ui <- function(id){
   div(
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    withSpinner(div(leafletOutput(ns("map"), width = "100%", height = "800"), style = "max-height: 95vh")),
+    withSpinner(leafletOutput(ns("map"), width = "100%", height = "800")),
     absolutePanel(
       id = ns("input_date_control"), class = "panel panel-default",
       top = 10, left = 10, draggable = F,
