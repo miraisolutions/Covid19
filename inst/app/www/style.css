@@ -81,7 +81,6 @@ body {
 }
 
 
-
 .modal-body p {
   margin: 0;
 }
@@ -93,6 +92,10 @@ body {
   padding: 0px 10px !important;
   margin: -10px!important;
   vertical-align: baseline !important;
+}
+
+#global-map_ui-map{
+  max-height: 95vh;
 }
 
 h5 {

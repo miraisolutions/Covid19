@@ -77,14 +77,15 @@ mod_map_server <- function(input, output, session, data){
     data_selected <- data_date() %>%
       bind_cols(data_date()[,input$radio_choices] %>%
                   setNames("indicator")) %>%
-      select(country_name, indicator) %>%
-      filter(indicator >= 1)
+      select(country_name, indicator)
 
     data_plot <-  sp::merge(countries_data,
-                            data_selected, all.x = FALSE,
+                            data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
+
+    data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
 
     data_plot
   })
@@ -110,13 +111,13 @@ mod_map_server <- function(input, output, session, data){
   pal2 <- reactive({
     # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
     if (input$radio_choices == "confirmed") {
-      colorNumeric(palette = "Reds", domain = domain(), na.color = "#f2f5f3")
+      colorNumeric(palette = "Reds", domain = domain(), na.color = "white")
     } else if (input$radio_choices == "deaths") {
-      colorNumeric(palette = "Greys", domain = domain(), na.color = "#f2f5f3")
+      colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
     } else if (input$radio_choices == "active") {
-      colorNumeric(palette = "Blues", domain = domain(), na.color = "#f2f5f3")
+      colorNumeric(palette = "Blues", domain = domain(), na.color = "white")
     }  else if (input$radio_choices == "recovered") {
-      colorNumeric(palette = "Greens", domain = domain(), na.color = "#f2f5f3")
+      colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
     }
   })
 
