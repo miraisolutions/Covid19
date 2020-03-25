@@ -77,15 +77,16 @@ mod_map_server <- function(input, output, session, data){
     data_selected <- data_date() %>%
       bind_cols(data_date()[,input$radio_choices] %>%
                   setNames("indicator")) %>%
-      select(country_name, indicator)
+      select(country_name, indicator) %>%
+      filter(indicator >= 1)
 
     data_plot <-  sp::merge(countries_data,
-                            data_selected,
+                            data_selected, all.x = FALSE,
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
 
-    data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
+    # data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
 
     data_plot
   })
@@ -148,7 +149,7 @@ mod_map_server <- function(input, output, session, data){
                 pal = pal2(),
                 opacity = 1,
                 # values = data_plot()$indicator
-                bins = log(10^(seq(2,log10(roundUp(max_value())),1))),
+                bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
                 values = log(1:roundUp(max_value())),
                 data = log(1:roundUp(max_value())),
                 labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = " cases")
