@@ -20,7 +20,7 @@ app_ui <- function(request) {
             a(
               href = "https://github.com/miraisolutions/Covid19",
               target = "_blank",
-              h1("Covid19")
+              span(id = "app-name", "Covid19")
             ),
             a(
               href = "https://github.com/miraisolutions/Covid19/blob/master/NEWS.md",
@@ -37,12 +37,10 @@ app_ui <- function(request) {
           a(
             href = "https://github.com/CSSEGISandData/COVID-19",
             target = "_blank",
-            div(
+            span(
               id = "subtitle",
-              h3(
-                "Data Repository by Johns Hopkins CSSE:",
-                textOutput("last_update", inline = TRUE)
-              )
+              "Data Repository by Johns Hopkins CSSE:",
+              textOutput("last_update", inline = TRUE)
             )
           )
         ), # end header-left
