@@ -26,6 +26,12 @@ app_ui <- function(request) {
               href = "https://github.com/miraisolutions/Covid19/blob/master/NEWS.md",
               target = "_blank",
               span(id = "version", get_Covid19_version())
+            ),
+            actionButton(
+              inputId = "btn_whatsnew",
+              label = "",
+              icon = icon("exclamation-circle")
+              # style = "color: white; background-color: transparent; border-color: transparent; padding: 0px 10px !important; margin: -10px!important; vertical-align: baseline !important;"
             )
           ),
           a(

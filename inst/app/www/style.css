@@ -68,6 +68,25 @@ body {
   margin-bottom: 10px;
 }
 
+.modal-body h2 {
+  font-size: 20 px !important;
+  display: block !important;
+}
+
+.modal-body h1 {
+  font-size: 26 px !important;
+  color: black !important;
+}
+
+#btn_whatsnew{
+  color: white;
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0px 10px !important;
+  margin: -10px!important;
+  vertical-align: baseline !important;
+}
+
 h5 {
   font-family: inherit;
   font-size: 12px;
