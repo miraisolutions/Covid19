@@ -7,7 +7,7 @@ body {
 }
 
 #header {
-  padding-top: 5px;
+  padding-top: 25px;
   padding-bottom: 5px;
   padding-left: 25px;
   padding-right: 25px;
@@ -17,6 +17,14 @@ body {
   background-repeat: repeat;
   background-position: 0 200px;
   background-size: auto 400px;
+}
+
+#header-left {
+  float: left;
+}
+
+#header-right {
+  float: right;
 }
 
 #sticker-header {
@@ -38,17 +46,21 @@ body {
   float: left;
 }
 
+#mirai-logo-header{
+  height: 70px;
+}
+
 #mirai-footer {
   float: right;
   height: 32px;
 }
 
-#main{
+#main {
   padding: 0;
 }
 
-#title{
-  margin-top: 20px;
+#title {
+  margin-top: 0;
 }
 
 #subtitle{
@@ -69,35 +81,11 @@ h4 {
   color: black;
 }
 
-#disclaimer{
-  float: right;
+h1 {
   font-family: inherit;
-  color: #737373;
-  font-size: 12px;
+  color: white;
   text-align: left;
-  margin-left: auto;
-  margin-right: 10%;
-  margin-top: 25px;
-}
-
-/* define style only when non-empty, similar to .pre, so that no empty box is
-shown before the textOutput is populated */
-#Totals:not(:empty) {
-  font-family: inherit;
-  color: #008cc3;
-  font-size: 18px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background-color: #f5f5f5;
-  text-align: center;
-  padding: 9.5px; /* same as .pre */
-  /* same size as the plots */
-  width: 800px;
-  max-width: 100%;
-}
-
-#table {
-  overflow-x: scroll;
+  display: inline;
 }
 
 h2 {
@@ -111,17 +99,20 @@ h2 {
 
 #version {
   font-family: inherit;
-  color: #000000;
-  font-size: 12px;
+  color: white;
+  font-size: 16px;
 }
 
 h3 {
   font-family: inherit;
   color: #000000;
-  font-size: 18px;
+  font-size: 16px;
   text-align: left;
-  font-weight: bold;
   display: inline;
+}
+
+#title a:hover, #title a:visited, #title a:link, #title a:active {
+  text-decoration: none;
 }
 
 a {
