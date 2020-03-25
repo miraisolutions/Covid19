@@ -44,6 +44,7 @@ body {
 
 #git-footer {
   float: left;
+  font-size: 16px;
 }
 
 #mirai-logo-header{
@@ -68,14 +69,8 @@ body {
   margin-bottom: 10px;
 }
 
-.modal-body h2 {
-  font-size: 20 px !important;
-  display: block !important;
-}
-
-.modal-body h1 {
-  font-size: 26 px !important;
-  color: black !important;
+.modal-body p {
+  margin: 0;
 }
 
 #btn_whatsnew{
@@ -135,7 +130,6 @@ h3 {
 }
 
 a {
-  font-size: 16px;
   color: #008cc3;
   text-align: left;
   font-weight: normal;
