@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 #' @importFrom plotly plotlyOutput
 mod_plot_log_linear_ui <- function(id){
   ns <- NS(id)

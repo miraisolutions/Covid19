@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 mod_bar_plot_day_contagion_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -18,11 +18,8 @@ mod_bar_plot_day_contagion_ui <- function(id){
 #'
 #' @param country_data reactive data.frame for one country
 #'
-#' @importFrom dplyr select
-#' @importFrom dplyr  mutate
-#' @importFrom dplyr case_when
-#' @importFrom dplyr bind_cols
-#' @importFrom tidyr pivot_longer
+#' @import dplyr
+#' @import tidyr
 #' @import ggplot2
 #'
 #' @noRd

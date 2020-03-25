@@ -197,7 +197,6 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 #'
 #' @import ggplot2
 #' @import RColorBrewer
-#' @importFrom dplyr mutate
 #'
 #' @export
 time_evol_line_facet_plot <- function(df, log) {

@@ -11,7 +11,7 @@
 #' @keywords internal
 
 #' @rdname mod_caseBoxes
-#' @importFrom shiny NS tagList
+#' @import shiny
 mod_caseBoxes_ui <- function(id) {
   ns <- NS(id)
   tagList(

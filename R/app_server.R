@@ -3,8 +3,8 @@
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
 #' @import shiny
-#' @importFrom dplyr select
-#' @importFrom tidyr ends_with
+#' @import dplyr
+#' @import tidyr
 #' @import markdown
 #'
 #' @noRd
