@@ -7,6 +7,7 @@
 #' @noRd
 #'
 #' @import shiny
+#' @importFrom shinycssloaders withSpinner
 #' @importFrom plotly plotlyOutput
 mod_country_ui <- function(id){
   ns <- NS(id)
@@ -14,11 +15,10 @@ mod_country_ui <- function(id){
     selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
 
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
-
     mod_caseBoxes_ui(ns("count-boxes")),
 
     fluidRow(
-      uiOutput(ns("barplots"))
+      withSpinner(uiOutput(ns("barplots")))
     ),
     hr(),
     fluidRow(
@@ -53,7 +53,7 @@ mod_country_server <- function(input, output, session, orig_data){
   })
 
   observe(
-    updateSelectInput(session, "select_country", choices = countries()$Country.Region, selected = "Switzerland")
+    updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = "Switzerland")
   )
 
   observeEvent(input$select_country, {

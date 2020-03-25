@@ -7,12 +7,12 @@
 #' @noRd
 #'
 #' @import shiny
+#' @importFrom shinycssloaders withSpinner
 mod_country_comparison_ui <- function(id){
   ns <- NS(id)
   tagList(
     selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
-
-    uiOutput(ns("barplots")),
+    withSpinner(uiOutput(ns("barplots"))),
     uiOutput(ns("lineplots")),
     mod_add_table_ui(ns("add_table_countries"))
   )
@@ -35,7 +35,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data){
   })
 
   observe(
-    updateSelectInput(session, "select_countries", choices = countries()$Country.Region, selected = c("Switzerland", "Italy"))
+    updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
   )
 
   observeEvent(input$select_countries,{
