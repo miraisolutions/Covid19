@@ -1,10 +1,10 @@
 ### Covid19 1.1.1.9000 (development version)
 
-- Temporary fix for depricated data sources (#48) using https://github.com/bumbeishvili/covid19-daily-data as reference. Added alert on app launch.
+- JHU data source currently deprecated: switch (temporarily) to https://github.com/bumbeishvili/covid19-daily-data (#48). Users are alerted on app launch.
 
 ### Covid19 1.1.1 (2020-03-26)
 
-- fix path to data source
+- Updated JHU data source filenames.
 
 ### Covid19 1.1.0 (2020-03-25)
 
