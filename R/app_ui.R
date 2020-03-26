@@ -35,11 +35,13 @@ app_ui <- function(request) {
             )
           ),
           a(
-            href = "https://github.com/CSSEGISandData/COVID-19",
+            #href = "https://github.com/CSSEGISandData/COVID-19",
+            href = "https://github.com/bumbeishvili/covid19-daily-data",
             target = "_blank",
             span(
               id = "subtitle",
-              "Data Repository by Johns Hopkins CSSE:",
+              # "Data Repository by Johns Hopkins CSSE:",
+              "Data Repository by bumbeishvili",
               textOutput("last_update", inline = TRUE)
             )
           )

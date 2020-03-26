@@ -1,5 +1,7 @@
 ### Covid19 1.1.1.9000 (development version)
 
+- Temporary fix for depricated data sources (#48) using https://github.com/bumbeishvili/covid19-daily-data as reference.
+
 ### Covid19 1.1.1 (2020-03-26)
 
 - fix path to data source
