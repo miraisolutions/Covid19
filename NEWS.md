@@ -1,4 +1,8 @@
-### Covid19 1.1.0.9000 (development version)
+### Covid19 1.1.1.9000 (development version)
+
+### Covid19 1.1.1 (2020-03-26)
+
+- fix path to data source
 
 ### Covid19 1.1.0 (2020-03-25)
 

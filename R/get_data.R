@@ -4,19 +4,19 @@
 #' @rdname DataUrls
 #'
 #' @export
-confirmed_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"
+confirmed_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 
 #' Data Urls deaths_timeseries_csv_url
 #' @rdname DataUrls
 #'
 #' @export
-deaths_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"
+deaths_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 
 #' Data Urls recovered_timeseries_csv_url
 #' @rdname DataUrls
 #'
 #' @export
-recovered_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"
+recovered_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 
 #' Data Urls daily_url
 #' @rdname DataUrls
