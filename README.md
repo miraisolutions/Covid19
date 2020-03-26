@@ -14,17 +14,13 @@ University Center for Systems Science and Engineering (JHU CSSE),
 available [here](https://github.com/CSSEGISandData/COVID-19) and to
 analyze them.
 
-The results are visualized as a shiny app, available at https://mirai-solutions.ch/gallery/covid19
+The results are visualized as a shiny app.
 
 ## Installation
 
 You can install Covid19 from [GitHub](https://github.com/) with:
-``` r
-# install.packages("remotes")
-remotes::install_github("miraisolutions/Covid19")
-```
 
-Run the shiny app with:
 ``` r
-Covid19::run_app()
+# install.packages("devtools")
+devtools::install_github("miraisolutions/Covid19")
 ```

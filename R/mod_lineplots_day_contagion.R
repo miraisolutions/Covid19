@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 mod_lineplots_day_contagion_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -20,11 +20,8 @@ mod_lineplots_day_contagion_ui <- function(id){
 #'
 #' @param countries_data reactive data.frame for multiple countries
 #'
-#' @importFrom dplyr select
-#' @importFrom dplyr mutate
-#' @importFrom dplyr case_when
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyr starts_with
+#' @import dplyr
+#' @import tidyr
 #' @import ggplot2
 #'
 #' @noRd

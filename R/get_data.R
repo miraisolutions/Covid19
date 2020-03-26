@@ -68,11 +68,8 @@ get_timeseries_single_data <- function(param) {
 #'
 #' @return data tibble of confirmed, deaths, active and recovered, each for Province.State, Country.Region, Lat, Long, and day
 #'
-#' @importFrom dplyr mutate
-#' @importFrom dplyr left_join
-#' @importFrom dplyr arrange
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyr starts_with
+#' @import dplyr
+#' @import tidyr
 #'
 #' @export
 get_timeseries_full_data <- function() {
@@ -110,16 +107,8 @@ get_timeseries_full_data <- function() {
 #'
 #' @return data tibble of confirmed, deaths, active and recovered, each for Province.State, Country.Region, Lat, Long, contagion_day and day
 #'
-#' @importFrom dplyr mutate
-#'@importFrom dplyr mutate_if
-#' @importFrom dplyr arrange
-#' @importFrom dplyr case_when
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr select
-#' @importFrom dplyr n
-#' @importFrom dplyr lag
-#'@importFrom tidyr replace_na
+#' @import dplyr
+#' @import tidyr
 #'
 #' @export
 get_timeseries_by_contagion_day_data <- function(data) {
@@ -155,11 +144,7 @@ get_timeseries_by_contagion_day_data <- function(data) {
 #'
 #' @param data data.frame
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr summarize_at
-#' @importFrom dplyr mutate
-#' @importFrom dplyr lag
+#' @import dplyr
 #'
 #' @return global tibble of global confirmed, deaths, active and recovered, for each day
 #'
@@ -179,14 +164,7 @@ get_timeseries_global_data <- function(data){
 #' @param data data.frame
 #' @param country name of the country. Character string
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr summarize
-#' @importFrom dplyr filter
-#' @importFrom dplyr mutate
-#' @importFrom dplyr arrange
-#' @importFrom dplyr desc
-#' @importFrom dplyr lag
+#' @import dplyr
 #'
 #' @return country_df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -207,12 +185,7 @@ get_timeseries_country_data <- function(data, country){
 #'
 #' @param data data.frameing
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr filter
-#' @importFrom dplyr summarize
-#' @importFrom dplyr arrange
-#' @importFrom dplyr desc
+#' @import dplyr
 #'
 #' @return country_df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -232,13 +205,7 @@ aggregate_country_data <- function(data){
 #'
 #' @param data data.frameing
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr summarize
-#' @importFrom dplyr mutate
-#' @importFrom dplyr arrange
-#' @importFrom dplyr desc
-#' @importFrom dplyr lag
+#' @import dplyr
 #'
 #' @return df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -260,14 +227,7 @@ aggregate_province_timeseries_data <- function(data){
 #' @param data data.frame
 #' @param province name of the province Character string
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr summarize
-#' @importFrom dplyr filter
-#' @importFrom dplyr mutate
-#' @importFrom dplyr arrange
-#' @importFrom dplyr desc
-#' @importFrom dplyr lag
+#' @import dplyr
 #'
 #' @return province_df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -289,11 +249,7 @@ get_timeseries_province_data <- function(data, province){
 #' @param data data.frame
 #' @param date date format yyyy-mm-dd
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr summarize
-#' @importFrom dplyr filter
-#' @importFrom dplyr lag
+#' @import dplyr
 #'
 #' @return global tibble of confirmed, deaths, active and recovered for each day
 #'

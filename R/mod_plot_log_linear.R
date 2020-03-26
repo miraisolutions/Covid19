@@ -6,14 +6,15 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @import shiny
 #' @importFrom plotly plotlyOutput
+#' @importFrom shinycssloaders withSpinner
 mod_plot_log_linear_ui <- function(id){
   ns <- NS(id)
   tagList(
     radioButtons(inputId = ns("radio_log_linear"), label = "",
                  choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE),
-    plotlyOutput(ns("plot_log_linear"), height = 400)
+    withSpinner(plotlyOutput(ns("plot_log_linear"), height = 400))
   )
 }
 
