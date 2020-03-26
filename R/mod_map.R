@@ -171,7 +171,8 @@ align_country_names <- function(data) {
       "Dominican Republic" = "Dominican Rep.",
       "UK" = "United Kingdom",
       "Gibraltar" = "United Kingdom",
-      "US" = "United States",
+      # "US" = "United States",
+      "USA" = "United States",
       "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
 
       "Faroe Islands" = "Faeroe Is.",
