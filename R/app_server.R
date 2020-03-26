@@ -38,4 +38,14 @@ app_server <- function(input, output, session) {
       fade = FALSE
     ))
   })
+
+  # alert popup regarding data source
+  showModal(modalDialog(
+    title = "ALERT: Temporary Data Source",
+    includeMarkdown(system.file("additional_files/alert.md", package = "Covid19")),
+    footer = modalButton("Dismiss"),
+    size = "l",
+    easyClose = TRUE,
+    fade = FALSE
+  ))
 }
