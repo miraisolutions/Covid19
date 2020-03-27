@@ -20,6 +20,7 @@ mod_map_ui <- function(id){
       top = 10, left = 10, draggable = F,
       div(style = "margin:10px;",
           radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
+          radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
           uiOutput(ns("slider_ui")),
           helpText("The detail of each country can be obtained by clicking on it.")
       )
@@ -51,10 +52,10 @@ mod_map_server <- function(input, output, session, data){
 
     data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
 
-    data <- data %>%
+    data_clean <- data %>%
       filter(!is.na(country_name))
 
-    data
+    data_clean
   })
 
   # UI controls ----
@@ -66,17 +67,28 @@ mod_map_server <- function(input, output, session, data){
 
   # Data for a given date
   data_date <- reactive({
-    data_clean() %>%
+    data_date <- data_clean() %>%
       filter(date == req(input$slider_day)) %>%
       select(-c(Country.Region, Province.State, Lat, Long, date, contagion_day)) %>%
       group_by(country_name) %>%
-      summarise_each(sum)
+      summarise_each(sum) %>%
+      ungroup() %>%
+      get_pop_data()
+    data_date
   })
 
   data_plot <- reactive({
     data_selected <- data_date() %>%
       bind_cols(data_date()[,input$radio_choices] %>%
-                  setNames("indicator")) %>%
+                  setNames("indicator"))
+
+    if (req(input$radio_pop) == "per 1M pop") {
+      data_selected <- data_selected %>%
+        # percentage of indicator per 1M population
+        mutate(indicator = round(1000000 * .$indicator / .$population))
+    }
+
+    data_selected <- data_selected %>%
       select(country_name, indicator)
 
     data_plot <-  sp::merge(countries_data,
@@ -151,7 +163,7 @@ mod_map_server <- function(input, output, session, data){
                 bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
                 values = log(1:roundUp(max_value())),
                 data = log(1:roundUp(max_value())),
-                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = " cases")
+                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
       )
   })
 
