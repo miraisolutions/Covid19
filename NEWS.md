@@ -1,6 +1,6 @@
 ### Covid19 1.1.2.9000 (development branch)
 
-- Integrate population data (#29)
+- Integrate population data for map (#29)
 
 ### Covid19 1.1.2 (2020-03-26)
 
