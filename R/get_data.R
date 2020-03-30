@@ -227,7 +227,7 @@ aggregate_province_timeseries_data <- function(data){
 #' @export
 add_growth_death_rate <- function(df){
   df <- df %>%
-    group_by(date) %>%
+    group_by(Country.Region) %>%
     mutate(growth_rate = round(zoo::rollmean(replace_na(new_confirmed / lag(active), 0), 7, align = "right", fill = NA), digits = 2)) %>%
     mutate(death_rate = round(zoo::rollmean(replace_na(new_deaths / lag(confirmed), 0), 7, align = "right", fill = NA), digits = 2))  %>%
     ungroup() %>%

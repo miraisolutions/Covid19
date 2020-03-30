@@ -90,11 +90,11 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data,
       ungroup() %>%
       arrange(desc(Value))
 
-    #pick only those countries that have had more than n*10 cases and the outpbreak for more than one week otherwise too many lines
+    #pick only those countries that have had more than n cases and the outpbreak for more than one week otherwise too many lines
     countries_filtered <- countries %>%
       group_by(Status) %>%
       filter(Date > 7) %>%
-      filter(Value > n*10) %>%
+      filter(Value > n) %>%
       ungroup() %>%
       arrange(desc(Value))
 

@@ -449,7 +449,7 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10) {
       ungroup()
 
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
-    geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
+    # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
