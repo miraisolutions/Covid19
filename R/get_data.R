@@ -1,22 +1,22 @@
-# Data taken from here https://github.com/CSSEGISandData/COVID-19
+# Data taken from here https://github.com/bumbeishvili/covid19-daily-data
 
 #' Data Urls confirmed_timeseries
 #' @rdname DataUrls
 #'
 #' @export
-confirmed_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"
+confirmed_timeseries_csv_url <- "https://raw.githubusercontent.com/bumbeishvili/covid19-daily-data/master/time_series_19-covid-Confirmed.csv"
 
 #' Data Urls deaths_timeseries_csv_url
 #' @rdname DataUrls
 #'
 #' @export
-deaths_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"
+deaths_timeseries_csv_url <- "https://raw.githubusercontent.com/bumbeishvili/covid19-daily-data/master/time_series_19-covid-Deaths.csv"
 
 #' Data Urls recovered_timeseries_csv_url
 #' @rdname DataUrls
 #'
 #' @export
-recovered_timeseries_csv_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"
+recovered_timeseries_csv_url <- "https://raw.githubusercontent.com/bumbeishvili/covid19-daily-data/master/time_series_19-covid-Recovered.csv"
 
 #' Data Urls daily_url
 #' @rdname DataUrls
@@ -83,13 +83,16 @@ get_timeseries_full_data <- function() {
 
   confirmed <- get_timeseries_single_data("confirmed") %>%
     pivot_longer(cols = starts_with("X"), names_to = "date", values_to = "confirmed") %>%
-    convert_date()
+    convert_date() %>%
+    mutate(confirmed = round(confirmed)) # necessary for worldometers data, which is evenly spread across US states
   deaths <- get_timeseries_single_data("deaths")  %>%
     pivot_longer(cols = starts_with("X"), names_to = "date", values_to = "deaths") %>%
-    convert_date()
+    convert_date() %>%
+    mutate(deaths = round(deaths)) # necessary for worldometers data, which is evenly spread across US states
   recovered <- get_timeseries_single_data("recovered")  %>%
     pivot_longer(cols = starts_with("X"), names_to = "date", values_to = "recovered") %>%
-    convert_date()
+    convert_date() %>%
+    mutate(recovered = round(recovered)) # necessary for worldometers data, which is evenly spread across US states
 
   join_by_cols <- c("Province.State", "Country.Region", "Lat", "Long", "date")
 
