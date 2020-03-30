@@ -1,4 +1,8 @@
-### Covid19 1.1.2.9000 (development branch)
+### Covid19 1.1.3.9000 (development version)
+
+### Covid19 1.1.3 (2020-03-30)
+
+- Integrate population data for map (#29)
 
 - Added plot comparing countries from the day where the total number of confirmed cases was above 100 (#39).
 

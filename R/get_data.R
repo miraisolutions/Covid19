@@ -277,3 +277,62 @@ get_date_data <- function(data, date){
     add_growth_death_rate() %>%
     ungroup()
 }
+
+
+#' population data
+#' @rdname get_pop_data
+#'
+#' @param data data.frame
+#'
+#' @import dplyr
+#' @import tidyr
+#'
+#' @return global tibble of confirmed, deaths, active and recovered for each day by population
+#'
+#' @examples
+#' \dontrun{
+#' orig_data <- get_timeseries_full_data() %>%
+#'               get_timeseries_by_contagion_day_data() %>%
+#'               select(-ends_with("rate"))
+#' data <- orig_data %>% align_country_names()
+#'
+#'}
+#'
+#' @export
+get_pop_data <- function(data){
+  #Reference: https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population
+  # pop_url <- "https://raw.githubusercontent.com/DrFabach/Corona/master/pop.csv"
+  # pop_raw <- readLines(pop_url)
+  # pop <- data.frame(pop_raw[2:length(pop_raw)], stringsAsFactors = FALSE) %>%
+  #   setNames(pop_raw[1])
+  # pop <- pop %>%
+  #   separate(col = "Country;Population", into = c("Country.Region", "population"), sep = ";")
+  # write.csv2(pop, "./inst/population_data/pop.csv")
+  population <- read.csv2(system.file("population_data/pop.csv", package = "Covid19"),stringsAsFactors = F) %>%
+    select(-X)
+  population$Country.Region <- population$Country.Region %>%
+    recode(
+      "Ivory Coast" = "C\\u00f4te d'Ivoire",
+      "DR Congo" = "Republic of the Congo",
+      "United Arab Emirates" = "UAE",
+      "East Timor" = "Timor-Leste" ,
+      "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
+      "Puerto Rico(US)" = "Puerto Rico",
+      "Comoros" = "Mayotte",
+      "Guam(US)" = "Guam",
+      "Greenland(Denmark)" = "Greenland",
+      "Eswatini" = "eSwatini",
+      "Isle of Man(UK)" = "Channel Islands",
+      "Central African Republic" = "CAR",
+      "Cape Verde" = "Cabo Verde",
+      "Antigua and Barbuda" = "Antigua and Barb.",
+      "United States" = "United States of America"
+    )
+
+  data_pop <- data %>%
+    mutate(Country.Region = country_name) %>%
+    left_join(population) %>%
+    select(-Country.Region)
+
+  data_pop
+}
