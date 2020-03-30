@@ -1,10 +1,11 @@
 ### Covid19 1.1.3.9000 (development version)
 
+- Added plot comparing countries from the day where the total number of confirmed cases was above 1000 (#39).
+- Added growth rate and Death rate plots (#5)
+
 ### Covid19 1.1.3 (2020-03-30)
 
 - Integrate population data for map (#29)
-
-- Added plot comparing countries from the day where the total number of confirmed cases was above 100 (#39).
 
 ### Covid19 1.1.2 (2020-03-26)
 

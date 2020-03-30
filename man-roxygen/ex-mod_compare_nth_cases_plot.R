@@ -9,8 +9,7 @@ if (interactive()) {
   server <- function(input, output, session) {
     orig_data <- reactive({
       orig_data <- get_timeseries_full_data() %>%
-        get_timeseries_by_contagion_day_data() %>%
-        select(-ends_with("rate"))
+        get_timeseries_by_contagion_day_data()
     })
     callModule(Covid19:::mod_compare_top_countries_plot_server, "plot_compare_100th", orig_data)
   }

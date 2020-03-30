@@ -8,14 +8,12 @@ if (interactive()) {
 
     orig_data <- reactive({
       get_timeseries_full_data() %>%
-        get_timeseries_by_contagion_day_data() %>%
-        select(-ends_with("rate"))
+        get_timeseries_by_contagion_day_data()
     })
 
     global <- reactive({
       orig_data() %>%
-        get_timeseries_global_data() %>%
-        select(-ends_with("rate"))
+        get_timeseries_global_data()
     })
 
     df_global <- reactive({

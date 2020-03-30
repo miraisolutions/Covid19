@@ -134,11 +134,7 @@ get_timeseries_by_contagion_day_data <- function(data) {
     mutate(new_confirmed = confirmed - lag(confirmed)) %>%
     mutate(new_deaths = deaths - lag(deaths)) %>%
     mutate(new_active = active - lag(active)) %>%
-    mutate(new_recovered = recovered - lag(recovered)) %>%
-    add_growth_death_rate() %>%
-    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
-    ungroup()
+    mutate(new_recovered = recovered - lag(recovered))
 }
 
 #' Global data timeseries
@@ -155,7 +151,6 @@ get_timeseries_global_data <- function(data){
   global <- data %>%
     group_by(date) %>%
     summarize_at(c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered"), sum) %>%
-    add_growth_death_rate() %>%
     ungroup()
 }
 
@@ -232,8 +227,12 @@ aggregate_province_timeseries_data <- function(data){
 #' @export
 add_growth_death_rate <- function(df){
   df <- df %>%
-    mutate(growth_rate = round(replace_na(new_confirmed / lag(new_confirmed), 0), digits = 2)) %>%
-    mutate(death_rate = round(replace_na(new_deaths / lag(new_deaths), 0), digits = 2))
+    group_by(date) %>%
+    mutate(growth_rate = round(zoo::rollmean(replace_na(new_confirmed / lag(active), 0), 7, align = "right", fill = NA), digits = 2)) %>%
+    mutate(death_rate = round(zoo::rollmean(replace_na(new_deaths / lag(confirmed), 0), 7, align = "right", fill = NA), digits = 2))  %>%
+    ungroup() %>%
+    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} )
   df
 }
 
@@ -274,7 +273,6 @@ get_date_data <- function(data, date){
   date_df <- data %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    add_growth_death_rate() %>%
     ungroup()
 }
 
@@ -292,8 +290,7 @@ get_date_data <- function(data, date){
 #' @examples
 #' \dontrun{
 #' orig_data <- get_timeseries_full_data() %>%
-#'               get_timeseries_by_contagion_day_data() %>%
-#'               select(-ends_with("rate"))
+#'               get_timeseries_by_contagion_day_data()
 #' data <- orig_data %>% align_country_names()
 #'
 #'}
