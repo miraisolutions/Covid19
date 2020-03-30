@@ -48,7 +48,9 @@ mod_map_server <- function(input, output, session, data){
   countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   data_clean <- reactive({
-    data <- data() %>% align_country_names()
+    data <- data() %>%
+      aggregate_province_timeseries_data() %>%
+      align_country_names()
 
     data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
 
@@ -69,7 +71,7 @@ mod_map_server <- function(input, output, session, data){
   data_date <- reactive({
     data_date <- data_clean() %>%
       filter(date == req(input$slider_day)) %>%
-      select(-c(Country.Region, Province.State, Lat, Long, date, contagion_day)) %>%
+      select(-c(Country.Region, date, contagion_day)) %>%
       group_by(country_name) %>%
       summarise_each(sum) %>%
       ungroup() %>%
