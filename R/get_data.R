@@ -170,7 +170,6 @@ get_timeseries_country_data <- function(data, country){
     filter(Country.Region == country) %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    add_growth_death_rate() %>%
     arrange(desc(date)) %>%
     ungroup()
 }
@@ -253,7 +252,6 @@ get_timeseries_province_data <- function(data, province){
     filter(Province.State == province) %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    add_growth_death_rate() %>%
     arrange(desc(date)) %>%
     ungroup()
 }

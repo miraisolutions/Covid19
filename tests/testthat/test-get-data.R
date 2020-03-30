@@ -38,12 +38,12 @@ test_that("get_timeseries_global_data returns expected headers", {
 
 test_that("get_timeseries_country_data returns expected headers", {
   df <- get_timeseries_country_data(data, "Italy")
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
 })
 
 test_that("get_timeseries_province_data returns expected headers", {
   df <- get_timeseries_province_data(data, "Alaska")
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
 })
 
 test_that("get_date_data returns expected headers", {
