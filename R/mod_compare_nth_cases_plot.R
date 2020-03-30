@@ -1,39 +1,39 @@
-#' compare_top_countries_plot UI Function
+#' compare_nth_cases_plot UI Function
 #'
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
+#' @param n  number of cases for comparison
 #'
 #' @noRd
 #'
 #' @import shiny
 #' @importFrom plotly plotlyOutput
-mod_compare_top_countries_plot_ui <- function(id){
+mod_compare_nth_cases_plot_ui <- function(id, n = 100){
   ns <- NS(id)
   tagList(
-    tagList(
-      fluidRow(
-        column(7,
-               offset = 1,
-               radioButtons(inputId = ns("radio_indicator"), label = "",
-                            choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
-        ),
-        column(4,
-               radioButtons(inputId = ns("radio_log_linear"), label = "",
-                            choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
-        )
+    fluidRow(
+      column(7,
+             offset = 1,
+             radioButtons(inputId = ns("radio_indicator"), label = "",
+                          choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
       ),
-      plotlyOutput(ns("plot"), height = 400),
-      p("Showing countries with at least 1000 cases and outbreaks linger than a week.", style = "margin-left:50px;")
-    )
+      column(4,
+             radioButtons(inputId = ns("radio_log_linear"), label = "",
+                          choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
+      )
+    ),
+    plotlyOutput(ns("plot"), height = 400),
+    div(p(paste0("Showing countries with at least ",n*10," cases, and outbreaks longer than a week.")), align = "center")
   )
 }
 
-#' compare_top_countries_plot Server Function
+#' compare_nth_cases_plot Server Function
 #'
 #' @param global reactive data.frame
+#' @param n  number of cases for comparison
 #'
-#' @example ex-mod_compare_top_countries_plot.R
+#' @example ex-mod_compare_nth_cases_plot.R
 #'
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
@@ -43,20 +43,20 @@ mod_compare_top_countries_plot_ui <- function(id){
 #' @import ggplot2
 #'
 #' @noRd
-mod_compare_top_countries_plot_server <- function(input, output, session, orig_data){
+mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data, n = 100){
   ns <- session$ns
 
   # Data ----
   #This only depends on the orig_data
   df_clean <- reactive({
     orig_data() %>%
-      select(-c(Province.State, Lat, Long, contagion_day), -starts_with("new_")) %>%
+      select(-c(contagion_day), -starts_with("new_")) %>%
       group_by(Country.Region, date) %>%
       summarise_each(sum) %>%
       ungroup() %>%
       arrange(desc(Country.Region), date) %>%
       mutate(no_contagion = case_when(
-        confirmed < 100 ~ 1,
+        confirmed < n ~ 1,
         TRUE ~ 0
       )) %>%
       group_by(Country.Region) %>%
@@ -90,11 +90,11 @@ mod_compare_top_countries_plot_server <- function(input, output, session, orig_d
       ungroup() %>%
       arrange(desc(Value))
 
-    #pick only those countries that have had more than 1000 cases and the outpbreak for more than one week
+    #pick only those countries that have had more than n*10 cases and the outpbreak for more than one week otherwise too many lines
     countries_filtered <- countries %>%
       group_by(Status) %>%
       filter(Date > 7) %>%
-      filter(Value > 1000) %>%
+      filter(Value > n*10) %>%
       ungroup() %>%
       arrange(desc(Value))
 
@@ -116,7 +116,7 @@ mod_compare_top_countries_plot_server <- function(input, output, session, orig_d
   # Plot -----
   output$plot <- renderPlotly({
 
-    p <- plot_all_highlight_10(df(), log = log(), text = "Country")
+    p <- plot_all_highlight(df(), log = log(), text = "Country", n_highligth = 5)
 
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%

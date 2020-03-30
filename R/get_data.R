@@ -135,8 +135,7 @@ get_timeseries_by_contagion_day_data <- function(data) {
     mutate(new_deaths = deaths - lag(deaths)) %>%
     mutate(new_active = active - lag(active)) %>%
     mutate(new_recovered = recovered - lag(recovered)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    add_growth_death_rate() %>%
     mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
@@ -156,8 +155,7 @@ get_timeseries_global_data <- function(data){
   global <- data %>%
     group_by(date) %>%
     summarize_at(c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered"), sum) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    add_growth_death_rate() %>%
     ungroup()
 }
 
@@ -177,8 +175,7 @@ get_timeseries_country_data <- function(data, country){
     filter(Country.Region == country) %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    add_growth_death_rate() %>%
     arrange(desc(date)) %>%
     ungroup()
 }
@@ -209,6 +206,7 @@ aggregate_country_data <- function(data){
 #' @param data data.frameing
 #'
 #' @import dplyr
+#' @import tidyr
 #'
 #' @return df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -218,11 +216,27 @@ aggregate_province_timeseries_data <- function(data){
     select(-Province.State) %>%
     group_by(Country.Region, date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    add_growth_death_rate() %>%
     arrange(desc(date)) %>%
     ungroup()
 }
+
+#' Add growth/Death rates
+#'
+#' @param df data.frame
+#'
+#' @import dplyr
+#'
+#' @return df dataframe
+#'
+#' @export
+add_growth_death_rate <- function(df){
+  df <- df %>%
+    mutate(growth_rate = round(replace_na(new_confirmed / lag(new_confirmed), 0), digits = 2)) %>%
+    mutate(death_rate = round(replace_na(new_deaths / lag(new_deaths), 0), digits = 2))
+  df
+}
+
 
 #' Province.State data timeseries
 #' @rdname get_timeseries_province_data
@@ -240,8 +254,7 @@ get_timeseries_province_data <- function(data, province){
     filter(Province.State == province) %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    add_growth_death_rate() %>%
     arrange(desc(date)) %>%
     ungroup()
 }
@@ -261,7 +274,6 @@ get_date_data <- function(data, date){
   date_df <- data %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
+    add_growth_death_rate() %>%
     ungroup()
 }

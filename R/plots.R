@@ -422,12 +422,13 @@ fix_legend_position <- function(p){
 #' @param df data.frame with column called Date and Value column to plot
 #' @param log logical for applying log scale
 #' @param text element for tooltip
+#' @param n_highligth number of elements to highlight
 #'
 #'
 #' @import ggplot2
 #'
 #' @export
-plot_all_highlight_10 <- function(df, log = F, text = "") {
+plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10) {
 
   #clean df for log case
   if (log) {
@@ -438,11 +439,11 @@ plot_all_highlight_10 <- function(df, log = F, text = "") {
       ))
   }
 
-    df10 <- df %>%
-      filter(as.integer(Status) < 11) #pick top 10 countries, using factor level (factor is ordered by decreasing Value)
+    df_highlight <- df %>%
+      filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
 
 
-    df10_max <- df10 %>%
+    df_highlight_max <- df_highlight %>%
       group_by(Status) %>%
       filter(Value == max(Value)) %>%
       ungroup()
@@ -450,9 +451,9 @@ plot_all_highlight_10 <- function(df, log = F, text = "") {
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
     geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
     basic_plot_theme() +
-    geom_line(data = df10, aes(x = Date, y = Value, colour = Status)) +
-    geom_point(data = df10, aes(x = Date, y = Value, colour = Status)) +
-    scale_color_manual(values = c("#581845","#dd4b39", "#E69F00", "#125704", "#65a60f", "#00a65a", "#041c57", "#56B4E9", "#a60f8a", "#e322a6"))
+    geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
+    geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
+    scale_color_manual(values = c("#581845","#dd4b39", "#E69F00", "#56B4E9", "#125704", "#65a60f", "#00a65a", "#041c57", "#a60f8a", "#e322a6")[1:n_highligth])
 
     if (log) {
       p <- p %>%
@@ -461,4 +462,21 @@ plot_all_highlight_10 <- function(df, log = F, text = "") {
 
   p
 
+}
+
+
+#' plot rate as hist
+#'
+#' @param df data.frame
+#' @param color string used to define color
+#'
+#' @import ggplot2
+#'
+#' @retur ggplot plot
+#' @export
+plot_rate_hist <- function(df, color) {
+  p <- ggplot(df, aes(x = Country, y = Value)) +
+    geom_bar(stat = "identity", fill = rate_colors[[color]]) +
+    basic_plot_theme()
+  p
 }

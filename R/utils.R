@@ -93,6 +93,14 @@ new_case_colors <- c(
 #' Color Palette
 #'
 #' @export
+rate_colors <- c(
+  "growth_rate" = "#dd4b39",
+  "death_rate" = "black"
+)
+
+#' Color Palette
+#'
+#' @export
 new_total_colors <- c(
   "total" = "#C8C8C8",
   "new" = "#ea8b5b"

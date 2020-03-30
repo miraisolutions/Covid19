@@ -30,7 +30,7 @@ mod_map_ui <- function(id){
 
 #' map Server Function
 #'
-#' @param data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
 #'
 #' @example man-roxygen/ex-mod_map.R
 #'
@@ -39,7 +39,7 @@ mod_map_ui <- function(id){
 #' @import leaflet
 #'
 #' @noRd
-mod_map_server <- function(input, output, session, data){
+mod_map_server <- function(input, output, session, orig_data_aggregate){
   ns <- session$ns
 
   # Data ----
@@ -47,7 +47,7 @@ mod_map_server <- function(input, output, session, data){
   countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   data_clean <- reactive({
-    data <- data() %>% align_country_names()
+    data <- orig_data_aggregate() %>% align_country_names()
 
     data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
 
@@ -59,7 +59,7 @@ mod_map_server <- function(input, output, session, data){
 
   # UI controls ----
   output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(data()$date), max = max(data()$date), value = max(data()$date), dragRange = FALSE, animate = T, step = 1)
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate()$date), max = max(orig_data_aggregate()$date), value = max(orig_data_aggregate()$date), dragRange = FALSE, animate = T, step = 1)
   })
 
   # Map ----
@@ -68,7 +68,7 @@ mod_map_server <- function(input, output, session, data){
   data_date <- reactive({
     data_clean() %>%
       filter(date == req(input$slider_day)) %>%
-      select(-c(Country.Region, Province.State, Lat, Long, date, contagion_day)) %>%
+      select(-c(Country.Region, date, contagion_day)) %>%
       group_by(country_name) %>%
       summarise_each(sum)
   })

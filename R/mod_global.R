@@ -1,3 +1,6 @@
+# Params ----
+N <- 1000 #number of cases for comparison
+
 #' global UI Function
 #'
 #' @description A shiny Module.
@@ -30,8 +33,14 @@ mod_global_ui <- function(id){
     ),
     hr(),
     fluidRow(
-      div(h4("Comparison from day of 100th contagion"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-      mod_compare_top_countries_plot_ui(ns("plot_compare_100th"))
+      column(6,
+             div(h4(paste0("Top 5 countries from day of ", N," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), n = N)
+      ),
+      column(6,
+             # div(h4("Current top 5 countries rates"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
+      )
     ),
     hr(),
     mod_add_table_ui(ns("add_table_world"))
@@ -55,10 +64,17 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # Datasets ----
 
+  orig_data_aggregate <- reactive({
+    orig_data_aggregate <- orig_data() %>%
+      aggregate_province_timeseries_data() %>%
+      arrange(Country.Region)
+    orig_data_aggregate
+  })
+
   global <- reactive({
-    orig_data() %>%
-      get_timeseries_global_data() %>%
-      select(-ends_with("rate"))
+    global <- orig_data() %>%
+      get_timeseries_global_data()
+    global
   })
 
   global_today <- reactive({
@@ -67,8 +83,9 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   world <- reactive({
-    orig_data() %>%
-      aggregate_country_data()
+    orig_data_aggregate() %>%
+      filter( date == max(date)) %>%
+      arrange(desc(confirmed) )
   })
 
   world_top_5 <- reactive({
@@ -77,8 +94,7 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   world_top_5_confirmed <- reactive({
-    orig_data() %>%
-      aggregate_province_timeseries_data() %>%
+    orig_data_aggregate() %>%
       filter(Country.Region %in% world_top_5()$Country.Region) %>%
       select(Country.Region, date, confirmed)
   })
@@ -88,7 +104,7 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # map ----
 
-  callModule(mod_map_server, "map_ui", orig_data)
+  callModule(mod_map_server, "map_ui", orig_data_aggregate)
 
   # plots ----
 
@@ -118,8 +134,11 @@ mod_global_server <- function(input, output, session, orig_data){
 
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
-  # > comparison plot from day of 100th contagion
-  callModule(mod_compare_top_countries_plot_server, "plot_compare_100th", orig_data)
+  # > comparison plot from day of nth contagion
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, n = N)
+
+  # > growth_death_rate
+  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", world_top_5)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)
