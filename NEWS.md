@@ -1,5 +1,7 @@
 ### Covid19 1.1.2.9000 (development branch)
 
+- Integrate population data for map (#29)
+
 ### Covid19 1.1.2 (2020-03-26)
 
 - JHU data source currently deprecated: switch (temporarily) to https://github.com/bumbeishvili/covid19-daily-data (#48). Users are alerted on app launch.
