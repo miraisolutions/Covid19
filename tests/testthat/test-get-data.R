@@ -58,12 +58,11 @@ test_that("aggregate_country_data returns expected headers", {
 
 test_that("aggregate_province_timeseries_data returns expected headers", {
   df <- aggregate_province_timeseries_data(data)
-  expect_equal(sort(names(df)), sort(c("Country.Region", "date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("Country.Region", "date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
 })
 
 
 test_that("add_growth_death_rate returns expected headers", {
-  df <- add_growth_death_rate(data)
-  expect_true(c("growth_rate", "death_rate") %in% names(df))
-  df_IT <- df %>% filter(Country.Region == "Italy") %>%  select(date, confirmed, new_confirmed, active, growth_rate)
+  df <- aggregate_province_timeseries_data(data) %>% add_growth_death_rate()
+  expect_true(all(c("growth_rate", "death_rate") %in% names(df)))
 })
