@@ -238,7 +238,9 @@ add_growth_death_rate <- function(df){
       arrange(Country.Region, date) %>%
       left_join(confirmed_today, by = "Country.Region" ) %>%
       group_by(Country.Region) %>%
+      filter(date < today) %>%
       filter(abs(confirmed - confirmed_today/2) == min(abs(confirmed - confirmed_today/2)) ) %>%
+      filter(date == max(date)) %>%
       ungroup() %>%
       mutate(date_half = date) %>%
       select(Country.Region, date_half)
@@ -247,7 +249,7 @@ add_growth_death_rate <- function(df){
       arrange(Country.Region, date) %>%
       filter(date == today) %>%
       left_join(day_half_confirmed, by = "Country.Region" ) %>%
-      mutate(daily_growth_rate = date-date_half) %>%
+      mutate(daily_growth_rate = date - date_half) %>%
       select(Country.Region, daily_growth_rate, date)
 
     daily_growth_rate
@@ -266,7 +268,7 @@ add_growth_death_rate <- function(df){
   }
 
 
-  df <- df %>%
+  df1 <- df %>%
     arrange(Country.Region, date) %>%
     group_by(Country.Region) %>%
     add_daily_growth_rate() %>%
@@ -274,7 +276,7 @@ add_growth_death_rate <- function(df){
            daily_death_rate = replace_na(deaths / lag(confirmed), 0)) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
-  df <- df %>%
+  df2 <- df1 %>%
     group_by(Country.Region) %>%
     # mutate(growth_rate = round(zoo::rollmeanr(daily_growth_rate, 7, align = "right", fill = 0), digits = 3)) %>%
     mutate(growth_rate = daily_growth_rate) %>%
@@ -285,7 +287,7 @@ add_growth_death_rate <- function(df){
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     arrange(Country.Region, desc(date)) %>%
     select(-starts_with("daily_"))
-  df
+  df2
 }
 
 
@@ -383,4 +385,25 @@ get_pop_data <- function(data){
     select(-Country.Region)
 
   data_pop
+}
+
+#' Select only countries which had at least n cases and outbreaks longer than w days
+#'
+#' @param df data.frame
+#' @param n number of cases
+#' @param w days of outbreak
+select_countries_n_cases_w_days <- function(df, n, w) {
+  countries_filtered <- df %>%
+    filter(confirmed > n) %>% #pick only those countries that have more than n cases
+    group_by(Country.Region) %>%
+    mutate(N = n()) %>%
+    filter( N > w) %>% #pick only those countries that have had outbreak for more than w days
+      ungroup() %>%
+    select(Country.Region) %>%
+    distinct()
+
+  df_filtered <- df %>%
+    filter(Country.Region %in% countries_filtered$Country.Region)
+
+  df_filtered
 }

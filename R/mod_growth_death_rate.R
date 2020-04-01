@@ -57,15 +57,9 @@ mod_growth_death_rate_server <- function(input, output, session, df){
   }
 
   pick_rate_hist <- function(orig_data_aggregate, rate){
-    countries_filtered <- orig_data_aggregate %>%
-      filter(contagion_day > w) %>%
-      filter(confirmed > n) %>%
-      select(Country.Region) %>%
-      distinct()
-
     df_plot <- orig_data_aggregate %>%
+      select_countries_n_cases_w_days(n = n, w = w) %>%
       pick_rate(rate) %>%
-      filter(Country.Region %in% countries_filtered$Country.Region) %>%
       filter( date == max(date)) %>%
       mutate(Country = as.factor(Country.Region)) %>%
       select(Country, Value)

@@ -13,23 +13,34 @@ mod_compare_nth_cases_plot_ui <- function(id){
   ns <- NS(id)
   # Params ----
   N <- 10000 #number of cases for comparison
+  n_highligth <- 5 # number of countries to highligth
   # UI ----
   tagList(
-    div(h4(paste0("Top 5 countries from day of ", N," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     fluidRow(
-      column(7,
-             offset = 1,
-             radioButtons(inputId = ns("radio_indicator"), label = "",
-                          choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
+      column(6,
+             div(h4(paste0("Top ",n_highligth," countries from day of ", N," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             fluidRow(
+               column(7,
+                      offset = 1,
+                      radioButtons(inputId = ns("radio_indicator"), label = "",
+                                   choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
+               ),
+               column(4,
+                      radioButtons(inputId = ns("radio_log_linear"), label = "",
+                                   choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
+               )
+             ),
+             withSpinner(plotlyOutput(ns("plot"), height = 400)),
+             div(p(paste0("Showing countries with at least ", N," cases, and outbreaks longer than a week.")), align = "center"),
+             div(p(paste0("Notice that China has been cut off to the second longest outbreak.")), align = "center")
       ),
-      column(4,
-             radioButtons(inputId = ns("radio_log_linear"), label = "",
-                          choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
+      column(6,
+             div(h4(paste0("Top ",n_highligth," countries for confirmed cases: rates monthly evolution")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             radioButtons(inputId = ns("radio_rate"), label = "",
+                          choices = c("Growth Rate" = "growth_rate", "Death_rate" = "death_rate"), selected = "growth_rate", inline = TRUE),
+             withSpinner(plotlyOutput(ns("plot_rates"), height = 400))
       )
-    ),
-    withSpinner(plotlyOutput(ns("plot"), height = 400)),
-    div(p(paste0("Showing countries with at least ", N," cases, and outbreaks longer than a week.")), align = "center"),
-    div(p(paste0("Notice that China has been cut off to the second longest outbreak.")), align = "center")
+    )
   )
 }
 
@@ -51,25 +62,26 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   ns <- session$ns
 
   # Params ----
-  N <- 10000 #number of cases for comparison
+  n <- 10000 #min number of cases for a country to be considered
+  w <- 7 #min lenght of outbreak
+  n_highligth <- 5 # number of countries to highligth
 
   # Data ----
   #This only depends on the orig_data_aggregate
   df_clean <- reactive({
     df_clean <- orig_data_aggregate() %>%
-      select(-starts_with("new_"), -ends_with("_rate")) %>%
-      mutate(no_contagion = case_when(
-        confirmed < N ~ 1,
+      select(-starts_with("new_")) %>%
+      select_countries_n_cases_w_days(n = n, w = w) %>%
+      mutate(no_contagion = case_when( #drop rows where confirmed <- n
+        confirmed < n ~ 1,
         TRUE ~ 0
       )) %>%
-      filter(no_contagion == 0) %>% # pick only those countries that had at least N cases
+      filter(no_contagion == 0) %>%
+      select(-no_contagion) %>%
       group_by(Country.Region) %>%
-      mutate(tmp = contagion_day - min(contagion_day)) %>%
-      mutate(N = n()) %>%
-      ungroup() %>%
-      filter( N > 7) %>% #pick only those countries that have had outbreak for more than one week
-      mutate(contagion_day = tmp) %>%
-      select( -c(tmp, no_contagion, N))
+      mutate(contagion_day = contagion_day - min(contagion_day)) %>%
+      ungroup()
+
     df_clean
   })
 
@@ -86,8 +98,8 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
     # Countries listed by their max value
     countries <- df_tmp %>%
       group_by(Status) %>%
-      filter(Value == max(Value)) %>%
       filter(Date == max(Date)) %>%
+      filter(Value ==  max(Value)) %>%
       ungroup() %>%
       arrange(desc(Value))
 
@@ -106,6 +118,26 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
     df
   })
 
+  df_rate <- reactive({
+
+    countries <- df_clean() %>%
+      filter(date == max(date)) %>%
+      arrange(desc(confirmed)) %>%
+      top_n(n = n_highligth, wt = confirmed )
+
+
+    df_rate <- df_clean() %>%
+      bind_cols(df_clean()[,input$radio_rate] %>% setNames("Value")) %>%
+      filter(Country.Region %in% countries$Country.Region) %>%
+      filter(date > max(date) - 30) %>% # pick one month | filter(date > max(date) - 7) %>% # pick one week
+      mutate(Status = factor(Country.Region, levels = countries$Country.Region) ) %>%
+      mutate(Date = date ) %>%
+      select(Status, Value, Date)
+
+    df_rate
+
+  })
+
   log <- reactive({
     input$radio_log_linear != "linear"
   })
@@ -113,13 +145,22 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   # Plot -----
   output$plot <- renderPlotly({
 
-    p <- plot_all_highlight(df(), log = log(), text = "Country", n_highligth = 5)
+    p <- plot_all_highlight(df(), log = log(), text = "Country", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "death_rate", T, F), date_x = F)
 
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
     p
 
+  })
+
+  output$plot_rates <- renderPlotly({
+    p <- plot_all_highlight(df_rate(), log = F, text = "Country", n_highligth = n_highligth, percent = ifelse(input$radio_rate == "death_rate", T, F), date_x = T)
+
+    p <- p %>%
+      plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+    p
   })
 
 }

@@ -4,7 +4,14 @@
 \alias{plot_all_highlight}
 \title{plot all countries but highlight first 10}
 \usage{
-plot_all_highlight(df, log = F, text = "", n_highligth = 10)
+plot_all_highlight(
+  df,
+  log = F,
+  text = "",
+  n_highligth = 10,
+  percent = F,
+  date_x = F
+)
 }
 \arguments{
 \item{df}{data.frame with column called Date and Value column to plot}
@@ -14,6 +21,10 @@ plot_all_highlight(df, log = F, text = "", n_highligth = 10)
 \item{text}{element for tooltip}
 
 \item{n_highligth}{number of elements to highlight}
+
+\item{percent}{logical to make the y axis in percent}
+
+\item{date_x}{logical to convert x-axis labels to dates}
 }
 \description{
 plot all countries but highlight first 10

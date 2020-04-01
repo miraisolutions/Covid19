@@ -13,6 +13,9 @@ plot_rate_hist(df, color, percent = F)
 
 \item{percent}{logical to make the y axis in percent}
 }
+\value{
+ggplot plot
+}
 \description{
 plot rate as hist
 }
