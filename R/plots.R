@@ -482,9 +482,9 @@ plot_rate_hist <- function(df, color, percent =  F) {
 
   p <- ggplot(df, aes(x = Country, y = Value)) +
     geom_bar(stat = "identity", fill = rate_colors[[color]]) +
-    basic_plot_theme() #+
+    basic_plot_theme() +
     theme(
-      axis.text.x = element_text(angle = 15)
+      axis.text.x = element_text(angle = 45)
     )
 
     if (percent) {

@@ -226,16 +226,58 @@ aggregate_province_timeseries_data <- function(data){
 #'
 #' @export
 add_growth_death_rate <- function(df){
+
+  get_today_growth_rate <- function(df, today){
+    confirmed_today <- df %>%
+      arrange(Country.Region, date) %>%
+      filter(date == today) %>%
+      mutate(confirmed_today = confirmed) %>%
+      select(Country.Region, confirmed_today)
+
+    day_half_confirmed <- df %>%
+      arrange(Country.Region, date) %>%
+      left_join(confirmed_today, by = "Country.Region" ) %>%
+      group_by(Country.Region) %>%
+      filter(abs(confirmed - confirmed_today/2) == min(abs(confirmed - confirmed_today/2)) ) %>%
+      ungroup() %>%
+      mutate(date_half = date) %>%
+      select(Country.Region, date_half)
+
+    daily_growth_rate <- df %>%
+      arrange(Country.Region, date) %>%
+      filter(date == today) %>%
+      left_join(day_half_confirmed, by = "Country.Region" ) %>%
+      mutate(daily_growth_rate = date-date_half) %>%
+      select(Country.Region, daily_growth_rate, date)
+
+    daily_growth_rate
+  }
+
+  add_daily_growth_rate <- function(df) {
+    dates <- unique(df$date)
+    growth_rate_df <- do.call("rbind", lapply(dates, function(d){
+      get_today_growth_rate(df,d)
+    }))
+
+    df_w_daily_growth_rate <- df %>%
+      left_join(growth_rate_df, by = c("Country.Region", "date"))
+
+    df_w_daily_growth_rate
+  }
+
+
   df <- df %>%
     arrange(Country.Region, date) %>%
     group_by(Country.Region) %>%
-    mutate(daily_growth_rate = replace_na(new_confirmed / lag(active), 0),
+    add_daily_growth_rate() %>%
+    mutate(#daily_growth_rate = replace_na(new_confirmed / lag(active), 0),
            daily_death_rate = replace_na(deaths / lag(confirmed), 0)) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
   df <- df %>%
     group_by(Country.Region) %>%
-    mutate(growth_rate = round(zoo::rollmeanr(daily_growth_rate, 7, align = "right", fill = 0), digits = 3)) %>%
+    # mutate(growth_rate = round(zoo::rollmeanr(daily_growth_rate, 7, align = "right", fill = 0), digits = 3)) %>%
+    mutate(growth_rate = daily_growth_rate) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
     mutate(death_rate = round(daily_death_rate, digits = 3)) %>%
     ungroup() %>%

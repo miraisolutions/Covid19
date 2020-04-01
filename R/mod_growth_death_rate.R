@@ -7,17 +7,18 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @importFrom shinycssloaders withSpinner
 mod_growth_death_rate_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidRow(
       column(6,
              div(h4("Current top 5 countries growth rate"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             uiOutput(ns("plot_growth_rate"))
+             withSpinner(uiOutput(ns("plot_growth_rate")))
       ),
       column(6,
              div(h4("Current top 5 countries death rate"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             uiOutput(ns("plot_death_rate"))
+             withSpinner(uiOutput(ns("plot_death_rate")))
       )
     )
   )
@@ -42,15 +43,15 @@ mod_growth_death_rate_server <- function(input, output, session, df){
   N <- 5 # top countries
 
   caption <- list(
-    growth_rate = paste0("Computed as new reported cases today / active cases yesterday. Only countries with more than ", n, " cases and outbreaks longer than ", w, " days considered."),
-    death_rate = paste0("Computed as total deaths today / total confirmed cases yesterday. Only countries with more than ", n, " cases and outbreaks longer than ", w, " days considered.")
+    growth_rate = "Computed as number of days it took double the number of confirmed cases.",
+    death_rate = "Computed as total deaths today / total confirmed cases yesterday. "
   )
 
   # Help funcs ----
 
   pick_rate <- function(orig_data_aggregate, rate){
     df <-  orig_data_aggregate  %>%
-      select(-c(starts_with("new_"), starts_with("daily_"))) %>%
+      select(-starts_with("new_")) %>%
       bind_cols(orig_data_aggregate[, rate] %>% setNames("Value"))
     df
   }
@@ -66,30 +67,34 @@ mod_growth_death_rate_server <- function(input, output, session, df){
       pick_rate(rate) %>%
       filter(Country.Region %in% countries_filtered$Country.Region) %>%
       filter( date == max(date)) %>%
-      arrange(desc(Value)) %>%
-      top_n(N, wt = Value) %>%
       mutate(Country = as.factor(Country.Region)) %>%
       select(Country, Value)
     df_plot
   }
 
 
-  df_base_plot1 <- reactive({pick_rate_hist( req(df()), "growth_rate")})
-  df_base_plot2 <- reactive({pick_rate_hist( req(df()), "death_rate")})
+  df_base_plot1 <- reactive({pick_rate_hist( req(df()), "growth_rate") %>% top_n(N, wt = desc(Value))})
+  df_base_plot2 <- reactive({pick_rate_hist( req(df()), "death_rate") %>% top_n(N, wt = Value)})
 
   # Plots ----
 
   output$plot_growth_rate <- renderUI({
     tagList(
-      plotlyOutput(ns("plot_growth_rate_hist"), height = 400),
-      div(p(caption[["growth_rate"]]), align = "center")
+      br(),
+      div(p(caption[["growth_rate"]]), align = "center"),
+      div(p(paste0("Only countries with more than ", n, " cases and outbreaks longer than ", w, " days considered.")), align = "center"),
+      br(),
+      plotlyOutput(ns("plot_growth_rate_hist"), height = 400)
     )
   })
 
   output$plot_death_rate <- renderUI({
     tagList(
-      plotlyOutput(ns("plot_death_rate_hist"), height = 400),
-      div(p(caption[["death_rate"]]), align = "center")
+      br(),
+      div(p(caption[["death_rate"]]), align = "center"),
+      div(p(paste0("Only countries with more than ", n, " cases and outbreaks longer than ", w, " days considered.")), align = "center"),
+      br(),
+      plotlyOutput(ns("plot_death_rate_hist"), height = 400)
     )
   })
 

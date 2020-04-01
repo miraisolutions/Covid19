@@ -8,6 +8,7 @@
 #'
 #' @import shiny
 #' @importFrom plotly plotlyOutput
+#' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id){
   ns <- NS(id)
   # Params ----
@@ -26,7 +27,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
                           choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
       )
     ),
-    plotlyOutput(ns("plot"), height = 400),
+    withSpinner(plotlyOutput(ns("plot"), height = 400)),
     div(p(paste0("Showing countries with at least ", N," cases, and outbreaks longer than a week.")), align = "center"),
     div(p(paste0("Notice that China has been cut off to the second longest outbreak.")), align = "center")
   )
