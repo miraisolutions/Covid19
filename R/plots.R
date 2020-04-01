@@ -469,14 +469,26 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10) {
 #'
 #' @param df data.frame
 #' @param color string used to define color
+#' @param percent logical to make the y axis in percent
 #'
 #' @import ggplot2
 #'
 #' @retur ggplot plot
 #' @export
-plot_rate_hist <- function(df, color) {
+plot_rate_hist <- function(df, color, percent =  F) {
+  if (percent) {
+    df$Value <- 100*df$Value
+  }
+
   p <- ggplot(df, aes(x = Country, y = Value)) +
     geom_bar(stat = "identity", fill = rate_colors[[color]]) +
-    basic_plot_theme()
+    basic_plot_theme() #+
+    theme(
+      axis.text.x = element_text(angle = 15)
+    )
+
+    if (percent) {
+      p <- p + scale_y_continuous(labels = function(x) paste0(x, "%")) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+    }
   p
 }

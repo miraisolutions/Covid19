@@ -134,7 +134,8 @@ get_timeseries_by_contagion_day_data <- function(data) {
     mutate(new_confirmed = confirmed - lag(confirmed)) %>%
     mutate(new_deaths = deaths - lag(deaths)) %>%
     mutate(new_active = active - lag(active)) %>%
-    mutate(new_recovered = recovered - lag(recovered))
+    mutate(new_recovered = recovered - lag(recovered)) %>%
+    ungroup()
 }
 
 #' Global data timeseries
@@ -210,9 +211,8 @@ aggregate_province_timeseries_data <- function(data){
     select(-Province.State) %>%
     group_by(Country.Region, date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    add_growth_death_rate() %>%
-    arrange(desc(date)) %>%
-    ungroup()
+    ungroup() %>%
+    arrange(Country.Region, desc(date))
 }
 
 #' Add growth/Death rates
@@ -220,18 +220,29 @@ aggregate_province_timeseries_data <- function(data){
 #' @param df data.frame
 #'
 #' @import dplyr
+#' @import tidyr
 #'
 #' @return df dataframe
 #'
 #' @export
 add_growth_death_rate <- function(df){
   df <- df %>%
+    arrange(Country.Region, date) %>%
     group_by(Country.Region) %>%
-    mutate(growth_rate = round(zoo::rollmean(replace_na(new_confirmed / lag(active), 0), 7, align = "right", fill = NA), digits = 2)) %>%
-    mutate(death_rate = round(zoo::rollmean(replace_na(new_deaths / lag(confirmed), 0), 7, align = "right", fill = NA), digits = 2))  %>%
+    mutate(daily_growth_rate = replace_na(new_confirmed / lag(active), 0),
+           daily_death_rate = replace_na(deaths / lag(confirmed), 0)) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
+    ungroup()
+  df <- df %>%
+    group_by(Country.Region) %>%
+    mutate(growth_rate = round(zoo::rollmeanr(daily_growth_rate, 7, align = "right", fill = 0), digits = 3)) %>%
+    # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
+    mutate(death_rate = round(daily_death_rate, digits = 3)) %>%
     ungroup() %>%
     mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} )
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
+    arrange(Country.Region, desc(date)) %>%
+    select(-starts_with("daily_"))
   df
 }
 

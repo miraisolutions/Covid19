@@ -1,6 +1,3 @@
-# Params ----
-N <- 1000 #number of cases for comparison
-
 #' global UI Function
 #'
 #' @description A shiny Module.
@@ -34,11 +31,9 @@ mod_global_ui <- function(id){
     hr(),
     fluidRow(
       column(6,
-             div(h4(paste0("Top 5 countries from day of ", N," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), n = N)
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"))
       ),
       column(6,
-             # div(h4("Current top 5 countries rates"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
       )
     ),
@@ -67,6 +62,7 @@ mod_global_server <- function(input, output, session, orig_data){
   orig_data_aggregate <- reactive({
     orig_data_aggregate <- orig_data() %>%
       aggregate_province_timeseries_data() %>%
+      add_growth_death_rate() %>%
       arrange(Country.Region)
     orig_data_aggregate
   })
@@ -82,20 +78,24 @@ mod_global_server <- function(input, output, session, orig_data){
       filter(date == max(date))
   })
 
-  world <- reactive({
+  orig_data_aggregate_today <- reactive({
     orig_data_aggregate() %>%
-      filter( date == max(date)) %>%
+      filter( date == max(date))
+  })
+
+  world <- reactive({
+    orig_data_aggregate_today() %>%
       arrange(desc(confirmed) )
   })
 
-  world_top_5 <- reactive({
+  world_top_5_today <- reactive({
     world() %>%
       head(5)
   })
 
   world_top_5_confirmed <- reactive({
     orig_data_aggregate() %>%
-      filter(Country.Region %in% world_top_5()$Country.Region) %>%
+      filter(Country.Region %in% world_top_5_today()$Country.Region) %>%
       select(Country.Region, date, confirmed)
   })
 
@@ -135,10 +135,10 @@ mod_global_server <- function(input, output, session, orig_data){
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
   # > comparison plot from day of nth contagion
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, n = N)
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate)
 
   # > growth_death_rate
-  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", world_top_5)
+  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)

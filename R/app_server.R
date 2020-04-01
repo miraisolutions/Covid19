@@ -12,8 +12,7 @@ app_server <- function(input, output, session) {
 
   orig_data <- reactive({
     get_timeseries_full_data() %>%
-      get_timeseries_by_contagion_day_data() %>%
-      select(-ends_with("rate"))
+      get_timeseries_by_contagion_day_data()
   })
 
   output$last_update <- renderText({
