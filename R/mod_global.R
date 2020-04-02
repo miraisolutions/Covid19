@@ -30,10 +30,10 @@ mod_global_ui <- function(id){
     ),
     hr(),
     fluidRow(
-      column(8,
+      column(6,
              mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"))
       ),
-      column(4,
+      column(6,
              mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
       )
     ),

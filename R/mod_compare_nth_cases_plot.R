@@ -11,36 +11,23 @@
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id){
   ns <- NS(id)
-  # Params ----
-  N <- 10000 #number of cases for comparison
-  n_highligth <- 5 # number of countries to highligth
+
   # UI ----
   tagList(
+    uiOutput(ns("title")),
     fluidRow(
-      column(6,
-             div(h4(paste0("Top ",n_highligth," countries from day of ", N," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             fluidRow(
-               column(7,
-                      offset = 1,
-                      radioButtons(inputId = ns("radio_indicator"), label = "",
-                                   choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
-               ),
-               column(4,
-                      radioButtons(inputId = ns("radio_log_linear"), label = "",
-                                   choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
-               )
-             ),
-             withSpinner(plotlyOutput(ns("plot"), height = 400)),
-             div(p(paste0("Showing countries with at least ", N," cases, and outbreaks longer than a week.")), align = "center"),
-             div(p(paste0("Notice that China has been cut off to the second longest outbreak.")), align = "center")
+      column(7,
+             offset = 1,
+             radioButtons(inputId = ns("radio_indicator"), label = "",
+                          choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
       ),
-      column(6,
-             div(h4(paste0("Top ",n_highligth," countries for confirmed cases: rates monthly evolution")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             radioButtons(inputId = ns("radio_rate"), label = "",
-                          choices = c("Growth Rate" = "growth_rate", "Death_rate" = "death_rate"), selected = "growth_rate", inline = TRUE),
-             withSpinner(plotlyOutput(ns("plot_rates"), height = 400))
+      column(4,
+             radioButtons(inputId = ns("radio_log_linear"), label = "",
+                          choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
       )
-    )
+    ),
+    withSpinner(plotlyOutput(ns("plot"), height = 400)),
+    div(uiOutput(ns("caption")), align = "center")
   )
 }
 
@@ -62,7 +49,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   ns <- session$ns
 
   # Params ----
-  n <- 10000 #min number of cases for a country to be considered
+  n <- 1000 #min number of cases for a country to be considered
   w <- 7 #min lenght of outbreak
   n_highligth <- 5 # number of countries to highligth
 
@@ -101,7 +88,8 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
       filter(Date == max(Date)) %>%
       filter(Value ==  max(Value)) %>%
       ungroup() %>%
-      arrange(desc(Value))
+      arrange(desc(Value)) %>%
+      top_n(n_highligth, wt = Value)
 
     # Day of the country with max contagions after china
     max_contagion_no_china <- countries %>%
@@ -116,26 +104,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
       mutate(Status = factor(Status, levels = as.vector(countries$Status))) #order by factor
 
     df
-  })
-
-  df_rate <- reactive({
-
-    countries <- df_clean() %>%
-      filter(date == max(date)) %>%
-      arrange(desc(confirmed)) %>%
-      top_n(n = n_highligth, wt = confirmed )
-
-
-    df_rate <- df_clean() %>%
-      bind_cols(df_clean()[,input$radio_rate] %>% setNames("Value")) %>%
-      filter(Country.Region %in% countries$Country.Region) %>%
-      filter(date > max(date) - 30) %>% # pick one month | filter(date > max(date) - 7) %>% # pick one week
-      mutate(Status = factor(Country.Region, levels = countries$Country.Region) ) %>%
-      mutate(Date = date ) %>%
-      select(Status, Value, Date)
-
-    df_rate
-
   })
 
   log <- reactive({
@@ -154,13 +122,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
 
   })
 
-  output$plot_rates <- renderPlotly({
-    p <- plot_all_highlight(df_rate(), log = F, text = "Country", n_highligth = n_highligth, percent = ifelse(input$radio_rate == "death_rate", T, F), date_x = T)
+  output$title <- renderUI({
+    div(h4(paste0("Top ",n_highligth," countries from day of ", n ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+  })
 
-    p <- p %>%
-      plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
-    p
+  output$caption <- renderUI({
+      p(paste0("Considering countries with at least ", n," confirmed cases, and outbreaks longer than ",w," days. Day 0 is the day the country reached ", n," confirmed cases. Notice that China has been cut off to the second longest outbreak."))
   })
 
 }

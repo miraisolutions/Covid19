@@ -13,11 +13,21 @@ mod_growth_death_rate_ui <- function(id){
   tagList(
     fluidRow(
       column(6,
-             div(h4("Current top 5 countries growth rate"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Current top 5 countries growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             radioButtons(inputId = ns("growth_rate"), label = "",
+                          choices = list("Over 3 days" = "growth_rate_3",
+                                         "Over 5 days" = "growth_rate_5",
+                                         "Over one week" = "growth_rate_7"),
+                          selected = "growth_rate_3", inline = TRUE),
              withSpinner(uiOutput(ns("plot_growth_rate")))
       ),
       column(6,
              div(h4("Current top 5 countries death rate"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(style = "visibility: hidden",
+                 radioButtons(inputId = ns("dummy"), label = "",
+                              choices = list("dummy" = "dummy"),
+                              selected = "dummy", inline = TRUE),
+                 ),
              withSpinner(uiOutput(ns("plot_death_rate")))
       )
     )
@@ -38,14 +48,9 @@ mod_growth_death_rate_server <- function(input, output, session, df){
   ns <- session$ns
 
   # Params ----
-  n <- 10000 #min number of cases for a country to be considered
+  n <- 1000 #min number of cases for a country to be considered
   w <- 7 #min lenght of outbreak
-  N <- 5 # top countries
-
-  caption <- list(
-    growth_rate = "Computed as number of days it took double the number of confirmed cases.",
-    death_rate = "Computed as total deaths today / total confirmed cases yesterday. "
-  )
+  n_highligth <- 5 # top countries
 
   # Help funcs ----
 
@@ -61,34 +66,37 @@ mod_growth_death_rate_server <- function(input, output, session, df){
       select_countries_n_cases_w_days(n = n, w = w) %>%
       pick_rate(rate) %>%
       filter( date == max(date)) %>%
+      arrange(desc(Value)) %>%
+      top_n(n_highligth, wt = Value) %>%
       mutate(Country = as.factor(Country.Region)) %>%
       select(Country, Value)
+
     df_plot
   }
 
 
-  df_base_plot1 <- reactive({pick_rate_hist( req(df()), "growth_rate") %>% top_n(N, wt = desc(Value))})
-  df_base_plot2 <- reactive({pick_rate_hist( req(df()), "death_rate") %>% top_n(N, wt = Value)})
+  df_base_plot1 <- reactive({pick_rate_hist( req(df()), input$growth_rate)})
+  df_base_plot2 <- reactive({pick_rate_hist( req(df()), "death_rate")})
 
   # Plots ----
+  caption <- reactive({list(
+    growth_rate = paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_rate_", "", input$growth_rate) ," days ago."),
+    death_rate = "Computed as total deaths today / total confirmed cases."
+  )})
 
   output$plot_growth_rate <- renderUI({
     tagList(
-      br(),
-      div(p(caption[["growth_rate"]]), align = "center"),
-      div(p(paste0("Only countries with more than ", n, " cases and outbreaks longer than ", w, " days considered.")), align = "center"),
-      br(),
-      plotlyOutput(ns("plot_growth_rate_hist"), height = 400)
+      plotlyOutput(ns("plot_growth_rate_hist"), height = 400),
+      div(p(caption()[["growth_rate"]]), align = "center"),
+      div(p(paste0("Only countries with more than ", n, " confirmed cases and outbreaks longer than ", w, " days considered.")), align = "center"),
     )
   })
 
   output$plot_death_rate <- renderUI({
     tagList(
-      br(),
-      div(p(caption[["death_rate"]]), align = "center"),
-      div(p(paste0("Only countries with more than ", n, " cases and outbreaks longer than ", w, " days considered.")), align = "center"),
-      br(),
-      plotlyOutput(ns("plot_death_rate_hist"), height = 400)
+      plotlyOutput(ns("plot_death_rate_hist"), height = 400),
+      div(p(caption()[["death_rate"]]), align = "center"),
+      div(p(paste0("Only countries with more than ", n, " confirmed cases and outbreaks longer than ", w, " days considered.")), align = "center"),
     )
   })
 
