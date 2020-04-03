@@ -1,3 +1,9 @@
+### Covid19 1.1.4 (2020-04-03)
+
+- Added plot comparing countries from the day where the total number of confirmed cases was above 1000 (#39).
+- Added growth factor and Death rate plots (#5)
+- Added new cases to map (#56)
+
 ### Covid19 1.1.3 (2020-03-30)
 
 - Integrate population data for map (#29)
@@ -15,7 +21,6 @@
 - Improved app header: it now shows the app version and the change-log in  a modal dialog (#38, #43).
 - Added map showing the number of cases (#3, #36, #45).
 - Added Loader animations to all plots (#40).
-
 
 ### Covid19 1.0.0 (2020-03-20)
 

@@ -417,6 +417,99 @@ fix_legend_position <- function(p){
 }
 
 
-sort_type_by_max <- function(data) {
-  c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
+#' plot all countries but highlight first 10
+#'
+#' @param df data.frame with column called Date and Value column to plot
+#' @param log logical for applying log scale
+#' @param text element for tooltip
+#' @param n_highligth number of elements to highlight
+#' @param percent logical to make the y axis in percent
+#' @param date_x logical to convert x-axis labels to dates
+#'
+#'
+#' @import ggplot2
+#'
+#' @export
+plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
+
+  #clean df for log case
+  if (log) {
+    df <- df %>%
+      mutate(Value = case_when(
+        Value == 0 ~ 1,
+        TRUE ~ Value
+      ))
+  }
+
+  # if percentage, multiply by 100
+  if (percent) {
+    df$Value <- 100*df$Value
+  }
+
+  df_highlight <- df %>%
+    filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
+
+
+  df_highlight_max <- df_highlight %>%
+    group_by(Status) %>%
+    filter(Value == max(Value)) %>%
+    ungroup()
+
+  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
+    # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
+    basic_plot_theme() +
+    geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
+    geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
+    scale_color_manual(values = c("#581845","#dd4b39", "#E69F00", "#56B4E9", "#125704", "#65a60f", "#00a65a", "#041c57", "#a60f8a", "#e322a6")[1:n_highligth])
+
+  if (percent) {
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
+  }
+
+  if (log) {
+    p <- p %>%
+      add_log_scale()
+  }
+
+  if (date_x) { # mutate x axis to a date format
+    p <- p +
+      scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+      theme(
+        axis.text.x = element_text(angle = 45)
+      )
+  }
+
+  p
+
+}
+
+
+#' plot rate as hist
+#'
+#' @param df data.frame
+#' @param color string used to define color
+#' @param percent logical to make the y axis in percent
+#' @param y_min min value on y axis
+#'
+#' @import ggplot2
+#'
+#' @return ggplot plot
+#' @export
+plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
+  if (percent) {
+    df$Value <- 100*df$Value
+  }
+
+  p <- ggplot(df, aes(x = Country, y = Value)) +
+    geom_bar(stat = "identity", fill = rate_colors[[color]]) +
+    basic_plot_theme() +
+    coord_cartesian(ylim = c(y_min, max(df$Value))) #+
+    # theme(
+    #   axis.text.x = element_text(angle = 45)
+    # )
+
+  if (percent) {
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%")) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+  }
+  p
 }

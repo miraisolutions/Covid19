@@ -135,10 +135,6 @@ get_timeseries_by_contagion_day_data <- function(data) {
     mutate(new_deaths = deaths - lag(deaths)) %>%
     mutate(new_active = active - lag(active)) %>%
     mutate(new_recovered = recovered - lag(recovered)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
-    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
 }
 
@@ -156,8 +152,6 @@ get_timeseries_global_data <- function(data){
   global <- data %>%
     group_by(date) %>%
     summarize_at(c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered"), sum) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
     ungroup()
 }
 
@@ -177,8 +171,6 @@ get_timeseries_country_data <- function(data, country){
     filter(Country.Region == country) %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
     arrange(desc(date)) %>%
     ungroup()
 }
@@ -209,6 +201,7 @@ aggregate_country_data <- function(data){
 #' @param data data.frameing
 #'
 #' @import dplyr
+#' @import tidyr
 #'
 #' @return df tibble of by country confirmed, deaths, active and recovered for each day
 #'
@@ -218,11 +211,47 @@ aggregate_province_timeseries_data <- function(data){
     select(-Province.State) %>%
     group_by(Country.Region, date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
-    arrange(desc(date)) %>%
-    ungroup()
+    ungroup() %>%
+    arrange(Country.Region, desc(date))
 }
+
+#' Add growth/Death rates
+#'
+#' @param df data.frame
+#'
+#' @import dplyr
+#' @import tidyr
+#'
+#' @return df dataframe
+#'
+#' @export
+add_growth_death_rate <- function(df){
+
+  df1 <- df %>%
+    arrange(Country.Region, date) %>%
+    group_by(Country.Region) %>%
+    mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 0),
+           daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 0),
+           daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 0),
+           daily_death_rate_confirmed = replace_na(deaths / confirmed, 0)) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
+    ungroup()
+  df2 <- df1 %>%
+    group_by(Country.Region) %>%
+    # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
+    # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
+    mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
+           growth_factor_5 = round(daily_growth_factor_5, digits = 3),
+           growth_factor_7 = round(daily_growth_factor_5, digits = 3),
+           death_rate_confirmed = round(daily_death_rate_confirmed, digits = 3)) %>%
+    ungroup() %>%
+    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
+    arrange(Country.Region, desc(date)) %>%
+    select(-starts_with("daily_"))
+  df2
+}
+
 
 #' Province.State data timeseries
 #' @rdname get_timeseries_province_data
@@ -240,8 +269,6 @@ get_timeseries_province_data <- function(data, province){
     filter(Province.State == province) %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
     arrange(desc(date)) %>%
     ungroup()
 }
@@ -261,8 +288,6 @@ get_date_data <- function(data, date){
   date_df <- data %>%
     group_by(date) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
-    mutate(growth_rate = 100*new_confirmed / lag(confirmed)) %>%
-    mutate(death_rate = 100*new_deaths / lag(deaths)) %>%
     ungroup()
 }
 
@@ -280,8 +305,7 @@ get_date_data <- function(data, date){
 #' @examples
 #' \dontrun{
 #' orig_data <- get_timeseries_full_data() %>%
-#'               get_timeseries_by_contagion_day_data() %>%
-#'               select(-ends_with("rate"))
+#'               get_timeseries_by_contagion_day_data()
 #' data <- orig_data %>% align_country_names()
 #'
 #'}
@@ -320,7 +344,29 @@ get_pop_data <- function(data){
   data_pop <- data %>%
     mutate(Country.Region = country_name) %>%
     left_join(population) %>%
-    select(-Country.Region)
+    filter(!is.na(population))
+  # select(-Country.Region)
 
   data_pop
+}
+
+#' Select only countries which had at least n cases and outbreaks longer than w days
+#'
+#' @param df data.frame
+#' @param n number of cases
+#' @param w days of outbreak
+select_countries_n_cases_w_days <- function(df, n, w) {
+  countries_filtered <- df %>%
+    filter(confirmed > n) %>% #pick only those countries that have more than n cases
+    group_by(Country.Region) %>%
+    mutate(N = n()) %>%
+    filter( N > w) %>% #pick only those countries that have had outbreak for more than w days
+    ungroup() %>%
+    select(Country.Region) %>%
+    distinct()
+
+  df_filtered <- df %>%
+    filter(Country.Region %in% countries_filtered$Country.Region)
+
+  df_filtered
 }
