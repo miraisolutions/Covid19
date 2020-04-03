@@ -1,4 +1,4 @@
-### Covid19 1.1.3.9000 (development version)
+### Covid19 1.1.4 (2020-04-03)
 
 - Added plot comparing countries from the day where the total number of confirmed cases was above 1000 (#39).
 - Added growth factor and Death rate plots (#5)
