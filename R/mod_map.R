@@ -11,6 +11,8 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
+  choices_map <- c(names(case_colors), names(new_case_colors)) %>%
+    setNames(gsub("_", " ",c(names(case_colors), names(new_case_colors)))) %>% as.list()
   div(
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
@@ -19,7 +21,7 @@ mod_map_ui <- function(id){
       id = ns("input_date_control"), class = "panel panel-default",
       top = 10, left = 10, draggable = F,
       div(style = "margin:10px;",
-          radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
+          radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
           radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
           uiOutput(ns("slider_ui")),
           helpText("The detail of each country can be obtained by clicking on it.")
@@ -122,13 +124,13 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
 
   pal2 <- reactive({
     # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
-    if (input$radio_choices == "confirmed") {
+    if (input$radio_choices == "confirmed" | input$radio_choices == "new_confirmed") {
       colorNumeric(palette = "Reds", domain = domain(), na.color = "white")
-    } else if (input$radio_choices == "deaths") {
+    } else if (input$radio_choices == "deaths" | input$radio_choices == "new_deaths") {
       colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
-    } else if (input$radio_choices == "active") {
+    } else if (input$radio_choices == "active" | input$radio_choices == "new_active") {
       colorNumeric(palette = "Blues", domain = domain(), na.color = "white")
-    }  else if (input$radio_choices == "recovered") {
+    }  else if (input$radio_choices == "recovered" | input$radio_choices == "new_recovered") {
       colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
     }
   })
