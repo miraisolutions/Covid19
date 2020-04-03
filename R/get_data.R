@@ -230,21 +230,20 @@ add_growth_death_rate <- function(df){
   df1 <- df %>%
     arrange(Country.Region, date) %>%
     group_by(Country.Region) %>%
-    mutate(daily_growth_rate_3 = replace_na(confirmed / lag(confirmed, n = 3), 0),
-           daily_growth_rate_5 = replace_na(confirmed / lag(confirmed, n = 5), 0),
-           daily_growth_rate_7 = replace_na(confirmed / lag(confirmed, n = 7), 0),
-           daily_death_rate = replace_na(deaths / confirmed, 0)) %>%
+    mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 0),
+           daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 0),
+           daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 0),
+           daily_death_rate_confirmed = replace_na(deaths / confirmed, 0)) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
   df2 <- df1 %>%
     group_by(Country.Region) %>%
-    # mutate(growth_rate = round(zoo::rollmeanr(daily_growth_rate, 7, align = "right", fill = 0), digits = 3)) %>%
+    # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
-    mutate(growth_rate_3 = round(daily_growth_rate_3, digits = 3),
-           growth_rate_5 = round(daily_growth_rate_5, digits = 3),
-           growth_rate_7 = round(daily_growth_rate_5, digits = 3),
-           death_rate = round(daily_death_rate, digits = 3)
-           ) %>%
+    mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
+           growth_factor_5 = round(daily_growth_factor_5, digits = 3),
+           growth_factor_7 = round(daily_growth_factor_5, digits = 3),
+           death_rate_confirmed = round(daily_death_rate_confirmed, digits = 3)) %>%
     ungroup() %>%
     mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
@@ -345,7 +344,8 @@ get_pop_data <- function(data){
   data_pop <- data %>%
     mutate(Country.Region = country_name) %>%
     left_join(population) %>%
-    select(-Country.Region)
+    filter(!is.na(population))
+  # select(-Country.Region)
 
   data_pop
 }
@@ -361,7 +361,7 @@ select_countries_n_cases_w_days <- function(df, n, w) {
     group_by(Country.Region) %>%
     mutate(N = n()) %>%
     filter( N > w) %>% #pick only those countries that have had outbreak for more than w days
-      ungroup() %>%
+    ungroup() %>%
     select(Country.Region) %>%
     distinct()
 

@@ -64,5 +64,5 @@ test_that("aggregate_province_timeseries_data returns expected headers", {
 
 test_that("add_growth_death_rate returns expected headers", {
   df <- aggregate_province_timeseries_data(data) %>% add_growth_death_rate()
-  expect_true(all(c("growth_rate_3", "growth_rate_5", "growth_rate_7", "death_rate") %in% names(df)))
+  expect_true(all(c("growth_factor_3", "growth_factor_5", "growth_factor_7", "death_rate_confirmed") %in% names(df)))
 })

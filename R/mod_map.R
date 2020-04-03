@@ -171,7 +171,8 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
 
 align_country_names <- function(data) {
   # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
-  # Note Cruise Ship and Saint Vincent and the Grenadines not present in countries_data$NAME
+  # Note Cruise Ship and Mayonette not present in countries_data$NAME
+
   data$Country.Region <- data$Country.Region %>%
     recode(
 
@@ -185,6 +186,7 @@ align_country_names <- function(data) {
       "Gibraltar" = "United Kingdom",
       # "US" = "United States",
       "USA" = "United States",
+      "UAE" = "United Arab Emirates",
       "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
 
       "Faroe Islands" = "Faeroe Is.",
@@ -193,6 +195,9 @@ align_country_names <- function(data) {
       "Korea, South" = "South Korea",
       "Republic of Ireland" = "Ireland",
       "Taiwan*" = "Taiwan",
+      "St. Vincent Grenadines" = "St. Vin. and Gren.",
+      "Republic of the Congo" = "Congo",
+      "CAR" = "Central African Rep.",
 
       "Congo (Kinshasa)" = "Congo",
       "Cote d'Ivoire" = "C\\u00f4te d'Ivoire", # stringi::stri_escape_unicode("ô")
@@ -216,6 +221,7 @@ align_country_names <- function(data) {
       "Cape Verde" = "Cabo Verde",
       "East Timor" = "Timor-Leste",
       "Gambia, The" = "Gambia"
+
 
     )
   data

@@ -14,20 +14,19 @@ mod_growth_death_rate_ui <- function(id){
     fluidRow(
       column(6,
              div(h4("Current top 5 countries growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             radioButtons(inputId = ns("growth_rate"), label = "",
-                          choices = list("Over 3 days" = "growth_rate_3",
-                                         "Over 5 days" = "growth_rate_5",
-                                         "Over one week" = "growth_rate_7"),
-                          selected = "growth_rate_3", inline = TRUE),
-             withSpinner(uiOutput(ns("plot_growth_rate")))
+             radioButtons(inputId = ns("growth_factor"), label = "",
+                          choices = list("Over 3 days" = "growth_factor_3",
+                                         "Over 5 days" = "growth_factor_5",
+                                         "Over one week" = "growth_factor_7"),
+                          selected = "growth_factor_3", inline = TRUE),
+             withSpinner(uiOutput(ns("plot_growth_factor")))
       ),
       column(6,
              div(h4("Current top 5 countries death rate"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             div(style = "visibility: hidden",
-                 radioButtons(inputId = ns("dummy"), label = "",
-                              choices = list("dummy" = "dummy"),
-                              selected = "dummy", inline = TRUE),
-                 ),
+             radioButtons(inputId = ns("radio_pop"), label = "",
+                          choices = list("per total confirmed" = "death_rate_confirmed",
+                                         "per 1M pop" = "death_rate_pop"),
+                          selected = "death_rate_confirmed", inline = TRUE),
              withSpinner(uiOutput(ns("plot_death_rate")))
       )
     )
@@ -54,65 +53,89 @@ mod_growth_death_rate_server <- function(input, output, session, df){
 
   # Help funcs ----
 
-  pick_rate <- function(orig_data_aggregate, rate){
-    df <-  orig_data_aggregate  %>%
-      select(-starts_with("new_")) %>%
-      bind_cols(orig_data_aggregate[, rate] %>% setNames("Value"))
+  scale_death_rate_pop <- function(orig_data_aggregate){
+    df1 <- orig_data_aggregate %>%
+      select_countries_n_cases_w_days(n = n, w = w) %>%
+      filter( date == max(date)) %>%
+      align_country_names_pop() %>%
+      mutate(country_name = Country.Region) %>%
+      get_pop_data() %>%
+      filter(population > 10^6) %>% # dropping countries with less than 1 M pop
+      mutate(death_rate_pop = round(10^6*deaths/population, digits = 3)) %>%
+      align_country_names_pop_reverse()
+    df1
+  }
+
+  pick_rate <- function(df, rate){
+    df <-  df  %>%
+      bind_cols(df[, rate] %>% setNames("Value"))
     df
   }
 
-  pick_rate_hist <- function(orig_data_aggregate, rate){
-    df_plot <- orig_data_aggregate %>%
-      select_countries_n_cases_w_days(n = n, w = w) %>%
+  pick_rate_hist <- function(df1, rate){
+    df_plot <- df1 %>%
       pick_rate(rate) %>%
-      filter( date == max(date)) %>%
       arrange(desc(Value)) %>%
       top_n(n_highligth, wt = Value) %>%
-      mutate(Country = as.factor(Country.Region)) %>%
+      mutate(Country = factor(Country.Region, levels = .$Country.Region)) %>%
       select(Country, Value)
 
     df_plot
   }
 
+  # Dataset ----
 
-  df_base_plot1 <- reactive({pick_rate_hist( req(df()), input$growth_rate)})
-  df_base_plot2 <- reactive({pick_rate_hist( req(df()), "death_rate")})
+  df_pop <- reactive(scale_death_rate_pop(df()))
+
+  df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), input$growth_factor)})
+  df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), input$radio_pop)})
 
   # Plots ----
-  caption <- reactive({list(
-    growth_rate = paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_rate_", "", input$growth_rate) ," days ago."),
-    death_rate = "Computed as total deaths today / total confirmed cases."
-  )})
+  caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
+  caption_death_rate_radio <- reactive({
+    if (input$radio_pop == "death_rate_confirmed") {
+      p <- "/ total confirmed cases today."
+    } else {
+      p <- "per 1 M population "
+    }
+    p
+  })
+  caption_death_rate <- reactive({paste0("Computed as total deaths today ",caption_death_rate_radio())})
+  caption_countries <- paste0("Only countries with more than ", n, " confirmed cases, a population of over 1 M and outbreaks longer than ", w, " days considered.")
 
-  output$plot_growth_rate <- renderUI({
+  output$plot_growth_factor <- renderUI({
     tagList(
-      plotlyOutput(ns("plot_growth_rate_hist"), height = 400),
-      div(p(caption()[["growth_rate"]]), align = "center"),
-      div(p(paste0("Only countries with more than ", n, " confirmed cases and outbreaks longer than ", w, " days considered.")), align = "center"),
+      plotlyOutput(ns("plot_growth_factor_hist"), height = 400),
+      div(p(caption_growth_factor()), align = "center"),
+      div(p(caption_countries), align = "center"),
     )
   })
 
   output$plot_death_rate <- renderUI({
     tagList(
       plotlyOutput(ns("plot_death_rate_hist"), height = 400),
-      div(p(caption()[["death_rate"]]), align = "center"),
-      div(p(paste0("Only countries with more than ", n, " confirmed cases and outbreaks longer than ", w, " days considered.")), align = "center"),
+      div(p(caption_death_rate()), align = "center"),
+      div(p(caption_countries), align = "center"),
     )
   })
 
-  output$plot_growth_rate_hist <- renderPlotly({
-    p <- plot_rate_hist(df_base_plot1(), color =  "growth_rate")
+  output$plot_growth_factor_hist <- renderPlotly({
+    p <- plot_rate_hist(df_base_plot1(), color =  "growth_factor", y_min = 1)
     p <- p %>%
       plotly::ggplotly() %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
+                                   xaxis = list(tickfont = list(size = 14)))
     p
   })
 
+  is_percent <- reactive({ifelse(input$radio_pop == "death_rate_confirmed", T, F)})
+
   output$plot_death_rate_hist <- renderPlotly({
-    p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = T)
+    p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = is_percent())
     p <- p %>%
       plotly::ggplotly() %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
+                     xaxis = list(tickfont = list(size = 14)))
     p
   })
 

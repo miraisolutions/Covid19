@@ -4,7 +4,7 @@
 \alias{plot_rate_hist}
 \title{plot rate as hist}
 \usage{
-plot_rate_hist(df, color, percent = F)
+plot_rate_hist(df, color, percent = F, y_min = 0)
 }
 \arguments{
 \item{df}{data.frame}
@@ -12,6 +12,8 @@ plot_rate_hist(df, color, percent = F)
 \item{color}{string used to define color}
 
 \item{percent}{logical to make the y axis in percent}
+
+\item{y_min}{min value on y axis}
 }
 \value{
 ggplot plot

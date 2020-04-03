@@ -94,7 +94,7 @@ new_case_colors <- c(
 #'
 #' @export
 rate_colors <- c(
-  "growth_rate" = "#dd4b39",
+  "growth_factor" = "#dd4b39",
   "death_rate" = "black"
 )
 
@@ -142,3 +142,50 @@ sort_type_by_max <- function(data) {
 #' @export
 roundUp <- function(x) 10^ceiling(log10(x))
 
+#' align countries names between population dataframe and orig_data dataframe
+#' @param data data.frame
+#' @export
+align_country_names_pop <- function(data){
+  data$Country.Region <- data$Country.Region %>%
+    recode(
+      #Note Congo (Brazzaville), Diamond Proncess, Guadeloupe, Martinique, Reunion,  present in orig_data not in population; and Tristan da Cunha(UK)  present in population, not in orig_data
+
+      "Antigua and Barbuda" = "Antigua and Barb.",
+      "Bosnia and Herzegovina" = "Bosnia and Herz.",
+      "Cape Verde" = "Cabo Verde",
+      "Cote d'Ivoire" = "C\\u00f4te d'Ivoire",
+      "Czech Republic" = "Czechia",
+      "Dominican Republic" = "Dominican Rep.",
+      "Eswatini" = "eSwatini",
+      "French Guiana" = "Guyana",
+      "North Macedonia" = "Macedonia",
+      "UK" = "United Kingdom",
+      "USA" = "United States of America",
+      "Vatican City" = "Vatican"
+    )
+  data
+}
+
+#' align countries names between population dataframe and orig_data dataframe
+#' @param data data.frame
+#' @export
+align_country_names_pop_reverse <- function(data){
+  data$Country.Region <- data$Country.Region %>%
+    recode(
+      #Note Congo (Brazzaville), Diamond Proncess, Guadeloupe, Martinique, Reunion,  present in orig_data not in population; and Tristan da Cunha(UK)  present in population, not in orig_data
+
+      "Antigua and Barb." = "Antigua and Barbuda",
+      "Bosnia and Herz." = "Bosnia and Herzegovina",
+      "Cabo Verde" = "Cape Verde",
+      "C\\u00f4te d'Ivoire" = "Cote d'Ivoire",
+      "Czechia" = "Czech Republic",
+      "Dominican Rep." = "Dominican Republic",
+      "eSwatini" = "Eswatini",
+      "Guyana" = "French Guiana",
+      "Macedonia" = "North Macedonia",
+      "United Kingdom" = "UK",
+      "United States of America" = "USA",
+      "Vatican" = "Vatican City"
+    )
+  data
+}
