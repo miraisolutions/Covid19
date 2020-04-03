@@ -26,29 +26,29 @@ test_that("get_timeseries_full_data returns expected headers", {
 data <- get_timeseries_by_contagion_day_data(data_full)
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
-  expect_equal(sort(names(data)), sort(c("Province.State", "Country.Region", "Lat", "Long", "date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(data)), sort(c("Province.State", "Country.Region", "Lat", "Long", "date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
   expect_equal(class(data$contagion_day),"numeric")
   expect_false(any(is.na(data$contagion_day)))
 })
 
 test_that("get_timeseries_global_data returns expected headers", {
   df <- get_timeseries_global_data(data)
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate")))
+  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered")))
 })
 
 test_that("get_timeseries_country_data returns expected headers", {
   df <- get_timeseries_country_data(data, "Italy")
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
 })
 
 test_that("get_timeseries_province_data returns expected headers", {
   df <- get_timeseries_province_data(data, "Alaska")
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
 })
 
 test_that("get_date_data returns expected headers", {
   df <- get_date_data(data, as.Date("2020-01-30"))
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
 })
 
 test_that("aggregate_country_data returns expected headers", {
@@ -58,5 +58,11 @@ test_that("aggregate_country_data returns expected headers", {
 
 test_that("aggregate_province_timeseries_data returns expected headers", {
   df <- aggregate_province_timeseries_data(data)
-  expect_equal(sort(names(df)), sort(c("Country.Region", "date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "growth_rate", "death_rate", "contagion_day")))
+  expect_equal(sort(names(df)), sort(c("Country.Region", "date", "confirmed", "deaths", "recovered", "active","new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
+})
+
+
+test_that("add_growth_death_rate returns expected headers", {
+  df <- aggregate_province_timeseries_data(data) %>% add_growth_death_rate()
+  expect_true(all(c("growth_factor_3", "growth_factor_5", "growth_factor_7", "death_rate_confirmed") %in% names(df)))
 })

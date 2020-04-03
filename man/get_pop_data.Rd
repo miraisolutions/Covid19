@@ -18,8 +18,7 @@ population data
 \examples{
 \dontrun{
 orig_data <- get_timeseries_full_data() \%>\%
-              get_timeseries_by_contagion_day_data() \%>\%
-              select(-ends_with("rate"))
+              get_timeseries_by_contagion_day_data()
 data <- orig_data \%>\% align_country_names()
 
 }

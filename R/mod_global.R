@@ -20,14 +20,24 @@ mod_global_ui <- function(id){
     hr(),
     fluidRow(
       column(6,
-             div(h3("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              mod_plot_log_linear_ui(ns("plot_log_area_global"))
-             ),
+      ),
       column(6,
-             div(h3("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"))
-             )
+      )
     ),
+    hr(),
+    fluidRow(
+      column(6,
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"))
+      ),
+      column(6,
+             mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
+      )
+    ),
+    hr(),
     mod_add_table_ui(ns("add_table_world"))
   )
 }
@@ -49,10 +59,18 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # Datasets ----
 
+  orig_data_aggregate <- reactive({
+    orig_data_aggregate <- orig_data() %>%
+      aggregate_province_timeseries_data() %>%
+      add_growth_death_rate() %>%
+      arrange(Country.Region)
+    orig_data_aggregate
+  })
+
   global <- reactive({
-    orig_data() %>%
-      get_timeseries_global_data() %>%
-      select(-ends_with("rate"))
+    global <- orig_data() %>%
+      get_timeseries_global_data()
+    global
   })
 
   global_today <- reactive({
@@ -60,20 +78,30 @@ mod_global_server <- function(input, output, session, orig_data){
       filter(date == max(date))
   })
 
-  world <- reactive({
-    orig_data() %>%
-      aggregate_country_data()
+  orig_data_aggregate_today <- reactive({
+    orig_data_aggregate() %>%
+      filter( date == max(date))
   })
 
-  world_top_5 <- reactive({
+  world <- reactive({
+    orig_data_aggregate_today() %>%
+      align_country_names_pop() %>%
+      mutate(country_name = Country.Region) %>%
+      get_pop_data() %>%
+      mutate(death_rate_pop = round(10^6*deaths/population, digits = 3)) %>%
+      select(-country_name) %>%
+      align_country_names_pop_reverse() %>%
+      arrange(desc(confirmed) )
+  })
+
+  world_top_5_today <- reactive({
     world() %>%
       head(5)
   })
 
   world_top_5_confirmed <- reactive({
-    orig_data() %>%
-      aggregate_province_timeseries_data() %>%
-      filter(Country.Region %in% world_top_5()$Country.Region) %>%
+    orig_data_aggregate() %>%
+      filter(Country.Region %in% world_top_5_today()$Country.Region) %>%
       select(Country.Region, date, confirmed)
   })
 
@@ -82,7 +110,7 @@ mod_global_server <- function(input, output, session, orig_data){
 
   # map ----
 
-  callModule(mod_map_server, "map_ui", orig_data)
+  callModule(mod_map_server, "map_ui", orig_data_aggregate)
 
   # plots ----
 
@@ -90,6 +118,7 @@ mod_global_server <- function(input, output, session, orig_data){
     rev(sort_type_by_max(global_today()))
   )
 
+  # > area plot global
   df_global <- reactive({
     global() %>%
       select(-starts_with("new_")) %>%
@@ -101,6 +130,7 @@ mod_global_server <- function(input, output, session, orig_data){
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
 
+  # > line plot top 5
   df_top_n <- reactive({
     world_top_5_confirmed() %>%
       mutate(status = as.factor(Country.Region)) %>%
@@ -109,6 +139,12 @@ mod_global_server <- function(input, output, session, orig_data){
   })
 
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
+
+  # > comparison plot from day of nth contagion
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate)
+
+  # > growth_death_rate
+  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)

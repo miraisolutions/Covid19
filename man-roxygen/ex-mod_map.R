@@ -10,8 +10,7 @@ if (interactive()) {
   server <- function(input, output, session) {
     orig_data <- reactive({
       orig_data <- get_timeseries_full_data() %>%
-        get_timeseries_by_contagion_day_data() %>%
-        select(-ends_with("rate"))
+        get_timeseries_by_contagion_day_data()
     })
     callModule(Covid19:::mod_map_server, "map_ui", orig_data)
   }

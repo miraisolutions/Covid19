@@ -11,6 +11,8 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
+  choices_map <- c(names(case_colors), names(new_case_colors)) %>%
+    setNames(gsub("_", " ",c(names(case_colors), names(new_case_colors)))) %>% as.list()
   div(
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
@@ -19,7 +21,7 @@ mod_map_ui <- function(id){
       id = ns("input_date_control"), class = "panel panel-default",
       top = 10, left = 10, draggable = F,
       div(style = "margin:10px;",
-          radioButtons(inputId = ns("radio_choices"), label = "", choices = c("confirmed", "deaths", "recovered", "active"), selected = "confirmed", inline = T),
+          radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
           radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
           uiOutput(ns("slider_ui")),
           helpText("The detail of each country can be obtained by clicking on it.")
@@ -31,7 +33,7 @@ mod_map_ui <- function(id){
 
 #' map Server Function
 #'
-#' @param data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
 #'
 #' @example man-roxygen/ex-mod_map.R
 #'
@@ -40,7 +42,7 @@ mod_map_ui <- function(id){
 #' @import leaflet
 #'
 #' @noRd
-mod_map_server <- function(input, output, session, data){
+mod_map_server <- function(input, output, session, orig_data_aggregate){
   ns <- session$ns
 
   # Data ----
@@ -48,9 +50,7 @@ mod_map_server <- function(input, output, session, data){
   countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   data_clean <- reactive({
-    data <- data() %>%
-      aggregate_province_timeseries_data() %>%
-      align_country_names()
+    data <- orig_data_aggregate() %>% align_country_names()
 
     data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
 
@@ -62,7 +62,7 @@ mod_map_server <- function(input, output, session, data){
 
   # UI controls ----
   output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(data()$date), max = max(data()$date), value = max(data()$date), dragRange = FALSE, animate = T, step = 1)
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate()$date), max = max(orig_data_aggregate()$date), value = max(orig_data_aggregate()$date), dragRange = FALSE, animate = T, step = 1)
   })
 
   # Map ----
@@ -124,13 +124,13 @@ mod_map_server <- function(input, output, session, data){
 
   pal2 <- reactive({
     # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
-    if (input$radio_choices == "confirmed") {
+    if (input$radio_choices == "confirmed" | input$radio_choices == "new_confirmed") {
       colorNumeric(palette = "Reds", domain = domain(), na.color = "white")
-    } else if (input$radio_choices == "deaths") {
+    } else if (input$radio_choices == "deaths" | input$radio_choices == "new_deaths") {
       colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
-    } else if (input$radio_choices == "active") {
+    } else if (input$radio_choices == "active" | input$radio_choices == "new_active") {
       colorNumeric(palette = "Blues", domain = domain(), na.color = "white")
-    }  else if (input$radio_choices == "recovered") {
+    }  else if (input$radio_choices == "recovered" | input$radio_choices == "new_recovered") {
       colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
     }
   })
@@ -173,7 +173,8 @@ mod_map_server <- function(input, output, session, data){
 
 align_country_names <- function(data) {
   # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
-  # Note Cruise Ship and Saint Vincent and the Grenadines not present in countries_data$NAME
+  # Note Cruise Ship and Mayonette not present in countries_data$NAME
+
   data$Country.Region <- data$Country.Region %>%
     recode(
 
@@ -187,6 +188,7 @@ align_country_names <- function(data) {
       "Gibraltar" = "United Kingdom",
       # "US" = "United States",
       "USA" = "United States",
+      "UAE" = "United Arab Emirates",
       "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
 
       "Faroe Islands" = "Faeroe Is.",
@@ -195,6 +197,9 @@ align_country_names <- function(data) {
       "Korea, South" = "South Korea",
       "Republic of Ireland" = "Ireland",
       "Taiwan*" = "Taiwan",
+      "St. Vincent Grenadines" = "St. Vin. and Gren.",
+      "Republic of the Congo" = "Congo",
+      "CAR" = "Central African Rep.",
 
       "Congo (Kinshasa)" = "Congo",
       "Cote d'Ivoire" = "C\\u00f4te d'Ivoire", # stringi::stri_escape_unicode("ô")
@@ -218,6 +223,7 @@ align_country_names <- function(data) {
       "Cape Verde" = "Cabo Verde",
       "East Timor" = "Timor-Leste",
       "Gambia, The" = "Gambia"
+
 
     )
   data

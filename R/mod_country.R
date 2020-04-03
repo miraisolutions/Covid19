@@ -63,7 +63,6 @@ mod_country_server <- function(input, output, session, orig_data){
         aggregate_province_timeseries_data() %>%
         filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
-        select(-ends_with("rate")) %>%
         arrange(desc(date))
     })
 
