@@ -88,7 +88,7 @@ mod_global_server <- function(input, output, session, orig_data){
       align_country_names_pop() %>%
       mutate(country_name = Country.Region) %>%
       get_pop_data() %>%
-      mutate(death_rate_pop = round(10^6*deaths/population, digits = 3)) %>%
+      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3)) %>%
       select(-country_name) %>%
       align_country_names_pop_reverse() %>%
       arrange(desc(confirmed) )
