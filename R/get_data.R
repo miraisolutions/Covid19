@@ -233,7 +233,7 @@ add_growth_death_rate <- function(df){
     mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 0),
            daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 0),
            daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 0),
-           daily_letality_rate = replace_na(deaths / confirmed, 0)) %>%
+           daily_lethality_rate = replace_na(deaths / confirmed, 0)) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
   df2 <- df1 %>%
@@ -243,7 +243,7 @@ add_growth_death_rate <- function(df){
     mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
            growth_factor_5 = round(daily_growth_factor_5, digits = 3),
            growth_factor_7 = round(daily_growth_factor_5, digits = 3),
-           letality_rate = round(daily_letality_rate, digits = 3)) %>%
+           lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
     ungroup() %>%
     mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%

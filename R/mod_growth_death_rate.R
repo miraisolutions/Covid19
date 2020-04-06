@@ -24,9 +24,9 @@ mod_growth_death_rate_ui <- function(id){
       column(6,
              div(h4("Current top 5 countries death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              radioButtons(inputId = ns("radio_pop"), label = "",
-                          choices = list("letality rate" = "letality_rate",
+                          choices = list("lethality rate" = "lethality_rate",
                                          "mortality rate 1M pop" = "mortality_rate_1M_pop"),
-                          selected = "letality_rate", inline = TRUE),
+                          selected = "lethality_rate", inline = TRUE),
              withSpinner(uiOutput(ns("plot_death_rate")))
       )
     )
@@ -93,7 +93,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
   # Plots ----
   caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
   caption_death_rate_radio <- reactive({
-    if (input$radio_pop == "letality_rate") {
+    if (input$radio_pop == "lethality_rate") {
       p <- "/ total confirmed cases today."
     } else {
       p <- "per 1 M population "
@@ -128,7 +128,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
     p
   })
 
-  is_percent <- reactive({ifelse(input$radio_pop == "letality_rate", T, F)})
+  is_percent <- reactive({ifelse(input$radio_pop == "lethality_rate", T, F)})
 
   output$plot_death_rate_hist <- renderPlotly({
     p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = is_percent())
