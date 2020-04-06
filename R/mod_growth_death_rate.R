@@ -22,11 +22,11 @@ mod_growth_death_rate_ui <- function(id){
              withSpinner(uiOutput(ns("plot_growth_factor")))
       ),
       column(6,
-             div(h4("Current top 5 countries death rate"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Current top 5 countries death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              radioButtons(inputId = ns("radio_pop"), label = "",
-                          choices = list("per total confirmed" = "death_rate_confirmed",
-                                         "per 1M pop" = "death_rate_pop"),
-                          selected = "death_rate_confirmed", inline = TRUE),
+                          choices = list("lethality rate" = "lethality_rate",
+                                         "mortality rate 1M pop" = "mortality_rate_1M_pop"),
+                          selected = "lethality_rate", inline = TRUE),
              withSpinner(uiOutput(ns("plot_death_rate")))
       )
     )
@@ -53,7 +53,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
 
   # Help funcs ----
 
-  scale_death_rate_pop <- function(orig_data_aggregate){
+  scale_mortality_rate <- function(orig_data_aggregate){
     df1 <- orig_data_aggregate %>%
       select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date)) %>%
@@ -61,7 +61,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
       mutate(country_name = Country.Region) %>%
       get_pop_data() %>%
       filter(population > 10^6) %>% # dropping countries with less than 1 M pop
-      mutate(death_rate_pop = round(10^6*deaths/population, digits = 3)) %>%
+      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3)) %>%
       align_country_names_pop_reverse()
     df1
   }
@@ -85,7 +85,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
 
   # Dataset ----
 
-  df_pop <- reactive(scale_death_rate_pop(df()))
+  df_pop <- reactive(scale_mortality_rate(df()))
 
   df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), input$growth_factor)})
   df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), input$radio_pop)})
@@ -93,7 +93,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
   # Plots ----
   caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
   caption_death_rate_radio <- reactive({
-    if (input$radio_pop == "death_rate_confirmed") {
+    if (input$radio_pop == "lethality_rate") {
       p <- "/ total confirmed cases today."
     } else {
       p <- "per 1 M population "
@@ -128,7 +128,7 @@ mod_growth_death_rate_server <- function(input, output, session, df){
     p
   })
 
-  is_percent <- reactive({ifelse(input$radio_pop == "death_rate_confirmed", T, F)})
+  is_percent <- reactive({ifelse(input$radio_pop == "lethality_rate", T, F)})
 
   output$plot_death_rate_hist <- renderPlotly({
     p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = is_percent())
