@@ -21,6 +21,7 @@ Imports:
     config,
     golem,
     shiny,
+    bsplus,
     dplyr,
     tidyr,
     ggplot2,

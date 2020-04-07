@@ -3,6 +3,7 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
 #' @noRd
 app_ui <- function(request) {
   tagList(
@@ -10,8 +11,10 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # List the first level UI elements here
     fluidPage(
+      # Enable tooltips
+      use_bs_tooltip(),
       # Header  ----
-      fluidRow(
+       fluidRow(
         id = "header",
         div(
           id = "header-left",
@@ -42,7 +45,8 @@ app_ui <- function(request) {
               id = "subtitle",
               # "Data Repository by Johns Hopkins CSSE:",
               "Data Repository by bumbeishvili:",
-              textOutput("last_update", inline = TRUE)
+              textOutput("last_update", inline = TRUE) %>%
+                bs_embed_tooltip(title = "From 26.03.2020 on, data from Worldometers. Before JHU CSSE. More information on the readme.", placement = "right")
             )
           )
         ), # end header-left
