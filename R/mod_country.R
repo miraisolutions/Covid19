@@ -36,18 +36,18 @@ mod_country_ui <- function(id){
 
 #' country Server Function
 #'
-#' @param orig_data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
 #'
 #' @import dplyr
 #' @import tidyr
 #' @importFrom plotly renderPlotly
 #'
 #' @noRd
-mod_country_server <- function(input, output, session, orig_data){
+mod_country_server <- function(input, output, session, orig_data_aggregate){
   ns <- session$ns
 
   countries <- reactive({
-    orig_data() %>%
+    orig_data_aggregate() %>%
       select(Country.Region) %>%
       distinct()
   })
@@ -59,8 +59,7 @@ mod_country_server <- function(input, output, session, orig_data){
   observeEvent(input$select_country, {
 
     # Data ----
-    country_data <- reactive({orig_data() %>%
-        aggregate_province_timeseries_data() %>%
+    country_data <- reactive({orig_data_aggregate() %>%
         filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))

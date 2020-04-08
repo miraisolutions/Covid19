@@ -20,16 +20,16 @@ mod_country_comparison_ui <- function(id){
 
 #' country_comparison Server Function
 #'
-#' @param orig_data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
 #'
 #' @import dplyr
 #'
 #' @noRd
-mod_country_comparison_server <- function(input, output, session, orig_data){
+mod_country_comparison_server <- function(input, output, session, orig_data_aggregate){
   ns <- session$ns
 
   countries <- reactive({
-    orig_data() %>%
+    orig_data_aggregate() %>%
       select(Country.Region) %>%
       distinct()
   })
@@ -41,8 +41,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data){
   observeEvent(input$select_countries,{
     if (input$select_countries != "") {
       # Data ----
-      countries_data <- reactive({orig_data() %>%
-          aggregate_province_timeseries_data() %>%
+      countries_data <- reactive({orig_data_aggregate() %>%
           filter(Country.Region %in% input$select_countries) %>%
           filter(contagion_day > 0) %>%
           arrange(desc(date))

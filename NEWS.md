@@ -1,5 +1,7 @@
 ### Covid19 1.1.5.9000 (development version)
 
+- adding plots and data to country and country conparison tabs (#5)
+
 ### Covid19 1.1.5 (2020-04-06)
 
 - fixed variables for map
