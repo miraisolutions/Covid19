@@ -1,9 +1,11 @@
 ### Covid19 1.1.5.9000 (development version)
 
+- remove pop up with data source information (#63)
+
 ### Covid19 1.1.5 (2020-04-06)
 
 - fixed variables for map
--fixed albels for death rate plots
+- fixed albels for death rate plots
 
 ### Covid19 1.1.4 (2020-04-03)
 

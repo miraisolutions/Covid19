@@ -43,10 +43,9 @@ app_ui <- function(request) {
             target = "_blank",
             span(
               id = "subtitle",
-              # "Data Repository by Johns Hopkins CSSE:",
-              "Data Repository by bumbeishvili:",
+              "Data source: worldometers from 26.03.2020, JHU CSSE before.",
               textOutput("last_update", inline = TRUE) %>%
-                bs_embed_tooltip(title = "From 26.03.2020 on, data from Worldometers. Before JHU CSSE. More information on the readme.", placement = "right")
+                bs_embed_tooltip(title = "Data Repository by bumbeishvili. More information on the README.", placement = "right")
             )
           )
         ), # end header-left
