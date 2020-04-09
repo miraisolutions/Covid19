@@ -18,10 +18,10 @@ mod_country_comparison_ui <- function(id){
     withSpinner(uiOutput(ns("barplots"))),
     withSpinner(uiOutput(ns("lineplots"))),
     fluidRow(
-      column(4,
+      column(5,
              withSpinner(uiOutput(ns("rateplots")))
       ),
-      column(8,
+      column(7,
              withSpinner(uiOutput(ns("lines_points_plots")))
              )
     ),
