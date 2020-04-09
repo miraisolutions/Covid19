@@ -13,7 +13,7 @@ mod_country_comparison_ui <- function(id){
   tagList(
     selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
     withSpinner(uiOutput(ns("barplots"))),
-    uiOutput(ns("lineplots")),
+    withSpinner(uiOutput(ns("lineplots"))),
     mod_add_table_ui(ns("add_table_countries"))
   )
 }
