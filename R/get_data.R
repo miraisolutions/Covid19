@@ -99,6 +99,7 @@ get_timeseries_full_data <- function() {
   data <- confirmed %>%
     left_join(deaths, by = join_by_cols) %>%
     left_join(recovered, by = join_by_cols) %>%
+    mutate_if(is.numeric, function(x){x = replace_na(x, 0)}) %>% #control NAs
     mutate(active = confirmed - deaths - recovered)
 }
 
