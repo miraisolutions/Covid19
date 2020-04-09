@@ -371,3 +371,25 @@ select_countries_n_cases_w_days <- function(df, n, w) {
 
   df_filtered
 }
+
+
+#' Reescale contagion day for countries with at least n cases and outbreaks longer than w days
+#'
+#' @param df data.frame
+#' @param n number of cases
+#' @param w days of outbreak
+rescale_df_contagion <- function(df, n, w){
+  df_rescaled <- df %>%
+  select_countries_n_cases_w_days(n = n, w = w) %>%
+    mutate(no_contagion = case_when( #drop rows where confirmed <- n
+      confirmed < n ~ 1,
+      TRUE ~ 0
+    )) %>%
+    filter(no_contagion == 0) %>%
+    select(-no_contagion) %>%
+    group_by(Country.Region) %>%
+    mutate(contagion_day = contagion_day - min(contagion_day)) %>%
+    ungroup()
+
+  df_rescaled
+}

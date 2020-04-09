@@ -1,6 +1,9 @@
 ### Covid19 1.1.5.9000 (development version)
 
-- adding plots and data to country and country conparison tabs (#5)
+- adding growth factor and letality rate data to tables in country and country comparison tabs (#5)
+- adding growth factor and letality rate plots to country comparison tab (#5)
+- adding comparison from 100th case to country comparison tab (#5)
+- fix NA in input data
 
 ### Covid19 1.1.5 (2020-04-06)
 

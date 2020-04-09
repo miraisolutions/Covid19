@@ -34,6 +34,9 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' compare_nth_cases_plot Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame
+#' @param   n min number of cases for a country to be considered. Default 1000
+#' @param w number of days of outbreak. Default 7
+#' @param n_highligth number of countries to highlight
 #'
 #' @example ex-mod_compare_nth_cases_plot.R
 #'
@@ -45,30 +48,15 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @import ggplot2
 #'
 #' @noRd
-mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate){
+mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, n_highligth = 5){
   ns <- session$ns
-
-  # Params ----
-  n <- 1000 #min number of cases for a country to be considered
-  w <- 7 #min lenght of outbreak
-  n_highligth <- 5 # number of countries to highligth
 
   # Data ----
   #This only depends on the orig_data_aggregate
   df_clean <- reactive({
     df_clean <- orig_data_aggregate() %>%
       select(-starts_with("new_")) %>%
-      select_countries_n_cases_w_days(n = n, w = w) %>%
-      mutate(no_contagion = case_when( #drop rows where confirmed <- n
-        confirmed < n ~ 1,
-        TRUE ~ 0
-      )) %>%
-      filter(no_contagion == 0) %>%
-      select(-no_contagion) %>%
-      group_by(Country.Region) %>%
-      mutate(contagion_day = contagion_day - min(contagion_day)) %>%
-      ungroup()
-
+      rescale_df_contagion(n = n, w = w)
     df_clean
   })
 

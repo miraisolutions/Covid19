@@ -428,6 +428,7 @@ fix_legend_position <- function(p){
 #'
 #'
 #' @import ggplot2
+#' @import RColorBrewer
 #'
 #' @export
 plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
@@ -460,7 +461,7 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
-    scale_color_manual(values = c("#581845","#dd4b39", "#E69F00", "#56B4E9", "#125704", "#65a60f", "#00a65a", "#041c57", "#a60f8a", "#e322a6")[1:n_highligth])
+    scale_color_brewer(palette = "Dark2")
 
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))

@@ -36,6 +36,9 @@ mod_growth_death_rate_ui <- function(id){
 #' growth_death_rate Server Function
 #'
 #' @param df reactive data.frame
+#' @param n min number of cases for a country to be considered. Default 1000
+#' @param w number of days of outbreak. Default 7
+#' @param n_highligth number of countries to highlight
 #'
 #' @import dplyr
 #' @import tidyr
@@ -43,13 +46,8 @@ mod_growth_death_rate_ui <- function(id){
 #' @example ex-mod_growth_death_rate.R
 #'
 #' @noRd
-mod_growth_death_rate_server <- function(input, output, session, df){
+mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5){
   ns <- session$ns
-
-  # Params ----
-  n <- 1000 #min number of cases for a country to be considered
-  w <- 7 #min lenght of outbreak
-  n_highligth <- 5 # top countries
 
   # Help funcs ----
 
