@@ -10,6 +10,12 @@
 #' @noRd
 app_server <- function(input, output, session) {
 
+  # Params ----
+  n <- 1000 #  min number of cases for a country to be considered. Default 1000
+  w <- 7 # number of days of outbreak. Default 7
+
+  # Data ----
+
   orig_data <- reactive({
     get_timeseries_full_data() %>%
       get_timeseries_by_contagion_day_data()
@@ -26,14 +32,26 @@ app_server <- function(input, output, session) {
   output$last_update <- renderText({
     paste0("Last updated: ",
            max(orig_data()$date)
-           )
+    )
   })
 
-  # List the first level callModules here
-  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate)
-  callModule(mod_country_server, "country", orig_data_aggregate = orig_data_aggregate)
-  callModule(mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate)
+  data_filtered <- reactive({
+    orig_data_aggregate() %>%
+      rescale_df_contagion(n = n, w = w)
+  })
 
+  countries <- reactive({
+    data_filtered() %>%
+      select(Country.Region) %>%
+      distinct()
+  })
+
+  # Modules ----
+  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate)
+  callModule(mod_country_server, "country", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, countries = countries, n = n, w = w)
+  callModule(mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, countries = countries, n = n, w = w)
+
+  # Modal ----
   # what is new pop-up
   observeEvent(input$btn_whatsnew, {
     showModal(modalDialog(

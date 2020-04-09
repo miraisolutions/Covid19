@@ -32,27 +32,18 @@ mod_country_comparison_ui <- function(id){
 #' country_comparison Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame
+#' @param data_filtered reactive data.frame
+#' @param countries reactive data.frame
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #'
 #' @import dplyr
 #'
 #' @noRd
-mod_country_comparison_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7){
+mod_country_comparison_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries, n = 1000, w = 7){
   ns <- session$ns
 
   # Data ----
-
-  data_filtered <- reactive({
-    orig_data_aggregate() %>%
-      rescale_df_contagion(n = n, w = w)
-  })
-
-  countries <- reactive({
-    data_filtered() %>%
-      select(Country.Region) %>%
-      distinct()
-  })
 
   observe(
     updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
