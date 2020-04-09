@@ -11,7 +11,8 @@
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id){
   ns <- NS(id)
-
+  choices_plot <- c(names(case_colors), "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
+    setNames(gsub("_", " ",c(names(case_colors), "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
   # UI ----
   tagList(
     uiOutput(ns("title")),
@@ -19,7 +20,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
       column(7,
              offset = 1,
              radioButtons(inputId = ns("radio_indicator"), label = "",
-                          choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
+                          choices = choices_plot, selected ="confirmed", inline = TRUE)
       ),
       column(4,
              radioButtons(inputId = ns("radio_log_linear"), label = "",
@@ -55,7 +56,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   #This only depends on the orig_data_aggregate
   df_clean <- reactive({
     df_clean <- orig_data_aggregate() %>%
-      select(-starts_with("new_")) %>%
+      # select(-starts_with("new_")) %>%
       rescale_df_contagion(n = n, w = w)
     df_clean
   })
