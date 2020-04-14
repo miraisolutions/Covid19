@@ -11,7 +11,8 @@
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id){
   ns <- NS(id)
-
+  choices_plot <- c(names(case_colors), "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
+    setNames(gsub("_", " ",c(names(case_colors), "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
   # UI ----
   tagList(
     uiOutput(ns("title")),
@@ -19,7 +20,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
       column(7,
              offset = 1,
              radioButtons(inputId = ns("radio_indicator"), label = "",
-                          choices = names(case_colors), selected = names(case_colors)[1], inline = TRUE)
+                          choices = choices_plot, selected ="confirmed", inline = TRUE)
       ),
       column(4,
              radioButtons(inputId = ns("radio_log_linear"), label = "",
@@ -34,6 +35,9 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' compare_nth_cases_plot Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame
+#' @param   n min number of cases for a country to be considered. Default 1000
+#' @param w number of days of outbreak. Default 7
+#' @param n_highligth number of countries to highlight
 #'
 #' @example ex-mod_compare_nth_cases_plot.R
 #'
@@ -45,30 +49,15 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @import ggplot2
 #'
 #' @noRd
-mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate){
+mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, n_highligth = 5){
   ns <- session$ns
-
-  # Params ----
-  n <- 1000 #min number of cases for a country to be considered
-  w <- 7 #min lenght of outbreak
-  n_highligth <- 5 # number of countries to highligth
 
   # Data ----
   #This only depends on the orig_data_aggregate
   df_clean <- reactive({
     df_clean <- orig_data_aggregate() %>%
-      select(-starts_with("new_")) %>%
-      select_countries_n_cases_w_days(n = n, w = w) %>%
-      mutate(no_contagion = case_when( #drop rows where confirmed <- n
-        confirmed < n ~ 1,
-        TRUE ~ 0
-      )) %>%
-      filter(no_contagion == 0) %>%
-      select(-no_contagion) %>%
-      group_by(Country.Region) %>%
-      mutate(contagion_day = contagion_day - min(contagion_day)) %>%
-      ungroup()
-
+      # select(-starts_with("new_")) %>%
+      rescale_df_contagion(n = n, w = w)
     df_clean
   })
 

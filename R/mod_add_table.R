@@ -18,10 +18,11 @@ mod_add_table_ui <- function(id){
 
 #' add_table Server Function
 #' @param df data.frame reactive input to table
+#' @param maxrowsperpage number of rows. Integer
 #'
 #'
 #' @noRd
-mod_add_table_server <- function(input, output, session, df){
+mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5){
   ns <- session$ns
   output$table <- renderDT(
     datatable(df() %>% capitalize_names_df(),
@@ -30,7 +31,7 @@ mod_add_table_server <- function(input, output, session, df){
               #filter = 'bottom',
               escape = FALSE,
               plugins = 'natural',
-              options = getTableOptions())
+              options = getTableOptions(maxrowsperpage = maxrowsperpage))
   )
 
   # generate output report
