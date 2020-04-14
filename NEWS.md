@@ -2,7 +2,7 @@
 
 - adding growth factor and lethality rate data to tables in country and country comparison tabs (#5)
 - adding growth factor and lethality rate plots to country comparison tab (#5)
-- adding comparison from 100th case to country comparison tab and country tab (#5)
+- adding comparison from 1000nd case to country comparison tab and country tab (#5)
 - fix NA in input data
 - add info to boxes #63
 - remove pop up with data source information (#63)
