@@ -21,6 +21,7 @@ Imports:
     config,
     golem,
     shiny,
+    bsplus,
     dplyr,
     tidyr,
     ggplot2,
@@ -32,8 +33,7 @@ Imports:
     rgdal,
     shinycssloaders,
     sp,
-    markdown,
-    zoo
+    markdown
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
