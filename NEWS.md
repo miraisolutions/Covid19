@@ -5,11 +5,12 @@
 - adding comparison from 100th case to country comparison tab and country tab (#5)
 - fix NA in input data
 - add info to boxes #63
+- remove pop up with data source information (#63)
 
 ### Covid19 1.1.5 (2020-04-06)
 
 - fixed variables for map
--fixed albels for death rate plots
+- fixed albels for death rate plots
 
 ### Covid19 1.1.4 (2020-04-03)
 
