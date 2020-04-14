@@ -23,34 +23,35 @@ mod_country_ui <- function(id){
     hr(),
     fluidRow(
       column(6,
-             # div(h3("Total Cases"), align = "center",
-             mod_plot_log_linear_ui(ns("plot_log_linear_tot"))
-             # )
+             br(),
+             div( h4("Total cases"), align = "center",
+             div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
+             withSpinner(mod_plot_log_linear_ui(ns("plot_log_linear_tot")))
+             )
       ),
       column(6,
-             mod_add_table_ui(ns("add_table_country"))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots")))
       )
-    )
+    ),
+    mod_add_table_ui(ns("add_table_country"))
   )
 }
 
 #' country Server Function
 #'
-#' @param orig_data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
+#' @param data_filtered reactive data.frame
+#' @param countries reactive data.frame
+#' @param n min number of cases for a country to be considered. Default 1000
+#' @param w number of days of outbreak. Default 7
 #'
 #' @import dplyr
 #' @import tidyr
 #' @importFrom plotly renderPlotly
 #'
 #' @noRd
-mod_country_server <- function(input, output, session, orig_data){
+mod_country_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries, n = 1000, w = 7){
   ns <- session$ns
-
-  countries <- reactive({
-    orig_data() %>%
-      select(Country.Region) %>%
-      distinct()
-  })
 
   observe(
     updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = "Switzerland")
@@ -59,8 +60,7 @@ mod_country_server <- function(input, output, session, orig_data){
   observeEvent(input$select_country, {
 
     # Data ----
-    country_data <- reactive({orig_data() %>%
-        aggregate_province_timeseries_data() %>%
+    country_data <- reactive({data_filtered() %>%
         filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
@@ -75,7 +75,7 @@ mod_country_server <- function(input, output, session, orig_data){
     callModule(mod_caseBoxes_server, "count-boxes", country_data_today)
 
     # tables ----
-    callModule(mod_add_table_server, "add_table_country", country_data)
+    callModule(mod_add_table_server, "add_table_country", country_data,  maxrowsperpage = 10)
 
     # plots ----
 
@@ -85,7 +85,7 @@ mod_country_server <- function(input, output, session, orig_data){
     df_tot <- reactive({
       country_data() %>%
         select(-Country.Region, -contagion_day) %>%
-        select(-starts_with("new"), -confirmed) %>%
+        select(-starts_with("new"), -confirmed, -starts_with("growth_"), -ends_with("_rate")) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
         mutate(status = factor(status, levels = levs())) %>%
         capitalize_names_df()
@@ -97,6 +97,8 @@ mod_country_server <- function(input, output, session, orig_data){
     output$barplots <- renderUI({
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
+
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data, n = n)
 
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
 

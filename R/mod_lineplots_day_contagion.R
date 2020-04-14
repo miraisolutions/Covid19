@@ -31,7 +31,7 @@ mod_lineplots_day_contagion_server <- function(input, output, session, countries
   statuses <- c("confirmed", "deaths", "recovered", "active")
   output$line_plot_day_contagion <- renderPlot({
     df <- countries_data() %>%
-      select(-starts_with("new_"), -contagion_day) %>%
+      select(statuses, date, Country.Region) %>%
       arrange(date) %>%
       pivot_longer(cols = -c(date, Country.Region), names_to = "status", values_to = "value") %>%
       mutate(Country.Region = as.factor(Country.Region)) %>%

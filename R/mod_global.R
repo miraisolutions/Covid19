@@ -45,6 +45,7 @@ mod_global_ui <- function(id){
 #' global Server Function
 #'
 #' @param orig_data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
 #'
 #' @import dplyr
 #' @import tidyr
@@ -54,18 +55,10 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data){
+mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate){
   ns <- session$ns
 
   # Datasets ----
-
-  orig_data_aggregate <- reactive({
-    orig_data_aggregate <- orig_data() %>%
-      aggregate_province_timeseries_data() %>%
-      add_growth_death_rate() %>%
-      arrange(Country.Region)
-    orig_data_aggregate
-  })
 
   global <- reactive({
     global <- orig_data() %>%

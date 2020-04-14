@@ -11,28 +11,39 @@
 mod_country_comparison_ui <- function(id){
   ns <- NS(id)
   tagList(
-    selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
+    div(
+      selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
+      textOutput(ns("from_nth_case"))
+    ),
     withSpinner(uiOutput(ns("barplots"))),
-    uiOutput(ns("lineplots")),
+    withSpinner(uiOutput(ns("lineplots"))),
+    fluidRow(
+      column(5,
+             withSpinner(uiOutput(ns("rateplots")))
+      ),
+      column(7,
+             withSpinner(uiOutput(ns("lines_points_plots")))
+             )
+    ),
     mod_add_table_ui(ns("add_table_countries"))
   )
 }
 
 #' country_comparison Server Function
 #'
-#' @param orig_data reactive data.frame
+#' @param orig_data_aggregate reactive data.frame
+#' @param data_filtered reactive data.frame
+#' @param countries reactive data.frame
+#' @param n min number of cases for a country to be considered. Default 1000
+#' @param w number of days of outbreak. Default 7
 #'
 #' @import dplyr
 #'
 #' @noRd
-mod_country_comparison_server <- function(input, output, session, orig_data){
+mod_country_comparison_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries, n = 1000, w = 7){
   ns <- session$ns
 
-  countries <- reactive({
-    orig_data() %>%
-      select(Country.Region) %>%
-      distinct()
-  })
+  # Data ----
 
   observe(
     updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
@@ -41,11 +52,14 @@ mod_country_comparison_server <- function(input, output, session, orig_data){
   observeEvent(input$select_countries,{
     if (input$select_countries != "") {
       # Data ----
-      countries_data <- reactive({orig_data() %>%
-          aggregate_province_timeseries_data() %>%
+      countries_data <- reactive({data_filtered() %>%
           filter(Country.Region %in% input$select_countries) %>%
           filter(contagion_day > 0) %>%
           arrange(desc(date))
+      })
+
+      output$from_nth_case <- renderText({
+        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Condagion day 0 is the first day with more than ", n ," cases.")
       })
 
       # Bar plots ----
@@ -76,8 +90,24 @@ mod_country_comparison_server <- function(input, output, session, orig_data){
 
     callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data)
 
+    # Rate plots ----
+    output$rateplots <- renderUI({
+      mod_growth_death_rate_ui(ns("rate_plots"))
+    })
+
+    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n)
+
+
+    # Line with bullet plot
+
+    output$lines_points_plots <- renderUI({
+      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
+    })
+
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n)
+
     # tables ----
-    callModule(mod_add_table_server, "add_table_countries", countries_data)
+    callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
   })
 
 }
