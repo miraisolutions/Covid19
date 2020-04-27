@@ -251,8 +251,10 @@ Count Boxes
 .count-box h3 {
   font-size: 28px;
   color: inherit;
+  display: inline-block;
 }
 
 .count-box p {
-  font-size: 20px;
+  font-size: 23px;
+  display: inline-block;
 }

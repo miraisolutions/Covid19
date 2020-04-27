@@ -1,5 +1,7 @@
 ### Covid19 1.1.6.9000 (development version)
 
+- Merge the two boxes for current and new values into one.(#69)
+
 ### Covid19 1.1.6 (2020-04-06)
 
 - adding growth factor and lethality rate data to tables in country and country comparison tabs (#5)
