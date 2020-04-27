@@ -35,7 +35,7 @@ jobs:
           sudo -s eval "$sysreqs"
           # rsconnect dependencies
           sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-            libxml2-dev libcurl4-openssl-dev
+            libxml2-dev libcurl4-openssl-dev libcurl4-gnutls-dev
 
 # Install rsconnect necessary for deployment
       - name: Install dependencies
