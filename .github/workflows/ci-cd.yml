@@ -32,7 +32,7 @@ jobs:
         run: |
           # rsconnect dependencies
           sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-            libxml2-dev libcurl4-openssl-dev libgit2-dev libcurl4-gnutls-dev
+            libxml2-dev libcurl4-openssl-dev libcurl4-gnutls-dev
           # other dependencies
           Rscript -e "remotes::install_github('r-hub/sysreqs')"
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
