@@ -17,9 +17,10 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R build status](https://github.com/miraisolutions/Covid19/workflows/CI-CD/badge.svg)](https://github.com/miraisolutions/Covid19/actions)
+[![eRum2020::CovidR](https://badgen.net/https/runkit.io/erum2020-covidr/badge/branches/master/vitalini-covid19?cache=300)](https://milano-r.github.io/erum2020-covidr-contest/vitalini-covid19.html)
 <!-- badges: end -->
 
-The goal of Covid19 is to fetch coronavirus data from public and reliable resources available and analyze them.
+The goal of Covid19 is to fetch coronavirus data from public and reliable resources available and analyze them. 
 
 **Up to the 26th of March 2020**, the source was the [Johns Hopkins University Center for Systems Science and Engineering (JHU CSSE)](https://github.com/CSSEGISandData/COVID-19)
 
