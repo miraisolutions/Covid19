@@ -37,6 +37,7 @@ jobs:
           echo $sysreqs
           # Add cran/libgit2 PPA to fix libgit / libcurl incompatibilities
           # see https://github.com/r-hub/sysreqsdb/issues/77#issuecomment-620116906
+          # NOTE that this will not be needed on Ubuntu 20.04
           sudo add-apt-repository ppa:cran/libgit2
           sudo -s eval "$sysreqs"
           # rsconnect dependencies
