@@ -108,7 +108,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # plots ----
 
   levs <- reactive(
-    rev(sort_type_by_max(global_today()))
+    sort_type_by_max(global_today())
   )
 
   # > area plot global
