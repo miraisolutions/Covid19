@@ -137,7 +137,6 @@ sort_type_by_max <- function(data) {
 
 #' Sort type harcoded
 #'
-#' @param data data to be sorted
 sort_type_hardcoded <- function() {
   c("recovered", "deaths", "active")
 }
