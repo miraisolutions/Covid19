@@ -1,5 +1,7 @@
 ### Covid19 1.1.6.9000 (development version)
 
+- fix trend order of area plot both global and country tabs, added utils funtion (#74)
+
 ### Covid19 1.1.6 (2020-04-06)
 
 - adding growth factor and lethality rate data to tables in country and country comparison tabs (#5)
