@@ -29,7 +29,11 @@ jobs:
           restore-keys: ${{ runner.os }}-r-
       
       - name: Flush R_LIBS_USER
-        run: rm -r ${{ env.R_LIBS_USER }}
+        run: |
+          rm -r ${{ env.R_LIBS_USER }}
+          mkdir ${{ env.R_LIBS_USER }}
+          install.packages("remotes")
+
 
       - name: Install system dependencies
         env:
