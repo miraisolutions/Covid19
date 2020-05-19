@@ -1,5 +1,7 @@
 ### Covid19 1.1.6.9000 (development version)
 
+- fix colour scale/legend over 1M by replacing data_clean() with data_plot() (#79)
+
 ### Covid19 1.1.6 (2020-04-06)
 
 - adding growth factor and lethality rate data to tables in country and country comparison tabs (#5)
