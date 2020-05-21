@@ -38,60 +38,47 @@ mod_caseBoxes_ui <- function(id) {
 mod_caseBoxes_server <- function(input, output, session, counts) {
 
   output$confirmed <- renderUI({
-    countBox("Confirmed",
-             counts()[["confirmed"]],
-             color = "white",
-             background = case_colors[["confirmed"]])
-  })
-  output$new_confirmed <- renderUI({
-    countBox("New",
-             counts()[["new_confirmed"]],
+    countBox(title1 = "Confirmed: ",
+             subtitle1 = counts()[["confirmed"]],
+             title2 = "New: ",
+             subtitle2 =  counts()[["new_confirmed"]],
              color = "white",
              background = case_colors[["confirmed"]])
   })
   output$death <- renderUI({
-    countBox("Deaths",
-             counts()[["deaths"]],
-             color = "white",
-             background = case_colors[["deaths"]])
-  })
-  output$new_death <- renderUI({
-    countBox("New",
-             counts()[["new_deaths"]],
+    countBox(title1 = "Deaths: ",
+             subtitle1 = counts()[["deaths"]],
+             title2 = "New: ",
+             subtitle2 =  counts()[["new_deaths"]],
              color = "white",
              background = case_colors[["deaths"]])
   })
   output$recovered <- renderUI({
-    countBox("Recovered",
-             counts()[["recovered"]],
-             color = "white",
-             background = case_colors[["recovered"]])
-  })
-  output$new_recovered <- renderUI({
-    countBox("New",
-             counts()[["new_recovered"]],
+    countBox(title1 = "Recovered: ",
+             subtitle1 = counts()[["recovered"]],
+             title2 = "New: ",
+             subtitle2 =  counts()[["new_recovered"]],
              color = "white",
              background = case_colors[["recovered"]])
   })
   output$active <- renderUI({
-    countBox("Active",
-             counts()[["active"]],
-             color = "white",
-             background = case_colors[["active"]])
-  })
-  output$new_active <- renderUI({
-    countBox("New",
-             counts()[["new_active"]],
+    countBox(title1 = "Active: ",
+             subtitle1 = counts()[["active"]],
+             title2 = "New: ",
+             subtitle2 =  counts()[["new_active"]],
              color = "white",
              background = case_colors[["active"]])
   })
 }
 
-countBox <- function(title, subtitle, color, background, width = "100%") {
+countBox <- function(title1, subtitle1, title2, subtitle2, color, background, width = "100%") {
   div(
     class = "count-box",
-    shiny::h3(title),
-    shiny::p(formatC(subtitle, format = "f", big.mark = ",", digits  = 0)),
+    shiny::h3(title1),
+    shiny::p(formatC(subtitle1, format = "f", big.mark = ",", digits  = 0)),
+    br(),
+    shiny::h3(title2),
+    shiny::p(formatC(subtitle2, format = "f", big.mark = ",", digits  = 0)),
     style = sprintf(
       "color: %s; background-color: %s; width: %s;",
       color, background, width
