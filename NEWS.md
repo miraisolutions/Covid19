@@ -1,6 +1,7 @@
 ### Covid19 1.1.6.9000 (development version)
 
 - correct plot titles for modules mod_compare_nth_cases_plot and mod_growth_death_rate (#66)
+- Add angle to bar-plot labels (#68)
 
 ### Covid19 1.1.6 (2020-04-06)
 
