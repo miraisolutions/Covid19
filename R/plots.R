@@ -504,10 +504,10 @@ plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
   p <- ggplot(df, aes(x = Country, y = Value)) +
     geom_bar(stat = "identity", fill = rate_colors[[color]]) +
     basic_plot_theme() +
-    coord_cartesian(ylim = c(y_min, max(df$Value))) #+
-    # theme(
-    #   axis.text.x = element_text(angle = 45)
-    # )
+    coord_cartesian(ylim = c(y_min, max(df$Value))) +
+    theme(
+      axis.text.x = element_text(angle = 30)
+    )
 
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%")) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
