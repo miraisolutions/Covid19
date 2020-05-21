@@ -8,12 +8,12 @@
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner
-mod_growth_death_rate_ui <- function(id){
+mod_growth_death_rate_ui <- function(id, n_highligth = 5){
   ns <- NS(id)
   tagList(
     fluidRow(
       column(6,
-             div(h4("Current top 5 countries growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             uiOutput(ns("title_growth_factor")),
              radioButtons(inputId = ns("growth_factor"), label = "",
                           choices = list("Over 3 days" = "growth_factor_3",
                                          "Over 5 days" = "growth_factor_5",
@@ -22,7 +22,7 @@ mod_growth_death_rate_ui <- function(id){
              withSpinner(uiOutput(ns("plot_growth_factor")))
       ),
       column(6,
-             div(h4("Current top 5 countries death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             uiOutput(ns("title_dath_toll")),
              radioButtons(inputId = ns("radio_pop"), label = "",
                           choices = list("lethality rate" = "lethality_rate",
                                          "mortality rate 1M pop" = "mortality_rate_1M_pop"),
@@ -39,6 +39,7 @@ mod_growth_death_rate_ui <- function(id){
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
+#' @param istop logical to choose title
 #'
 #' @import dplyr
 #' @import tidyr
@@ -46,7 +47,7 @@ mod_growth_death_rate_ui <- function(id){
 #' @example ex-mod_growth_death_rate.R
 #'
 #' @noRd
-mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5){
+mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T){
   ns <- session$ns
 
   # Help funcs ----
@@ -89,6 +90,17 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), input$radio_pop)})
 
   # Plots ----
+
+  # titles
+  if (istop) {
+    output$title_growth_factor <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries growth factor")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_dath_toll <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries death toll")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+  } else {
+    output$title_growth_factor <- renderUI(div(h4("Countries growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_dath_toll <- renderUI(div(h4("Countries death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+  }
+
+  # captions
   caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
   caption_death_rate_radio <- reactive({
     if (input$radio_pop == "lethality_rate") {
@@ -101,6 +113,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   caption_death_rate <- reactive({paste0("Computed as total deaths today ",caption_death_rate_radio())})
   caption_countries <- paste0("Only countries with more than ", n, " confirmed cases, a population of over 1 M and outbreaks longer than ", w, " days considered.")
 
+  # plots
   output$plot_growth_factor <- renderUI({
     tagList(
       plotlyOutput(ns("plot_growth_factor_hist"), height = 400),
