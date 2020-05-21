@@ -135,6 +135,12 @@ sort_type_by_max <- function(data) {
   c("active", "recovered", "deaths") %>% .[order(sapply(data[.], max))]
 }
 
+#' Sort type harcoded
+#'
+sort_type_hardcoded <- function() {
+  c("recovered", "deaths", "active")
+}
+
 #' Round up to the next decine
 #' Ref: https://stackoverflow.com/questions/6461209/how-to-round-up-to-the-nearest-10-or-100-or-x
 #' @param x number to round

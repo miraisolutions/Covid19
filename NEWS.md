@@ -1,6 +1,9 @@
 ### Covid19 1.1.6.9000 (development version)
 
 - Merge the two boxes for current and new values into one.(#69)
+- fix trend order of area plot both global and country tabs, added utils funtion (#74)
+- correct plot titles for modules mod_compare_nth_cases_plot and mod_growth_death_rate (#66)
+- Add angle to bar-plot labels (#68)
 
 ### Covid19 1.1.6 (2020-04-06)
 
