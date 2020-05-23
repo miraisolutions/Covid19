@@ -28,13 +28,24 @@ mod_lineplots_day_contagion_ui <- function(id){
 mod_lineplots_day_contagion_server <- function(input, output, session, countries_data){
   ns <- session$ns
 
+  countries_ordered <- reactive({
+    countries_data() %>%
+      group_by(Country.Region) %>%
+      filter(date == max(date)) %>%
+      filter(confirmed ==  max(confirmed)) %>%
+      ungroup() %>%
+      arrange(desc(confirmed)) %>%
+      select(Country.Region) %>%
+      pull()
+  })
+
   statuses <- c("confirmed", "deaths", "recovered", "active")
   output$line_plot_day_contagion <- renderPlot({
     df <- countries_data() %>%
       select(statuses, date, Country.Region) %>%
       arrange(date) %>%
       pivot_longer(cols = -c(date, Country.Region), names_to = "status", values_to = "value") %>%
-      mutate(Country.Region = as.factor(Country.Region)) %>%
+      mutate(Country.Region = factor(Country.Region, levels = countries_ordered())) %>%
       mutate(status = factor(status, levels = statuses))
 
 
