@@ -80,7 +80,7 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
     # plots ----
 
     levs <- reactive(
-      rev(sort_type_by_max(country_data_today()))
+      sort_type_hardcoded()
     )
     df_tot <- reactive({
       country_data() %>%
