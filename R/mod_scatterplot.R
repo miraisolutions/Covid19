@@ -27,15 +27,16 @@ mod_scatterplot_ui <- function(id, n_highligth = 5){
 }
 #' Scatterplot prevalence vs growth
 #'
-#' @param countries_data reactive data.frame for multiple countries
-#'
+#' @param df reactive data.frame for multiple countries
+#' @param countries reactive character vector of country names
+
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
 #' @importFrom plotly ggplotly layout
 #'
 #' @noRd
-mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T){
+mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T, countries){
   ns <- session$ns
   # titles
   if (istop) {
@@ -50,18 +51,6 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
     df = df[, !(grepl("^growth_factor", names(df)))]
     df
   }
-  # prep_data <- function(orig_data_aggregate, n, w){
-  #   df1 <- orig_data_aggregate %>%
-  #     Covid19:::select_countries_n_cases_w_days(n = n, w = w) %>%
-  #     filter( date == max(date)) %>%
-  #     Covid19:::align_country_names_pop() %>%
-  #     mutate(country_name = Country.Region) %>%
-  #     Covid19:::get_pop_data() %>%
-  #     filter(population > 10^6) %>% # dropping countries with less than 1 M pop, needed?
-  #     Covid19:::align_country_names_pop_reverse() %>%
-  #     select(Country.Region,date,starts_with("growth"),prevalence_rate_1M_pop)
-  #   df1
-  # }
 
   select1000 = function(orig_data_aggregate, n, w){
     orig_data_aggregate %>%
@@ -94,16 +83,17 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
   medgr = reactive({med_growth()[input$growth_factor]})
 
-  # med = reactive({
-  #   list(x = med_prevalence(),
-  #        y = med_growth())
-  # })
   df_top = reactive({pick_rate(world1000(), "confirmed") %>%
-      arrange(desc(Value)) %>%
+      arrange(desc(Value)) })
+  if (istop)  { # choose top n_highligth
+    df_top_new = reactive({df_top() %>%
       top_n(n_highligth, wt = Value)})
+  } else {
+    df_top_new = reactive({df_top() %>%
+        filter(Country.Region %in% countries())})
+  }
 
-  dfnew = reactive({addgrowth(df_top(),input$growth_factor)})
-
+  dfnew = reactive({addgrowth(df_top_new(),input$growth_factor)})
 
   caption_growth_factor <- reactive({paste0("growth factor: Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
   caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
