@@ -1,15 +1,13 @@
 #' stacked barplot status
 #'
 #' @param df data.frame
-#' @param color string used to define color
 #' @param percent logical to make the y axis in percent
-#' @param y_min min value on y axis
 #'
 #' @import ggplot2
 #'
 #' @return ggplot plot
 #' @export
-stackedbarplot_plot <- function(df, color, percent =  T, text) {
+stackedbarplot_plot <- function(df, percent =  T) {
   if (percent) {
     df$ratio.over.cases <- 100*df$ratio.over.cases
   }
@@ -22,7 +20,7 @@ stackedbarplot_plot <- function(df, color, percent =  T, text) {
       axis.text.x = element_text(angle = 30)
     )
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%")) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   }
   # p = p %>%
   #   fix_colors()
