@@ -6,7 +6,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @importFrom shiny NS tagList selectInput
 #' @importFrom shinycssloaders withSpinner
 mod_scatterplot_ui <- function(id, n_highligth = 5){
   ns <- NS(id)
@@ -32,6 +32,7 @@ mod_scatterplot_ui <- function(id, n_highligth = 5){
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
+#' @importFrom plotly ggplotly layout
 #'
 #' @noRd
 mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T){

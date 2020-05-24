@@ -38,6 +38,12 @@ mod_global_ui <- function(id){
       )
     ),
     hr(),
+    fluidRow(
+      column(12,offset = 6,
+             mod_scatterplot_ui(ns("plot_scatterplot_glob"))
+      )
+    ),
+    hr(),
     mod_add_table_ui(ns("add_table_world"))
   )
 }
@@ -137,6 +143,9 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
+
+  # > scatterplot prevalence vs growth
+  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)
