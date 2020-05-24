@@ -34,7 +34,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
   if (istop) {
     output$title_stackedbarplot_status <- renderUI(div(h4(paste0("Current top ", n_highligth, " status split")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   } else {
-    output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_stackedbarplot_status <- renderUI(div(h4("Status split by country"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
   prep_data <- function(orig_data_aggregate, n, w){
