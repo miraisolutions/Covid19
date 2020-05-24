@@ -25,6 +25,11 @@ mod_country_comparison_ui <- function(id){
              withSpinner(uiOutput(ns("lines_points_plots")))
              )
     ),
+    fluidRow(
+      column(12,
+             withSpinner(uiOutput(ns("status_stackedbarplot")))
+      )
+    ),
     mod_add_table_ui(ns("add_table_countries"))
   )
 }
@@ -105,6 +110,11 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
+
+    output$status_stackedbarplot <- renderUI({
+      mod_stackedbarplot_ui(ns("status_stackedbarplot"))
+    })
+    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
