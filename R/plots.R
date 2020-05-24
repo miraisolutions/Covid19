@@ -514,3 +514,44 @@ plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
   }
   p
 }
+
+#' scatterplot between prevalence and growth rate
+#'
+#' @param df data.frame
+#' @param med list with median values for x and y
+#' @param x.min numeric adjustment for cartesian x axis
+#' @param y.min numeric adjustment for cartesian y axis
+#'
+#' @import ggplot2
+#'
+#' @return ggplot plot
+#' @export
+scatter_plot <- function(df, med, x.min = c(0.9, 1.1), y.min = c(1,1.02)) {
+
+  df = df %>% rename(
+    growthfactor = starts_with("growth")
+  )
+  # mean.x = mean(df$prevalence_rate_1M_pop)
+  # mean.y = mean(df$growthfactor)
+  color_cntry = rep("orange", nrow(df))
+  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor < med$y ] = "green3"
+  color_cntry[df$prevalence_rate_1M_pop > med$x & df$growthfactor > med$y ] = "red"
+
+  xlim =  c(min(df$prevalence_rate_1M_pop,med$x)*x.min[1], max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
+  ylim = c(1*y.min[1], max(df$growthfactor, med$y)*y.min[2])
+  p <- ggplot(df) +
+    basic_plot_theme() +
+    theme(
+      axis.title.x = element_text(),
+      axis.title.y = element_text(),
+    ) +
+    labs(x="prevalence over 1M", y = "growth factor") +
+    geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
+              check_overlap = TRUE, color = color_cntry) +
+    coord_cartesian(ylim = ylim,
+                    xlim = xlim) +
+    geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted") +
+    geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted")
+  p
+}
+
