@@ -5,6 +5,7 @@ if (interactive()) {
   library(tidyr)
   library(ggplot2)
   library(plotly)
+  library(ggrepel)
 
   ui <- fluidPage(
     tagList(
@@ -24,7 +25,7 @@ if (interactive()) {
         add_growth_death_rate() %>%
         arrange(Country.Region)})
 
-    inputcountries = reactive(c("UK","Italy")) # example with countries
+    inputcountries = reactive(c("UK","Italy", "Slovakia","Greece","Russia", "Brazil")) # example with countries
 
     callModule(Covid19:::mod_scatterplot_server, "plot", orig_data_aggregate, istop = F, countries = inputcountries)
 

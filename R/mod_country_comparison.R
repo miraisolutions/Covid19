@@ -26,7 +26,7 @@ mod_country_comparison_ui <- function(id){
              )
     ),
     fluidRow(
-      column(6, offset = 6,
+      column(12, offset = 6,
              withSpinner(uiOutput(ns("scatterplot_plots")))
       )
     ),
