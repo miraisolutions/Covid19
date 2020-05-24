@@ -1,4 +1,4 @@
-#' growth_death_rate UI Function
+#' plot_scatterplot UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -25,9 +25,10 @@ mod_scatterplot_ui <- function(id, n_highligth = 5){
     )
   )
 }
-#' lineplots_day_contagion Server Function
+#' Scatterplot prevalence vs growth
 #'
 #' @param countries_data reactive data.frame for multiple countries
+#' @param med reactive list medians for x and y axes
 #'
 #' @import dplyr
 #' @import tidyr
