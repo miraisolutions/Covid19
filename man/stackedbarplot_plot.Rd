@@ -4,16 +4,12 @@
 \alias{stackedbarplot_plot}
 \title{stacked barplot status}
 \usage{
-stackedbarplot_plot(df, color, percent = T, text)
+stackedbarplot_plot(df, percent = T)
 }
 \arguments{
 \item{df}{data.frame}
 
-\item{color}{string used to define color}
-
 \item{percent}{logical to make the y axis in percent}
-
-\item{y_min}{min value on y axis}
 }
 \value{
 ggplot plot

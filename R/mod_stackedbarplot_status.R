@@ -27,6 +27,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 #' @import tidyr
 #' @import ggplot2
 #' @import purrr
+#' @importFrom plotly ggplotly layout
 #' @noRd
 mod_stackedbarplot_status_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T){
   ns <- session$ns
