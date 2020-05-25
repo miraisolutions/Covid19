@@ -129,7 +129,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
     } else if (input$radio_choices == "deaths" | input$radio_choices == "new_deaths") {
       colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
     } else if (input$radio_choices == "active" | input$radio_choices == "new_active") {
-      colorNumeric(palette = "Blues", domain = domain(), na.color = "white")
+      colorNumeric(palette = "Blues", domain = domain(), na.color = "grey")
     }  else if (input$radio_choices == "recovered" | input$radio_choices == "new_recovered") {
       colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
     }
