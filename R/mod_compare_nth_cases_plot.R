@@ -123,7 +123,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   }
 
   output$caption <- renderUI({
-      p(paste0("Considering countries with at least ", n," confirmed cases, and outbreaks longer than ",w," days. Day 0 is the day the country reached ", n," confirmed cases. Notice that China has been cut off to the second longest outbreak."))
+      p(paste0("Computed as rolling weekly average. Considering countries with at least ", n," confirmed cases, and outbreaks longer than ",w," days. Day 0 is the day the country reached ", n," confirmed cases. Notice that China has been cut off to the second longest outbreak."))
   })
 
 }
