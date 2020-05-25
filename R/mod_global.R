@@ -43,6 +43,7 @@ mod_global_ui <- function(id){
              mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
       )
     ),
+    hr(),
     mod_add_table_ui(ns("add_table_world"))
   )
 }
