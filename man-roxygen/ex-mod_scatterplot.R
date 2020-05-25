@@ -5,7 +5,6 @@ if (interactive()) {
   library(tidyr)
   library(ggplot2)
   library(plotly)
-  library(ggrepel)
 
   ui <- fluidPage(
     tagList(
