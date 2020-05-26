@@ -24,7 +24,7 @@ mod_map_ui <- function(id){
           radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
           radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
           uiOutput(ns("slider_ui")),
-          helpText("The detail of each country can be obtained by clicking on it.")
+          helpText("Click on the country to obtain its details.")
       )
     )
 
