@@ -38,6 +38,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @param   n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
+#' @param istop logical to choose title
 #'
 #' @example ex-mod_compare_nth_cases_plot.R
 #'
@@ -49,7 +50,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @import ggplot2
 #'
 #' @noRd
-mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, n_highligth = 5){
+mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, n_highligth = 5, istop = T){
   ns <- session$ns
 
   # Data ----
@@ -111,12 +112,18 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
 
   })
 
-  output$title <- renderUI({
-    div(h4(paste0("Top ",n_highligth," countries from day of ", n ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-  })
+  if (istop) {
+    output$title <- renderUI({
+      div(h4(paste0("Top ",n_highligth," countries from day of ", n ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+    })
+  } else {
+    output$title <- renderUI({
+      div(h4(paste0("Countries from day of ", n ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+    })
+  }
 
   output$caption <- renderUI({
-      p(paste0("Considering countries with at least ", n," confirmed cases, and outbreaks longer than ",w," days. Day 0 is the day the country reached ", n," confirmed cases. Notice that China has been cut off to the second longest outbreak."))
+      p(paste0("Computed as rolling weekly average. Considering countries with at least ", n," confirmed cases, and outbreaks longer than ",w," days. Day 0 is the day the country reached ", n," confirmed cases. Notice that China has been cut off to the second longest outbreak."))
   })
 
 }

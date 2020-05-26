@@ -59,7 +59,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
       })
 
       output$from_nth_case <- renderText({
-        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Condagion day 0 is the first day with more than ", n ," cases.")
+        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
       })
 
       # Bar plots ----
@@ -92,10 +92,10 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
 
     # Rate plots ----
     output$rateplots <- renderUI({
-      mod_growth_death_rate_ui(ns("rate_plots"))
+      mod_growth_death_rate_ui(ns("rate_plots"), n_highligth = length(input$select_countries))
     })
 
-    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n)
+    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
 
     # Line with bullet plot
@@ -104,7 +104,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
       mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
