@@ -8,12 +8,16 @@
 #' @return ggplot plot
 #' @export
 stackedbarplot_plot <- function(df, percent =  T) {
+  suffix = NULL
   if (percent) {
     df$ratio.over.cases <- 100*df$ratio.over.cases
+    suffix = "%"
   }
   p <- df %>%
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
-               text = paste0("percentage: ", round(ratio.over.cases, 1), "%</br>")))+
+               text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
+               label = paste("count: ",
+                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(

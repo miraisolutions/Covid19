@@ -79,7 +79,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
            status = factor(status, levels = statuses)) %>%
     arrange(status)})
 
-  caption_explain <- "Status split per country."
+  caption_explain <- "Status split per country as of today."
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(
