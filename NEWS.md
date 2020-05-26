@@ -1,5 +1,6 @@
 ### Covid19 1.1.6.9000 (development version)
 
+- fix colour scale/legend over 1M by replacing data_clean() with data_plot() (#79)
 - Country comp Lineplot from day of 1000 contagion rolling weekly average, remove dots, add imports zoo (#80)
 - Fix colour order in mod_lineplots_day_contagion (#67)
 - Merge the two boxes for current and new values into one.(#69)
