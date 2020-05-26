@@ -1,5 +1,6 @@
 ### Covid19 1.1.6.9000 (development version)
 
+- Country comp Lineplot from day of 1000 contagion rolling weekly average, remove dots, add imports zoo (#80)
 - Fix colour order in mod_lineplots_day_contagion (#67)
 - Merge the two boxes for current and new values into one.(#69)
 - fix trend order of area plot both global and country tabs, added utils funtion (#74)

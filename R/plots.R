@@ -429,6 +429,7 @@ fix_legend_position <- function(p){
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @import zoo
 #'
 #' @export
 plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
@@ -450,6 +451,10 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   df_highlight <- df %>%
     filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
 
+  # rolling weekly average (#80)
+  df_highlight <- df_highlight %>% group_by(Status) %>%
+    arrange(Date)  %>%
+    mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE))
 
   df_highlight_max <- df_highlight %>%
     group_by(Status) %>%
@@ -460,7 +465,6 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
-    geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     scale_color_brewer(palette = "Dark2")
 
   if (percent) {

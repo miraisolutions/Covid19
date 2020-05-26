@@ -59,7 +59,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
       })
 
       output$from_nth_case <- renderText({
-        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Condagion day 0 is the first day with more than ", n ," cases.")
+        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
       })
 
       # Bar plots ----
