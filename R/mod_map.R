@@ -115,7 +115,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
   })
 
   max_value <- reactive({
-    max(data_clean()[,input$radio_choices])
+    max(data_plot()[["indicator"]])
   })
 
   domain <- reactive({
