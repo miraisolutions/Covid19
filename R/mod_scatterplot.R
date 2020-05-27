@@ -11,19 +11,14 @@
 mod_scatterplot_ui <- function(id, n_highligth = 5){
   ns <- NS(id)
   tagList(
-    fluidRow(
-      column(6,
-             uiOutput(ns("title_scatterplot")),
-             selectInput(inputId = ns("growth_factor"), label = "Select growth factor",
+         uiOutput(ns("title_scatterplot")),
+         selectInput(inputId = ns("growth_factor"), label = "Select growth factor",
                           choices = list("Over 3 days" = "growth_factor_3",
                                          "Over 5 days" = "growth_factor_5",
                                          "Over one week" = "growth_factor_7"),
                           selected = "growth_factor_3"),
-             #withSpinner(uiOutput(ns("plot_scatterplot")))
-             withSpinner(uiOutput(ns("plot_scatterplot"), height = 400)),
+         withSpinner(uiOutput(ns("plot_scatterplot"))),
       )
-    )
-  )
 }
 #' Scatterplot prevalence vs growth
 #'
@@ -33,7 +28,7 @@ mod_scatterplot_ui <- function(id, n_highligth = 5){
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
-#' @importFrom plotly ggplotly layout
+#' @importFrom plotly ggplotly layout plotly_build
 #'
 #' @noRd
 mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T, countries){

@@ -26,10 +26,10 @@ mod_country_comparison_ui <- function(id){
              )
     ),
     fluidRow(
-      column(12, offset = 6,
+      column(6,
              withSpinner(uiOutput(ns("scatterplot_plots")))
       ),
-      column(12,
+      column(6,
              withSpinner(uiOutput(ns("status_stackedbarplot")))
       )
     ),
@@ -124,7 +124,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
     callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries)
-    
+
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
     })

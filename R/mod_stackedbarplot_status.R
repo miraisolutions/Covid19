@@ -11,13 +11,9 @@
 mod_stackedbarplot_ui <- function(id, n_highligth = 5){
   ns <- NS(id)
   tagList(
-    fluidRow(
-      column(6,
-             uiOutput(ns("title_stackedbarplot_status")),
-             withSpinner(uiOutput(ns("plot_stackedbarplot_status"), height = 400)),
+          uiOutput(ns("title_stackedbarplot_status")),
+          withSpinner(uiOutput(ns("plot_stackedbarplot_status")))
       )
-    )
-  )
 }
 #' stackedbarplot_status Server Function
 #'
