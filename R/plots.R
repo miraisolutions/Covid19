@@ -1,3 +1,36 @@
+#' stacked barplot status
+#'
+#' @param df data.frame
+#' @param percent logical to make the y axis in percent
+#'
+#' @import ggplot2
+#'
+#' @return ggplot plot
+#' @export
+stackedbarplot_plot <- function(df, percent =  T) {
+  suffix = NULL
+  if (percent) {
+    df$ratio.over.cases <- 100*df$ratio.over.cases
+    suffix = "%"
+  }
+  p <- df %>%
+    ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
+               text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
+               label = paste("count: ",
+                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
+    basic_plot_theme() +
+    geom_col(position = position_stack(reverse = TRUE)) +
+    theme(
+      axis.text.x = element_text(angle = 30)
+    )
+  if (percent) {
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
+  }
+  # p = p %>%
+  #   fix_colors()
+  p
+}
+
 #' Time evolution as line plot
 #'
 #' @rdname time_evol_line_plot

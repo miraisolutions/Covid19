@@ -19,6 +19,8 @@ URL: https://mirai-solutions.ch,
 BugReports: https://github.com/miraisolutions/Covid19/issues
 Imports: 
     config,
+    purrr,
+    stringr,
     golem,
     shiny,
     bsplus,
