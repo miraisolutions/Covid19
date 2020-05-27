@@ -561,6 +561,7 @@ plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @importFrom scales label_number
 #'
 #' @return ggplot plot
 #' @export
