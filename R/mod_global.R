@@ -39,6 +39,9 @@ mod_global_ui <- function(id){
     ),
     hr(),
     fluidRow(
+      column(12,offset = 6,
+             mod_scatterplot_ui(ns("plot_scatterplot_glob"))
+             ),
       column(12,
              mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
       )
@@ -144,6 +147,9 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
 
+  # > scatterplot prevalence vs growth
+  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate)
+  
   # > stacked barplot with status split
   callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate)
 

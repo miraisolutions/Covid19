@@ -26,6 +26,9 @@ mod_country_comparison_ui <- function(id){
              )
     ),
     fluidRow(
+      column(12, offset = 6,
+             withSpinner(uiOutput(ns("scatterplot_plots")))
+      ),
       column(12,
              withSpinner(uiOutput(ns("status_stackedbarplot")))
       )
@@ -57,11 +60,17 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
   observeEvent(input$select_countries,{
     if (input$select_countries != "") {
       # Data ----
-      countries_data <- reactive({data_filtered() %>%
-          filter(Country.Region %in% input$select_countries) %>%
+      all_countries_data <- reactive({data_filtered() %>%
           filter(contagion_day > 0) %>%
           arrange(desc(date))
       })
+
+      countries_data <- reactive({all_countries_data() %>%
+          filter(Country.Region %in% input$select_countries) %>%
+          arrange(desc(date))
+      })
+
+
 
       output$from_nth_case <- renderText({
         paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
@@ -102,7 +111,6 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
 
     callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
-
     # Line with bullet plot
 
     output$lines_points_plots <- renderUI({
@@ -111,6 +119,12 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
+    inputcountries = reactive({input$select_countries}) # pass countries to plot below
+    output$scatterplot_plots <- renderUI({
+      mod_scatterplot_ui(ns("scatterplot_plots"))
+    })
+    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries)
+    
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
     })
