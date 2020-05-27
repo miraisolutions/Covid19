@@ -79,7 +79,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(
-      plotlyOutput(ns("plot_stackedbarplot_status_draw"), height = 400),
+      plotlyOutput(ns("plot_stackedbarplot_status_draw"), height = 500),
       div(p(caption_explain), align = "center")
     )
   })
