@@ -28,12 +28,6 @@ jobs:
           key: ${{ runner.os }}-r-${{ hashFiles('depends.Rds') }}
           restore-keys: ${{ runner.os }}-r-
 
-      - name: Flush R_LIBS_USER
-        run: |
-          rm -r ${{ env.R_LIBS_USER }}
-          mkdir ${{ env.R_LIBS_USER }}
-          Rscript -e 'install.packages("remotes")'
-
       - name: Install system dependencies
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
