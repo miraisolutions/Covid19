@@ -47,6 +47,8 @@ jobs:
 # Install rsconnect necessary for deployment
       - name: Install dependencies
         run: |
+          # uninstall cached packages (in case they were e.g. installed with different R version)
+          remove.packages(installed.packages(${{ env.R_LIBS_USER }})[1, "Package"], ${{ env.R_LIBS_USER }})
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran(c("rcmdcheck", "rsconnect"))
         shell: Rscript {0}
