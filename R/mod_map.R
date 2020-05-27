@@ -24,7 +24,7 @@ mod_map_ui <- function(id){
           radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
           radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
           uiOutput(ns("slider_ui")),
-          helpText("The detail of each country can be obtained by clicking on it.")
+          helpText("Click on the country to obtain its details.")
       )
     )
 
@@ -115,7 +115,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
   })
 
   max_value <- reactive({
-    max(data_clean()[,input$radio_choices])
+    max(data_plot()[["indicator"]])
   })
 
   domain <- reactive({
@@ -129,7 +129,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
     } else if (input$radio_choices == "deaths" | input$radio_choices == "new_deaths") {
       colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
     } else if (input$radio_choices == "active" | input$radio_choices == "new_active") {
-      colorNumeric(palette = "Blues", domain = domain(), na.color = "white")
+      colorNumeric(palette = "Blues", domain = domain(), na.color = "grey")
     }  else if (input$radio_choices == "recovered" | input$radio_choices == "new_recovered") {
       colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
     }

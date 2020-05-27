@@ -1,3 +1,36 @@
+#' stacked barplot status
+#'
+#' @param df data.frame
+#' @param percent logical to make the y axis in percent
+#'
+#' @import ggplot2
+#'
+#' @return ggplot plot
+#' @export
+stackedbarplot_plot <- function(df, percent =  T) {
+  suffix = NULL
+  if (percent) {
+    df$ratio.over.cases <- 100*df$ratio.over.cases
+    suffix = "%"
+  }
+  p <- df %>%
+    ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
+               text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
+               label = paste("count: ",
+                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
+    basic_plot_theme() +
+    geom_col(position = position_stack(reverse = TRUE)) +
+    theme(
+      axis.text.x = element_text(angle = 30)
+    )
+  if (percent) {
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
+  }
+  # p = p %>%
+  #   fix_colors()
+  p
+}
+
 #' Time evolution as line plot
 #'
 #' @rdname time_evol_line_plot
@@ -429,6 +462,7 @@ fix_legend_position <- function(p){
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @import zoo
 #'
 #' @export
 plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
@@ -450,6 +484,10 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   df_highlight <- df %>%
     filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
 
+  # rolling weekly average (#80)
+  df_highlight <- df_highlight %>% group_by(Status) %>%
+    arrange(Date)  %>%
+    mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE))
 
   df_highlight_max <- df_highlight %>%
     group_by(Status) %>%
@@ -460,7 +498,6 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
-    geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     scale_color_brewer(palette = "Dark2")
 
   if (percent) {

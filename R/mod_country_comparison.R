@@ -28,6 +28,9 @@ mod_country_comparison_ui <- function(id){
     fluidRow(
       column(12, offset = 6,
              withSpinner(uiOutput(ns("scatterplot_plots")))
+      ),
+      column(12,
+             withSpinner(uiOutput(ns("status_stackedbarplot")))
       )
     ),
     mod_add_table_ui(ns("add_table_countries"))
@@ -70,7 +73,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
 
 
       output$from_nth_case <- renderText({
-        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Condagion day 0 is the first day with more than ", n ," cases.")
+        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
       })
 
       # Bar plots ----
@@ -121,6 +124,11 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
     callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries)
+    
+    output$status_stackedbarplot <- renderUI({
+      mod_stackedbarplot_ui(ns("status_stackedbarplot"))
+    })
+    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)

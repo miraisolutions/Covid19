@@ -19,6 +19,8 @@ URL: https://mirai-solutions.ch,
 BugReports: https://github.com/miraisolutions/Covid19/issues
 Imports: 
     config,
+    purrr,
+    stringr,
     golem,
     shiny,
     bsplus,
@@ -33,7 +35,8 @@ Imports:
     rgdal,
     shinycssloaders,
     sp,
-    markdown
+    markdown,
+    zoo
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0

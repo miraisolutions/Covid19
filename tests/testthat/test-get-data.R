@@ -10,11 +10,11 @@ test_that("get_timeseries_data returns expected headers", {
     expect_true(all(c("Province.State", "Country.Region", "Lat", "Long") %in% names(get_timeseries_single_data(i))))
   })
 })
-
-test_that("get_daily_data returns expected headers", {
-  data <- get_daily_data('01-22-2020')
-  expect_equal(sort(names(data)), sort(c("Province.State", "Country.Region", "Last.Update", "Confirmed", "Deaths", "Recovered" )))
-})
+# commented out because not used
+# test_that("get_daily_data returns expected headers", {
+#   data <- get_daily_data('01-22-2020')
+#   expect_equal(sort(names(data)), sort(c("Province.State", "Country.Region", "Last.Update", "Confirmed", "Deaths", "Recovered" )))
+# })
 
 data_full <- get_timeseries_full_data()
 

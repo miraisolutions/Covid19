@@ -195,3 +195,16 @@ align_country_names_pop_reverse <- function(data){
     )
   data
 }
+#' clean ggplotly legend
+#' @param .plotly_x ggplotly object
+#' @param .extract_str regular expression
+#' @import stringr
+clean_plotly_leg <- function(.plotly_x, .extract_str) {
+  # Inpects an x$data list in a plotly object, cleans up legend values where appropriate
+  if ("legendgroup" %in% names(.plotly_x)) {
+    # The list includes a legend group
+    .plotly_x$legendgroup <- stringr::str_extract(.plotly_x$legendgroup, .extract_str)
+    .plotly_x$name <- stringr::str_extract(.plotly_x$name, .extract_str)
+  }
+  .plotly_x
+}
