@@ -5,7 +5,7 @@
 - Country comp Lineplot from day of 1000 contagion rolling weekly average, remove dots, add imports zoo (#80)
 - Fix colour order in mod_lineplots_day_contagion (#67)
 - Merge the two boxes for current and new values into one.(#69)
-- fix trend order of area plot both global and country tabs, added utils funtion (#74)
+- fix trend order of area plot both global and country tabs, added utils function (#74)
 - correct plot titles for modules mod_compare_nth_cases_plot and mod_growth_death_rate (#66)
 - Add angle to bar-plot labels (#68)
 - Add scatterplot prevalence vs growth (#81)
