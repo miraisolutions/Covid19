@@ -38,6 +38,15 @@ mod_global_ui <- function(id){
       )
     ),
     hr(),
+    fluidRow(
+      column(6,
+             mod_scatterplot_ui(ns("plot_scatterplot_glob"))
+             ),
+      column(6,
+             mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
+      )
+    ),
+    hr(),
     mod_add_table_ui(ns("add_table_world"))
   )
 }
@@ -106,9 +115,8 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   callModule(mod_map_server, "map_ui", orig_data_aggregate)
 
   # plots ----
-
   levs <- reactive(
-    rev(sort_type_by_max(global_today()))
+    sort_type_hardcoded()
   )
 
   # > area plot global
@@ -138,6 +146,12 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
+
+  # > scatterplot prevalence vs growth
+  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate)
+
+  # > stacked barplot with status split
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)

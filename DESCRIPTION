@@ -1,6 +1,6 @@
 Package: Covid19
 Title: Covid-19 Data Analysis
-Version: 1.1.6
+Version: 1.1.7
 Authors@R: 
     c(person("Francesca", "Vitalini", role = c("cre", "aut"),
              email = 'francesca.vitalini@mirai-solutions.com'),
@@ -19,6 +19,8 @@ URL: https://mirai-solutions.ch,
 BugReports: https://github.com/miraisolutions/Covid19/issues
 Imports: 
     config,
+    purrr,
+    stringr,
     golem,
     shiny,
     bsplus,
@@ -33,7 +35,9 @@ Imports:
     rgdal,
     shinycssloaders,
     sp,
-    markdown
+    markdown,
+    scales,
+    zoo
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0

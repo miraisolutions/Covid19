@@ -1,3 +1,36 @@
+#' stacked barplot status
+#'
+#' @param df data.frame
+#' @param percent logical to make the y axis in percent
+#'
+#' @import ggplot2
+#'
+#' @return ggplot plot
+#' @export
+stackedbarplot_plot <- function(df, percent =  T) {
+  suffix = NULL
+  if (percent) {
+    df$ratio.over.cases <- 100*df$ratio.over.cases
+    suffix = "%"
+  }
+  p <- df %>%
+    ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
+               text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
+               label = paste("count: ",
+                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
+    basic_plot_theme() +
+    geom_col(position = position_stack(reverse = TRUE)) +
+    theme(
+      axis.text.x = element_text(angle = 30)
+    )
+  if (percent) {
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
+  }
+  # p = p %>%
+  #   fix_colors()
+  p
+}
+
 #' Time evolution as line plot
 #'
 #' @rdname time_evol_line_plot
@@ -429,6 +462,7 @@ fix_legend_position <- function(p){
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @import zoo
 #'
 #' @export
 plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
@@ -450,6 +484,10 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   df_highlight <- df %>%
     filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
 
+  # rolling weekly average (#80)
+  df_highlight <- df_highlight %>% group_by(Status) %>%
+    arrange(Date)  %>%
+    mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE))
 
   df_highlight_max <- df_highlight %>%
     group_by(Status) %>%
@@ -460,7 +498,6 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
-    geom_point(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     scale_color_brewer(palette = "Dark2")
 
   if (percent) {
@@ -504,13 +541,67 @@ plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
   p <- ggplot(df, aes(x = Country, y = Value)) +
     geom_bar(stat = "identity", fill = rate_colors[[color]]) +
     basic_plot_theme() +
-    coord_cartesian(ylim = c(y_min, max(df$Value))) #+
-    # theme(
-    #   axis.text.x = element_text(angle = 45)
-    # )
+    coord_cartesian(ylim = c(y_min, max(df$Value))) +
+    theme(
+      axis.text.x = element_text(angle = 30)
+    )
 
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%")) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
   }
   p
 }
+
+#' scatterplot between prevalence and growth rate
+#'
+#' @param df data.frame
+#' @param med list with median values for x and y
+#' @param x.min numeric adjustment for cartesian x axis
+#' @param y.min numeric adjustment for cartesian y axis
+#'
+#' @import ggplot2
+#' @import RColorBrewer
+#' @importFrom scales label_number
+#'
+#' @return ggplot plot
+#' @export
+scatter_plot <- function(df, med, x.min = c(0.9, 1.125), y.min = c(0.99,1.02)) {
+
+  df = df %>% rename(
+    growthfactor = starts_with("growth")
+  )
+  # mean.x = mean(df$prevalence_rate_1M_pop)
+  # mean.y = mean(df$growthfactor)
+  color_cntry = rep("#E69F00", nrow(df))
+  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor < med$y ] = "darkgreen"
+  color_cntry[df$prevalence_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
+  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor > med$y ] = "yellow3"
+
+  xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
+            max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
+  ylim = c(1*y.min[1], max(df$growthfactor, med$y)*y.min[2])
+  p <- ggplot(df) +
+    basic_plot_theme() +
+    scale_x_continuous(labels = label_number(#scale = 1/100,
+                                             big.mark = ","
+                                             #suffix = "K"
+                                             )) +
+    scale_y_continuous(limits = c(1, NA), labels = label_number(accuracy = 0.1)) +
+
+    # theme(
+    #   axis.text.x = element_text()
+    # ) +
+    #labs(x="prevalence over 1M", y = "growth factor") +
+    geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
+                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = ",", digits  = 1), "</br>")),
+               color = color_cntry, size = 1.5) +
+    geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
+    geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
+    geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
+              check_overlap = TRUE, color = color_cntry, size = 4) +
+    coord_cartesian(ylim = ylim,
+                    xlim = xlim)
+
+  p
+}
+
