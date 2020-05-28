@@ -1,4 +1,4 @@
-### Covid19 1.1.6.9000 (development version)
+### Covid19 1.1.7 (2020-05-28)
 
 - set different color -grey for NA in new active mod_map.R (#59)
 - fix colour scale/legend over 1M by replacing data_clean() with data_plot() (#79)
