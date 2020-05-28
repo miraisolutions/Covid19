@@ -592,7 +592,8 @@ scatter_plot <- function(df, med, x.min = c(0.9, 1.125), y.min = c(0.99,1.02)) {
     #   axis.text.x = element_text()
     # ) +
     #labs(x="prevalence over 1M", y = "growth factor") +
-    geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor),
+    geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
+                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = ",", digits  = 1), "</br>")),
                color = color_cntry, size = 1.5) +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +

@@ -116,7 +116,7 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
         Covid19:::scatter_plot(list(x = med_prevalence(),
                           y = medgr()))
     p <- p %>%
-      ggplotly(tooltip = c("x", "y", "text")) %>%
+      ggplotly(tooltip = c("text", "y")) %>%
       layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
 
     p <- plotly_build(p)
