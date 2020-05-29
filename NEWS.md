@@ -1,3 +1,7 @@
+### Covid19 1.1.2.9000 (development branch)
+- correct plot title in country page (#91)
+
+
 ### Covid19 1.1.7 (2020-05-28)
 
 - set different color -grey for NA in new active mod_map.R (#59)
