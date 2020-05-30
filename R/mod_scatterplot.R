@@ -50,16 +50,7 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
   world = function(orig_data_aggregate, n, w){
     orig_data_aggregate %>%
       Covid19:::select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == max(date)) %>%
-      align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      get_pop_data() %>%
-      filter(population > 10^6) %>% # dropping countries with less than 1 M pop, needed?
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-             prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3)) %>%
-      select(-country_name) %>%
-      align_country_names_pop_reverse() %>%
-      #filter(confirmed > 10000)  %>%
+      filter( date == max(date))
       select(Country.Region,date,confirmed,starts_with("growth"),prevalence_rate_1M_pop)
   }
   pick_rate <- function(df, rate){

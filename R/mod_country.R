@@ -79,15 +79,13 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
 
     # plots ----
 
-    levs <- reactive(
-      sort_type_hardcoded()
-    )
+    levs <- Covid19:::sort_type_hardcoded()
+
     df_tot <- reactive({
       country_data() %>%
-        select(-Country.Region, -contagion_day) %>%
-        select(-starts_with("new"), -confirmed, -starts_with("growth_"), -ends_with("_rate")) %>%
+        select(date, !!levs) %>%
         pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-        mutate(status = factor(status, levels = levs())) %>%
+        mutate(status = factor(status, levels = levs)) %>%
         capitalize_names_df()
     })
 

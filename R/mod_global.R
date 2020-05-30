@@ -87,12 +87,6 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   world <- reactive({
     orig_data_aggregate_today() %>%
-      align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      get_pop_data() %>%
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3)) %>%
-      select(-country_name) %>%
-      align_country_names_pop_reverse() %>%
       arrange(desc(confirmed) )
   })
 
@@ -106,7 +100,6 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
       filter(Country.Region %in% world_top_5_today()$Country.Region) %>%
       select(Country.Region, date, confirmed)
   })
-
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", global_today)
 
@@ -115,9 +108,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   callModule(mod_map_server, "map_ui", orig_data_aggregate)
 
   # plots ----
-  levs <- reactive(
-    sort_type_hardcoded()
-  )
+  levs <- sort_type_hardcoded()
 
   # > area plot global
   df_global <- reactive({
@@ -125,7 +116,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
       select(-starts_with("new_")) %>%
       select( -confirmed) %>%
       pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-      mutate(status = factor(status, levels = levs())) %>%
+      mutate(status = factor(status, levels = levs)) %>%
       capitalize_names_df()
   })
 

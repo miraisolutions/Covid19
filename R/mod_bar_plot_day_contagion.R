@@ -27,11 +27,14 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
   ns <- session$ns
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
-
+  # select all variables
+  allstatuses = c(statuses, paste0("new_", statuses))
 
   output$bar_plot_day_contagion <- renderPlot({
     df <- country_data() %>%
-      select(-Country.Region, -date) %>%
+      ungroup() %>%
+      #select(-Country.Region, -date) %>%
+      select(contagion_day, !!allstatuses) %>%
       arrange(contagion_day)
 
     tmp <- sapply(statuses, function(s){

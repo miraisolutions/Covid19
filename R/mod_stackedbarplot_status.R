@@ -36,17 +36,11 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
 
   prep_data <- function(orig_data_aggregate, n, w){
     df1 <- orig_data_aggregate %>%
-      Covid19:::select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == max(date)) %>%
-      Covid19:::align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      Covid19:::get_pop_data() %>%
-      filter(population > 10^6) %>% # dropping countries with less than 1 M pop, needed?
-      Covid19:::align_country_names_pop_reverse()
+      select_countries_n_cases_w_days(n = n, w = w) %>%
+      filter( date == max(date))
     df1
   }
   df_pop <- reactive({prep_data(df(), n,w)})
-  #df_pop = prep_data(df, n = 1000, w = 7)
 
   statuses <- c("deaths", "active", "recovered")
 

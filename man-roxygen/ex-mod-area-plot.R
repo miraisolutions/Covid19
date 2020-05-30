@@ -1,13 +1,20 @@
 if (interactive()) {
   library(shiny)
-  library(dplyr)
   library(Covid19)
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19:::mod_country_comparison_ui("country_comparison")
+    Covid19:::mod_plot_log_linear_ui("plot_log_area_global")
   )
   server <- function(input, output) {
 
+    n <- 1000 #  min number of cases for a country to be considered. Default 1000
+    w <- 7 # number of days of outbreak. Default 7
+
+    # Data ----
     orig_data <- reactive({
       get_timeseries_full_data() %>%
         get_timeseries_by_contagion_day_data()
@@ -31,12 +38,26 @@ if (interactive()) {
         Covid19:::rescale_df_contagion(n = n, w = w)
     })
 
-    countries <- reactive({
+    country_data <- reactive({
       data_filtered() %>%
-        select(Country.Region) %>%
-        distinct()
+        filter(Country.Region %in% "Switzerland") %>%
+        filter(contagion_day > 0) %>%
+        arrange(desc(date))
     })
-    callModule(Covid19:::mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate, countries = countries)
+    levs <- Covid19:::sort_type_hardcoded()
+
+    df_tot <- reactive({
+      country_data() %>%
+        #select(-Country.Region, -contagion_day) %>%
+        select(date, !!levs) %>%
+        #select(-starts_with("new"), -confirmed, -starts_with("growth_"), -ends_with("_rate"), -contains("1M")) %>%
+        pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
+        mutate(status = factor(status, levels = levs)) %>%
+        capitalize_names_df()
+    })
+
+
+    callModule(Covid19:::mod_plot_log_linear_server,"plot_log_area_global", df = df_tot, type = "area")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

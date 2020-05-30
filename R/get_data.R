@@ -343,7 +343,7 @@ get_pop_data <- function(data){
     )
 
   data_pop <- data %>%
-    mutate(Country.Region = country_name) %>%
+    #mutate(Country.Region = country_name) %>%
     left_join(population) %>%
     filter(!is.na(population) & population > 1000)
   # select(-Country.Region)

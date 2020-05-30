@@ -2,7 +2,7 @@ if (interactive()) {
   library(shiny)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    mod_plot_log_linear_ui("test")
+    Covid19:::mod_plot_log_linear_ui("test")
   )
   server <- function(input, output) {
 
@@ -25,7 +25,7 @@ if (interactive()) {
         capitalize_names_df()
     })
 
-    callModule(mod_plot_log_linear_server,"test", df = df_global, type = "area")
+    callModule(Covid19:::mod_plot_log_linear_server,"test", df = df_global, type = "area")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

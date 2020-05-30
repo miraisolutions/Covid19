@@ -74,8 +74,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
       select(-c(Country.Region, date, contagion_day)) %>%
       group_by(country_name) %>%
       summarise_each(sum) %>%
-      ungroup() %>%
-      get_pop_data()
+      ungroup()
     data_date
   })
 
