@@ -79,7 +79,7 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
 
     # plots ----
 
-    levs <- Covid19:::sort_type_hardcoded()
+    levs <- sort_type_hardcoded()
 
     df_tot <- reactive({
       country_data() %>%

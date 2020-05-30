@@ -49,7 +49,7 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
   world = function(orig_data_aggregate, n, w){
     orig_data_aggregate %>%
-      Covid19:::select_countries_n_cases_w_days(n = n, w = w) %>%
+      select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date))
       select(Country.Region,date,confirmed,starts_with("growth"),prevalence_rate_1M_pop)
   }
@@ -104,7 +104,7 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
       mutate(Country.Region = as.factor(Country.Region))
 
     p = df %>%
-        Covid19:::scatter_plot(list(x = med_prevalence(),
+        scatter_plot(list(x = med_prevalence(),
                           y = medgr()))
     p <- p %>%
       ggplotly(tooltip = c("text", "y")) %>%
