@@ -107,8 +107,7 @@ if(F){
 
 continents = c("Africa", "Asia", "Europe", "Latin America and the Caribbean",
                    "South America", "Northern America", "Oceania")
-newcontinents  = c("Africa", "Asia", "Europe", "Lat. America & Caribbean",
-                               "South America", "Northern America", "Oceania")
+
 
 sub_continents= list(
   "Africa" =  c("Eastern Africa",  "Middle Africa" ,  "Northern Africa",
@@ -274,6 +273,11 @@ if (any(duplicated(final_population$Country.Region)))
 if (length(setdiff(unique(population$Country.Region), unique(final_population$Country.Region)))>0)
   stop("not the same countries as before")
 
+newcontinents  = c("Africa", "Asia", "Europe", "Lat. America & Caribbean",
+                   "South America", "Northern America", "Oceania")
+
+final_population = final_population %>%
+  mutate(continent = if_else(continent == "Latin America and the Caribbean", "Lat. America & Caribbean", continent))
 write.table(final_population,
       file.path("inst/population_data","popUN.csv" ),row.names = FALSE,
           sep = ";")
