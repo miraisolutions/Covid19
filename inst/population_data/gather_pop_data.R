@@ -24,28 +24,34 @@ population <- read.csv2(system.file("population_data/pop.csv", package = "Covid1
 #   )
 # }
 
-
+# https://population.un.org/wpp/DataQuery/
 #library("XLConnect")
 library("readxl")
 
 POP <- read_excel(system.file("population_data/AnnualTotPopMidYear-20200530044226.xlsx", package = "Covid19")
-                      , range = "Data!A2:D263") %>% as.data.frame()
+                      , range = "Data!A2:D264") %>% as.data.frame()
 
 POPDEATHS <- read_excel(system.file("population_data/NumberDeaths-20200530044710.xlsx", package = "Covid19")
-                  , range = "Data!A2:Z233") %>% as.data.frame()
+                  , range = "Data!A2:Z235") %>% as.data.frame()
 
 
 POPAGE = read_excel(system.file("population_data/PopulationAgeSex-20200530044916.xlsx", package = "Covid19")
-                    , range = "Data!A2:Z233") %>% as.data.frame()
+                    , range = "Data!A2:Z235") %>% as.data.frame()
 
 POPDENS = read_excel(system.file("population_data/PopulationDensity-20200530043909.xlsx", package = "Covid19")
-                    , range = "Data!A2:D267") %>% as.data.frame()
+                    , range = "Data!A2:D269") %>% as.data.frame()
+
+POPURBAN = read_excel(system.file("population_data/AnnualUrbanPopMidYear-20200530081243.xlsx", package = "Covid19")
+                     , range = "Data!A2:D264") %>% as.data.frame()
+
+POPRURAL = read_excel(system.file("population_data/AnnualRuralPopMidYear-20200530081402.xlsx", package = "Covid19")
+                      , range = "Data!A2:D264") %>% as.data.frame()
 
 setdiff(population$Country.Region, POP$Location)
 
 rename_location <- function(loc){
     newloc = recode(loc,
-           "French Guiana" = "Guyana",
+           #"French Guiana" = "Guyana",
            "Russian Federation" = "Russia" ,   "United States of America" = "United States",
            "Viet Nam" = "Vietnam",           "Democratic Republic of the Congo" = "DR Congo",
            "Iran (Islamic Republic of)" = "Iran"  ,     "United Republic of Tanzania" = "Tanzania",
@@ -101,6 +107,8 @@ if(F){
 
 continents = c("Africa", "Asia", "Europe", "Latin America and the Caribbean",
                    "South America", "Northern America", "Oceania")
+newcontinents  = c("Africa", "Asia", "Europe", "Lat. America & Caribbean",
+                               "South America", "Northern America", "Oceania")
 
 sub_continents= list(
   "Africa" =  c("Eastern Africa",  "Middle Africa" ,  "Northern Africa",
@@ -116,13 +124,6 @@ sub_continents= list(
   "Northern America"  = "North America",
   "Oceania"=  c("Oceania")
 )
-
-
-rep.t = diff(match(old_continents, POP$Location))
-rep.t = c(rep.t, nrow(POP)- sum(rep.t))
-continentslist = rep(old_continents,
-                     rep.t)
-sub_continents
 
 group_countries <- function(pop) {
   pop$Location = rename_location(pop$Location)
@@ -190,8 +191,37 @@ clean_pop_deaths = function(pop){
 }
 
 POPDEATHS =  clean_pop_deaths(POPDEATHS)
-
 POP = dplyr::left_join(POP, POPDEATHS, by = "Location")
+
+clean_pop_urban = function(pop){
+  pop$Location = rename_location(pop$Location)
+  pop = pop[,setdiff(names(pop), c("Time","Note"))]
+  pop = pop[,!grepl("^ISO",names(pop))]
+  pop = pop %>% filter(Location != "World") %>%
+    rename("Urban_Pop" = '2020') %>%
+    mutate(Urban_Pop = Urban_Pop * 1000)
+
+  pop
+}
+
+POPURBAN = clean_pop_urban(POPURBAN)
+
+POP = dplyr::left_join(POP, POPURBAN, by = "Location")
+
+clean_pop_rural = function(pop){
+  pop$Location = rename_location(pop$Location)
+  pop = pop[,setdiff(names(pop), c("Time","Note"))]
+  pop = pop[,!grepl("^ISO",names(pop))]
+  pop = pop %>% filter(Location != "World") %>%
+    rename("Rural_Pop" = '2020') %>%
+    mutate(Rural_Pop = Rural_Pop * 1000)
+
+  pop
+}
+
+POPRURAL = clean_pop_rural(POPRURAL)
+
+POP = dplyr::left_join(POP, POPRURAL, by = "Location")
 
 
 final_population = dplyr::left_join(population, POP, by = c("Country.Region" = "Location")) %>%
@@ -238,6 +268,9 @@ final_population$subcontinent[sub.na] = missingAfrica
 
 final_population %>%
   filter(is.na(subcontinent))
+
+if (any(duplicated(final_population$Country.Region)))
+  stop("generated uplicates")
 
 write.table(final_population,
       file.path("inst/population_data","popUN.csv" ),row.names = FALSE,
