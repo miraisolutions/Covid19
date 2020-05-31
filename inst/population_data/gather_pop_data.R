@@ -271,6 +271,8 @@ final_population %>%
 
 if (any(duplicated(final_population$Country.Region)))
   stop("generated uplicates")
+if (length(setdiff(unique(population$Country.Region), unique(final_population$Country.Region)))>0)
+  stop("not the same countries as before")
 
 write.table(final_population,
       file.path("inst/population_data","popUN.csv" ),row.names = FALSE,
