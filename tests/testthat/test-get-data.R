@@ -66,3 +66,38 @@ test_that("add_growth_death_rate returns expected headers", {
   df <- aggregate_province_timeseries_data(data) %>% add_growth_death_rate()
   expect_true(all(c("growth_factor_3", "growth_factor_5", "growth_factor_7", "lethality_rate") %in% names(df)))
 })
+
+test_that("get_pop_data returns expected rows", {
+  df <- aggregate_province_timeseries_data(data) %>%
+    arrange(Country.Region) %>%
+    align_country_names_pop()
+
+  countynames= unique(df$Country.Region)
+
+  df2 = df %>%
+    get_pop_data() %>% # compute additional variables
+    align_country_names_pop_reverse()
+
+  df = df %>%
+    align_country_names_pop_reverse()
+
+  countrynames= unique(df$Country.Region)
+
+  countrynames2= unique(df2$Country.Region)
+
+  diffdf= df %>% filter(Country.Region %in% setdiff(countrynames, countrynames2) &
+                  date == max(date))
+
+  expect_true(all(diffdf$confirmed <1000))
+  expect_true(all(!is.na(df2$Country.Region))) # no nas
+  expect_true(all(!is.na(df2$population))) # no nas
+
+  na.cont= df2 %>% filter(is.na(continent) &
+                          date == max(date))
+  na.subcont= df2 %>% filter(is.na(subcontinent) &
+                            date == max(date))
+  expect_true(nrow(na.cont) == 0)
+
+  expect_true(nrow(na.subcont) == 0)
+
+})
