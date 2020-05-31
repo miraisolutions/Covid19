@@ -321,8 +321,10 @@ get_pop_data <- function(data){
   # pop <- pop %>%
   #   separate(col = "Country;Population", into = c("Country.Region", "population"), sep = ";")
   # write.csv2(pop, "./inst/population_data/pop.csv")
-  population <- read.csv2(system.file("population_data/pop.csv", package = "Covid19"),stringsAsFactors = F) %>%
-    select(-X)
+  # population <- read.csv2(system.file("population_data/pop.csv", package = "Covid19"),stringsAsFactors = F) %>%
+  #   select(-X)
+  population <- read.csv2(system.file("population_data/popUN.csv", package = "Covid19"),stringsAsFactors = F)
+
   population$Country.Region <- population$Country.Region %>%
     recode(
       "Ivory Coast" = "C\\u00f4te d'Ivoire",
@@ -341,12 +343,13 @@ get_pop_data <- function(data){
       "Antigua and Barbuda" = "Antigua and Barb.",
       "United States" = "United States of America"
     )
-
+  #population$population = population$PopulationUN
+  population = population[, c("Country.Region", "continent", "subcontinent","population")]
   data_pop <- data %>%
     #mutate(Country.Region = country_name) %>%
     left_join(population) %>%
     filter(!is.na(population) & population > 1000)
-  # select(-Country.Region)
+    #select(-country_name)
 
   data_pop
 }
