@@ -56,7 +56,9 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
 
     data_clean <- data %>%
       filter(!is.na(country_name))
-
+    keepcols = c("country_name","Country.Region","date",
+                 names(data_clean)[sapply(data_clean, is.numeric)])
+    data_clean = data_clean[, keepcols] # remove, not used
     data_clean
   })
 
@@ -71,6 +73,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
   data_date <- reactive({
     data_date <- data_clean() %>%
       filter(date == req(input$slider_day)) %>%
+      #filter(date == max(date)) %>%
       select(-c(Country.Region, date, contagion_day)) %>%
       group_by(country_name) %>%
       summarise_each(sum) %>%
