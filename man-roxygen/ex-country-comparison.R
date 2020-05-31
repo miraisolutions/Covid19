@@ -2,6 +2,8 @@ if (interactive()) {
   library(shiny)
   library(dplyr)
   library(Covid19)
+  library(tidyr)
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19:::mod_country_comparison_ui("country_comparison")
