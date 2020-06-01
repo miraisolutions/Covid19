@@ -90,8 +90,8 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     output$title_growth_factor <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries growth factor")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
     output$title_dath_toll <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries death toll")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   } else {
-    output$title_growth_factor <- renderUI(div(h4("Countries growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
-    output$title_dath_toll <- renderUI(div(h4("Countries death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_growth_factor <- renderUI(div(h4("Growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_dath_toll <- renderUI(div(h4("Death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
   # captions

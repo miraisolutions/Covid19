@@ -72,11 +72,24 @@ test_that("get_pop_data returns expected rows", {
     arrange(Country.Region) %>%
     align_country_names_pop()
 
+  dups = duplicated(df[, c("Country.Region", "date")])
+
+  expect_true(sum(dups) == 0) # no duplicates
+
   countynames= unique(df$Country.Region)
 
+  pop_data = get_pop_data() # compute additional variables
+
+  dups = duplicated(pop_data[, c("Country.Region")])
+
+  expect_true(sum(dups) == 0) # no duplicates
   df2 = df %>%
-    get_pop_data() %>% # compute additional variables
+    merge_pop_data(pop_data) %>%
     align_country_names_pop_reverse()
+
+  dups = duplicated(df2[, c("Country.Region", "date")])
+
+  expect_true(sum(dups) == 0) # no duplicates
 
   df = df %>%
     align_country_names_pop_reverse()

@@ -2,16 +2,20 @@
 % Please edit documentation in R/get_data.R
 \name{add_growth_death_rate}
 \alias{add_growth_death_rate}
-\title{Add growth/Death rates}
+\title{Add growth/lethality rates}
 \usage{
-add_growth_death_rate(df)
+add_growth_death_rate(df, group = "Country.Region", time = "date")
 }
 \arguments{
 \item{df}{data.frame}
+
+\item{group}{character Country.Region or continent or subcontinent}
+
+\item{time}{character date}
 }
 \value{
 df dataframe
 }
 \description{
-Add growth/Death rates
+Add growth/lethality rates
 }

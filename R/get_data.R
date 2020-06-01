@@ -123,7 +123,8 @@ get_timeseries_by_contagion_day_data <- function(data) {
       confirmed == 0 ~ 1,
       TRUE ~ 0
     )) %>%
-    group_by(Province.State, Country.Region, Lat, Long) %>%
+    #group_by(Province.State, Country.Region, Lat, Long) %>%
+    group_by(Country.Region) %>%
     mutate(incremental = seq(1:n())) %>%
     mutate(offset = sum(no_contagion)) %>%
     mutate(tmp = incremental - offset) %>%
@@ -216,9 +217,11 @@ aggregate_province_timeseries_data <- function(data){
     arrange(Country.Region, desc(date))
 }
 
-#' Add growth/Death rates
+#' Add growth/lethality rates
 #'
 #' @param df data.frame
+#' @param group character Country.Region or continent or subcontinent
+#' @param time character date
 #'
 #' @import dplyr
 #' @import tidyr
@@ -226,11 +229,11 @@ aggregate_province_timeseries_data <- function(data){
 #' @return df dataframe
 #'
 #' @export
-add_growth_death_rate <- function(df){
+add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
 
-  df1 <- df %>%
-    arrange(Country.Region, date) %>%
-    group_by(Country.Region) %>%
+  df1 <- df %>% ungroup() %>%
+    arrange(!!as.symbol(group), !!as.symbol(time)) %>%
+    group_by_(.dots = group) %>%
     mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 0),
            daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 0),
            daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 0),
@@ -238,7 +241,7 @@ add_growth_death_rate <- function(df){
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
     ungroup()
   df2 <- df1 %>%
-    group_by(Country.Region) %>%
+    group_by_(.dots = group)  %>%
     # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
     mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
@@ -248,7 +251,7 @@ add_growth_death_rate <- function(df){
     ungroup() %>%
     mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
-    arrange(Country.Region, desc(date)) %>%
+    arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
     select(-starts_with("daily_"))
   df2
 }
@@ -293,13 +296,13 @@ get_date_data <- function(data, date){
 }
 
 
-#' population data
+#' retrieves population data, matches countries with continents and subcontinents
 #' @rdname get_pop_data
-#'
-#' @param data data.frame
 #'
 #' @import dplyr
 #' @import tidyr
+#'
+#' @note additional demographic variables are available for further development
 #'
 #' @return global tibble of confirmed, deaths, active and recovered for each day by population
 #'
@@ -312,7 +315,7 @@ get_date_data <- function(data, date){
 #'}
 #'
 #' @export
-get_pop_data <- function(data){
+get_pop_data <- function(){
   #Reference: https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population
   # pop_url <- "https://raw.githubusercontent.com/DrFabach/Corona/master/pop.csv"
   # pop_raw <- readLines(pop_url)
@@ -343,13 +346,38 @@ get_pop_data <- function(data){
       "Antigua and Barbuda" = "Antigua and Barb.",
       "United States" = "United States of America"
     )
-  #population$population = population$PopulationUN
+  #population$population = population$PopulationUN # hwere when we need to change population with new data
   population = population[, c("Country.Region", "continent", "subcontinent","population")]
+
+  population
+}
+
+#' merge data
+#' @rdname merge_pop_data
+#'
+#' @param data data.frame
+#' @param popdata data.frame result of get_pop_data
+#'
+#' @import dplyr
+#' @import tidyr
+#'
+#' @return global tibble of confirmed, deaths, active and recovered for each day by population
+#'
+#' @examples
+#' \dontrun{
+#' orig_data <- get_timeseries_full_data() %>%
+#'               get_timeseries_by_contagion_day_data()
+#' data <- orig_data %>% align_country_names()
+#'
+#' popdata <- get_pop_data()
+#'
+#'}
+merge_pop_data = function(data, popdata) {
   data_pop <- data %>%
     #mutate(Country.Region = country_name) %>%
-    left_join(population) %>%
+    left_join(popdata) %>%
     filter(!is.na(population) & population > 1000)
-    #select(-country_name)
+  #select(-country_name)
 
   data_pop
 }
@@ -359,18 +387,19 @@ get_pop_data <- function(data){
 #' @param df data.frame
 #' @param n number of cases
 #' @param w days of outbreak
-select_countries_n_cases_w_days <- function(df, n, w) {
+#' @param group character Country.Region or continent or subcontinent
+select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") {
   countries_filtered <- df %>%
     filter(confirmed > n) %>% #pick only those countries that have more than n cases
-    group_by(Country.Region) %>%
+    group_by_(.dots = group) %>%
     mutate(N = n()) %>%
     filter( N > w) %>% #pick only those countries that have had outbreak for more than w days
     ungroup() %>%
-    select(Country.Region) %>%
+    select(!!group) %>%
     distinct()
 
   df_filtered <- df %>%
-    filter(Country.Region %in% countries_filtered$Country.Region)
+    filter(!!rlang::sym(group) %in% countries_filtered[[group]])
 
   df_filtered
 }
@@ -381,16 +410,17 @@ select_countries_n_cases_w_days <- function(df, n, w) {
 #' @param df data.frame
 #' @param n number of cases
 #' @param w days of outbreak
-rescale_df_contagion <- function(df, n, w){
+#' @param group character Country.Region or continent or subcontinent
+rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
   df_rescaled <- df %>%
-  select_countries_n_cases_w_days(n = n, w = w) %>%
+  select_countries_n_cases_w_days(n = n, w = w, group) %>%
     mutate(no_contagion = case_when( #drop rows where confirmed <- n
       confirmed < n ~ 1,
       TRUE ~ 0
     )) %>%
     filter(no_contagion == 0) %>%
     select(-no_contagion) %>%
-    group_by(Country.Region) %>%
+    group_by_(.dots = group) %>%
     mutate(contagion_day = contagion_day - min(contagion_day)) %>%
     ungroup()
 

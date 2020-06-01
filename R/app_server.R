@@ -21,13 +21,15 @@ app_server <- function(input, output, session) {
       get_timeseries_by_contagion_day_data()
   })
 
+  pop_data = get_pop_data()
+
   orig_data_aggregate <- reactive({
     orig_data_aggregate <- orig_data() %>%
       aggregate_province_timeseries_data() %>%
       add_growth_death_rate() %>%
       arrange(Country.Region) %>%
       align_country_names_pop() %>%
-      get_pop_data() %>% # compute additional variables
+      merge_pop_data(pop_data) %>% # compute additional variables
       align_country_names_pop_reverse() %>%
       mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
              prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
@@ -52,8 +54,16 @@ app_server <- function(input, output, session) {
       distinct()
   })
 
+  # continents <- reactive({
+  #   data_filtered() %>%
+  #     select(continent) %>%
+  #     distinct()
+  # })
+
   # Modules ----
   callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate)
+  callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w, pop_data = pop_data)
+
   callModule(mod_country_server, "country", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, countries = countries, n = n, w = w)
   callModule(mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, countries = countries, n = n, w = w)
 
