@@ -6,7 +6,12 @@ if (interactive()) {
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
+    tabPanel("Continents",
+             tabsetPanel(
+               tabPanel("Summary",
+                        id = "tab_global",
     Covid19:::mod_continent_comparison_ui("continent_comparison")
+               )))
   )
   server <- function(input, output) {
 
@@ -29,8 +34,7 @@ if (interactive()) {
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
-    n = 1000
-    w = 7
+    n = 1000; w = 7
     data_filtered <- reactive({
       orig_data_aggregate() %>%
         Covid19:::rescale_df_contagion(n = n, w = w)
@@ -41,7 +45,7 @@ if (interactive()) {
     #     select(Country.Region) %>%
     #     distinct()
     # })
-    callModule(Covid19:::mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered)
+    callModule(Covid19:::mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w, pop_data)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

@@ -372,7 +372,8 @@ get_pop_data <- function(){
 #' popdata <- get_pop_data()
 #'
 #'}
-merge_pop_data = function(data, popdata) {
+#' @export
+merge_pop_data <- function(data, popdata) {
   data_pop <- data %>%
     #mutate(Country.Region = country_name) %>%
     left_join(popdata) %>%
