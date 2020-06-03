@@ -3,6 +3,7 @@
 export("%>%")
 export(add_growth_death_rate)
 export(add_log_scale)
+export(aggr_to_cont)
 export(aggregate_country_data)
 export(aggregate_province_timeseries_data)
 export(align_country_names_pop)
