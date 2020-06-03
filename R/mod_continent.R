@@ -20,6 +20,11 @@ mod_continent_ui <- function(id, uicont){
       #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
       textOutput(ns(paste("from_nth_case", uicont , sep = "_")))
     ),
+   hr(),
+   div(
+     #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
+     uiOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
+   ),
     #withSpinner(uiOutput(ns(paste("barplots", uicont , sep = "_")))),
     withSpinner(uiOutput(ns(paste("lineplots_cont", uicont , sep = "_")))),
     fluidRow(
@@ -94,7 +99,20 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, da
   callModule(mod_caseBoxes_server, paste("count-boxes", uicont , sep = "_"), continent_data_today)
 
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
-    paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
+    paste0("Only Countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
+  })
+  # list of countries
+  list.message = reactive({
+    list.countries = data_filtered_cont()[,c("subcontinent","Country.Region")] %>% unique() %>%
+      group_by(subcontinent) %>% group_split()
+    lapply(list.countries, function(x)
+      paste0("<b>",as.character(unique(x$subcontinent)),"</b>: ",
+            paste(x$Country.Region, collapse = ",")))
+
+  })
+  output[[paste("subcontinents_countries", uicont , sep = "_")]]<- renderUI({
+   HTML(paste(as.character(unlist(list.message())), collapse = '<br/>'))
+
   })
 
   output[[paste("lineplots_cont", uicont , sep = "_")]] <- renderUI({
