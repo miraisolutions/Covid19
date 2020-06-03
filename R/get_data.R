@@ -392,6 +392,7 @@ merge_pop_data <- function(data, popdata) {
 #' @param n number of cases
 #' @param w days of outbreak
 #' @param group character Country.Region or continent or subcontinent
+#' @importFrom rlang sym
 select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") {
   countries_filtered <- df %>%
     filter(confirmed > n) %>% #pick only those countries that have more than n cases

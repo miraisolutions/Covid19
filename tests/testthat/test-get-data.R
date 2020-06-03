@@ -129,36 +129,34 @@ test_that("aggr_to_cont works correctly", {
   # select all variables
   allstatuses = c(statuses, paste0("new_", statuses))
 
-  # continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
-  #   group_by(continent) %>%
-  #   summarize(population = sum(population, rm.na = T))
-  # df_cont <-
-  #   df %>% filter(continent == "Europe")
-
   data_conts = aggr_to_cont(df, group = "continent", time = "date", popdata = pop_data, allstatuses)
 
-  dups = duplicated(data_cont[, c("Country.Region", "date")])
+  dups = duplicated(data_conts[, c("Country.Region", "date")])
 
   expect_true(sum(dups) == 0) # no duplicates
   # matching population
-  popcont = tapply(data_cont$population,
-                      data_cont$Country.Region, unique)
-  cont_pop = continent_pop_data$population
-  names(cont_pop) = continent_pop_data$continent
+  cont_pop_data =  pop_data %>% filter(!is.na(continent)) %>%
+    group_by(continent) %>%
+    summarize(population = sum(population, rm.na = T))
+
+  popcont = tapply(data_conts$population,
+                   data_conts$Country.Region, unique)
+  cont_pop = cont_pop_data$population
+  names(cont_pop) = cont_pop_data$continent
   cont_pop = as.array(cont_pop[dimnames(popcont)[[1]]])
   expect_equal(popcont,
                cont_pop)
 
   europe_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% "Europe") %>%
     group_by(subcontinent) %>%
-    summarize(population = sum(population), rm.na = T)
+    summarize(population = sum(population, rm.na = T))
 
   df_europe = df %>%
     filter(continent == "Europe")
 
   data_subcont = aggr_to_cont(df_europe, group = "subcontinent", time = "date", popdata = europe_pop_data, allstatuses)
 
-  dups = duplicated(data_cont[, c("Country.Region", "date")])
+  dups = duplicated(data_subcont[, c("Country.Region", "date")])
 
   expect_true(sum(dups) == 0) # no duplicates
   # matching population

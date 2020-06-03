@@ -75,7 +75,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, da
     group_by(subcontinent) %>%
     summarize(population = sum(population, rm.na = T))
 
-    continent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
+  continent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
                                            continent_pop_data, allstatuses)})
 
 

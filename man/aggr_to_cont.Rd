@@ -16,8 +16,6 @@ aggr_to_cont(data, group, time, popdata, allstatuses)
 \item{popdata}{data with population info}
 
 \item{allstatuses}{character vector of statuses to base the recomputation from: confirmed recovered deaths active}
-
-\item{cont}{character continent name used to subset popdata}
 }
 \value{
 data.frame aggregated at group level

@@ -37,6 +37,7 @@ Imports:
     sp,
     markdown,
     scales,
+    rlang,
     zoo
 Encoding: UTF-8
 LazyData: true
