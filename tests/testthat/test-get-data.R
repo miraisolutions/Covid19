@@ -116,7 +116,7 @@ test_that("get_pop_data returns expected rows", {
 
 })
 
-test_that("aggr_to_cont", {
+test_that("aggr_to_cont works correctly", {
 
   orig_data_aggregate = aggregate_province_timeseries_data(data) %>%
     arrange(Country.Region) %>%
@@ -129,11 +129,13 @@ test_that("aggr_to_cont", {
   # select all variables
   allstatuses = c(statuses, paste0("new_", statuses))
 
-  continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
-    group_by(continent) %>%
-    summarize(population = sum(population, rm.na = T))
+  # continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
+  #   group_by(continent) %>%
+  #   summarize(population = sum(population, rm.na = T))
+  # df_cont <-
+  #   df %>% filter(continent == "Europe")
 
-  data_cont = aggr_to_cont(df, group = "continent", time = "date", popdata = continent_pop_data, allstatuses)
+  data_conts = aggr_to_cont(df, group = "continent", time = "date", popdata = pop_data, allstatuses)
 
   dups = duplicated(data_cont[, c("Country.Region", "date")])
 

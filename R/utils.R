@@ -224,14 +224,18 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
 #' @export
 aggr_to_cont = function(data, group, time, popdata, allstatuses) {
 
+  popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
+    group_by(.dots = group) %>%
+    summarize(population = sum(population, rm.na = T))
+
   continent_data =    data %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
-    group_by_(.dots = time, group) %>%
+    group_by(.dots = c(time,group)) %>%
     #group_by(time, continent) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
     add_growth_death_rate(group, time) %>%
-    left_join(popdata[,c(group, "population")], by = group) %>%
+    left_join(popdata_cont[,c(group, "population")], by = group) %>%
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
