@@ -67,23 +67,24 @@ test_that("add_growth_death_rate returns expected headers", {
   expect_true(all(c("growth_factor_3", "growth_factor_5", "growth_factor_7", "lethality_rate") %in% names(df)))
 })
 
+
+
+pop_data = get_pop_data()
+
+
 test_that("get_pop_data returns expected rows", {
-  df <- aggregate_province_timeseries_data(data) %>%
+
+  orig_data_aggregate = aggregate_province_timeseries_data(data) %>%
     arrange(Country.Region) %>%
     align_country_names_pop()
-
-  dups = duplicated(df[, c("Country.Region", "date")])
+  dups = duplicated(orig_data_aggregate[, c("Country.Region", "date")])
 
   expect_true(sum(dups) == 0) # no duplicates
-
-  countynames= unique(df$Country.Region)
-
-  pop_data = get_pop_data() # compute additional variables
 
   dups = duplicated(pop_data[, c("Country.Region")])
 
   expect_true(sum(dups) == 0) # no duplicates
-  df2 = df %>%
+  df2 = orig_data_aggregate %>%
     merge_pop_data(pop_data) %>%
     align_country_names_pop_reverse()
 
@@ -91,7 +92,7 @@ test_that("get_pop_data returns expected rows", {
 
   expect_true(sum(dups) == 0) # no duplicates
 
-  df = df %>%
+  df = orig_data_aggregate %>%
     align_country_names_pop_reverse()
 
   countrynames= unique(df$Country.Region)
@@ -112,5 +113,59 @@ test_that("get_pop_data returns expected rows", {
   expect_true(nrow(na.cont) == 0)
 
   expect_true(nrow(na.subcont) == 0)
+
+})
+
+test_that("aggr_to_cont", {
+
+  orig_data_aggregate = aggregate_province_timeseries_data(data) %>%
+    arrange(Country.Region) %>%
+    align_country_names_pop()
+  df = orig_data_aggregate %>%
+    merge_pop_data(pop_data) %>%
+    align_country_names_pop_reverse()
+
+  statuses <- c("confirmed", "deaths", "recovered", "active")
+  # select all variables
+  allstatuses = c(statuses, paste0("new_", statuses))
+
+  continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
+    group_by(continent) %>%
+    summarize(population = sum(population, rm.na = T))
+
+  data_cont = aggr_to_cont(df, group = "continent", time = "date", popdata = continent_pop_data, allstatuses)
+
+  dups = duplicated(data_cont[, c("Country.Region", "date")])
+
+  expect_true(sum(dups) == 0) # no duplicates
+  # matching population
+  popcont = tapply(data_cont$population,
+                      data_cont$Country.Region, unique)
+  cont_pop = continent_pop_data$population
+  names(cont_pop) = continent_pop_data$continent
+  cont_pop = as.array(cont_pop[dimnames(popcont)[[1]]])
+  expect_equal(popcont,
+               cont_pop)
+
+  europe_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% "Europe") %>%
+    group_by(subcontinent) %>%
+    summarize(population = sum(population), rm.na = T)
+
+  df_europe = df %>%
+    filter(continent == "Europe")
+
+  data_subcont = aggr_to_cont(df_europe, group = "subcontinent", time = "date", popdata = europe_pop_data, allstatuses)
+
+  dups = duplicated(data_cont[, c("Country.Region", "date")])
+
+  expect_true(sum(dups) == 0) # no duplicates
+  # matching population
+  popsubcont = tapply(data_subcont$population,
+                      data_subcont$Country.Region, unique)
+  eur_pop = europe_pop_data$population
+  names(eur_pop) = europe_pop_data$subcontinent
+  eur_pop = as.array(eur_pop[dimnames(popsubcont)[[1]]])
+  expect_equal(popsubcont,
+               eur_pop)
 
 })
