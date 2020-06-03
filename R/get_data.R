@@ -346,6 +346,9 @@ get_pop_data <- function(){
       "Antigua and Barbuda" = "Antigua and Barb.",
       "United States" = "United States of America"
     )
+  population$population = as.numeric(population$population )
+  population$PopulationUN = as.numeric(population$PopulationUN )
+
   #population$population = population$PopulationUN # hwere when we need to change population with new data
   population = population[, c("Country.Region", "continent", "subcontinent","population")]
 
