@@ -61,27 +61,10 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     group_by(continent) %>%
     summarize(population = sum(as.numeric(population), rm.na = T))
 
+  # aggregate data to continent
+  continent_data <- reactive({aggr_to_cont(orig_data_aggregate(), "continent", "date", continent_pop_data, allstatuses)})
 
-  prepdata = function(data, group, time) {
-    continent_data =    data %>%
-      select(Country.Region, population, contagion_day, date, continent, date, !!allstatuses) %>%
-      mutate(population = as.numeric(population)) %>%
-      group_by_(.dots = time, group) %>%
-      #group_by(time, continent) %>%
-      summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
-      add_growth_death_rate(group, time) %>%
-      left_join(continent_pop_data, by = group) %>%
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-             prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-             new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
-      rename(Country.Region = continent) %>%
-      get_timeseries_by_contagion_day_data()  %>%
-      arrange(desc(date))
-    continent_data
-  }
-  continent_data <- reactive({prepdata(orig_data_aggregate(), "continent", "date")})
-
-  continent_data_filtered <- reactive({prepdata(data_filtered(), "continent", "date")})
+  continent_data_filtered <- reactive({aggr_to_cont(data_filtered(), "continent", "date", continent_pop_data, allstatuses)})
 
 
   output$lineplots_cont <- renderUI({

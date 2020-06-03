@@ -208,3 +208,35 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
   }
   .plotly_x
 }
+#' Aggregates data to continent or subcontinent (group)
+#' @param data data.frame aggregated data per Country.Region
+#' @param group character continent or subcontinent
+#' @param time character date or contagion_day
+#' @param popdata data with population info
+#' @param allstatuses character vector of statuses to base the recomputation from: confirmed recovered deaths active
+#' @param cont character continent name used to subset popdata
+#'
+#' @note growth and mortality variables must be recomputed after the aggregation
+#' the return dataset renames the group column into Country.region to allow the following graphs to work
+#'
+#' @return data.frame aggregated at group level
+#'
+#' @export
+aggr_to_cont = function(data, group, time, popdata, allstatuses) {
+
+  continent_data =    data %>%
+    select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
+    mutate(population = as.numeric(population)) %>%
+    group_by_(.dots = time, group) %>%
+    #group_by(time, continent) %>%
+    summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
+    add_growth_death_rate(group, time) %>%
+    left_join(popdata[,c(group, "population")], by = group) %>%
+    mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
+           prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
+           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
+    rename(Country.Region = !!group) %>%
+    get_timeseries_by_contagion_day_data()  %>%
+    arrange(desc(date))
+  continent_data
+}
