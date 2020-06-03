@@ -106,7 +106,8 @@ if(F){
 
 
 continents = c("Africa", "Asia", "Europe", "Latin America and the Caribbean",
-                   "South America", "Northern America", "Oceania")
+               #    "South America",
+               "Northern America", "Oceania")
 
 
 sub_continents= list(
@@ -116,13 +117,24 @@ sub_continents= list(
              "South-Central Asia" ,      "Central Asia"  ,    "Southern Asia",
              "South-Eastern Asia" ,                    "Western Asia"),
   "Europe"  = c( "Eastern Europe" ,  "Northern Europe",
-                 "Channel Islands",         "Southern Europe",
-                 "Western Europe"),
+                 "Southern Europe",      "Western Europe"),
   "Latin America and the Caribbean" = c("Caribbean",  "Central America" ,  "South America"
   ),
-  "Northern America"  = "North America",
-  "Oceania"=  c("Oceania")
+  "Northern America"  = c("Bermuda(UK)", "Canada","Greenland(Denmark)","Saint Pierre and Miquelon(France)" ,"United States"),
+  "Oceania"=  c("Australia/New Zealand","Australia","New Zealand",
+                "Melanesia","Micronesia","Polynesia")
 )
+sub_continents_vect_int =  as.vector(unlist(sub_continents))
+cont_data = data.frame(continent =  rep(names(sub_continents), sapply(sub_continents, length)),
+                         subcontinent = sub_continents_vect)
+
+for( cont in continents) {
+  pos.append = match(head(sub_continents[[cont]],1), sub_continents_vect_int)
+  sub_continents_vect_int = append(sub_continents_vect_int, cont,
+                                   pos.append-1)
+}
+
+sub_continents_vect_int = as.vector(sub_continents_vect_int)
 
 group_countries <- function(pop) {
   pop$Location = rename_location(pop$Location)
@@ -140,10 +152,10 @@ group_countries <- function(pop) {
                        rep.tc)
   pop$continent = continentslist
   # add sub continent
-  rep.tsc = diff(match(unlist(sub_continents), pop$Location))
+  rep.tsc = diff(match(sub_continents_vect_int, pop$Location))
   rep.tsc[is.na(rep.tsc)] = 1
   rep.tsc = c(rep.tsc, nrow(pop)- sum(rep.tsc))
-  subcontinentslist = rep(unlist(sub_continents),
+  subcontinentslist = rep(sub_continents_vect_int,
                           rep.tsc)
   pop$subcontinent = subcontinentslist
   pop
@@ -273,11 +285,12 @@ if (any(duplicated(final_population$Country.Region)))
 if (length(setdiff(unique(population$Country.Region), unique(final_population$Country.Region)))>0)
   stop("not the same countries as before")
 
-newcontinents  = c("Africa", "Asia", "Europe", "Lat. America & Caribbean",
+# to regroup in case
+newcontinents  = c("Africa", "Asia", "Europe", "Lat. America & Carib",
                    "South America", "Northern America", "Oceania")
 
 final_population = final_population %>%
-  mutate(continent = if_else(continent == "Latin America and the Caribbean", "Lat. America & Caribbean", continent))
+  mutate(continent = if_else(continent == "Latin America and the Caribbean", "LatAm & Carib.", continent))
 write.table(final_population,
       file.path("inst/population_data","popUN.csv" ),row.names = FALSE,
           sep = ";")
