@@ -19,7 +19,7 @@ if (interactive()) {
         arrange(Country.Region)
       orig_data_aggregate
     })
-
+    #TODO: colors are not fixed yet
     callModule(Covid19:::mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

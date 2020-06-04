@@ -1,25 +1,28 @@
 if (interactive()) {
   library(shiny)
-  library(Covid19)
   library(dplyr)
+  library(Covid19)
   library(tidyr)
-  library(ggplot2)
+  require(DT)
+  #sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19:::mod_bar_plot_day_contagion_ui("bar_plot_day_contagion")
+    tabPanel("Continents",
+             tabsetPanel(
+               tabPanel("Africa",
+                        id = "tab_global",
+    mod_continent_ui("cont_comparison", "africa")
+               )))
   )
   server <- function(input, output) {
 
-    n <- 1000 #  min number of cases for a country to be considered. Default 1000
-    w <- 7 # number of days of outbreak. Default 7
-
-    # Data ----
     orig_data <- reactive({
       get_timeseries_full_data() %>%
         get_timeseries_by_contagion_day_data()
     })
     pop_data = get_pop_data()
+    countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
     orig_data_aggregate <- reactive({
       orig_data_aggregate <- orig_data() %>%
@@ -34,22 +37,14 @@ if (interactive()) {
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
-
+    n = 1000; w = 7
     data_filtered <- reactive({
       orig_data_aggregate() %>%
-        Covid19:::rescale_df_contagion(n = n, w = w)
+        rescale_df_contagion(n = n, w = w)
     })
 
-    country_data <- reactive({
-      data_filtered() %>%
-        filter(Country.Region %in% "Switzerland") %>%
-        filter(contagion_day > 0) %>%
-        arrange(desc(date))
-    })
-
-
-
-    callModule(Covid19:::mod_bar_plot_day_contagion_server,"bar_plot_day_contagion", country_data = country_data)
+    callModule(mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
+               data_filtered = data_filtered, countries_data_map, n = n, w = w, pop_data, cont = "Africa", uicont = "africa")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

@@ -55,6 +55,7 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #' @param orig_data_aggregate reactive data.frame
+#' @param countries_data data.frame sp for mapping
 #'
 #' @import dplyr
 #' @import tidyr
@@ -64,7 +65,7 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate){
+mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate, countries_data_map){
   ns <- session$ns
 
   # Datasets ----
@@ -105,7 +106,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # map ----
 
-  callModule(mod_map_server, "map_ui", orig_data_aggregate)
+  callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
 
   # plots ----
   levs <- sort_type_hardcoded()

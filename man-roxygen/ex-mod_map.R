@@ -9,7 +9,14 @@ if (interactive()) {
       Covid19:::mod_map_ui("map_ui")
     )
   )
+
+
   server <- function(input, output, session) {
+
+    pop_data = get_pop_data()
+    countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
+
+
     orig_data_aggregate <- reactive({
       orig_data <- get_timeseries_full_data() %>%
         get_timeseries_by_contagion_day_data()
@@ -18,14 +25,14 @@ if (interactive()) {
         add_growth_death_rate() %>%
         arrange(Country.Region) %>%
         align_country_names_pop() %>%
-        get_pop_data() %>% # compute additional variables
+        merge_pop_data(pop_data) %>% # compute additional variables
         align_country_names_pop_reverse() %>%
         mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
                prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
-    callModule(Covid19:::mod_map_server, "map_ui", orig_data_aggregate)
+    callModule(Covid19:::mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

@@ -34,7 +34,7 @@ mod_map_ui <- function(id){
 #' map Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame
-#'
+#' @param countries_data_map data.frame sp for mapping
 #' @example man-roxygen/ex-mod_map.R
 #'
 #' @import dplyr
@@ -42,17 +42,17 @@ mod_map_ui <- function(id){
 #' @import leaflet
 #'
 #' @noRd
-mod_map_server <- function(input, output, session, orig_data_aggregate){
+mod_map_server <- function(input, output, session, orig_data_aggregate, countries_data_map){
   ns <- session$ns
 
   # Data ----
   #load data
-  countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
+  #countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   data_clean <- reactive({
     data <- orig_data_aggregate() %>% align_country_names()
 
-    data$country_name <- as.character(unique(as.character(countries_data$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data$NAME)))])
+    data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
     data_clean <- data %>%
       filter(!is.na(country_name))
@@ -95,7 +95,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
     data_selected <- data_selected %>%
       select(country_name, indicator)
 
-    data_plot <-  sp::merge(countries_data,
+    data_plot <-  sp::merge(countries_data_map,
                             data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
@@ -140,7 +140,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
   output$map <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
     leaflet(
-      data = countries_data,
+      data = countries_data_map,
       options = leafletOptions(zoomControl = FALSE) # not needed, clashes with slider
     ) %>%
       setView(0, 30, zoom = 3)
@@ -158,7 +158,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
   })
 
   observeEvent(data_plot(),{
-    proxy <- leafletProxy("map", data = countries_data)
+    proxy <- leafletProxy("map", data = countries_data_map)
     proxy %>% clearControls() %>%
       addLegend(position = "bottomright",
                 pal = pal2(),
@@ -175,7 +175,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate){
 
 align_country_names <- function(data) {
   # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
-  # Note Cruise Ship and Mayonette not present in countries_data$NAME
+  # Note Cruise Ship and Mayonette not present in countries_data_map$NAME
 
   data$Country.Region <- data$Country.Region %>%
     recode(
@@ -200,7 +200,7 @@ align_country_names <- function(data) {
       "Republic of Ireland" = "Ireland",
       "Taiwan*" = "Taiwan",
       "St. Vincent Grenadines" = "St. Vin. and Gren.",
-      "Republic of the Congo" = "Congo",
+      "Republic of the Congo" = "Dem. Rep. Congo", # corrected
       "CAR" = "Central African Rep.",
 
       "Congo (Kinshasa)" = "Congo",
@@ -217,7 +217,7 @@ align_country_names <- function(data) {
       "Guadeloupe" = "France",
       "occupied Palestinian territory" = "Palestine",
       "Congo (Brazzaville)" = "Congo",
-      "Equatorial Guinea" = "Guinea",
+      "Equatorial Guinea" = "Eq. Guinea", # corrected
       "Central African Republic" = "Central African Rep.",
       "Eswatini" = "eSwatini",
 

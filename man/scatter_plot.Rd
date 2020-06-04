@@ -4,7 +4,7 @@
 \alias{scatter_plot}
 \title{scatterplot between prevalence and growth rate}
 \usage{
-scatter_plot(df, med, x.min = c(0.9, 1.125), y.min = c(0.99, 1.02))
+scatter_plot(df, med, x.min = c(0.875, 1.125), y.min = c(0.99, 1.02))
 }
 \arguments{
 \item{df}{data.frame}

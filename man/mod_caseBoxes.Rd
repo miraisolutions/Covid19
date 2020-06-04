@@ -30,9 +30,12 @@ if (interactive()) {
     )
   )
   server <- function(input, output, session) {
+    statuses <- c("confirmed", "deaths", "recovered", "active")
+    # select all variables
+    allstatuses = c(statuses, paste0("new_", statuses))
     counts <- reactive({
       invalidateLater(2000)
-      stats::setNames(sample.int(1000, 4), c("deaths", "active", "recovered", "confirmed"))
+      as.list(stats::setNames(sample.int(1000, length(allstatuses)), allstatuses))
     })
     callModule(Covid19:::mod_caseBoxes_server, "boxes", counts = counts)
   }
