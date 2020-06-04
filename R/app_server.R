@@ -15,6 +15,8 @@ app_server <- function(input, output, session) {
   w <- 7 # number of days of outbreak. Default 7
 
   # Data ----
+  # map
+  countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   orig_data <- reactive({
     get_timeseries_full_data() %>%
@@ -54,6 +56,7 @@ app_server <- function(input, output, session) {
       distinct()
   })
 
+
   # continents <- reactive({
   #   data_filtered() %>%
   #     select(continent) %>%
@@ -61,7 +64,7 @@ app_server <- function(input, output, session) {
   # })
 
   # Modules ----
-  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate)
+  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate, countries_data_map)
   callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w, pop_data = pop_data)
 
   # select continents in tabs
@@ -71,7 +74,8 @@ app_server <- function(input, output, session) {
   for (i.cont in 1:length(continents)) {
     callModule(mod_continent_server, paste(mainuicontinents[i.cont], "comparison", sep = "_"),
                orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w,
-               pop_data = pop_data, cont = continents[i.cont], uicont = uicontinents[i.cont])
+               pop_data = pop_data, countries_data_map = countries_data_map,
+               cont = continents[i.cont], uicont = uicontinents[i.cont])
 
   }
 

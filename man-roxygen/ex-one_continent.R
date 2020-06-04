@@ -3,14 +3,16 @@ if (interactive()) {
   library(dplyr)
   library(Covid19)
   library(tidyr)
+  require(DT)
+  #sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tabPanel("Continents",
              tabsetPanel(
-               tabPanel("Europe",
+               tabPanel("Africa",
                         id = "tab_global",
-    Covid19:::mod_continent_ui("europe_comparison", "europe")
+    mod_continent_ui("cont_comparison", "africa")
                )))
   )
   server <- function(input, output) {
@@ -20,6 +22,7 @@ if (interactive()) {
         get_timeseries_by_contagion_day_data()
     })
     pop_data = get_pop_data()
+    countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
     orig_data_aggregate <- reactive({
       orig_data_aggregate <- orig_data() %>%
@@ -37,11 +40,11 @@ if (interactive()) {
     n = 1000; w = 7
     data_filtered <- reactive({
       orig_data_aggregate() %>%
-        Covid19:::rescale_df_contagion(n = n, w = w)
+        rescale_df_contagion(n = n, w = w)
     })
 
-    callModule(Covid19:::mod_continent_server, "europe_comparison", orig_data_aggregate = orig_data_aggregate,
-               data_filtered = data_filtered, n = n, w = w, pop_data, cont = "Europe", uicont = "europe")
+    callModule(mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
+               data_filtered = data_filtered, countries_data_map, n = n, w = w, pop_data, cont = "Africa", uicont = "africa")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

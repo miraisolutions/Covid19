@@ -17,7 +17,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 }
 #' stackedbarplot_status Server Function
 #'
-#' @param countries_data reactive data.frame for multiple countries
+#' @param df reactive data.frame for multiple countries
 #'
 #' @import dplyr
 #' @import tidyr

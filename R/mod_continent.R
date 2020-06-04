@@ -15,6 +15,9 @@ mod_continent_ui <- function(id, uicont){
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
    # mod_caseBoxes_ui(ns(paste("count-boxes")),
     mod_caseBoxes_ui(ns(paste("count-boxes", uicont , sep = "_"))),
+     fluidRow(
+       mod_map_cont_ui(ns(paste("map_cont_ui", uicont , sep = "_")))
+     ),
     hr(),
     div(
       #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
@@ -25,6 +28,7 @@ mod_continent_ui <- function(id, uicont){
      #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
      uiOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
    ),
+   hr(),
     #withSpinner(uiOutput(ns(paste("barplots", uicont , sep = "_")))),
     withSpinner(uiOutput(ns(paste("lineplots_cont", uicont , sep = "_")))),
     fluidRow(
@@ -51,6 +55,7 @@ mod_continent_ui <- function(id, uicont){
 #'
 #' @param orig_data_aggregate reactive data.frame with data from 1 continent
 #' @param data_filtered reactive data.frame
+#' @param countries_data_map data.frame sp for mapping
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #' @param pop_data data.frame population
@@ -59,7 +64,7 @@ mod_continent_ui <- function(id, uicont){
 #' @import dplyr
 #'
 #' @noRd
-mod_continent_server <- function(input, output, session, orig_data_aggregate, data_filtered, n = 1000, w = 7, pop_data, cont, uicont){
+mod_continent_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries_data_map, n = 1000, w = 7, pop_data, cont, uicont){
   ns <- session$ns
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
@@ -97,6 +102,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, da
 
   # Boxes ----
   callModule(mod_caseBoxes_server, paste("count-boxes", uicont , sep = "_"), continent_data_today)
+
+  # Map
+  # Boxes ----
+  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map, cont = cont)
 
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
     paste0("Only Countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
