@@ -16,7 +16,7 @@ mod_map_cont_ui <- function(id){
   div(
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    withSpinner(leafletOutput(ns("map_cont"), width = "85%", height = "500")),
+    withSpinner(leafletOutput(ns("map_cont"), width = "100%", height = "500")),
     # absolutePanel(
     #   id = ns("input_date_control_map_cont"), class = "panel panel-default",
     #   top = 10, left = 10, draggable = F#,
@@ -114,9 +114,11 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                                  c(cont_map_spec(cont, "lat")[1], cont_map_spec(cont, "lat")[2]),
                                  c(cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4])
                                ),
-                               browser.defaultWidth = "80%"
+                               browser.defaultWidth = "80%",
+                               viewer.suppress = TRUE, knitr.figure = FALSE
       ))  %>%
-  # observeEvent(data_plot(),{
+
+      # observeEvent(data_plot(),{
   # # update map with reactive part
     #leafletProxy("map_cont", data = data_plot(),
     # leaflet( data = data_plot() ,
@@ -129,24 +131,27 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                   fillColor = pal_fun(as.factor(data_plot()[["indicator"]]),
                                       cont_map_spec(cont, "col"))(as.factor(data_plot()[["indicator"]])),
                   fillOpacity = 1,
-                 color = "#BDBDC3",
-                 # color = "white",
-
+                  color = "#BDBDC3",
+                  group = "polygonsmap",
                   weight = 1,
                   popup = country_popup()) %>% # here boundaries get reset, fitBounds needed
+            # addTiles(
+            #    group = "tilesmap",
+            #     ) %>%
                   #popup = pops) %>% # here boundaries get reset, fitBounds needed
-
-      # at clicking still the map moves
-      # setMaxBounds(as.numeric(cont_map_spec(cont, "lat")[1]),
-      #            as.numeric(cont_map_spec(cont, "lat")[2]),
-      #            as.numeric(cont_map_spec(cont, "lat")[3]),
-      #            as.numeric(cont_map_spec(cont, "lat")[4]))  %>%
       addLegend(position = "topright",
+                #group = "legendmap",
+
                 colors = pal_fun(as.factor(unique(data_plot()[["indicator"]])),
                                  cont_map_spec(cont, "col"))(as.factor(unique(data_plot()[["indicator"]]))),
                 opacity = 1,
                 labels = as.factor(unique(data_plot()[["indicator"]])),
-                title = cont)
+                title = cont)#%>% #%>%
+    #addLayersControl(
+                #   baseGroups = c( "polygonsmap"),
+                #   overlayGroups = c("tilesmap")
+                # )
+        #leaflet.extras::addFullscreenControl(pseudoFullscreen = T)
    })
 
 }
@@ -154,17 +159,17 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
 
   lat = list("Europe" = c(32, 23, 72, 26) ,
                        "Africa" = c(-40, 23, 40, 26),
-                       "Asia" = c(13, 55, 32, 105),
+                       "Asia" = c(13, 72, 34, 123),
                        "Oceania" = c(-45, 110, 5, 170),
                        "LatAm & Carib." =  c(-65, -80, 50, -55),
-                        "Northern America" = c(20, -110, 85, -25)
+                        "Northern America" = c(20, -114, 85, -29)
   )
   col = list("Europe" = "Blues", "Asia" = "Reds",
                           "Africa" = "RdYlBu", "Northern America" = "RdBu",
                           "LatAm & Carib." = "GnBu", "Oceania" = "Oranges")
   zoom = list("Europe" = 3.4,
                 "Africa" = 3,
-                "Asia" = 3,
+                "Asia" = 2.9,
                 "Oceania" = 3.4,
                 "LatAm & Carib." = 2.6,
                 "Northern America" = 2.3

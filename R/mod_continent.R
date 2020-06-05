@@ -16,7 +16,13 @@ mod_continent_ui <- function(id, uicont){
    # mod_caseBoxes_ui(ns(paste("count-boxes")),
     mod_caseBoxes_ui(ns(paste("count-boxes", uicont , sep = "_"))),
      fluidRow(
-       mod_map_cont_ui(ns(paste("map_cont_ui", uicont , sep = "_")))
+       column(6,
+            mod_map_cont_ui(ns(paste("map_cont_ui", uicont , sep = "_")))
+       ),
+      column(6,
+            div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                mod_plot_log_linear_ui(ns("plot_log_area_global"))
+         ),
      ),
     hr(),
     div(
@@ -91,8 +97,6 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",
                                               subcontinent_pop_data, allstatuses)})
 
-  # subcontinent_data_filtered <- reactive({aggr_to_cont(data_filtered_cont(), "subcontinent", "date",
-  #                                                      subcontinent_pop_data, allstatuses)})
   subcontinent_data_filtered <- reactive({subcontinent_data() %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)
   })
@@ -102,6 +106,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     continent_data() %>%
       filter(date == max(date))
   })
+  continent_timeseries <- reactive({
+    continent_data() %>%
+      get_timeseries_global_data()
+  })
 
   # Boxes ----
   callModule(mod_caseBoxes_server, paste("count-boxes", uicont , sep = "_"), continent_data_today)
@@ -110,18 +118,22 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Boxes ----
   callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map, cont = cont)
 
+  # > area plot global
+  levs <- sort_type_hardcoded()
+
+  df_continent = reactive({
+    tsdata_areplot(continent_timeseries(),levs)
+  })
+  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area")
+
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
     paste0("Only Countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
   })
   # list of countries
   list.message = reactive({
-    list.countries = data_filtered_cont()[,c("subcontinent","Country.Region")] %>% unique() %>%
-      group_by(subcontinent) %>% group_split()
-    lapply(list.countries, function(x)
-      paste0("<b>",as.character(unique(x$subcontinent)),"</b>: ",
-            paste(x$Country.Region, collapse = ",")))
-
+      message_subcountries(data_filtered_cont(),"subcontinent","Country.Region")
   })
+
   output[[paste("subcontinents_countries", uicont , sep = "_")]]<- renderUI({
    HTML(paste(as.character(unlist(list.message())), collapse = '<br/>'))
 
