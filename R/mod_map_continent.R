@@ -43,7 +43,7 @@ mod_map_cont_ui <- function(id){
 #' @import leaflet
 #'
 #' @noRd
-mod_map_cont_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont, uicont){
+mod_map_cont_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont){
   ns <- session$ns
 
   # Data ----
