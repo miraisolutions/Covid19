@@ -14,7 +14,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     pop_data = get_pop_data()
-    countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
+    countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
 
 
     orig_data_aggregate <- reactive({
