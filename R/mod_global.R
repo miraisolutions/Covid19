@@ -111,15 +111,10 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # plots ----
   levs <- sort_type_hardcoded()
 
-  # > area plot global
-  df_global <- reactive({
-    global() %>%
-      select(-starts_with("new_")) %>%
-      select( -confirmed) %>%
-      pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-      mutate(status = factor(status, levels = levs)) %>%
-      capitalize_names_df()
+  df_global = reactive({
+    tsdata_areplot(global(),levs, 1000) # start from day qith |1000
   })
+
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
 
