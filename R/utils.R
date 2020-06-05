@@ -244,3 +244,37 @@ aggr_to_cont = function(data, group, time, popdata, allstatuses) {
     arrange(desc(date))
   continent_data
 }
+
+#' creates time series for the area plot
+#' @param data data.frame aggregated data per region
+#' @param levs order of statuses
+#' @param n minimum number of cases for the start date
+#'
+#' @note starting date based on n, first day with so many confirmed
+#'
+#' @return data.frame reshaped
+#'
+#' @import tidyr
+tsdata_areplot <- function(data, levs, n = 1000) {
+  data %>%
+    #filter(date > date[min(which(confirmed>0))]) %>% #remove initial dates
+    filter(confirmed > n) %>% #remove initial dates
+    select(-starts_with("new_"), -confirmed) %>%
+    pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
+    mutate(status = factor(status, levels = levs)) %>%
+    capitalize_names_df()
+}
+#' creates message of countries within subcountries
+#' @param data data.frame aggregated data per region
+#' @param area character main area
+#' @param region character sub area
+#'
+#' @return list messages printing Country.Region within subcontinent
+#'
+message_subcountries <- function(data, area, region) {
+  list.countries = data[,c(area,region)] %>% unique() %>%
+    group_by(.dots = area) %>% group_split()
+  lapply(list.countries, function(x)
+    paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
+           paste(x[[region]], collapse = ",")))
+}
