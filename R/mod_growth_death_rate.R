@@ -105,7 +105,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p
   })
   caption_death_rate <- reactive({paste0("Computed as total deaths today ",caption_death_rate_radio())})
-  caption_countries <- paste0("Only countries with more than ", n, " confirmed cases, outbreaks longer than ", w, " days considered.")
+  caption_countries <- paste0("More than ", n, " confirmed cases and outbreaks longer than ", w, " days.")
 
   # plots
   output$plot_growth_factor <- renderUI({
