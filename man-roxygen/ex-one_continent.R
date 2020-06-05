@@ -3,8 +3,10 @@ if (interactive()) {
   library(dplyr)
   library(Covid19)
   library(tidyr)
+  library(scales)
+
   require(DT)
-  sapply(file.path("R",list.files("R")), source)
+  #sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
@@ -12,7 +14,7 @@ if (interactive()) {
              tabsetPanel(
                tabPanel("Africa",
                         id = "tab_global",
-    mod_continent_ui("cont_comparison", "africa")
+    Covid19:::mod_continent_ui("cont_comparison", "africa")
                )))
   )
   server <- function(input, output) {
@@ -22,7 +24,7 @@ if (interactive()) {
         get_timeseries_by_contagion_day_data()
     })
     pop_data = get_pop_data()
-    countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
+    countries_data_map <- Covid19:::load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
 
     orig_data_aggregate <- reactive({
       orig_data_aggregate <- orig_data() %>%
