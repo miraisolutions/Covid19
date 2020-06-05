@@ -16,7 +16,7 @@ app_server <- function(input, output, session) {
 
   # Data ----
   # map
-  countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
+  countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
 
   orig_data <- reactive({
     get_timeseries_full_data() %>%
