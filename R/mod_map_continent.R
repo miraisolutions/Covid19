@@ -152,9 +152,9 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 }
 cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
 
-  lat = list("Europe" = c(32, 23, 75, 26) ,
+  lat = list("Europe" = c(32, 23, 72, 26) ,
                        "Africa" = c(-40, 23, 40, 26),
-                       "Asia" = c(10, 55, 30, 105),
+                       "Asia" = c(13, 55, 32, 105),
                        "Oceania" = c(-45, 110, 5, 170),
                        "LatAm & Carib." =  c(-65, -80, 50, -55),
                         "Northern America" = c(20, -110, 85, -25)
@@ -162,11 +162,11 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
   col = list("Europe" = "Blues", "Asia" = "Reds",
                           "Africa" = "RdYlBu", "Northern America" = "RdBu",
                           "LatAm & Carib." = "GnBu", "Oceania" = "Oranges")
-  zoom = list("Europe" = 3,
+  zoom = list("Europe" = 3.4,
                 "Africa" = 3,
                 "Asia" = 3,
-                "Oceania" = 3.3,
-                "LatAm & Carib." = 2.5,
+                "Oceania" = 3.4,
+                "LatAm & Carib." = 2.6,
                 "Northern America" = 2.3
               )
   spec = list(lat = lat, col = col, zoom = zoom)

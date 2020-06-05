@@ -54,7 +54,6 @@ mod_continent_ui <- function(id, uicont){
 #' continent Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame with data from 1 continent
-#' @param data_filtered reactive data.frame
 #' @param countries_data_map data.frame sp for mapping
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
@@ -64,7 +63,7 @@ mod_continent_ui <- function(id, uicont){
 #' @import dplyr
 #'
 #' @noRd
-mod_continent_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries_data_map, n = 1000, w = 7, pop_data, cont, uicont){
+mod_continent_server <- function(input, output, session, orig_data_aggregate, countries_data_map, n = 1000, w = 7, pop_data, cont, uicont){
   ns <- session$ns
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
@@ -73,7 +72,8 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, da
 
   orig_data_aggregate_cont <- reactive({
     orig_data_aggregate() %>% filter(continent == cont)})
-  data_filtered_cont <- reactive({data_filtered() %>% filter(continent == cont)})
+  data_filtered_cont <- reactive({orig_data_aggregate_cont() %>% # select sub-continents with longer outbreaks
+      rescale_df_contagion(n = n, w = w)})
 
   subcontinents = reactive({unique(orig_data_aggregate_cont()$subcontinent)})
 
@@ -88,12 +88,15 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, da
   continent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
                                            continent_pop_data, allstatuses)})
 
-
   subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",
                                               subcontinent_pop_data, allstatuses)})
 
-  subcontinent_data_filtered <- reactive({aggr_to_cont(data_filtered_cont(), "subcontinent", "date",
-                                                       subcontinent_pop_data, allstatuses)})
+  # subcontinent_data_filtered <- reactive({aggr_to_cont(data_filtered_cont(), "subcontinent", "date",
+  #                                                      subcontinent_pop_data, allstatuses)})
+  subcontinent_data_filtered <- reactive({subcontinent_data() %>% # select sub-continents with longer outbreaks
+      rescale_df_contagion(n = n, w = w)
+  })
+
 
   continent_data_today <- reactive({
     continent_data() %>%

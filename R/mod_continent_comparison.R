@@ -40,7 +40,6 @@ mod_continent_comparison_ui <- function(id){
 #' continent_comparison Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame
-#' @param data_filtered reactive data.frame
 #' @param countries reactive data.frame
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
@@ -48,7 +47,7 @@ mod_continent_comparison_ui <- function(id){
 #' @import dplyr
 #'
 #' @noRd
-mod_continent_comparison_server <- function(input, output, session, orig_data_aggregate, data_filtered, n = 1000, w = 7, pop_data){
+mod_continent_comparison_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, pop_data){
   ns <- session$ns
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
@@ -60,11 +59,13 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   # continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
   #   group_by(continent) %>%
   #   summarize(population = sum(as.numeric(population), rm.na = T))
-
   # aggregate data to continent
   continent_data <- reactive({aggr_to_cont(orig_data_aggregate(), "continent", "date", pop_data, allstatuses)})
 
-  continent_data_filtered <- reactive({aggr_to_cont(data_filtered(), "continent", "date", pop_data, allstatuses)})
+  #continent_data_filtered <- reactive({aggr_to_cont(data_filtered(), "continent", "date", pop_data, allstatuses)})
+  continent_data_filtered <- reactive({continent_data() %>% # select continents with longer outbreaks
+      rescale_df_contagion(n = n, w = w)
+      })
 
 
   output$lineplots_cont <- renderUI({
