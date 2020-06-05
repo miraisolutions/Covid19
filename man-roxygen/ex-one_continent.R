@@ -4,7 +4,7 @@ if (interactive()) {
   library(Covid19)
   library(tidyr)
   require(DT)
-  #sapply(file.path("R",list.files("R")), source)
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
@@ -44,7 +44,7 @@ if (interactive()) {
     })
 
     callModule(mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
-               data_filtered = data_filtered, countries_data_map, n = n, w = w, pop_data, cont = "Africa", uicont = "africa")
+               countries_data_map, n = n, w = w, pop_data, cont = "Africa", uicont = "africa")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

@@ -3,6 +3,7 @@ if (interactive()) {
   library(dplyr)
   library(Covid19)
   library(tidyr)
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
@@ -45,7 +46,7 @@ if (interactive()) {
     #     select(Country.Region) %>%
     #     distinct()
     # })
-    callModule(Covid19:::mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w, pop_data)
+    callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w, pop_data)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
