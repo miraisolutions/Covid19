@@ -13,7 +13,6 @@ mod_continent_ui <- function(id, uicont){
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
-   # mod_caseBoxes_ui(ns(paste("count-boxes")),
     mod_caseBoxes_ui(ns(paste("count-boxes", uicont , sep = "_"))),
      fluidRow(
        column(6,
@@ -26,16 +25,13 @@ mod_continent_ui <- function(id, uicont){
      ),
     hr(),
     div(
-      #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
       textOutput(ns(paste("from_nth_case", uicont , sep = "_")))
     ),
    hr(),
    div(
-     #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
      uiOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
    ),
    hr(),
-    #withSpinner(uiOutput(ns(paste("barplots", uicont , sep = "_")))),
     withSpinner(uiOutput(ns(paste("lineplots_cont", uicont , sep = "_")))),
     fluidRow(
       column(5,

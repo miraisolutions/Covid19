@@ -41,6 +41,7 @@ mod_map_cont_ui <- function(id){
 #' @import dplyr
 #' @import tidyr
 #' @import leaflet
+#' @import sp
 #'
 #' @noRd
 mod_map_cont_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont){
@@ -78,7 +79,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 
     data_selected <- data_selected %>%
       select(country_name, indicator) %>%
-      mutate((country_name = as.factor(country_name)))
+      mutate(country_name = as.factor(country_name))
 
     data_plot <-  sp::merge(countries_data_map,
                             data_selected,
@@ -117,22 +118,13 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                                browser.defaultWidth = "80%",
                                viewer.suppress = TRUE, knitr.figure = FALSE
       ))  %>%
-
-      # observeEvent(data_plot(),{
-  # # update map with reactive part
-    #leafletProxy("map_cont", data = data_plot(),
-    # leaflet( data = data_plot() ,
-    #          # options = leafletOptions(zoomControl = FALSE,
-    #          #                          minZoom = 3, maxZoom = 3,
-    #          #                          dragging = FALSE)
-    # )  %>%
       addPolygons(layerId = ~NAME,
                   #fillColor = pal2(data_plot()$indicator),
                   fillColor = pal_fun(as.factor(data_plot()[["indicator"]]),
                                       cont_map_spec(cont, "col"))(as.factor(data_plot()[["indicator"]])),
                   fillOpacity = 1,
                   color = "#BDBDC3",
-                  group = "polygonsmap",
+                 # group = "polygonsmap",
                   weight = 1,
                   popup = country_popup()) %>% # here boundaries get reset, fitBounds needed
             # addTiles(
@@ -157,7 +149,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 }
 cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
 
-  lat = list("Europe" = c(32, 23, 72, 26) ,
+  lat = list("Europe" = c(32, 23, 72, 26) ,#lng1 lat1,lng2,lat2
                        "Africa" = c(-40, 23, 40, 26),
                        "Asia" = c(13, 72, 34, 123),
                        "Oceania" = c(-45, 110, 5, 170),

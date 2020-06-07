@@ -32,7 +32,7 @@ if (interactive()) {
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
-    callModule(Covid19:::mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
+    callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
