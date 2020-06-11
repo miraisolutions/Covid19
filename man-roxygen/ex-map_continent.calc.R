@@ -3,19 +3,23 @@ if (interactive()) {
   library(dplyr)
   library(Covid19)
   library(tidyr)
-  library(scales)
+  library(plotly)
+  library(leaflet)
+  library(shinycssloaders)
 
-  require(DT)
-  #sapply(file.path("R",list.files("R")), source)
+  variable = "growth vs prevalence" # set variable
+  #variable = "death rate" # set variable
+  variable = "prevalence rate" # set variable
+  #variable = "active" # set variable
+ #variable = "growth factor" # set variable
 
+ #sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    tabPanel("Continents",
-             tabsetPanel(
-               tabPanel("Africa",
-                        id = "tab_global",
-    Covid19:::mod_continent_ui("cont_comparison", "africa")
-               )))
+    tagList(
+      Covid19:::golem_add_external_resources(),
+      Covid19:::mod_map_cont_calc_ui("map_cont_calc_ui")
+    )
   )
   server <- function(input, output) {
 
@@ -39,14 +43,15 @@ if (interactive()) {
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
-    n = 1000; w = 7
-    data_filtered <- reactive({
-      orig_data_aggregate() %>%
-        rescale_df_contagion(n = n, w = w)
-    })
+    # data_filtered <- reactive({
+    #   orig_data_aggregate() %>%
+    #     Covid19:::rescale_df_contagion(n = n, w = w)
+    # })
 
-    callModule(Covid19:::mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
-               countries_data_map, n = n, w = w, pop_data, cont = "Africa", uicont = "africa")
+
+
+    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate,  countries_data_map,
+               cont = "LatAm & Carib.", variable = variable)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
