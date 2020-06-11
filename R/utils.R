@@ -278,3 +278,58 @@ message_subcountries <- function(data, area, region) {
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
            paste(x[[region]], collapse = ",")))
 }
+#' Calculates growth vs prevalence factors
+#' @param data data.frame aggregated data per region
+#' @param growthvar growth factors
+#' @param prevvar prevalence over 1 M
+#'
+#' @note factors created:
+#' c('Low Growth and Prevalence', 'Low Growth - High Prevalence', 'High Growth - Low Prevalence', 'High Growth and Prevalence')
+#'
+#' @return factor vector
+#'
+growth_v_prev_calc <- function(data, growthvar,prevvar) {
+  # compute stats for all growth factors
+  med_growth = median(data[[growthvar]])
+  med_prevalence = median(data[[prevvar]])
+
+  labs = c("Low Growth and Prevalence",
+           "Low Growth - High Prevalence",
+           "High Growth - Low Prevalence",
+           "High Growth and Prevalence" )
+
+  val_cntry = rep(labs[2], nrow(data))
+  val_cntry[data[[prevvar]] <= med_prevalence & data[[growthvar]]  <= med_growth ] = labs[1]
+  val_cntry[data[[prevvar]] > med_prevalence & data[[growthvar]] > med_growth ] = labs[4]
+  val_cntry[data[[prevvar]] <= med_prevalence & data[[growthvar]] > med_growth ] = labs[3]
+  factor(val_cntry, levels = labs)
+}
+
+#' Rounds up numbers for labels in plots
+#' @param maxv numeric max value
+#'
+#' @return numeric vector after ceiling()
+#'
+round_up = function(maxv) {
+  dg = nchar(as.character(round(maxv)))
+  if (dg == 1 && maxv>1)
+    dg = 0
+  ceiling(maxv/(10^(dg-1)))*10^(dg-1)
+}
+#' Derives number of digits for rounding
+#' @param dg integer number of characters of figure, say 1000 = 4
+#' @param maxv numeric max value
+#'
+#' @return integer number of digit
+#'
+getdg_lab = function(dg,maxv) {
+  if (dg >3)
+    dglab = 0
+  else if (dg == 1 && maxv <=1)
+    dglab = 1 # rates are in 100
+  else if (dg >0)
+    dglab = dg - (c(-2,0,2))[dg]
+  else
+    stop("error wrong digits for rounding", dg)
+  dglab
+}
