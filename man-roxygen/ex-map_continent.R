@@ -6,7 +6,7 @@ if (interactive()) {
   library(plotly)
   library(leaflet)
   library(shinycssloaders)
- sapply(file.path("R",list.files("R")), source)
+ #sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
@@ -36,12 +36,6 @@ if (interactive()) {
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
-    # data_filtered <- reactive({
-    #   orig_data_aggregate() %>%
-    #     Covid19:::rescale_df_contagion(n = n, w = w)
-    # })
-
-
 
     callModule(mod_map_cont_server, "map_cont_ui", orig_data_aggregate = orig_data_aggregate,  countries_data_map,
                cont = "Africa")

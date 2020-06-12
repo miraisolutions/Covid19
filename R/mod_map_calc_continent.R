@@ -81,15 +81,16 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 
   data_clean <- reactive({
     data <- orig_data_aggregate() %>%
-      filter(continent == cont & date %in% head(date,day()))  %>%# select data from continent only and last 7 days
+      filter(date %in% head(date,day()))  %>%# select data last 7 days or 1
               align_country_names()
-    if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", variable) ||
-        grepl("death", variable)  ||
-        grepl("(growth)*prev",variable)) {
+    # if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", variable) ||
+    #     grepl("death", variable)  ||
+    #     grepl("(growth)*prev",variable)) {
+    # remove for all variables, otherwise some countries appear in a map and not in another one
       message("remove very small countries not to mess up map")
       data = data %>%
         filter(population > 100000)
-    }
+    # }
     data = data %>%
       mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
 
@@ -152,15 +153,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
                             sort = FALSE)
     data_plot
   })
-
-
-  roundlab = function(y) {
-    maxy = max(y)
-    dg = nchar(as.character(round(maxy)))
-    dglab = getdg_lab(dg, maxy)
-    round(y, dglab)
-  }
-
 
 
   # add Title to output
@@ -510,4 +502,9 @@ pal_fun_calc <- function(x){
     y = x
   y
 }
-
+roundlab = function(y) {
+  maxy = max(y)
+  dg = nchar(as.character(round(maxy)))
+  dglab = getdg_lab(dg, maxy)
+  round(y, dglab)
+}

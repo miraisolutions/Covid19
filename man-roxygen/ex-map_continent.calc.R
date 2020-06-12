@@ -7,6 +7,9 @@ if (interactive()) {
   library(leaflet)
   library(shinycssloaders)
 
+  cont = "LatAm & Carib."
+  cont = "Asia"
+
   variable = "growth vs prevalence" # set variable
   #variable = "death rate" # set variable
   variable = "prevalence rate" # set variable
@@ -38,6 +41,7 @@ if (interactive()) {
         align_country_names_pop() %>%
         merge_pop_data(pop_data) %>% # compute additional variables
         align_country_names_pop_reverse() %>%
+        filter(continent == cont) %>%
         mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
                prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
@@ -51,7 +55,7 @@ if (interactive()) {
 
 
     callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate,  countries_data_map,
-               cont = "LatAm & Carib.", variable = variable)
+               cont = cont, variable = variable)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

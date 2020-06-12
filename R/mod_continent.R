@@ -49,6 +49,22 @@ mod_continent_ui <- function(id, uicont){
              withSpinner(uiOutput(ns(paste("status_stackedbarplot_cont", uicont , sep = "_"))))
       )
     ),
+   fluidRow(
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_growthvsprev", uicont , sep = "_"))))
+     ),
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_prev", uicont , sep = "_"))))
+     )
+   ),
+   fluidRow(
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_growth", uicont , sep = "_"))))
+     ),
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
+     )
+   ),
     mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_")))
     )
 }
@@ -176,6 +192,33 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
   callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
              subcontinent_data_filtered, n = n, n_highligth = length(subcontinents()), istop = F)
+
+  #maps growth vs prev
+  output[[paste("map_countries_growthvsprev", uicont , sep = "_")]] <- renderUI({
+    mod_map_cont_calc_ui(ns("map_countries_growthvsprev"))
+  })
+  callModule(mod_map_cont_cal_server, "map_countries_growthvsprev", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+             cont = cont, variable = "growth vs prev")
+
+  #maps prevalence
+  output[[paste("map_countries_prev", uicont , sep = "_")]] <- renderUI({
+    mod_map_cont_calc_ui(ns("map_countries_prev"))
+  })
+  callModule(mod_map_cont_cal_server, "map_countries_prev", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+             cont = cont, variable = "prevalence rate")
+  #maps growth
+  output[[paste("map_countries_growth", uicont , sep = "_")]] <- renderUI({
+    mod_map_cont_calc_ui(ns("map_countries_growth"))
+  })
+  callModule(mod_map_cont_cal_server, "map_countries_growth", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+             cont = cont, variable = "growth factor")
+
+  #maps death
+  output[[paste("map_countries_death", uicont , sep = "_")]] <- renderUI({
+    mod_map_cont_calc_ui(ns("map_countries_death"))
+  })
+  callModule(mod_map_cont_cal_server, "map_countries_death", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+             cont = cont, variable = "death")
 
   # tables ----
   callModule(mod_add_table_server, paste("add_table_cont", uicont , sep = "_"),
