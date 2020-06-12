@@ -7,6 +7,7 @@
 #' @noRd
 #'
 #' @import shiny
+#' @import leaflet.extras
 #' @importFrom leaflet leafletOutput
 #' @importFrom shinycssloaders withSpinner
 mod_map_cont_ui <- function(id){

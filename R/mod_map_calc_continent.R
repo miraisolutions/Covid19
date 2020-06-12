@@ -33,6 +33,7 @@ mod_map_cont_calc_ui <- function(id){
 #' @import dplyr
 #' @import tidyr
 #' @import leaflet
+#' @import leaflet.extras
 #'
 #' @noRd
 mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont, variable = "confirmed"){
