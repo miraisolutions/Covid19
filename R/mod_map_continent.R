@@ -17,16 +17,6 @@ mod_map_cont_ui <- function(id){
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     withSpinner(leafletOutput(ns("map_cont"), width = "100%", height = "500")),
-    # absolutePanel(
-    #   id = ns("input_date_control_map_cont"), class = "panel panel-default",
-    #   top = 10, left = 10, draggable = F#,
-    #   # div(style = "margin:10px;",
-    #   #     #radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
-    #   #     #radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
-    #   #     #uiOutput(ns("slider_ui")),
-    #   #     #helpText("Click on the country to obtain its details.")
-    #   # )
-    # )
 
   )
 }
@@ -48,8 +38,6 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
   ns <- session$ns
 
   # Data ----
-  #load data
-  #countries_data_map <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   # TODO could be replaced with other data and would be faster, change argument
   data_clean <- reactive({
@@ -107,7 +95,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 
   output[["map_cont"]] <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
-    leaflet(
+    map = leaflet(
       data = data_plot(),
       options = leafletOptions(zoomControl = FALSE,
                                minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"), dragging = FALSE,
@@ -124,14 +112,18 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                                       cont_map_spec(cont, "col"))(as.factor(data_plot()[["indicator"]])),
                   fillOpacity = 1,
                   color = "#BDBDC3",
-                 # group = "polygonsmap",
+                  group = "polygonsmap",
+                  label = ~NAME,
                   weight = 1,
-                  popup = country_popup()) %>% # here boundaries get reset, fitBounds needed
+                  popup = country_popup()) #%>% # here boundaries get reset, fitBounds needed
             # addTiles(
-            #    group = "tilesmap",
             #     ) %>%
                   #popup = pops) %>% # here boundaries get reset, fitBounds needed
-      addLegend(position = "topright",
+      map =  addSearchFeatures(map, targetGroups  = "polygonsmap",
+                               options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
+                                                               moveToLocation = FALSE)
+      )
+      addLegend(map, position = "topright",
                 #group = "legendmap",
 
                 colors = pal_fun(as.factor(unique(data_plot()[["indicator"]])),
