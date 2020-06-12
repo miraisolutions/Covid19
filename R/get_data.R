@@ -234,11 +234,11 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   df1 <- df %>% ungroup() %>%
     arrange(!!as.symbol(group), !!as.symbol(time)) %>%
     group_by_(.dots = group) %>%
-    mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 0),
-           daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 0),
-           daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 0),
+    mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
+           daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
+           daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
            daily_lethality_rate = replace_na(deaths / confirmed, 0)) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
     ungroup()
   df2 <- df1 %>%
     group_by_(.dots = group)  %>%
@@ -250,7 +250,7 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
            lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
     ungroup() %>%
     mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",0, x)} ) %>%
+    mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
     arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
     select(-starts_with("daily_"))
   df2
