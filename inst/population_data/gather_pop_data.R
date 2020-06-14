@@ -126,7 +126,7 @@ sub_continents= list(
 )
 sub_continents_vect_int =  as.vector(unlist(sub_continents))
 cont_data = data.frame(continent =  rep(names(sub_continents), sapply(sub_continents, length)),
-                         subcontinent = sub_continents_vect)
+                         subcontinent = sub_continents_vect_int)
 
 for( cont in continents) {
   pos.append = match(head(sub_continents[[cont]],1), sub_continents_vect_int)
