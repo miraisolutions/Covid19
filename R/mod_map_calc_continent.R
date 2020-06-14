@@ -171,14 +171,23 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
     map = leaflet(
       data = data_plot(),
       options = leafletOptions(zoomControl = FALSE,
-                               minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"), dragging = FALSE,
+                               minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"),
+                               dragging = TRUE,
+                               centerFixed = TRUE,
                                maxBounds = list(
                                  c(cont_map_spec(cont, "lat")[1], cont_map_spec(cont, "lat")[2]),
                                  c(cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4])
                                ),
-                               browser.defaultWidth = "80%",
-                               viewer.suppress = TRUE, knitr.figure = FALSE
-      ))
+                               #sizingPolicy =leafletSizingPolicy(
+                                 browser.defaultWidth = "80%",
+                                 browser.fill = F,
+                                 #browser.padding = 100,
+                                 # viewer.suppress = TRUE, knitr.figure = FALSE,
+                                 # knitr.defaultWidth = "100%"
+                                 #)
+      )) %>%
+      setView(lng = mean(cont_map_spec(cont, "lat")[c(1,3)]), lat = mean(cont_map_spec(cont, "lat")[c(2,4)]),
+              zoom = cont_map_spec(cont, "zoom"))
     leg_par <- legend_fun(data_plot()$indicator, new_var())
     map = map %>%
       addPolygons(layerId = ~NAME,
@@ -188,13 +197,18 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
                   group = "polygonsmap",
                   label = ~NAME,
                   weight = 1,
-                  popup = map_popup_data(data_plot(), "NAME", "indicator", new_var(), update_ui$textvar)
+                  popup = map_popup_data(data_plot(), "NAME", "indicator", new_var(), update_ui$textvar),
+                  popupOptions = popupOptions(keepInView = T, autoPan = F
+                                              #autoPanPadding = c(100, 100)
+                                              #offset = c(100,0)
+                                              )
+
                   )
      map =  addSearchFeatures(map, targetGroups  = "polygonsmap",
                      options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                      moveToLocation = FALSE)
                       )
-      do.call(what = "addLegend", args = c(list(map = map), leg_par))
+      do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = cont_map_spec(cont, "legend"))))
       #%>% #%>%
     #addLayersControl(
     #   baseGroups = c( "polygonsmap,
@@ -241,7 +255,7 @@ update_radio<- function(var, growthvar = 3){
                        choices = mapvar, selected = mapvar["Today"])
     caption <- "Prevalence: confirmed cases over 1 M people."
     graph_title = "Prevalence of contagion over 1M"
-    textvar = c("confirmed","population")
+    textvar = c("confirmed","new_confirmed","population")
   } else if (grepl("death", var) || grepl("mortality", var)) {
     mapvar = c("Lethality Rate", "Mortality Rate")
     mapvar = varsNames()[mapvar]
@@ -329,7 +343,9 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
     } else
       col = c("<strong>")
 
-    paste0(col, nam,":"," </strong>",
+    paste0(
+      #"<style> div.leaflet-popup-content {width:auto !important;}</style>",
+           col, nam,":"," </strong>",
            txt,
            "<br>")
   }
@@ -378,7 +394,7 @@ legend_fun <- function(x, var){
                          suffix = suf, digit = getdg_lab(dg, maxv))
     }  else { # high values, like total
 
-      # TODO> simplifz using domain()
+      # TODO> simplify using domain()
       bound = max(log(round_up(-min(x))),log(round_up(maxv)))
       startbin = ifelse(any(x<0), -bound, 0)
       bin = seq(startbin, log(round_up(maxv)),
@@ -407,7 +423,7 @@ legend_fun <- function(x, var){
       labFormat = form)
 
   }
-  res$position = "bottomright"
+  #res$position = "bottomright"
   res$opacity = 1
   res$pal = pal_fun(var, x)
   res
@@ -423,7 +439,7 @@ domainlog_neg <- function(x) {
 }
 
 domainlin <- function(x) {
-  c(round_up(min(x)),round_up(max(x)))
+  c(floor(min(x)),round_up(max(x)))
 }
 domainlin_neg <- function(x) {
   bound = max(round_up(-min(x)),round_up(max(x)))

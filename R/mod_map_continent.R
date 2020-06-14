@@ -12,13 +12,21 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_cont_ui <- function(id){
   ns <- NS(id)
-  # choices_map <- c(names(case_colors), "new_confirmed", "new_active") %>%
-  #   setNames(gsub("_", " ",c(names(case_colors), "new_confirmed", "new_active"))) %>% as.list()
+  #fillPage(fillRow(
   div(
-    style = "position: relative;",
-    # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    withSpinner(leafletOutput(ns("map_cont"), width = "100%", height = "500")),
+    #style = "position: relative;",
+    #tags$style(type = "text/css", ".child {position: absolute; top: 0; left: 0; width: 100%; height: 100%:}"),
+    #tags$style(type = "text/css", "#map {width: calc(100vh - 80px) !important;}"),
+    # tags$style(type = "text/css", ".child {position:relative;width:100%;height:auto}
+    #               .parent {position:relative;width:100%;height:500}"),
 
+    #style = "zoom: 0.8;", "html, body {width:100%;height:100%}
+
+    # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
+    #withSpinner(leafletOutput(ns("map_cont"), width = "50vw", height = "500")) # the legend does not position correctly
+    withSpinner(leafletOutput(ns("map_cont"), width = "100%",  height = "500")
+                              )
+#))
   )
 }
 
@@ -99,14 +107,22 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
     map = leaflet(
       data = data_plot(),
       options = leafletOptions(zoomControl = FALSE,
-                               minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"), dragging = FALSE,
+                               minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"),
+                               dragging = FALSE, # no need
+                               centerFixed = TRUE,
                                maxBounds = list(
                                  c(cont_map_spec(cont, "lat")[1], cont_map_spec(cont, "lat")[2]),
                                  c(cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4])
                                ),
-                               browser.defaultWidth = "80%",
+                               #browser.defaultWidth = "80%",
                                viewer.suppress = TRUE, knitr.figure = FALSE
-      ))  %>%
+       ))%>%
+      setView(lng = mean(cont_map_spec(cont, "lat")[c(1,3)]), lat = mean(cont_map_spec(cont, "lat")[c(2,4)]),
+              zoom = cont_map_spec(cont, "zoom")) %>%
+      fitBounds(
+        cont_map_spec(cont, "lat")[1], cont_map_spec(cont, "lat")[2],
+        cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4]
+      )%>%
       addPolygons(layerId = ~NAME,
                   #fillColor = pal2(data_plot()$indicator),
                   fillColor = pal_fun(as.factor(data_plot()[["indicator"]]),
@@ -116,7 +132,12 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                   group = "polygonsmap",
                   label = ~NAME,
                   weight = 1,
-                  popup = country_popup()) #%>% # here boundaries get reset, fitBounds needed
+                  popup = country_popup(),
+                  popupOptions = popupOptions(keepInView = T, autoPan = F
+                                              #autoPanPadding = c(100, 100)
+                                              #offset = c(100,0)
+                    )
+                  ) #%>% # here boundaries get reset, fitBounds needed
             # addTiles(
             #     ) %>%
                   #popup = pops) %>% # here boundaries get reset, fitBounds needed
@@ -124,7 +145,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                                options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                moveToLocation = FALSE)
       )
-      addLegend(map, position = "topright",
+      map = addLegend(map, position = cont_map_spec(cont, "legend"),
                 #group = "legendmap",
 
                 colors = pal_fun(as.factor(unique(data_plot()[["indicator"]])),
@@ -132,6 +153,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                 opacity = 1,
                 labels = as.factor(unique(data_plot()[["indicator"]])),
                 title = cont)#%>% #%>%
+      map
     #addLayersControl(
                 #   baseGroups = c( "polygonsmap"),
                 #   overlayGroups = c("tilesmap")
@@ -142,24 +164,33 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 }
 cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
 
-  lat = list("Europe" = c(32, 23, 72, 26) ,#lng1 lat1,lng2,lat2
-                       "Africa" = c(-40, 23, 40, 26),
-                       "Asia" = c(13, 72, 34, 123),
-                       "Oceania" = c(-45, 110, 5, 170),
-                       "LatAm & Carib." =  c(-65, -80, 50, -55),
-                        "Northern America" = c(20, -114, 85, -29)
+  lat = list(
+          #"Europe" = c(32, 23, 72, 26) ,#lng1 lat1,lng2,lat2
+          "Europe" = c(32, 3, 72, 38) ,#lng1 lat1,lng2,lat2
+           "Africa" = c(-45, 23, 40, 26),
+           "Asia" = c(13, 58, 34, 118),
+           "Oceania" = c(-48, 110, 8, 174),
+           "LatAm & Carib." =  c(-63, -80, 55, -55),
+            "Northern America" = c(20, -133, 85, -15)
   )
   col = list("Europe" = "Blues", "Asia" = "Reds",
                           "Africa" = "RdYlBu", "Northern America" = "RdBu",
                           "LatAm & Carib." = "GnBu", "Oceania" = "Oranges")
-  zoom = list("Europe" = 3.4,
+  zoom = list("Europe" = 3.1,
                 "Africa" = 3,
-                "Asia" = 2.9,
-                "Oceania" = 3.4,
+                "Asia" = 2.6,
+                "Oceania" = 3.3,
                 "LatAm & Carib." = 2.6,
-                "Northern America" = 2.3
+                "Northern America" = 2.2
               )
-  spec = list(lat = lat, col = col, zoom = zoom)
+  legend =  list("Europe" = "bottomright",
+                 "Africa" = "bottomleft",
+                 "Asia" = "bottomleft",
+                 "Oceania" = "bottomleft",
+                 "LatAm & Carib." = "bottomleft",
+                 "Northern America" = "topright"
+  )
+  spec = list(lat = lat, col = col, zoom = zoom, legend = legend)
   spec[[feat]][[cont]]
 
 }
