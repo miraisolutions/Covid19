@@ -12,21 +12,18 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_cont_ui <- function(id){
   ns <- NS(id)
-  #fillPage(fillRow(
   div(
     #style = "position: relative;",
     #tags$style(type = "text/css", ".child {position: absolute; top: 0; left: 0; width: 100%; height: 100%:}"),
     #tags$style(type = "text/css", "#map {width: calc(100vh - 80px) !important;}"),
     # tags$style(type = "text/css", ".child {position:relative;width:100%;height:auto}
     #               .parent {position:relative;width:100%;height:500}"),
-
     #style = "zoom: 0.8;", "html, body {width:100%;height:100%}
 
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     #withSpinner(leafletOutput(ns("map_cont"), width = "50vw", height = "500")) # the legend does not position correctly
     withSpinner(leafletOutput(ns("map_cont"), width = "100%",  height = "500")
                               )
-#))
   )
 }
 
@@ -167,11 +164,11 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
   lat = list(
           #"Europe" = c(32, 23, 72, 26) ,#lng1 lat1,lng2,lat2
           "Europe" = c(32, 3, 72, 38) ,#lng1 lat1,lng2,lat2
-           "Africa" = c(-45, 23, 40, 26),
+           "Africa" = c(-45, 14, 40, 34),
            "Asia" = c(13, 58, 34, 118),
            "Oceania" = c(-48, 110, 8, 174),
-           "LatAm & Carib." =  c(-63, -80, 55, -55),
-            "Northern America" = c(20, -133, 85, -15)
+           "LatAm & Carib." =  c(-62, -80, 58, -55),
+            "Northern America" = c(20, -145, 85, -45)
   )
   col = list("Europe" = "Blues", "Asia" = "Reds",
                           "Africa" = "RdYlBu", "Northern America" = "RdBu",
