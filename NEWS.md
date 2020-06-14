@@ -1,6 +1,9 @@
 ### Covid19 1.1.2.9000 (development branch)
-- correct plot title in country page (#91)
-- Added continent split pages (#91)
+- correct plot title in country page (#94)
+- Added continent split pages (#92)
+-- added search box to global map
+-- Merged Reunion Martinique French Guiana with France
+-- replaced population data with UN dataset with 2020Q2 estimate
 
 ### Covid19 1.1.7 (2020-05-28)
 
