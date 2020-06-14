@@ -45,7 +45,6 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 
   # Data ----
 
-  # TODO could be replaced with other data and would be faster, change argument
   data_clean <- reactive({
     data <-
       orig_data_aggregate() %>%
@@ -121,7 +120,6 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
         cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4]
       )%>%
       addPolygons(layerId = ~NAME,
-                  #fillColor = pal2(data_plot()$indicator),
                   fillColor = pal_fun(as.factor(data_plot()[["indicator"]]),
                                       cont_map_spec(cont, "col"))(as.factor(data_plot()[["indicator"]])),
                   fillOpacity = 1,
@@ -134,12 +132,11 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                                               #autoPanPadding = c(100, 100)
                                               #offset = c(100,0)
                     )
-                  ) #%>% # here boundaries get reset, fitBounds needed
-            # addTiles(
-            #     ) %>%
-                  #popup = pops) %>% # here boundaries get reset, fitBounds needed
+                  ) #%>%
+
       map =  addSearchFeatures(map, targetGroups  = "polygonsmap",
                                options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
+                                                               hideMarkerOnCollapse = T,
                                                                moveToLocation = FALSE)
       )
       map = addLegend(map, position = cont_map_spec(cont, "legend"),
@@ -151,11 +148,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                 labels = as.factor(unique(data_plot()[["indicator"]])),
                 title = cont)#%>% #%>%
       map
-    #addLayersControl(
-                #   baseGroups = c( "polygonsmap"),
-                #   overlayGroups = c("tilesmap")
-                # )
-        #leaflet.extras::addFullscreenControl(pseudoFullscreen = T)
+
    })
 
 }
@@ -167,7 +160,7 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
            "Africa" = c(-45, 14, 40, 34),
            "Asia" = c(13, 58, 34, 118),
            "Oceania" = c(-48, 110, 8, 174),
-           "LatAm & Carib." =  c(-62, -80, 58, -55),
+           "LatAm & Carib." =  c(-62, -80, 60, -55),
             "Northern America" = c(20, -145, 85, -45)
   )
   col = list("Europe" = "Blues", "Asia" = "Reds",

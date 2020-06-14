@@ -116,8 +116,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
   # update variable name
 
   new_var_calc = function(var, but) {
-    # if (!is.null(but) && !is.na(names(but$radio))) {
-    #   newvar = ifelse(var == but$radio[[1]], var, but$radio[[1]])
      if (!is.null(but) && !is.na(but$radio)) {
       newvar = ifelse(var == but$radio, var, but$radio)
     } else if (grepl("(growth)*prev",var)){
@@ -206,20 +204,19 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
                   )
      map =  addSearchFeatures(map, targetGroups  = "polygonsmap",
                      options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
+                                                     hideMarkerOnCollapse = T,
                                                      moveToLocation = FALSE)
                       )
       do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = cont_map_spec(cont, "legend"))))
-      #%>% #%>%
-    #addLayersControl(
-    #   baseGroups = c( "polygonsmap,
-    #   overlayGroups = c("tilesmap")
-    # )
-    #leaflet.extras::addFullscreenControl(pseudoFullscreen = T)
+
   })
 
 
 }
-
+#' List of variable names to be used for map
+#' @param vars variable name to be selected, if empty tehn all are returned
+#' @details The name of the list component correspond to the variable label
+#' @return list All variables, if vars is missing, or one variable.
 varsNames = function(vars) {
   allvars = c(names(case_colors), paste("new", names(case_colors), sep = "_"),
               paste("growth_factor", c(3,5,7), sep = "_"),
@@ -236,15 +233,25 @@ varsNames = function(vars) {
     res = allvars
   res
 }
+#' Updates UI radiobuttons depending to variable va
+#' @param var variable name
+#' @param growthvar integer, 3 5 7 depending on choice
 
+#' @return list list(new_buttons = new_buttons, graph_title = graph_title, caption = caption, textvar= textvar)
+#' new_buttons: UI radiobuttons
+#' graph_title: graph title
+#' caption: vaption
+#' textvar: variables to add in popup
 update_radio<- function(var, growthvar = 3){
 
   graph_title = var
   textvar = NULL
   if (grepl("(growth)*fact",var)) { # growth factor
     new_buttons = list(name = "radio",
-                       choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames("growth_factor_3"))
-    caption <- paste0("growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+                       choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
+    #caption <- paste0("growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+    caption <- paste0("growth factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+
     graph_title = "Growth factor as of Today"
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
@@ -310,7 +317,13 @@ update_var <- function(var, data, input){
   list(new_var = new_var)
 
 }
-
+#' Utility for popup message in map
+#' @param data map data
+#' @param nam character: component of country names from data, NAME
+#' @param ind character: component of values from data, indicator
+#' @param namvar character: vector, additional variable names
+#' @param textvar character: vector, textt for the additional variables
+#' @return vector pop up messages, html
 map_popup_data <- function(data, nam, ind, namvar, textvar){
   x = data[[ind]]
   NAME = data[[nam]]
@@ -366,7 +379,10 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
   }
   text
 }
-
+#' Utility legend building
+#' @param x numeric vector of map data
+#' @param var character: variable name
+#' @return list legend parameters
 legend_fun <- function(x, var){
   if (is.numeric(x)) { # if variable is numeric
     maxv = max(x)
@@ -452,6 +468,9 @@ domainfact <- function(x) {
 domainrate <- function(x) {
   c(floor(min(x)*100),round_up(max(x)*100))
 }
+#' Utility to choose domain for legend
+#' @param x numeric vector of map data
+#' @return numeric vector of range
 choose_domain <- function(x) {
   if (is.numeric(x)) {
     maxy = max(x)
@@ -474,7 +493,10 @@ choose_domain <- function(x) {
     domain = domainfact
   domain
 }
-
+#' Utility derive palette given data
+#' @param x numeric vector of map data
+#' @param var character: variable name
+#' @return palette
 pal_fun = function(var,x){
   domain = choose_domain(x)
 
@@ -498,7 +520,9 @@ pal_fun = function(var,x){
   else
     stop("non existing color palette for ", var)
 }
-
+#' Utility calculate colors given palette
+#' @param x numeric vector of map data
+#' @return rescaled x
 pal_fun_calc <- function(x){
   if (is.numeric(x)){
     maxv = max(x)
@@ -519,6 +543,9 @@ pal_fun_calc <- function(x){
     y = x
   y
 }
+#' Utility round labels in domain and map
+#' @param x numeric vector of map data
+#' @return numeric rounded x value
 roundlab = function(y) {
   maxy = max(y)
   dg = nchar(as.character(round(maxy)))

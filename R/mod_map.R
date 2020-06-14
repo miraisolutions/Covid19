@@ -40,7 +40,7 @@ mod_map_ui <- function(id){
 #' @import dplyr
 #' @import tidyr
 #' @import leaflet
-#'
+#' @import leaflet.extras
 #' @noRd
 mod_map_server <- function(input, output, session, orig_data_aggregate, countries_data_map){
   ns <- session$ns
@@ -148,13 +148,21 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # # update map with reactive part
   observeEvent(data_plot(),{
-    leafletProxy("map", data = data_plot())  %>%
+    mapdata = leafletProxy("map", data = data_plot())  %>%
       addPolygons(layerId = ~NAME,
                   fillColor = pal2()(log(data_plot()$indicator)),
                   fillOpacity = 1,
                   color = "#BDBDC3",
+                  group = "mapdata",
+                  label = ~NAME,
                   weight = 1,
                   popup = country_popup())
+    mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
+                             options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
+                                                             position = "topright",hideMarkerOnCollapse = T,
+                                                             moveToLocation = FALSE))
+    mapdata
+
   })
 
   observeEvent(data_plot(),{
