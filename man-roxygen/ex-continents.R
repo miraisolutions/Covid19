@@ -46,7 +46,7 @@ if (interactive()) {
     #     select(Country.Region) %>%
     #     distinct()
     # })
-    callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, n = n, w = w, pop_data)
+    callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
