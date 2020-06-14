@@ -348,8 +348,9 @@ get_pop_data <- function(){
     )
   population$population = as.numeric(population$population )
   population$PopulationUN = as.numeric(population$PopulationUN )
-
-  #population$population = population$PopulationUN # hwere when we need to change population with new data
+  #population$diff = (population$population - population$PopulationUN)/ population$Population *100
+  population$population = population$PopulationUN # hwere when we need to change population with new data
+  # the old population seems wrong for few countries
   population = population[, c("Country.Region", "continent", "subcontinent","population")]
 
   population
