@@ -13,13 +13,18 @@
 mod_map_cont_calc_ui <- function(id){
   ns <- NS(id)
   tagList(
+    #div(tags$style(HTML(".leaflet ,legend {font-size: 10px; line-height: 15px;}")),
+    #tags$style(type = "text/css", " .leaflet ,legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
+    tags$style(type = "text/css", " .leaflet .legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
+    #tags$style(type = "text/css", " .leaflet .legend {background-color: 'white';font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
+
     uiOutput(ns("title_map")),
     uiOutput(ns("controls")), # radio buttons to be updated in server
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     withSpinner(leafletOutput(ns("map_cont_calc"), width = "100%", height = "500")),
     div(uiOutput(ns("caption")), align = "center")
-
-  )
+)
+ # )
 }
 
 #' map calc Server Function
@@ -169,7 +174,7 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
     map = leaflet(
       data = data_plot(),
       options = leafletOptions(zoomControl = FALSE,
-                               minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"),
+                               minZoom = cont_map_spec(cont, "zoom")*0.95, maxZoom = cont_map_spec(cont, "zoom")*1.05,
                                dragging = TRUE,
                                centerFixed = TRUE,
                                maxBounds = list(
@@ -440,6 +445,7 @@ legend_fun <- function(x, var){
 
   }
   #res$position = "bottomright"
+  #res$className= "panel-panel-default legend"
   res$opacity = 1
   res$pal = pal_fun(var, x)
   res

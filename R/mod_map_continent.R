@@ -13,12 +13,13 @@
 mod_map_cont_ui <- function(id){
   ns <- NS(id)
   div(
-    #style = "position: relative;",
-    #tags$style(type = "text/css", ".child {position: absolute; top: 0; left: 0; width: 100%; height: 100%:}"),
+    #style = "position: absolute;",
+    #tags$style(type = "text/css", "font: 'Arial'"),
     #tags$style(type = "text/css", "#map {width: calc(100vh - 80px) !important;}"),
     # tags$style(type = "text/css", ".child {position:relative;width:100%;height:auto}
     #               .parent {position:relative;width:100%;height:500}"),
     #style = "zoom: 0.8;", "html, body {width:100%;height:100%}
+    tags$style(type = "text/css", " .leaflet .legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
 
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     #withSpinner(leafletOutput(ns("map_cont"), width = "50vw", height = "500")) # the legend does not position correctly
@@ -103,7 +104,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
     map = leaflet(
       data = data_plot(),
       options = leafletOptions(zoomControl = FALSE,
-                               minZoom = cont_map_spec(cont, "zoom"), maxZoom = cont_map_spec(cont, "zoom"),
+                               minZoom = cont_map_spec(cont, "zoom")*0.95, maxZoom = cont_map_spec(cont, "zoom")*1.05,
                                dragging = FALSE, # no need
                                centerFixed = TRUE,
                                maxBounds = list(
@@ -156,24 +157,24 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
 
   lat = list(
           #"Europe" = c(32, 23, 72, 26) ,#lng1 lat1,lng2,lat2
-          "Europe" = c(32, 3, 72, 38) ,#lng1 lat1,lng2,lat2
-           "Africa" = c(-45, 14, 40, 34),
-           "Asia" = c(13, 58, 34, 118),
-           "Oceania" = c(-48, 110, 8, 174),
-           "LatAm & Carib." =  c(-62, -80, 60, -55),
-            "Northern America" = c(20, -145, 85, -45)
+          "Europe" = c(32, -5, 72, 40) ,#lng1 lat1,lng2,lat2
+           "Africa" = c(-45, 0, 40, 36),
+           "Asia" = c(0, 52, 47, 120),
+           "Oceania" = c(-48, 110, 8, 180),
+           "LatAm & Carib." =  c(-62, -80, 64, -55),
+            "Northern America" = c(22, -147, 82, -39)
   )
   col = list("Europe" = "Blues", "Asia" = "Reds",
                           "Africa" = "RdYlBu", "Northern America" = "RdBu",
                           "LatAm & Carib." = "GnBu", "Oceania" = "Oranges")
-  zoom = list("Europe" = 3.1,
-                "Africa" = 3,
-                "Asia" = 2.6,
-                "Oceania" = 3.3,
+  zoom = list("Europe" = 3,
+                "Africa" = 2.9,
+                "Asia" = 2.5,
+                "Oceania" = 3.15,
                 "LatAm & Carib." = 2.6,
-                "Northern America" = 2.2
+                "Northern America" = 2.15
               )
-  legend =  list("Europe" = "bottomright",
+  legend =  list("Europe" = "topright",
                  "Africa" = "bottomleft",
                  "Asia" = "bottomleft",
                  "Oceania" = "bottomleft",
