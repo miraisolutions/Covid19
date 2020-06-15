@@ -4,6 +4,7 @@
 -- added search box to global map
 -- Merged Reunion Martinique French Guiana with France
 -- replaced population data with UN dataset with 2020Q2 estimate
+-- resized some texts in graphs
 
 ### Covid19 1.1.7 (2020-05-28)
 
