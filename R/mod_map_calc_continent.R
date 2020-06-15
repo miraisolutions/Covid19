@@ -550,7 +550,7 @@ pal_fun_calc <- function(x){
   y
 }
 #' Utility round labels in domain and map
-#' @param x numeric vector of map data
+#' @param y numeric vector of map data
 #' @return numeric rounded x value
 roundlab = function(y) {
   maxy = max(y)

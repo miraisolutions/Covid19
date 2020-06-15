@@ -7,7 +7,7 @@
 roundlab(y)
 }
 \arguments{
-\item{x}{numeric vector of map data}
+\item{y}{numeric vector of map data}
 }
 \value{
 numeric rounded x value
