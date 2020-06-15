@@ -1,4 +1,4 @@
-### Covid19 1.1.2.9000 (development branch)
+### Covid19 1.2.1 (2020-06-15)
 - correct plot title in country page (#94)
 - Added continent split pages (#92)
   + added search box to global map
