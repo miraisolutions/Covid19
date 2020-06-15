@@ -128,8 +128,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p <- plot_rate_hist(df_base_plot1(), color =  "growth_factor", y_min = 1)
     p <- p %>%
       plotly::ggplotly() %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
-                                   xaxis = list(tickfont = list(size = 14)))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
+                      #             xaxis = list(tickfont = list(size = 10))
+                     )
     p
   })
 
@@ -139,8 +140,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = is_percent())
     p <- p %>%
       plotly::ggplotly() %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
-                     xaxis = list(tickfont = list(size = 14)))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
+                     #xaxis = list(tickfont = list(size = 10))
+                     )
     p
   })
 

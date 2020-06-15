@@ -39,15 +39,16 @@ capitalize_names_df <- function(df) {
 basic_plot_theme <- function() {
   theme(
     plot.title = element_text(color = "grey45", size = 18, face = "bold.italic", hjust = 0.5),
-    text = element_text(size = 16),
+    text = element_text(size = 13),
     panel.background = element_blank(),
     axis.line.x = element_line(color = "grey45", size = 0.5),
     axis.line.y = element_line(color = "grey45", size = 0.5),
-    axis.text.x = element_text(size = 14),
-    axis.text.y = element_text(size = 14),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
     legend.title =  element_blank(),
+    legend.text = element_text(size = 10),
     legend.key = element_rect(fill = alpha("white", 0.0))
   )
 }
