@@ -1,12 +1,20 @@
 if (interactive()) {
   library(shiny)
+  library(dplyr)
+  library(Covid19)
+  library(tidyr)
+  sapply(file.path("R",list.files("R")), source)
+
+  long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    tagList(
-      Covid19:::golem_add_external_resources(),
-      Covid19:::mod_growth_death_rate_ui("plot")
-    )
+    tabPanel("Continents",
+             tabsetPanel(
+               tabPanel("Summary",
+                        id = "tab_global",
+    Covid19:::mod_continent_comparison_ui("continent_comparison")
+               )))
   )
-  server <- function(input, output, session) {
+  server <- function(input, output) {
 
     orig_data <- reactive({
       get_timeseries_full_data() %>%
@@ -27,8 +35,18 @@ if (interactive()) {
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
       orig_data_aggregate
     })
+    n = 1000; w = 7
+    data_filtered <- reactive({
+      orig_data_aggregate() %>%
+        Covid19:::rescale_df_contagion(n = n, w = w)
+    })
 
-    callModule(Covid19:::mod_growth_death_rate_server, "plot", orig_data_aggregate)
+    # countries <- reactive({
+    #   data_filtered() %>%
+    #     select(Country.Region) %>%
+    #     distinct()
+    # })
+    callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

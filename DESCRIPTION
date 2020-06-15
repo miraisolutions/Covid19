@@ -32,11 +32,13 @@ Imports:
     RColorBrewer,
     grid,
     leaflet,
+    leaflet.extras,
     rgdal,
     shinycssloaders,
     sp,
     markdown,
     scales,
+    rlang,
     zoo
 Encoding: UTF-8
 LazyData: true

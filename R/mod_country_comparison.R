@@ -64,12 +64,10 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
           filter(contagion_day > 0) %>%
           arrange(desc(date))
       })
-
       countries_data <- reactive({all_countries_data() %>%
           filter(Country.Region %in% input$select_countries) %>%
           arrange(desc(date))
       })
-
 
 
       output$from_nth_case <- renderText({
@@ -123,6 +121,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
     output$scatterplot_plots <- renderUI({
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
+
     callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries)
 
     output$status_stackedbarplot <- renderUI({

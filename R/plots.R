@@ -565,7 +565,7 @@ plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
 #'
 #' @return ggplot plot
 #' @export
-scatter_plot <- function(df, med, x.min = c(0.9, 1.125), y.min = c(0.99,1.02)) {
+scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02)) {
 
   df = df %>% rename(
     growthfactor = starts_with("growth")
@@ -579,14 +579,18 @@ scatter_plot <- function(df, med, x.min = c(0.9, 1.125), y.min = c(0.99,1.02)) {
 
   xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
             max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
-  ylim = c(1*y.min[1], max(df$growthfactor, med$y)*y.min[2])
+  ylim = c(min(1, df$growthfactor,med$y)*y.min[1], max(df$growthfactor, med$y)*y.min[2])
+
   p <- ggplot(df) +
     basic_plot_theme() +
     scale_x_continuous(labels = label_number(#scale = 1/100,
                                              big.mark = ","
                                              #suffix = "K"
                                              )) +
-    scale_y_continuous(limits = c(1, NA), labels = label_number(accuracy = 0.1)) +
+    # coord_cartesian(ylim = ylim,
+    #                 xlim = xlim) +
+    scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
+                       labels = label_number(accuracy = 0.01)) +
 
     # theme(
     #   axis.text.x = element_text()

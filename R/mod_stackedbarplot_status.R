@@ -17,7 +17,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 }
 #' stackedbarplot_status Server Function
 #'
-#' @param countries_data reactive data.frame for multiple countries
+#' @param df reactive data.frame for multiple countries
 #'
 #' @import dplyr
 #' @import tidyr
@@ -31,22 +31,16 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
   if (istop) {
     output$title_stackedbarplot_status <- renderUI(div(h4(paste0("Current top ", n_highligth, " status split")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   } else {
-    output$title_stackedbarplot_status <- renderUI(div(h4("Status split by country"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
   prep_data <- function(orig_data_aggregate, n, w){
     df1 <- orig_data_aggregate %>%
-      Covid19:::select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == max(date)) %>%
-      Covid19:::align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      Covid19:::get_pop_data() %>%
-      filter(population > 10^6) %>% # dropping countries with less than 1 M pop, needed?
-      Covid19:::align_country_names_pop_reverse()
+      select_countries_n_cases_w_days(n = n, w = w) %>%
+      filter( date == max(date))
     df1
   }
   df_pop <- reactive({prep_data(df(), n,w)})
-  #df_pop = prep_data(df, n = 1000, w = 7)
 
   statuses <- c("deaths", "active", "recovered")
 
@@ -75,7 +69,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
            status = factor(status, levels = statuses)) %>%
     arrange(status)})
 
-  caption_explain <- "Status split per country as of today."
+  caption_explain <- "Status split as of today."
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(

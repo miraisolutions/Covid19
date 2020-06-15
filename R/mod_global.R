@@ -55,6 +55,7 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #' @param orig_data_aggregate reactive data.frame
+#' @param countries_data data.frame sp for mapping
 #'
 #' @import dplyr
 #' @import tidyr
@@ -64,7 +65,7 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate){
+mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate, countries_data_map){
   ns <- session$ns
 
   # Datasets ----
@@ -87,12 +88,6 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   world <- reactive({
     orig_data_aggregate_today() %>%
-      align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      get_pop_data() %>%
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3)) %>%
-      select(-country_name) %>%
-      align_country_names_pop_reverse() %>%
       arrange(desc(confirmed) )
   })
 
@@ -106,28 +101,20 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
       filter(Country.Region %in% world_top_5_today()$Country.Region) %>%
       select(Country.Region, date, confirmed)
   })
-
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", global_today)
 
   # map ----
 
-  callModule(mod_map_server, "map_ui", orig_data_aggregate)
+  callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
 
   # plots ----
-  levs <- reactive(
-    sort_type_hardcoded()
-  )
+  levs <- sort_type_hardcoded()
 
-  # > area plot global
-  df_global <- reactive({
-    global() %>%
-      select(-starts_with("new_")) %>%
-      select( -confirmed) %>%
-      pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-      mutate(status = factor(status, levels = levs())) %>%
-      capitalize_names_df()
+  df_global = reactive({
+    tsdata_areplot(global(),levs, 1000) # start from day qith |1000
   })
+
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
 

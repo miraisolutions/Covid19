@@ -4,7 +4,7 @@
 \alias{rescale_df_contagion}
 \title{Reescale contagion day for countries with at least n cases and outbreaks longer than w days}
 \usage{
-rescale_df_contagion(df, n, w)
+rescale_df_contagion(df, n, w, group = "Country.Region")
 }
 \arguments{
 \item{df}{data.frame}
@@ -12,6 +12,8 @@ rescale_df_contagion(df, n, w)
 \item{n}{number of cases}
 
 \item{w}{days of outbreak}
+
+\item{group}{character Country.Region or continent or subcontinent}
 }
 \description{
 Reescale contagion day for countries with at least n cases and outbreaks longer than w days

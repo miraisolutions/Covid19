@@ -79,18 +79,11 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
 
     # plots ----
 
-    levs <- reactive(
-      sort_type_hardcoded()
-    )
-    df_tot <- reactive({
-      country_data() %>%
-        select(-Country.Region, -contagion_day) %>%
-        select(-starts_with("new"), -confirmed, -starts_with("growth_"), -ends_with("_rate")) %>%
-        pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-        mutate(status = factor(status, levels = levs())) %>%
-        capitalize_names_df()
-    })
+    levs <- sort_type_hardcoded()
 
+    df_tot = reactive({
+      tsdata_areplot(global(),levs, 1000) # start from day qith |1000
+    })
     callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
 
 
