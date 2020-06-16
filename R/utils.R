@@ -323,10 +323,10 @@ round_up = function(maxv) {
 #'
 #' @return integer number of digit
 #'
-getdg_lab = function(dg,maxv) {
+getdg_lab = function(dg,maxv,minxv) {
   if (dg >3)
     dglab = 0
-  else if (dg == 1 && maxv <=1)
+  else if (dg == 1 && maxv <=1 && minxv>=0)
     dglab = 1 # rates are in 100
   else if (dg >0)
     dglab = dg - (c(-2,0,2))[dg]
