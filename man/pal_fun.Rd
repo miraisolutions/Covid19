@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_map_calc_continent.R
 \name{pal_fun}
 \alias{pal_fun}
-\title{Utility derive palette given data}
+\title{Utility derive palette given datadisplay.brewer.all()}
 \usage{
 pal_fun(var, x)
 }
@@ -15,5 +15,5 @@ pal_fun(var, x)
 palette
 }
 \description{
-Utility derive palette given data
+Utility derive palette given datadisplay.brewer.all()
 }

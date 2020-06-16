@@ -4,12 +4,14 @@
 \alias{getdg_lab}
 \title{Derives number of digits for rounding}
 \usage{
-getdg_lab(dg, maxv)
+getdg_lab(dg, maxv, minxv)
 }
 \arguments{
 \item{dg}{integer number of characters of figure, say 1000 = 4}
 
 \item{maxv}{numeric max value}
+
+\item{minxv}{numeric min value}
 }
 \value{
 integer number of digit

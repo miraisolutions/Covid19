@@ -320,13 +320,14 @@ round_up = function(maxv) {
 #' Derives number of digits for rounding
 #' @param dg integer number of characters of figure, say 1000 = 4
 #' @param maxv numeric max value
+#' @param minxv numeric min value
 #'
 #' @return integer number of digit
 #'
-getdg_lab = function(dg,maxv) {
+getdg_lab = function(dg,maxv,minxv) {
   if (dg >3)
     dglab = 0
-  else if (dg == 1 && maxv <=1)
+  else if (dg == 1 && maxv <=1 && minxv>=0)
     dglab = 1 # rates are in 100
   else if (dg >0)
     dglab = dg - (c(-2,0,2))[dg]

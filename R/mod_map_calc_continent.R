@@ -192,6 +192,7 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
       setView(lng = mean(cont_map_spec(cont, "lat")[c(1,3)]), lat = mean(cont_map_spec(cont, "lat")[c(2,4)]),
               zoom = cont_map_spec(cont, "zoom"))
     leg_par <- legend_fun(data_plot()$indicator, new_var())
+
     map = map %>%
       addPolygons(layerId = ~NAME,
                   fillColor = pal_fun(new_var(), data_plot()$indicator)(pal_fun_calc(data_plot()$indicator)),
@@ -232,8 +233,12 @@ varsNames = function(vars) {
   names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
   allvars = as.list(allvars)
 
-  if (!missing(vars))
-    res = allvars[unlist(allvars) %in% vars]
+  if (!missing(vars)){
+    varnames = unlist(allvars)
+    if (!all(vars %in% varnames))
+      stop(paste(setdiff(vars, varnames), "invalid variable"))
+    res = allvars[match(vars, varnames)]
+  }
   else
     res = allvars
   res
@@ -258,6 +263,7 @@ update_radio<- function(var, growthvar = 3){
     caption <- paste0("growth factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
     graph_title = "Growth factor as of Today"
+    textvar = c("new_confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
@@ -294,9 +300,20 @@ update_radio<- function(var, growthvar = 3){
     names(mapvar) = c("Total Active", "New Active Today")
     new_buttons = list(name = "radio",
                        choices = mapvar, selected = mapvar["New Active Today"])
-    caption <- "Active cases today"
-    graph_title = "Active cases today"
+    caption <- "Active values can be biased by non reported recovered cases"
+    caption_color <- "Yellow scale to represent negative active."
+    caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
+    graph_title = "Active cases today"
+    textvar = c("growth_factor_3", "confirmed")
+  } else if (grepl("confirmed", var)) {
+    mapvar = grep("confirmed", varsNames(), value = T)
+    names(mapvar) = c("Total Confirmed", "New Confirmed Today")
+    new_buttons = list(name = "radio",
+                       choices = mapvar, selected = mapvar["New Confirmed Today"])
+    caption <- "New and Total Confirmed cases today"
+    graph_title = "Confirmed cases today"
+    textvar = c("growth_factor_3", "active")
   } else {
     new_buttons = NULL
     caption = NULL
@@ -339,45 +356,56 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
                     NAME = names(varsNames(textvar)))
   }
 
-  gen_text = function(x) {
+  .gen_text = function(x) {
     if (is.numeric(x)) {
       maxy = max(x)
-      dg = nchar(as.character(round(maxy)))
-      if(dg==1 && maxy<=1) {
+      minxy = min(x)
+      dg = nchar(as.character(round(max(abs(minxy),maxy))))
+      if(dg==1 && maxy<=1 && minxy>=0) {
         text.pop = paste0(roundlab(x*100),"%")
       } else {
-        #text.pop = roundlab(x)
-        text.pop = formatC(x, format = "f", big.mark = ",", digits  = getdg_lab(dg, maxy))
+        text.pop = formatC(x, format = "f", big.mark = "'", digits  = getdg_lab(dg, maxy, minxy))
       }
     } else
       text.pop = x
     text.pop
   }
 
-  text.pop.x = gen_text(x)
-  paste_text = function(nam, txt, col = NULL) {
-    if (!is.null(col)){
-      col = c(paste0("<strong style='color:", col,";'>"))
-    } else
-      col = c("<strong>")
+  text.pop.x = .gen_text(x)
+  .paste_text = function(nam, txt, col = NULL) {
 
+    if (!is.null(col)){
+      coltext = c(paste0("<style='color:", col,";'>"))
+    } else
+      coltext = NULL
+    .pastecol = function(char = NULL,ptxt){
+      if (!is.null(char)) {
+        if (!is.null(ptxt))
+          char = gsub(">"," ",char)
+        ptxt = gsub("<","",ptxt)
+      } #else
+        #ptext = paste0(ptxt, "</style>")
+      paste0(char, ptxt)
+    }
     paste0(
       #"<style> div.leaflet-popup-content {width:auto !important;}</style>",
-           col, nam,":"," </strong>",
-           txt,
-           "<br>")
-  }
-  name_text = paste_text("Country", NAME)
-  val_text = paste_text(varName, text.pop.x, "darkblue")
+      .pastecol(char = "<strong>",ptxt = coltext ), nam,":",
+      " </strong>",
+      .pastecol(ptxt = coltext ),txt, ifelse(is.null(col), "", "</style>"),
+      "<br>")
 
+  }
+
+  name_text = .paste_text("Country", NAME, case_colors["confirmed"])
+  val_text = .paste_text(varName, text.pop.x, "darkblue")
 
   text = paste0(name_text, val_text)
 
   if (!is.null(textvars)) {
-    values.pop.vars = lapply(textvars$data,gen_text )
+    values.pop.vars = lapply(textvars$data,.gen_text )
     names(values.pop.vars) = textvars$NAME
     tex.pop.vars =  lapply(names(values.pop.vars), function(nn)
-      paste_text(nn, values.pop.vars[[nn]] ))
+      .paste_text(nn, values.pop.vars[[nn]] ))
     # add text
     tex.pop.vars = c(list(text), tex.pop.vars)
     text = Reduce(paste0, tex.pop.vars)
@@ -391,11 +419,12 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
 legend_fun <- function(x, var){
   if (is.numeric(x)) { # if variable is numeric
     maxv = max(x)
-    dg = nchar(as.character(round(maxv)))
-    logmax = log(maxv)
+    minxv = min(x)
+    dg = nchar(as.character(round(max(abs(minxv),maxv))))
+    #dg = nchar(as.character(round(maxv)))
+    domain = choose_domain(x)
 
     if (dg < 4){
-      domain = choose_domain(x)
       bin = domain(x)
       bin = seq(bin[1],bin[2], length = 4)
       val = seq(min(bin),max(bin), length = 5000)
@@ -403,31 +432,44 @@ legend_fun <- function(x, var){
       suf = ""
       if (grepl("1M", var))
         suf = " over 1M"
-      if (dg==1 && maxv<=1)
+      if (dg==1 && maxv<=1 && minxv >= 0)
         suf = " %"
       transf = function(x,dg){
-        if (dg==1 && maxv<=1)
+        if (dg==1 && maxv<=1 && minxv >= 0)
           x = x * 100
         x
       }
 
       form = labelFormat(transform = function(x) x,
-                         suffix = suf, digit = getdg_lab(dg, maxv))
+                         suffix = suf, digit = getdg_lab(dg, maxv, minxv))
     }  else { # high values, like total
 
       # TODO> simplify using domain()
-      bound = max(log(round_up(-min(x))),log(round_up(maxv)))
-      startbin = ifelse(any(x<0), -bound, 0)
-      bin = seq(startbin, log(round_up(maxv)),
-                length = 5)
+      bin = domain(x)
+      bin = seq(bin[1],bin[2], length = 5)
+      if (F & any(x<0)) {
+        #add 0, not possible
+        bin = sort(c(bin, 0))
+      }
+
       if(any(x<0))
-        val = log(seq(1, exp(max(bin*2)), lenth = 10000)) -bound
+        val = c(-log(1:exp(-min(bin))),log(1:exp(max(bin))))
       else
         val = log(1:exp(max(bin)))
 
       dat = val
       suf = ifelse(grepl("1M", var)," over 1M", " cases")
-      form = labelFormat(transform = function(x) round_up(exp(x)), suffix = suf)
+      .round_val = function(x){
+       if (any(x<0)){
+         y = rep(NA,length(x))
+         y[x<0] = -round_up(exp(-x[x<0]))
+         y[x>=0] = round_up(exp(x[x>=0]))
+         y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
+       } else
+           y = round_up(exp(x))
+         y
+      }
+      form = labelFormat(transform = function(x) .round_val(x), suffix = suf)
     }
     res =     list(
       bins = bin,
@@ -456,16 +498,21 @@ domainlog <- function(x) {
 }
 domainlog_neg <- function(x) {
   maxv = max(x)
-  bound = max(log(round_up(-min(x))),log(round_up(max(x))))
-  c(-bound,bound)
+  minv = min(x)
+  #bound = c(-log(round_up(-minv)),log(round_up(maxv)))
+  maxlimit = max(abs(x))
+  bound = c(-log(round_up(maxlimit)),log(round_up(maxlimit)))
+  bound
 }
 
 domainlin <- function(x) {
   c(floor(min(x)),round_up(max(x)))
 }
 domainlin_neg <- function(x) {
-  bound = max(round_up(-min(x)),round_up(max(x)))
-  c(-bound,bound)
+  maxlimit = max(abs(x))
+  c(-round_up(maxlimit),round_up(maxlimit))
+  #bound = c(-round_up(-min(x)),round_up(max(x)))
+  #bound
 }
 domainfact <- function(x) {
   #x = data_plot()$indicator
@@ -480,9 +527,11 @@ domainrate <- function(x) {
 choose_domain <- function(x) {
   if (is.numeric(x)) {
     maxy = max(x)
-    dg = nchar(as.character(round(maxy)))
+    minxy = min(x)
+    dg = nchar(as.character(round(max(abs(minxy),maxy))))
+    #dg = nchar(as.character(round(maxy)))
 
-    if (dg == 1 && maxy <=1){ # if rate
+    if (dg == 1 && maxy <=1 && minxy >= 0){ # if rate
       domain = domainrate
     } else if (dg <4) {
       if (any(x<0))
@@ -499,7 +548,8 @@ choose_domain <- function(x) {
     domain = domainfact
   domain
 }
-#' Utility derive palette given data
+#' Utility derive palette given datadisplay.brewer.all()
+
 #' @param x numeric vector of map data
 #' @param var character: variable name
 #' @return palette
@@ -512,8 +562,12 @@ pal_fun = function(var,x){
     colorNumeric(palette = "Greys", domain = domain(x), na.color = "white")
   } else if (grepl("active", var)) {
     if (grepl("new", var)) {
-      colorNumeric(palette = "PuOr", domain = domain(x), na.color = "grey")
-    } else
+      #colorNumeric(palette = "RdBu", domain = domain(x), na.color = "grey")
+      #colorNumeric(palette = colorRamp(colorRamps::blue2green(length(x)), interpolate = "linear" ), domain = domain(x), na.color = "grey", reverse = TRUE)
+      colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
+                   domain = domain(x), na.color = "grey")
+
+      } else
       colorNumeric(palette = "Blues", domain = domain(x), na.color = "grey")
 
   }  else if (grepl("recovered", var)) {
@@ -531,16 +585,24 @@ pal_fun = function(var,x){
 #' @return rescaled x
 pal_fun_calc <- function(x){
   if (is.numeric(x)){
+    # maxv = max(x)
+    # dg = nchar(as.character(round(maxv)))
     maxv = max(x)
-    dg = nchar(as.character(round(maxv)))
-    if (dg == 1 && maxv<=1) {
+    minxv = min(x)
+    dg = nchar(as.character(round(max(abs(minxv),maxv))))
+
+    if (dg == 1 && maxv<=1 && minxv>=0) {
       y = x *100 # rate
     } else if (dg <4) {
       # linear scale
       y = x
     } else {
       if (any(x<0)){
-        y = log(x-min(x)+1) - log(-min(x))
+        y = rep(NA,length(x))
+        y[x<0] = -log(-x[x<0])
+        y[x>=0] = log(x[x>=0])
+        y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
+        #y = log(x-min(x)+1) - log(-min(x))
       }
       else
         y = log(x)
@@ -553,8 +615,13 @@ pal_fun_calc <- function(x){
 #' @param y numeric vector of map data
 #' @return numeric rounded x value
 roundlab = function(y) {
+  # maxy = max(y)
+  # dg = nchar(as.character(round(maxy)))
+  #
   maxy = max(y)
-  dg = nchar(as.character(round(maxy)))
-  dglab = getdg_lab(dg, maxy)
+  minxy = min(y)
+  dg = nchar(as.character(round(max(abs(minxy),maxy))))
+
+  dglab = getdg_lab(dg, maxy, minxy)
   round(y, dglab)
 }
