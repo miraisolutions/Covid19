@@ -320,7 +320,7 @@ round_up = function(maxv) {
 #' Derives number of digits for rounding
 #' @param dg integer number of characters of figure, say 1000 = 4
 #' @param maxv numeric max value
-#' @param minv numeric min value
+#' @param minxv numeric min value
 #'
 #' @return integer number of digit
 #'

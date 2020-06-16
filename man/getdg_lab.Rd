@@ -11,7 +11,7 @@ getdg_lab(dg, maxv, minxv)
 
 \item{maxv}{numeric max value}
 
-\item{minv}{numeric min value}
+\item{minxv}{numeric min value}
 }
 \value{
 integer number of digit
