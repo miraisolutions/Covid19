@@ -1,6 +1,6 @@
 Package: Covid19
 Title: Covid-19 Data Analysis
-Version: 1.1.7
+Version: 1.2.1
 Authors@R: 
     c(person("Francesca", "Vitalini", role = c("cre", "aut"),
              email = 'francesca.vitalini@mirai-solutions.com'),
@@ -32,11 +32,13 @@ Imports:
     RColorBrewer,
     grid,
     leaflet,
+    leaflet.extras,
     rgdal,
     shinycssloaders,
     sp,
     markdown,
     scales,
+    rlang,
     zoo
 Encoding: UTF-8
 LazyData: true

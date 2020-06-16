@@ -79,18 +79,15 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
 
     # plots ----
 
-    levs <- reactive(
-      sort_type_hardcoded()
-    )
-    df_tot <- reactive({
-      country_data() %>%
-        select(-Country.Region, -contagion_day) %>%
-        select(-starts_with("new"), -confirmed, -starts_with("growth_"), -ends_with("_rate")) %>%
-        pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-        mutate(status = factor(status, levels = levs())) %>%
-        capitalize_names_df()
-    })
+    levs <- sort_type_hardcoded()
 
+    global <- reactive({
+      country_data() %>%
+        get_timeseries_global_data()
+    })
+    df_tot = reactive({
+      tsdata_areplot(global(),levs, 1000) # start from day with >1000
+    })
     callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
 
 
@@ -98,7 +95,7 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data, n = n)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data, n = n,istop = F)
 
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
 

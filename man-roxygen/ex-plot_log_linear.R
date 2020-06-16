@@ -1,8 +1,12 @@
 if (interactive()) {
   library(shiny)
+  library(dplyr)
+  library(ggplot2)
+  library(tidyr)
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    mod_plot_log_linear_ui("test")
+    Covid19:::mod_plot_log_linear_ui("test")
   )
   server <- function(input, output) {
 
@@ -10,22 +14,33 @@ if (interactive()) {
       get_timeseries_full_data() %>%
         get_timeseries_by_contagion_day_data()
     })
-
-    global <- reactive({
+    n = 100
+    w = 7
+    data_filtered <- reactive({
       orig_data() %>%
+        Covid19:::rescale_df_contagion(n = n, w = w)
+    })
+
+    country_data <- reactive({data_filtered() %>%
+        filter(Country.Region %in% "Switzerland") %>%
+        filter(contagion_day > 0) %>%
+        arrange(desc(date))
+    })
+
+    country <- reactive({
+      country_data() %>%
         get_timeseries_global_data()
     })
 
-    df_global <- reactive({
-      global() %>%
-        select(-starts_with("new_")) %>%
-        select( -confirmed) %>%
-        pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
-        mutate(status = as.factor(status)) %>%
-        capitalize_names_df()
+    levs <- sort_type_hardcoded()
+
+    df_country = reactive({
+      tsdata_areplot(country(),levs)
     })
 
-    callModule(mod_plot_log_linear_server,"test", df = df_global, type = "area")
+
+
+    callModule(Covid19:::mod_plot_log_linear_server,"test", df = df_country, type = "area")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

@@ -4,7 +4,7 @@
 \alias{select_countries_n_cases_w_days}
 \title{Select only countries which had at least n cases and outbreaks longer than w days}
 \usage{
-select_countries_n_cases_w_days(df, n, w)
+select_countries_n_cases_w_days(df, n, w, group = "Country.Region")
 }
 \arguments{
 \item{df}{data.frame}
@@ -12,6 +12,8 @@ select_countries_n_cases_w_days(df, n, w)
 \item{n}{number of cases}
 
 \item{w}{days of outbreak}
+
+\item{group}{character Country.Region or continent or subcontinent}
 }
 \description{
 Select only countries which had at least n cases and outbreaks longer than w days

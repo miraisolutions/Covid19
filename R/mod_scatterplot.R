@@ -49,17 +49,8 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
   world = function(orig_data_aggregate, n, w){
     orig_data_aggregate %>%
-      Covid19:::select_countries_n_cases_w_days(n = n, w = w) %>%
+      select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date)) %>%
-      align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      get_pop_data() %>%
-      filter(population > 10^6) %>% # dropping countries with less than 1 M pop, needed?
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-             prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3)) %>%
-      select(-country_name) %>%
-      align_country_names_pop_reverse() %>%
-      #filter(confirmed > 10000)  %>%
       select(Country.Region,date,confirmed,starts_with("growth"),prevalence_rate_1M_pop)
   }
   pick_rate <- function(df, rate){
@@ -72,10 +63,15 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
   world_data = reactive({
     world(df(), n,w)})
 
+  confirmed1000 = isolate(
+    any(world_data()$confirmed > 10000)
+  )
   world_10000 = reactive({
-    world_data() %>% filter(confirmed > 10000)
+    if (confirmed1000)
+      world_data() %>% filter(confirmed > 10000)
+    else
+      world_data()
   })
-
   # compute stats for all growth factors
   med_growth = reactive({apply(world_10000()[, grepl("growth", names(world_10000())), drop = F],2,  median)})
   med_prevalence = reactive({median(world_10000()$prevalence_rate_1M_pop)})
@@ -96,7 +92,8 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
   caption_growth_factor <- reactive({paste0("(y) growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
   caption_prevalence <- "(x) Prevalence: confirmed cases over 1 M people."
-  caption_median <- "Dotted lines show median values among countries with more than 10k cases."
+  caption_median <- paste("Dotted lines show median values",
+          ifelse(confirmed1000, "among countries with more than 10k cases.", ""))
 
   output$plot_scatterplot <- renderUI({
     tagList(
@@ -111,13 +108,14 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
     df <- dfnew() %>%
       mutate(Country.Region = as.factor(Country.Region))
-
     p = df %>%
-        Covid19:::scatter_plot(list(x = med_prevalence(),
+        scatter_plot(list(x = med_prevalence(),
                           y = medgr()))
     p <- p %>%
-      ggplotly(tooltip = c("text", "y")) %>%
-      layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+      ggplotly(tooltip = c("text", "y"))# %>%
+      # layout(legend = list(orientation = "h",
+      #                      #y = 1.1,
+      #                      yanchor = "bottom"))
 
     p <- plotly_build(p)
 

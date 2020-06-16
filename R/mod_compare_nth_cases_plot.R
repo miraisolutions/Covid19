@@ -118,7 +118,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
     })
   } else {
     output$title <- renderUI({
-      div(h4(paste0("Countries from day of ", n ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      div(h4(paste0("Timeline from day of ", n ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
     })
   }
 

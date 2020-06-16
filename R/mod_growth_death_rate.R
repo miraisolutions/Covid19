@@ -55,13 +55,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   scale_mortality_rate <- function(orig_data_aggregate){
     df1 <- orig_data_aggregate %>%
       select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == max(date)) %>%
-      align_country_names_pop() %>%
-      mutate(country_name = Country.Region) %>%
-      get_pop_data() %>%
-      filter(population > 10^6) %>% # dropping countries with less than 1 M pop
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3)) %>%
-      align_country_names_pop_reverse()
+      filter( date == max(date))
     df1
   }
 
@@ -96,8 +90,8 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     output$title_growth_factor <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries growth factor")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
     output$title_dath_toll <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries death toll")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   } else {
-    output$title_growth_factor <- renderUI(div(h4("Countries growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
-    output$title_dath_toll <- renderUI(div(h4("Countries death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_growth_factor <- renderUI(div(h4("Growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_dath_toll <- renderUI(div(h4("Death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
   # captions
@@ -111,7 +105,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p
   })
   caption_death_rate <- reactive({paste0("Computed as total deaths today ",caption_death_rate_radio())})
-  caption_countries <- paste0("Only countries with more than ", n, " confirmed cases, a population of over 1 M and outbreaks longer than ", w, " days considered.")
+  caption_countries <- paste0("More than ", n, " confirmed cases and outbreaks longer than ", w, " days.")
 
   # plots
   output$plot_growth_factor <- renderUI({
@@ -134,8 +128,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p <- plot_rate_hist(df_base_plot1(), color =  "growth_factor", y_min = 1)
     p <- p %>%
       plotly::ggplotly() %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
-                                   xaxis = list(tickfont = list(size = 14)))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
+                      #             xaxis = list(tickfont = list(size = 10))
+                     )
     p
   })
 
@@ -145,8 +140,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = is_percent())
     p <- p %>%
       plotly::ggplotly() %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
-                     xaxis = list(tickfont = list(size = 14)))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
+                     #xaxis = list(tickfont = list(size = 10))
+                     )
     p
   })
 

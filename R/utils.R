@@ -39,15 +39,16 @@ capitalize_names_df <- function(df) {
 basic_plot_theme <- function() {
   theme(
     plot.title = element_text(color = "grey45", size = 18, face = "bold.italic", hjust = 0.5),
-    text = element_text(size = 16),
+    text = element_text(size = 12),
     panel.background = element_blank(),
     axis.line.x = element_line(color = "grey45", size = 0.5),
     axis.line.y = element_line(color = "grey45", size = 0.5),
-    axis.text.x = element_text(size = 14),
-    axis.text.y = element_text(size = 14),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
     legend.title =  element_blank(),
+    legend.text = element_text(size = 10),
     legend.key = element_rect(fill = alpha("white", 0.0))
   )
 }
@@ -111,7 +112,7 @@ new_total_colors <- c(
 #'
 #' @returns countries shapefile
 #'
-load_countries_data <- function(destpath = system.file("./countries_data", package = "Covid19")){
+load_countries_data_map <- function(destpath = system.file("./countries_data", package = "Covid19")){
   # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
   url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
   zip_path <- file.path(destpath,"ne_50m_admin_0_countries.zip")
@@ -158,12 +159,12 @@ align_country_names_pop <- function(data){
 
       "Antigua and Barbuda" = "Antigua and Barb.",
       "Bosnia and Herzegovina" = "Bosnia and Herz.",
-      "Cape Verde" = "Cabo Verde",
+      #"Cape Verde" = "Cabo Verde",
       "Cote d'Ivoire" = "C\\u00f4te d'Ivoire",
       "Czech Republic" = "Czechia",
       "Dominican Republic" = "Dominican Rep.",
       "Eswatini" = "eSwatini",
-      "French Guiana" = "Guyana",
+      #"French Guiana" = "Guyana",
       "North Macedonia" = "Macedonia",
       "UK" = "United Kingdom",
       "USA" = "United States of America",
@@ -182,12 +183,12 @@ align_country_names_pop_reverse <- function(data){
 
       "Antigua and Barb." = "Antigua and Barbuda",
       "Bosnia and Herz." = "Bosnia and Herzegovina",
-      "Cabo Verde" = "Cape Verde",
+      #"Cabo Verde" = "Cape Verde",
       "C\\u00f4te d'Ivoire" = "Cote d'Ivoire",
       "Czechia" = "Czech Republic",
       "Dominican Rep." = "Dominican Republic",
       "eSwatini" = "Eswatini",
-      "Guyana" = "French Guiana",
+      #"Guyana" = "French Guiana",
       "Macedonia" = "North Macedonia",
       "United Kingdom" = "UK",
       "United States of America" = "USA",
@@ -207,4 +208,130 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
     .plotly_x$name <- stringr::str_extract(.plotly_x$name, .extract_str)
   }
   .plotly_x
+}
+#' Aggregates data to continent or subcontinent (group)
+#' @param data data.frame aggregated data per Country.Region
+#' @param group character continent or subcontinent
+#' @param time character date or contagion_day
+#' @param popdata data with population info
+#' @param allstatuses character vector of statuses to base the recomputation from: confirmed recovered deaths active
+#'
+#' @note growth and mortality variables must be recomputed after the aggregation
+#' the return dataset renames the group column into Country.region to allow the following graphs to work
+#'
+#' @return data.frame aggregated at group level
+#'
+#' @importFrom rlang sym
+#' @export
+aggr_to_cont = function(data, group, time, popdata, allstatuses) {
+
+  popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
+    group_by(.dots = group) %>%
+    summarize(population = sum(population, rm.na = T))
+
+  continent_data =    data %>%
+    select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
+    mutate(population = as.numeric(population)) %>%
+    group_by(.dots = c(time,group)) %>%
+    #group_by(time, continent) %>%
+    summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
+    add_growth_death_rate(group, time) %>%
+    left_join(popdata_cont[,c(group, "population")], by = group) %>%
+    mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
+           prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
+           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
+    rename(Country.Region = !!group) %>%
+    get_timeseries_by_contagion_day_data()  %>%
+    arrange(desc(date))
+  continent_data
+}
+
+#' creates time series for the area plot
+#' @param data data.frame aggregated data per region
+#' @param levs order of statuses
+#' @param n minimum number of cases for the start date
+#'
+#' @note starting date based on n, first day with so many confirmed
+#'
+#' @return data.frame reshaped
+#'
+#' @import tidyr
+tsdata_areplot <- function(data, levs, n = 1000) {
+  data %>%
+    #filter(date > date[min(which(confirmed>0))]) %>% #remove initial dates
+    filter(confirmed > n) %>% #remove initial dates
+    select(-starts_with("new_"), -confirmed) %>%
+    pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
+    mutate(status = factor(status, levels = levs)) %>%
+    capitalize_names_df()
+}
+#' creates message of countries within subcountries
+#' @param data data.frame aggregated data per region
+#' @param area character main area
+#' @param region character sub area
+#'
+#' @return list messages printing Country.Region within subcontinent
+#'
+message_subcountries <- function(data, area, region) {
+  list.countries = data[,c(area,region)] %>% unique() %>%
+    group_by(.dots = area) %>% group_split()
+  lapply(list.countries, function(x)
+    paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
+           paste(x[[region]], collapse = ",")))
+}
+#' Calculates growth vs prevalence factors
+#' @param data data.frame aggregated data per region
+#' @param growthvar growth factors
+#' @param prevvar prevalence over 1 M
+#'
+#' @note factors created:
+#' c('Low Growth and Prevalence', 'Low Growth - High Prevalence', 'High Growth - Low Prevalence', 'High Growth and Prevalence')
+#'
+#' @return factor vector
+#'
+growth_v_prev_calc <- function(data, growthvar,prevvar) {
+  # compute stats for all growth factors
+  med_growth = median(data[[growthvar]])
+  med_prevalence = median(data[[prevvar]])
+
+  labs = c("Low Growth and Prevalence",
+           "Low Growth - High Prevalence",
+           "High Growth - Low Prevalence",
+           "High Growth and Prevalence" )
+
+  val_cntry = rep(labs[2], nrow(data))
+  val_cntry[data[[prevvar]] <= med_prevalence & data[[growthvar]]  <= med_growth ] = labs[1]
+  val_cntry[data[[prevvar]] > med_prevalence & data[[growthvar]] > med_growth ] = labs[4]
+  val_cntry[data[[prevvar]] <= med_prevalence & data[[growthvar]] > med_growth ] = labs[3]
+  factor(val_cntry, levels = labs)
+}
+
+#' Rounds up numbers for labels in plots
+#' @param maxv numeric max value
+#'
+#' @return numeric vector after ceiling()
+#'
+round_up = function(maxv) {
+  dg = nchar(as.character(round(maxv)))
+  if (dg == 1 && maxv>1)
+    dg = 0
+  ceiling(maxv/(10^(dg-1)))*10^(dg-1)
+}
+#' Derives number of digits for rounding
+#' @param dg integer number of characters of figure, say 1000 = 4
+#' @param maxv numeric max value
+#' @param minxv numeric min value
+#'
+#' @return integer number of digit
+#'
+getdg_lab = function(dg,maxv,minxv) {
+  if (dg >3)
+    dglab = 0
+  else if (dg == 1 && maxv <=1 && minxv>=0)
+    dglab = 1 # rates are in 100
+  else if (dg >0)
+    dglab = dg - (c(-2,0,2))[dg]
+  else
+    stop("error wrong digits for rounding", dg)
+  dglab
 }
