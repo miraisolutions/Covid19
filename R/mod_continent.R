@@ -51,6 +51,14 @@ mod_continent_ui <- function(id, uicont){
     ),
    fluidRow(
      column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_confirmed", uicont , sep = "_"))))
+     ),
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_active", uicont , sep = "_"))))
+     )
+   ),
+   fluidRow(
+     column(6,
             withSpinner(uiOutput(ns(paste("map_countries_growthvsprev", uicont , sep = "_"))))
      ),
      column(6,
@@ -192,6 +200,20 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
   callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
              subcontinent_data_filtered, n = n, n_highligth = length(subcontinents()), istop = F)
+
+  #maps confirmed
+  output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
+    mod_map_cont_calc_ui(ns("map_countries_confirmed"))
+  })
+  callModule(mod_map_cont_cal_server, "map_countries_confirmed", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+             cont = cont, variable = "confirmed")
+
+  #maps active
+  output[[paste("map_countries_active", uicont , sep = "_")]] <- renderUI({
+    mod_map_cont_calc_ui(ns("map_countries_active"))
+  })
+  callModule(mod_map_cont_cal_server, "map_countries_active", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+             cont = cont, variable = "active")
 
   #maps growth vs prev
   output[[paste("map_countries_growthvsprev", uicont , sep = "_")]] <- renderUI({
