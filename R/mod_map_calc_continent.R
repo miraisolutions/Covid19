@@ -356,22 +356,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
                     NAME = names(varsNames(textvar)))
   }
 
-  .gen_text = function(x) {
-    if (is.numeric(x)) {
-      maxy = max(x)
-      minxy = min(x)
-      dg = nchar(as.character(round(max(abs(minxy),maxy))))
-      if(dg==1 && maxy<=1 && minxy>=0) {
-        text.pop = paste0(roundlab(x*100),"%")
-      } else {
-        text.pop = formatC(x, format = "f", big.mark = "'", digits  = getdg_lab(dg, maxy, minxy))
-      }
-    } else
-      text.pop = x
-    text.pop
-  }
-
-  text.pop.x = .gen_text(x)
+  text.pop.x = gen_text(x)
   .paste_text = function(nam, txt, col = NULL) {
 
     if (!is.null(col)){
@@ -402,7 +387,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
   text = paste0(name_text, val_text)
 
   if (!is.null(textvars)) {
-    values.pop.vars = lapply(textvars$data,.gen_text )
+    values.pop.vars = lapply(textvars$data,gen_text )
     names(values.pop.vars) = textvars$NAME
     tex.pop.vars =  lapply(names(values.pop.vars), function(nn)
       .paste_text(nn, values.pop.vars[[nn]] ))

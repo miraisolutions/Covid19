@@ -1,9 +1,13 @@
 if (interactive()) {
+  library(Covid19)
   library(shiny)
+  library(dplyr)
+  library(tidyr)
+  library(shinycssloaders)
   ui <- fluidPage(
     tagList(
       Covid19:::golem_add_external_resources(),
-      Covid19:::mod_compare_nth_cases_plot_ui("plot_compare_nth")
+      mod_compare_nth_cases_plot_ui("plot_compare_nth")
     )
   )
   server <- function(input, output, session) {
@@ -20,7 +24,47 @@ if (interactive()) {
       orig_data_aggregate
     })
     #TODO: colors are not fixed yet
-    callModule(Covid19:::mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate)
+    callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate)
+  }
+  runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
+}
+
+if (interactive()) {
+  library(Covid19)
+  library(shiny)
+  library(dplyr)
+  library(tidyr)
+  library(plotly)
+  library(ggplot2)
+
+  ui <- fluidPage(
+    tagList(
+      Covid19:::golem_add_external_resources(),
+      mod_compare_nth_cases_plot_ui("lines_points_plots")
+    )
+  )
+  server <- function(input, output, session) {
+    orig_data <- reactive({
+      get_timeseries_full_data() %>%
+        get_timeseries_by_contagion_day_data()
+    })
+
+    orig_data_aggregate <- reactive({
+      orig_data_aggregate <- orig_data() %>%
+        aggregate_province_timeseries_data() %>%
+        add_growth_death_rate() %>%
+        arrange(Country.Region)
+      orig_data_aggregate
+    })
+    #TODO: colors are not fixed yet
+    n = 1000
+    countries = c("Switzerland", "Italy", "France")
+    countries_data <- reactive({
+      countries_data <- orig_data_aggregate() %>%
+        filter(Country.Region %in% countries)
+    })
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
+               n = n, n_highligth = length(countries), istop = F)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

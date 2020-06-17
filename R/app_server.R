@@ -64,7 +64,8 @@ app_server <- function(input, output, session) {
   # })
 
   # Modules ----
-  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate, countries_data_map)
+  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate,
+             data_filtered = data_filtered, countries_data_map)
   callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data = pop_data)
 
   # select continents in tabs

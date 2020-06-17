@@ -183,7 +183,8 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"))
   })
 
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data_filtered, n = n, n_highligth = length(subcontinents()), istop = F)
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data_filtered, n = n, w = w,
+             n_highligth = length(subcontinents()), istop = F)
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
