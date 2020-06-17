@@ -28,6 +28,7 @@ mod_plot_log_linear_ui <- function(id){
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
 #' @importFrom plotly layout
+#' @importFrom scales label_number
 #'
 #' @noRd
 mod_plot_log_linear_server <- function(input, output, session, df, type){
@@ -49,6 +50,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type){
         p <- df() %>%
           time_evol_line_plot(log = log(), text = "Country")
       }
+      p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
 
       p <- p %>%
         ggplotly(tooltip = c("x", "y", "text")) %>%
