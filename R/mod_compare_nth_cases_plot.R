@@ -19,12 +19,14 @@ mod_compare_nth_cases_plot_ui <- function(id){
     fluidRow(
       column(7,
              offset = 1,
-             radioButtons(inputId = ns("radio_indicator"), label = "",
-                          choices = choices_plot, selected ="confirmed", inline = TRUE)
+             selectInput(inputId = ns("radio_indicator"), label = "",
+                          choices = choices_plot, selected ="confirmed")
       ),
       column(4,
-             radioButtons(inputId = ns("radio_log_linear"), label = "",
-                          choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
+             # selectInput(inputId = ns("radio_log_linear"), label = "",
+             #              choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
+              radioButtons(inputId = ns("radio_log_linear"), label = "",
+                         choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
       )
     ),
     withSpinner(plotlyOutput(ns("plot"), height = 400)),
@@ -77,9 +79,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
       group_by(Status) %>%
       filter(Date == max(Date)) %>%
       filter(Value ==  max(Value)) %>%
-      ungroup() %>%
-      arrange(desc(Value)) %>%
-      top_n(n_highligth, wt = Value)
+      ungroup()
+
+    if (istop) # to avoid reordering when in Country Comparison
+      countries = countries %>%
+        arrange(desc(Value)) %>%
+        top_n(n_highligth, wt = Value)
 
     # Day of the country with max contagions after china
     max_contagion_no_china <- countries %>%

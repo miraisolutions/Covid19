@@ -502,7 +502,8 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
 
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
-  }
+  } else
+    scale_y_continuous(labels = label_number(big.mark = ",")) # add label
 
   if (log) {
     p <- p %>%
