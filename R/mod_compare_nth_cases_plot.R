@@ -23,10 +23,10 @@ mod_compare_nth_cases_plot_ui <- function(id){
                           choices = choices_plot, selected ="confirmed")
       ),
       column(4,
-             # selectInput(inputId = ns("radio_log_linear"), label = "",
-             #              choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
-              radioButtons(inputId = ns("radio_log_linear"), label = "",
-                         choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
+             selectInput(inputId = ns("radio_log_linear"), label = "",
+                          choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
+              # radioButtons(inputId = ns("radio_log_linear"), label = "",
+              #            choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
       )
     ),
     withSpinner(plotlyOutput(ns("plot"), height = 400)),
@@ -37,7 +37,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' compare_nth_cases_plot Server Function
 #'
 #' @param orig_data_aggregate reactive data.frame
-#' @param   n min number of cases for a country to be considered. Default 1000
+#' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
 #' @param istop logical to choose title
@@ -52,24 +52,26 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @import ggplot2
 #'
 #' @noRd
-mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, n_highligth = 5, istop = T){
+mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate,
+                                              n = 1000, w = 7,
+                                              n_highligth = 5, istop = T){
   ns <- session$ns
 
   # Data ----
   #This only depends on the orig_data_aggregate
-  df_clean <- reactive({
-    df_clean <- orig_data_aggregate() %>%
-      # select(-starts_with("new_")) %>%
-      rescale_df_contagion(n = n, w = w)
-    df_clean
-  })
+  # df_clean <- reactive({
+  #   df_clean <- orig_data_aggregate() %>%
+  #     # select(-starts_with("new_")) %>%
+  #     rescale_df_contagion(n = n, w = w)
+  #   df_clean
+  # })
 
 
 
   # Give DF standard structure; reacts to input$radio_indicator
   df <- reactive({
-    df_tmp <- df_clean() %>%
-      bind_cols(df_clean()[,input$radio_indicator] %>% setNames("Value")) %>%
+    df_tmp <- orig_data_aggregate() %>%
+      bind_cols(orig_data_aggregate()[,input$radio_indicator] %>% setNames("Value")) %>%
       mutate(Status = Country.Region ) %>%
       mutate(Date = contagion_day ) %>%
       select(Status, Value, Date)
@@ -108,7 +110,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   # Plot -----
   output$plot <- renderPlotly({
 
-    p <- plot_all_highlight(df(), log = log(), text = "Country", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "death_rate", T, F), date_x = F)
+    p <- plot_all_highlight(df(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "death_rate", T, F), date_x = F)
 
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%

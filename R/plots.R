@@ -463,6 +463,7 @@ fix_legend_position <- function(p){
 #' @import ggplot2
 #' @import RColorBrewer
 #' @import zoo
+#' @importFrom scales label_number
 #'
 #' @export
 plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
@@ -489,13 +490,21 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     arrange(Date)  %>%
     mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE))
 
-  df_highlight_max <- df_highlight %>%
-    group_by(Status) %>%
-    filter(Value == max(Value)) %>%
-    ungroup()
+  if (F) { # not used, legacy
+    df_highlight_max <- df_highlight %>%
+      group_by(Status) %>%
+      filter(Value == max(Value)) %>%
+      ungroup()
+  }
+
+  #TODO y_tooltip should be wrapped with gentext(Value), not so nice below, it does not seem to work
+  # df = df %>% rename(Variable = Value)
+  # df_highlight = df_highlight %>% rename(Variable = Value)
+  #
+  # df$Value = gen_text(df$Variable)
+  # df_highlight$Value = gen_text(df_highlight$Variable)
 
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
-    # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     scale_color_brewer(palette = "Dark2")
@@ -503,7 +512,7 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   } else
-    scale_y_continuous(labels = label_number(big.mark = ",")) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
 
   if (log) {
     p <- p %>%

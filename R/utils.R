@@ -335,3 +335,22 @@ getdg_lab = function(dg,maxv,minxv) {
     stop("error wrong digits for rounding", dg)
   dglab
 }
+#' Derives text for plotly popups
+#' @param x data
+#'
+#' @return text
+#'
+gen_text = function(x) {
+  if (is.numeric(x)) {
+    maxy = max(x)
+    minxy = min(x)
+    dg = nchar(as.character(round(max(abs(minxy),maxy))))
+    if(dg==1 && maxy<=1 && minxy>=0) {
+      text.pop = paste0(roundlab(x*100),"%")
+    } else {
+      text.pop = formatC(x, format = "f", big.mark = "'", digits  = getdg_lab(dg, maxy, minxy))
+    }
+  } else
+    text.pop = x
+  text.pop
+}

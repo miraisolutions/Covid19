@@ -115,7 +115,7 @@ mod_country_comparison_server <- function(input, output, session, orig_data_aggr
       mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, w = w, n_highligth = length(input$select_countries), istop = F)
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
