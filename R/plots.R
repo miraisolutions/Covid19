@@ -81,7 +81,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F, text = "") {
+time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palette) {
 
   if (log) {
     df <- df %>%
@@ -92,9 +92,9 @@ time_evol_line_plot <- function(df, log = F, text = "") {
   }
 
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
-    geom_line(size = 1) +
+    geom_line() +
     basic_plot_theme() +
-    scale_colour_brewer(palette = "Dark2") +
+    scale_colour_brewer(palette = g_palette) +
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45),
@@ -232,7 +232,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 #' @import RColorBrewer
 #'
 #' @export
-time_evol_line_facet_plot <- function(df, log) {
+time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
 
   if (log == "log") {
     df <- df %>%
@@ -244,7 +244,7 @@ time_evol_line_facet_plot <- function(df, log) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     # scale_fill_brewer(palette = "Dark2") #+
-    scale_color_brewer(palette = "Dark2") +
+    scale_color_brewer(palette = g_palette) +
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -466,7 +466,7 @@ fix_legend_position <- function(p){
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
+plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
@@ -507,8 +507,7 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
     basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
-    scale_color_brewer(palette = "Dark2")
-
+    scale_color_brewer(palette = g_palette)
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   } else
@@ -619,3 +618,4 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
   p
 }
 
+graph_palette = "Dark2"

@@ -102,18 +102,15 @@ get_timeseries_full_data <- function() {
     mutate_if(is.numeric, function(x){x = replace_na(x, 0)}) %>% #control NAs
     mutate(active = confirmed - deaths - recovered)
   # clean French colonies
-  data$Province.State <- data$Province.State %>%
-    recode(
-      "Reunion" = "France",
-      "Martinique" = "France",
-      "French Guiana" = "France"
-  )
-data$Country.Region <- data$Province.State %>%
-  recode(
-    "Reunion" = "France",
-    "Martinique" = "France",
-    "French Guiana" = "France"
-  )
+  data[data$Country.Region == "France", c("confirmed", "deaths", "recovered", "active") ] =
+    data[data$Country.Region == "France", c("confirmed", "deaths", "recovered", "active") ] +
+    data[data$Country.Region == "Martinique", c("confirmed", "deaths", "recovered", "active") ] +
+    data[data$Country.Region == "Reunion", c("confirmed", "deaths", "recovered", "active") ] +
+    data[data$Country.Region == "French Guiana", c("confirmed", "deaths", "recovered", "active") ]
+
+  data = data[!is.element(data$Country.Region,c("Reunion", "Martinique", "French Guiana")), ]
+
+
   data
 }
 
