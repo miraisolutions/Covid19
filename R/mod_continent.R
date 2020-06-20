@@ -97,11 +97,12 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   allstatuses = c(statuses, paste0("new_", statuses))
 
   orig_data_aggregate_cont <- reactive({
-    orig_data_aggregate() %>% filter(continent == cont)})
+    orig_data_aggregate() %>% filter(continent == cont)
+      })
   data_filtered_cont <- reactive({orig_data_aggregate_cont() %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)})
 
-  subcontinents = reactive({unique(orig_data_aggregate_cont()$subcontinent)})
+  subcontinents = reactive({sort(unique(orig_data_aggregate_cont()$subcontinent))})
 
   continent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) %>%
     group_by(continent) %>%
@@ -111,16 +112,24 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     group_by(subcontinent) %>%
     summarize(population = sum(population, rm.na = T))
 
-  continent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
+  continent_data <- reactive({ aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
                                            continent_pop_data, allstatuses)})
 
   subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",
                                               subcontinent_pop_data, allstatuses)})
+  # define palette for subcontinent
+  subcont_palette = reactive({
+    pal_subcont = c("empty",sort(unique(c(subcontinent_pop_data$subcontinent, orig_data_aggregate_cont()$subcontinent))))
+    pal = colorFactor(palette = cont_map_spec(cont, "col"),
+                                domain = pal_subcont, na.color = "white")
+    pal = pal(pal_subcont)[-1]
+    names(pal) = c(pal_subcont)[-1] # add an empty one to remove first light color
+    pal
+    })
 
   subcontinent_data_filtered <- reactive({subcontinent_data() %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)
   })
-
 
   continent_data_today <- reactive({
     continent_data() %>%
@@ -136,7 +145,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Map
   # Boxes ----
-  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map, cont = cont)
+  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map, cont = cont, g_palette = subcont_palette())
 
   # > area plot global
   levs <- sort_type_hardcoded()
@@ -144,7 +153,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   df_continent = reactive({
     tsdata_areplot(continent_timeseries(),levs)
   })
-  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area")
+  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area", g_palette = subcont_palette())
 
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
     paste0("Only Countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
@@ -168,14 +177,16 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   callModule(mod_lineplots_day_contagion_server,
              "lineplots_day_contagion_cont",
-             subcontinent_data_filtered)
+             subcontinent_data_filtered, g_palette = subcont_palette())
 
   # Rate plots ----
   output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
     mod_growth_death_rate_ui(ns("rate_plots_cont"), n_highligth = length(subcontinents()))
   })
 
-  callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered, n = n, n_highligth = length(subcontinents()), istop = F)
+  callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered,
+             n = n, n_highligth = length(subcontinents()), istop = F, g_palette = list("growth_factor" = subcont_palette(),
+                                                                                       "death_rate" = subcont_palette()))
 
   # Line with bullet plot
 
@@ -184,7 +195,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data_filtered, n = n, w = w,
-             n_highligth = length(subcontinents()), istop = F)
+             n_highligth = length(subcontinents()), istop = F , g_palette = subcont_palette())
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
