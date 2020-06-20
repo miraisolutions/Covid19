@@ -41,6 +41,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
 #' @param istop logical to choose title
+#' @param g_palette character vector of colors for the graph and legend
 #'
 #' @example ex-mod_compare_nth_cases_plot.R
 #'
@@ -54,51 +55,36 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate,
                                               n = 1000, w = 7,
-                                              n_highligth = 5, istop = T){
+                                              n_highligth = 5, istop = T, g_palette = graph_palette){
   ns <- session$ns
-
-  # Data ----
-  #This only depends on the orig_data_aggregate
-  # df_clean <- reactive({
-  #   df_clean <- orig_data_aggregate() %>%
-  #     # select(-starts_with("new_")) %>%
-  #     rescale_df_contagion(n = n, w = w)
-  #   df_clean
-  # })
-
-
 
   # Give DF standard structure; reacts to input$radio_indicator
   df <- reactive({
-    df_tmp <- orig_data_aggregate() %>%
-      bind_cols(orig_data_aggregate()[,input$radio_indicator] %>% setNames("Value")) %>%
-      mutate(Status = Country.Region ) %>%
-      mutate(Date = contagion_day ) %>%
-      select(Status, Value, Date)
+    if(istop) {
+      countries_order =  orig_data_aggregate() %>% filter(date == max(date)) %>%
+        arrange(desc(!!as.symbol(input$radio_indicator))) %>%
+        #arrange(!!as.symbol(input$radio_indicator)) %>%
+        top_n(n_highligth, wt = !!as.symbol(input$radio_indicator)) %>% .[,"Country.Region"] %>% as.vector()
+      data = orig_data_aggregate() %>% right_join(countries_order)  %>%  # reordering according to variable if istop
+                mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
+    } else
+      data = orig_data_aggregate()
+    df_tmp <- data %>% .[,c("Country.Region", input$radio_indicator, "contagion_day")] %>%
+      bind_cols(data[,input$radio_indicator] %>% setNames("Value")) %>%
+      rename(Status = Country.Region ) %>%
+      rename(Date = contagion_day ) %>%
+      select(-input$radio_indicator)
 
-    # Countries listed by their max value
-    countries <- df_tmp %>%
-      group_by(Status) %>%
-      filter(Date == max(Date)) %>%
-      filter(Value ==  max(Value)) %>%
-      ungroup()
-
-    if (istop) # to avoid reordering when in Country Comparison
-      countries = countries %>%
-        arrange(desc(Value)) %>%
-        top_n(n_highligth, wt = Value)
 
     # Day of the country with max contagions after china
-    max_contagion_no_china <- countries %>%
+    max_contagion_no_china <- df_tmp %>%
       filter(Status != "China") %>%
       filter(Date == max(Date)) %>%
       select(Date) %>%
       as.numeric()
-
-    df <- df_tmp %>%
-      filter(Status %in% as.vector(countries$Status)) %>% #pick only filtered countries
-      filter(Date <= max_contagion_no_china) %>% #cut china
-      mutate(Status = factor(Status, levels = as.vector(countries$Status))) #order by factor
+  df <- df_tmp %>%
+      #filter(Status %in% as.vector(countries$Status)) %>% #pick only filtered countries, not needed, now done before
+      filter(Date <= max_contagion_no_china) #%>% #cut china
 
     df
   })
@@ -109,9 +95,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
 
   # Plot -----
   output$plot <- renderPlotly({
-
-    p <- plot_all_highlight(df(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "death_rate", T, F), date_x = F)
-
+    p <- plot_all_highlight(df(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "lethality_rate", T, F), date_x = F, g_palette)
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
