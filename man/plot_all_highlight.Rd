@@ -10,7 +10,8 @@ plot_all_highlight(
   text = "",
   n_highligth = 10,
   percent = F,
-  date_x = F
+  date_x = F,
+  g_palette = graph_palette
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ plot_all_highlight(
 \item{percent}{logical to make the y axis in percent}
 
 \item{date_x}{logical to convert x-axis labels to dates}
+
+\item{g_palette}{character vector of colors for the graph and legend}
 }
 \description{
 plot all countries but highlight first 10
