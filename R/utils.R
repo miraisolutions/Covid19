@@ -41,6 +41,8 @@ basic_plot_theme <- function() {
     plot.title = element_text(color = "grey45", size = 18, face = "bold.italic", hjust = 0.5),
     text = element_text(size = 12),
     panel.background = element_blank(),
+    panel.grid.major = element_line(colour = "white", size = 0.1),
+    line = element_line(size = 2.1),
     axis.line.x = element_line(color = "grey45", size = 0.5),
     axis.line.y = element_line(color = "grey45", size = 0.5),
     axis.text.x = element_text(size = 10),
@@ -95,8 +97,9 @@ new_case_colors <- c(
 #'
 #' @export
 rate_colors <- c(
-  "growth_factor" = "#dd4b39",
-  "death_rate" = "black"
+  #"growth_factor" = "#dd4b39",
+  "growth_factor" = "chocolate3",
+  "death_rate" = "grey30"
 )
 
 #' Color Palette
@@ -228,21 +231,20 @@ aggr_to_cont = function(data, group, time, popdata, allstatuses) {
   popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
     group_by(.dots = group) %>%
     summarize(population = sum(population, rm.na = T))
-
   continent_data =    data %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
     group_by(.dots = c(time,group)) %>%
-    #group_by(time, continent) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
     add_growth_death_rate(group, time) %>%
-    left_join(popdata_cont[,c(group, "population")], by = group) %>%
+    left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
     rename(Country.Region = !!group) %>%
     get_timeseries_by_contagion_day_data()  %>%
     arrange(desc(date))
+
   continent_data
 }
 
