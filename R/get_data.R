@@ -403,13 +403,13 @@ get_pop_data <- function(){
     "Gibraltar(UK)" = "Gibraltar",
     "Saint Martin(France)" = "St Martin",
     "Cayman Islands(UK)" = "Cayman Islands",
-    "Curaçao(Netherlands)" = "Curasao",
     "New Caledonia(France)" = "New Caledonia",
     "F.S. Micronesia" = "Micronesia"
   )
   # rename non ASCII characters
   population$Country.Region[grepl("^St-Barth", population$Country.Region)] = "St. Barth"
   population$Country.Region[grepl("and Pr", population$Country.Region)] = "Sao Tome and Principe"
+  population$Country.Region[grepl("^Cura", population$Country.Region)] = "Curasao"
 
   population$Country.Region = gsub("*\\(.*?\\) *","", population$Country.Region) # remove all text between brackets
   population$population = as.numeric(population$population )
