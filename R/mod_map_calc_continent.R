@@ -87,8 +87,8 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 
   data_clean <- reactive({
     data <- orig_data_aggregate() %>%
-      filter(date %in% head(date,day()))  %>%# select data last 7 days or 1
-              align_country_names()
+      filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
+              #align_country_names()
     # if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", variable) ||
     #     grepl("death", variable)  ||
     #     grepl("(growth)*prev",variable)) {
@@ -135,7 +135,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
   })
   # Map ----
   data_plot <- reactive({
-
     data_selected <- data_clean() %>%
       bind_cols(data_clean()[,new_var()] %>%
                   setNames("indicator"))
@@ -153,7 +152,7 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
                             data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
-                            all.x = FALSE,
+                            all.x = TRUE, # set to T, it was F
                             sort = FALSE)
     data_plot
   })
@@ -192,7 +191,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
       setView(lng = mean(cont_map_spec(cont, "lat")[c(1,3)]), lat = mean(cont_map_spec(cont, "lat")[c(2,4)]),
               zoom = cont_map_spec(cont, "zoom"))
     leg_par <- legend_fun(data_plot()$indicator, new_var())
-
     map = map %>%
       addPolygons(layerId = ~NAME,
                   fillColor = pal_fun(new_var(), data_plot()$indicator)(pal_fun_calc(data_plot()$indicator)),
@@ -403,8 +401,8 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
 #' @return list legend parameters
 legend_fun <- function(x, var){
   if (is.numeric(x)) { # if variable is numeric
-    maxv = max(x)
-    minxv = min(x)
+    maxv = max(x, na.rm =T)
+    minxv = min(x, na.rm =T)
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x)
@@ -429,15 +427,14 @@ legend_fun <- function(x, var){
                          suffix = suf, digit = getdg_lab(dg, maxv, minxv))
     }  else { # high values, like total
 
-      # TODO> simplify using domain()
       bin = domain(x)
       bin = seq(bin[1],bin[2], length = 5)
-      if (F & any(x<0)) {
+      if (F & any(x<0, na.rm = TRUE)) {
         #add 0, not possible
         bin = sort(c(bin, 0))
       }
 
-      if(any(x<0))
+      if(any(x<0, na.rm = TRUE))
         val = c(-log(1:exp(-min(bin))),log(1:exp(max(bin))))
       else
         val = log(1:exp(max(bin)))
@@ -445,10 +442,10 @@ legend_fun <- function(x, var){
       dat = val
       suf = ifelse(grepl("1M", var)," over 1M", " cases")
       .round_val = function(x){
-       if (any(x<0)){
+       if (any(x<0, na.rm = TRUE)){
          y = rep(NA,length(x))
-         y[x<0] = -round_up(exp(-x[x<0]))
-         y[x>=0] = round_up(exp(x[x>=0]))
+         y[!is.na(x) & x<0] = -round_up(exp(-x[!is.na(x) & x<0]))
+         y[!is.na(x) & x>=0] = round_up(exp(x[!is.na(x) & x>=0]))
          y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
        } else
            y = round_up(exp(x))
@@ -478,23 +475,23 @@ legend_fun <- function(x, var){
   res
 }
 domainlog <- function(x) {
-  maxv = max(x)
+  maxv = max(x, na.rm = TRUE)
   c(0,log(round_up(maxv)))
 }
 domainlog_neg <- function(x) {
-  maxv = max(x)
-  minv = min(x)
+  maxv = max(x, na.rm = TRUE)
+  minv = min(x, na.rm = TRUE)
   #bound = c(-log(round_up(-minv)),log(round_up(maxv)))
-  maxlimit = max(abs(x))
+  maxlimit = max(abs(x), na.rm = T)
   bound = c(-log(round_up(maxlimit)),log(round_up(maxlimit)))
   bound
 }
 
 domainlin <- function(x) {
-  c(floor(min(x)),round_up(max(x)))
+  c(floor(min(x, na.rm = TRUE)),round_up(max(x, na.rm = TRUE)))
 }
 domainlin_neg <- function(x) {
-  maxlimit = max(abs(x))
+  maxlimit = max(abs(x), na.rm = TRUE)
   c(-round_up(maxlimit),round_up(maxlimit))
   #bound = c(-round_up(-min(x)),round_up(max(x)))
   #bound
@@ -504,27 +501,27 @@ domainfact <- function(x) {
   unique(sort(x))
 }
 domainrate <- function(x) {
-  c(floor(min(x)*100),round_up(max(x)*100))
+  c(floor(min(x, na.rm = TRUE)*100),round_up(max(x, na.rm = TRUE)*100))
 }
 #' Utility to choose domain for legend
 #' @param x numeric vector of map data
 #' @return numeric vector of range
 choose_domain <- function(x) {
   if (is.numeric(x)) {
-    maxy = max(x)
-    minxy = min(x)
+    maxy = max(x, na.rm = T)
+    minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
     #dg = nchar(as.character(round(maxy)))
 
     if (dg == 1 && maxy <=1 && minxy >= 0){ # if rate
       domain = domainrate
     } else if (dg <4) {
-      if (any(x<0))
+      if (any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
         domain = domainlin
     } else {
-      if (any(x<0))
+      if (any(x<0, na.rm = TRUE))
         domain = domainlog_neg
       else
         domain = domainlog
@@ -542,25 +539,24 @@ pal_fun = function(var,x){
   domain = choose_domain(x)
 
   if (grepl("confirmed", var)  || grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
-    colorNumeric(palette = "Reds", domain = domain(x), na.color = "white")
+    colorNumeric(palette = "Reds", domain = domain(x), na.color = "lightgray")
   } else if (grepl("death", var) || grepl("mortality", var) || grepl("lethal", var)) {
-    colorNumeric(palette = "Greys", domain = domain(x), na.color = "white")
+    colorNumeric(palette = "Greys", domain = domain(x), na.color = "lightgray")
   } else if (grepl("active", var)) {
     if (grepl("new", var)) {
-      #colorNumeric(palette = "RdBu", domain = domain(x), na.color = "grey")
-      #colorNumeric(palette = colorRamp(colorRamps::blue2green(length(x)), interpolate = "linear" ), domain = domain(x), na.color = "grey", reverse = TRUE)
-      colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
-                   domain = domain(x), na.color = "grey")
+      # colorRampPalette to customize and mix 2 palettes
+       colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
+                   domain = domain(x), na.color = "lightgray")
 
       } else
-      colorNumeric(palette = "Blues", domain = domain(x), na.color = "grey")
+      colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")
 
   }  else if (grepl("recovered", var)) {
-    colorNumeric(palette = "Greens", domain = domain(x), na.color = "white")
+    colorNumeric(palette = "Greens", domain = domain(x), na.color = "lightgray")
   }  else if (grepl("(growth)*fact",var)) {
-    colorNumeric(palette = "Oranges", domain = domain(x), na.color = "white")
+    colorNumeric(palette = "Oranges", domain = domain(x), na.color = "lightgray")
   }  else if (grepl("(growth)*prev",var)) {
-    colorFactor(palette = c("darkgreen", "#E69F00", "yellow3","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "white")
+    colorFactor(palette = c("darkgreen", "#E69F00", "yellow3","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   }
   else
     stop("non existing color palette for ", var)
@@ -572,8 +568,8 @@ pal_fun_calc <- function(x){
   if (is.numeric(x)){
     # maxv = max(x)
     # dg = nchar(as.character(round(maxv)))
-    maxv = max(x)
-    minxv = min(x)
+    maxv = max(x, na.rm = T)
+    minxv = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
 
     if (dg == 1 && maxv<=1 && minxv>=0) {
@@ -582,10 +578,10 @@ pal_fun_calc <- function(x){
       # linear scale
       y = x
     } else {
-      if (any(x<0)){
+      if (any(x<0, na.rm = TRUE)){
         y = rep(NA,length(x))
-        y[x<0] = -log(-x[x<0])
-        y[x>=0] = log(x[x>=0])
+        y[!is.na(x) & x<0] = -log(-x[!is.na(x) & x<0])
+        y[!is.na(x) & x>=0] = log(x[!is.na(x) & x>=0])
         y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
         #y = log(x-min(x)+1) - log(-min(x))
       }
@@ -603,8 +599,8 @@ roundlab = function(y) {
   # maxy = max(y)
   # dg = nchar(as.character(round(maxy)))
   #
-  maxy = max(y)
-  minxy = min(y)
+  maxy = max(y, na.rm = T)
+  minxy = min(y, na.rm = T)
   dg = nchar(as.character(round(max(abs(minxy),maxy))))
 
   dglab = getdg_lab(dg, maxy, minxy)

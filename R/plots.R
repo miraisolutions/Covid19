@@ -543,7 +543,6 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
 #' plot rate as hist
 #'
 #' @param df data.frame
-#' @param color string used to define color
 #' @param percent logical to make the y axis in percent
 #' @param y_min min value on y axis
 #' @param g_palette character vector of colors for the graph and legend

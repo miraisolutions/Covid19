@@ -51,8 +51,8 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
   data_clean <- reactive({
     data <-
       orig_data_aggregate() %>%
-      filter(continent == cont & date == max(date))  %>%# select data from continent only
-      align_country_names() # align names with country data
+      filter(continent == cont & date == max(date)) # %>%# select data from continent only
+      #align_country_names() # align names with country data
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
@@ -81,12 +81,11 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                             data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
-                            all.x = FALSE,
+                            all.x = TRUE, # changed to TRUE since Map is filtered by continent
                             sort = FALSE)
     data_plot
   })
 
-  # TODO: names should be restricted given boundaries
   country_popup <- reactive({
    paste0("<strong>Country: </strong>",
            data_plot()$NAME,
@@ -169,9 +168,13 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
            "LatAm & Carib." =  c(-60, -80, 56, -55),
             "Northern America" = c(22, -147, 82, -39)
   )
-  col = list("Europe" = "Blues", "Asia" = "Reds",
-                          "Africa" = "RdYlBu", "Northern America" = "RdBu",
-                          "LatAm & Carib." = "GnBu", "Oceania" = "Oranges")
+  col = list("Europe" = c(col = "Blues", rev = FALSE),
+             "Asia" =  c(col = "Reds", rev = FALSE),
+             "Africa" = c(col = "RdYlBu", rev = FALSE),
+             "Northern America" = c(col = "RdBu", rev = FALSE),
+             "LatAm & Carib." = c(col = "GnBu", rev = FALSE),
+             "Oceania" = c(col = "Greens", rev = TRUE))
+
   zoom = list("Europe" = 3,
                 "Africa" = 2.9,
                 "Asia" = 2.5,
