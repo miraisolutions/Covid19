@@ -114,7 +114,7 @@ get_timeseries_full_data <- function() {
     data
   }
   # clean French colonies
-  data = sumcountries(data, tocountry = "France", fromcountry = c("Reunion", "Martinique", "French Guiana", "Guadeloupe"))
+  data = sumcountries(data, tocountry = "France", fromcountry = c("Reunion", "Martinique", "French Guiana", "Guadeloupe", "St. Barth", "St Martin"))
   # Add congo Brazzville to Congo
   data = sumcountries(data, tocountry = "Congo", fromcountry = c("Congo (Brazzaville)"))
   # Add "Cape Verde" "Cabo Verde"

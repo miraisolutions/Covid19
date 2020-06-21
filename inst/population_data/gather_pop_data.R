@@ -247,12 +247,17 @@ missingEurope = c("Kosovo" = "Southern Europe",
                   "Northern Cyprus" = "Southern Europe",
                   "Jersey(UK)" = "Channel Islands",
                   "Guernsey(UK)" = "Channel Islands",
-                  "Vatican" = "Southern Europe")
+                  "Vatican" = "Southern Europe",
+                  "Transnistria" = "Eastern Europe",
+                  "Åland Islands(Finland)" = "Northern Europe")
 missingAsia = c("Abkhazia" = "Western Asia"
-                  , "South Ossetia" = "Western Asia")
+                  , "South Ossetia" = "Western Asia",
+                "Artsakh" = "Western Asia"
+                )
 missingOceania = grep("Australia", final_population$Country.Region, value = T)
 missingOceania = intersect(missingOceania,final_population$Country.Region[is.na(final_population$continent)] )
 missingAfrica = c("Eswatini" = "Southern Africa")
+missingAmerica = c("Eswatini" = "Southern Africa")
 
 final_population = final_population %>%
   mutate(continent = if_else(is.na(continent) &
@@ -271,7 +276,7 @@ sub.na = is.na(final_population$subcontinent) & final_population$Country.Region 
 final_population$subcontinent[sub.na] = missingAsia
 
 sub.na = is.na(final_population$subcontinent) & final_population$Country.Region %in% missingOceania
-final_population$subcontinent[sub.na] = "Oceania"
+final_population$subcontinent[sub.na] = "Australia"
 
 sub.na = is.na(final_population$subcontinent) & final_population$Country.Region %in% names(missingAfrica)
 final_population$subcontinent[sub.na] = missingAfrica
