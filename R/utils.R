@@ -318,7 +318,8 @@ tsdata_areplot <- function(data, levs, n = 1000) {
 #' @return list messages printing Country.Region within subcontinent
 #'
 message_subcountries <- function(data, area, region) {
-  list.countries = data[,c(area,region)] %>% unique() %>%
+  # remove where subcontinent could be NA
+  list.countries = data[,c(area,region)] %>% filter(!is.na(!!rlang::sym(area))) %>% unique() %>%
     group_by(.dots = area) %>% group_split()
   lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",

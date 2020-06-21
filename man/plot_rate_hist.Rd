@@ -14,8 +14,6 @@ plot_rate_hist(df, percent = F, y_min = 0, g_palette)
 \item{y_min}{min value on y axis}
 
 \item{g_palette}{character vector of colors for the graph and legend}
-
-\item{color}{string used to define color}
 }
 \value{
 ggplot plot
