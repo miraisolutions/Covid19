@@ -130,7 +130,12 @@ load_countries_data_map <- function(destpath = system.file("./countries_data", p
                               layer = "ne_50m_admin_0_countries",
                               encoding = "utf-8", use_iconv = T,
                               verbose = FALSE)
-  assign_new_level =  function(countrymap , lev, from, to) {
+  assign_new_level =  function(countrymap , lev, from, to, regexpress = FALSE) {
+    if (regexpress) {
+      if (!any(grepl(from, as.character(countrymap[[lev]]))))
+        stop("wrong expression, not present in map: ", from)
+      from = grep(from, as.character(countrymap[[lev]]), value = TRUE)
+    }
     if (!any(countrymap[[lev]] == from))
       stop("wrong name, not present in map: ", from)
     levels(countrymap[[lev]])[levels(countrymap[[lev]])==from] <- to
@@ -149,14 +154,14 @@ load_countries_data_map <- function(destpath = system.file("./countries_data", p
   countries = assign_new_level(countries, "NAME", "United Kingdom", "UK")
   countries = assign_new_level(countries, "NAME", "United States of America", "USA")
   countries = assign_new_level(countries, "NAME", "United Arab Emirates", "UAE")
-  countries = assign_new_level(countries, "NAME", "St-Barthélemy", "St. Barth")
+  countries = assign_new_level(countries, "NAME", "^St-Barth", "St. Barth", regexpress = TRUE)
   countries = assign_new_level(countries, "NAME", "Faeroe Is.", "Faeroe Islands")
   countries = assign_new_level(countries, "NAME", "Bosnia and Herz.", "Bosnia and Herzegovina")
   countries = assign_new_level(countries, "NAME", "Vatican", "Vatican City")
   countries = assign_new_level(countries, "NAME", "St. Vin. and Gren.", "St. Vincent Grenadines")
   countries = assign_new_level(countries, "NAME", "Dem. Rep. Congo", "Republic of the Congo")
   #countries = assign_new_level(countries, "NAME", "Central African Rep.", "CAR")
-  countries = assign_new_level(countries, "NAME", "Côte d'Ivoire", "Cote d'Ivoire")
+  countries = assign_new_level(countries, "NAME", "Ivoire", "Cote d'Ivoire", regexpress = TRUE)
   countries = assign_new_level(countries, "NAME", "St-Martin", "St Martin")
   countries = assign_new_level(countries, "NAME", "Cayman Is.", "Cayman Islands")
   countries = assign_new_level(countries, "NAME", "Eq. Guinea", "Equatorial Guinea")
@@ -169,7 +174,6 @@ load_countries_data_map <- function(destpath = system.file("./countries_data", p
   countries = assign_new_level(countries, "NAME", "Cook Is.", "Cook Islands")
   countries = assign_new_level(countries, "NAME", "Falkland Is.", "Falkland Islands")
   countries = assign_new_level(countries, "NAME", "U.S. Virgin Is.", "U.S. Virgin Islands")
-
 
   countries
 }
