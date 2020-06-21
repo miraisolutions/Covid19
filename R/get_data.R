@@ -401,7 +401,6 @@ get_pop_data <- function(){
     "Vatican" = "Vatican City", # taken from reverse
     "Faeroe Is." = "Faeroe Islands",
     "Gibraltar(UK)" = "Gibraltar",
-    #"St-Barthélemy" = "St. Barth",
     "Saint Martin(France)" = "St Martin",
     "Cayman Islands(UK)" = "Cayman Islands",
     "Curaçao(Netherlands)" = "Curasao",
