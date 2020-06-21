@@ -31,7 +31,6 @@ if (interactive()) {
       orig_data_aggregate() %>%
         rescale_df_contagion(n = n, w = w)
     })
-    #TODO: colors are not fixed yet
     callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", data_filtered)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
@@ -64,7 +63,6 @@ if (interactive()) {
         arrange(Country.Region)
       orig_data_aggregate
     })
-    #TODO: colors are not fixed yet
     n = 1000
     countries = c("Switzerland", "Italy", "France")
     countries_data <- reactive({
