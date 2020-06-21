@@ -101,16 +101,24 @@ get_timeseries_full_data <- function() {
     left_join(recovered, by = join_by_cols) %>%
     mutate_if(is.numeric, function(x){x = replace_na(x, 0)}) %>% #control NAs
     mutate(active = confirmed - deaths - recovered)
+
+  sumcountries = function(data,tocountry, fromcountry) {
+    message("Adding ", paste(fromcountry, collapse = ","), " to ", tocountry)
+    data[data$Country.Region == tocountry, c("confirmed", "deaths", "recovered", "active") ] =
+      data %>% filter(Country.Region %in% c(tocountry,fromcountry ) ) %>% group_by(date) %>%
+        select(date, confirmed, deaths, recovered) %>%
+        summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered)) %>%
+        ungroup() %>% select(confirmed, deaths, recovered)
+    # remove from countries
+    data = data[!is.element(data$Country.Region,fromcountry), ]
+    data
+  }
   # clean French colonies
-  data[data$Country.Region == "France", c("confirmed", "deaths", "recovered", "active") ] =
-    data[data$Country.Region == "France", c("confirmed", "deaths", "recovered", "active") ] +
-    data[data$Country.Region == "Martinique", c("confirmed", "deaths", "recovered", "active") ] +
-    data[data$Country.Region == "Reunion", c("confirmed", "deaths", "recovered", "active") ] +
-    data[data$Country.Region == "French Guiana", c("confirmed", "deaths", "recovered", "active") ]
-
-  data = data[!is.element(data$Country.Region,c("Reunion", "Martinique", "French Guiana")), ]
-
-
+  data = sumcountries(data, tocountry = "France", fromcountry = c("Reunion", "Martinique", "French Guiana", "Guadeloupe"))
+  # Add congo Brazzville to Congo
+  data = sumcountries(data, tocountry = "Congo", fromcountry = c("Congo (Brazzaville)"))
+  # Add "Cape Verde" "Cabo Verde"
+  data = sumcountries(data, tocountry = "Cape Verde", fromcountry = c("Cabo Verde"))
   data
 }
 
@@ -128,7 +136,7 @@ get_timeseries_full_data <- function() {
 #' @export
 get_timeseries_by_contagion_day_data <- function(data) {
 
-  data <- data %>%
+  data1 <- data %>%
     arrange(desc(Country.Region), date) %>%
     mutate(no_contagion = case_when(
       confirmed == 0 ~ 1,
@@ -148,7 +156,12 @@ get_timeseries_by_contagion_day_data <- function(data) {
     mutate(new_deaths = deaths - lag(deaths)) %>%
     mutate(new_active = active - lag(active)) %>%
     mutate(new_recovered = recovered - lag(recovered)) %>%
+    mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
+    mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
+    mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
+    mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
     ungroup()
+  data1
 }
 
 #' Global data timeseries
@@ -340,23 +353,61 @@ get_pop_data <- function(){
   population <- read.csv2(system.file("population_data/popUN.csv", package = "Covid19"),stringsAsFactors = F)
 
   population$Country.Region <- population$Country.Region %>%
-    recode(
-      "Ivory Coast" = "C\\u00f4te d'Ivoire",
-      "DR Congo" = "Republic of the Congo",
-      "United Arab Emirates" = "UAE",
-      "East Timor" = "Timor-Leste" ,
-      "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
-      "Puerto Rico(US)" = "Puerto Rico",
-      "Comoros" = "Mayotte",
-      "Guam(US)" = "Guam",
-      "Greenland(Denmark)" = "Greenland",
-      "Eswatini" = "eSwatini",
-      "Isle of Man(UK)" = "Channel Islands",
-      "Central African Republic" = "CAR",
-      "Cape Verde" = "Cabo Verde",
-      "Antigua and Barbuda" = "Antigua and Barb.",
-      "United States" = "United States of America"
-    )
+    # recode(
+    #   "Ivory Coast" = "C\\u00f4te d'Ivoire",
+    #   "DR Congo" = "Republic of the Congo",
+    #   "United Arab Emirates" = "UAE",
+    #   "East Timor" = "Timor-Leste" ,
+    #   "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
+    #   "Puerto Rico(US)" = "Puerto Rico",
+    #   "Comoros" = "Mayotte",
+    #   "Guam(US)" = "Guam",
+    #   "Greenland(Denmark)" = "Greenland",
+    #   "Eswatini" = "eSwatini",
+    #   "Isle of Man(UK)" = "Channel Islands",
+    #   "Central African Republic" = "CAR",
+    #   "Cape Verde" = "Cabo Verde",
+    #   "Antigua and Barbuda" = "Antigua and Barb.",
+    #   "United States" = "United States of America"
+    # )
+  recode(
+    "Ivory Coast" = "Cote d'Ivoire",
+    "DR Congo" = "Republic of the Congo",
+    "United Arab Emirates" = "UAE",
+    "East Timor" = "Timor-Leste" ,
+    "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
+    "Puerto Rico(US)" = "Puerto Rico",
+    "Comoros" = "Mayotte",
+    "Guam(US)" = "Guam",
+    "Greenland(Denmark)" = "Greenland",
+    #"Eswatini" = "eSwatini", # already matching
+    #"Isle of Man(UK)" = "Channel Islands",
+    "Isle of Man(UK)" = "Isle of Man",
+    "Central African Republic" = "CAR",
+    #"Cape Verde" = "Cabo Verde", merged in data
+    #"Antigua and Barbuda" = "Antigua and Barb.",
+    #"United States" = "United States of America",
+    "United States" = "USA",
+
+    ##################################################
+    "Bosnia and Herz." = "Bosnia and Herzegovina", # taken from reverse alignment
+    "Ivory Coast" = "Cote d'Ivoire", # taken from reverse
+    "Czechia" = "Czech Republic", # taken from reverse
+    "Dominican Rep." = "Dominican Republic", # taken from reverse
+    "Macedonia" = "North Macedonia", # taken from reverse
+    "United Kingdom" = "UK", # taken from reverse
+    "Vatican" = "Vatican City", # taken from reverse
+    "Faeroe Is." = "Faeroe Islands",
+    "Gibraltar(UK)" = "Gibraltar",
+    "St-Barthélemy" = "St. Barth",
+    "Saint Martin(France)" = "St Martin",
+    "Cayman Islands(UK)" = "Cayman Islands",
+    "Curaçao(Netherlands)" = "CuraÃ§ao",
+    "New Caledonia(France)" = "New Caledonia",
+    "F.S. Micronesia" = "Micronesia"
+  )
+
+  population$Country.Region = gsub("*\\(.*?\\) *","", population$Country.Region) # remove all text between brackets
   population$population = as.numeric(population$population )
   population$PopulationUN = as.numeric(population$PopulationUN )
   #population$diff = (population$population - population$PopulationUN)/ population$Population *100
@@ -391,8 +442,11 @@ get_pop_data <- function(){
 merge_pop_data <- function(data, popdata) {
   data_pop <- data %>%
     #mutate(Country.Region = country_name) %>%
-    left_join(popdata) %>%
-    filter(!is.na(population) & population > 1000)
+    left_join(popdata, by = "Country.Region") #%>%
+    #mutate(population = if_else(population < 1000, NA_integer_, as.integer(population))) # set to NA very small countries
+    #filter(!is.na(population) & population > 1000) # removing super small countries
+    #filter(!is.na(population)) # not the right place
+
   #select(-country_name)
 
   data_pop
