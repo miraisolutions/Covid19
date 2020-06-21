@@ -110,9 +110,11 @@ get_timeseries_full_data <- function() {
         summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered)) %>%
         ungroup() %>% select(confirmed, deaths, recovered)
     # remove from countries
-    data = data[!is.element(data$Country.Region,fromcountry), ]
+    data = data[!is.element(data$Country.Region,fromcountry), , drop = F]
     data
   }
+  # rename some countries
+  data$Country.Region[grepl("^Cura", data$Country.Region)] = "Curasao"
   # clean French colonies
   data = sumcountries(data, tocountry = "France", fromcountry = c("Reunion", "Martinique", "French Guiana", "Guadeloupe", "St. Barth", "St Martin"))
   # Add congo Brazzville to Congo
@@ -257,7 +259,7 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
 
   df1 <- df %>% ungroup() %>%
     arrange(!!as.symbol(group), !!as.symbol(time)) %>%
-    group_by_(.dots = group) %>%
+    group_by(.dots = group) %>%
     mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
            daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
            daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
@@ -265,7 +267,7 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
     ungroup()
   df2 <- df1 %>%
-    group_by_(.dots = group)  %>%
+    group_by(.dots = group)  %>%
     # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
     mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
@@ -399,13 +401,16 @@ get_pop_data <- function(){
     "Vatican" = "Vatican City", # taken from reverse
     "Faeroe Is." = "Faeroe Islands",
     "Gibraltar(UK)" = "Gibraltar",
-    "St-Barthélemy" = "St. Barth",
+    #"St-Barthélemy" = "St. Barth",
     "Saint Martin(France)" = "St Martin",
     "Cayman Islands(UK)" = "Cayman Islands",
-    "Curaçao(Netherlands)" = "CuraÃ§ao",
+    "Curaçao(Netherlands)" = "Curasao",
     "New Caledonia(France)" = "New Caledonia",
     "F.S. Micronesia" = "Micronesia"
   )
+  # rename non ASCII characters
+  population$Country.Region[grepl("^St-Barth", population$Country.Region)] = "St. Barth"
+  population$Country.Region[grepl("and Pr", population$Country.Region)] = "Sao Tome and Principe"
 
   population$Country.Region = gsub("*\\(.*?\\) *","", population$Country.Region) # remove all text between brackets
   population$population = as.numeric(population$population )
@@ -462,7 +467,7 @@ merge_pop_data <- function(data, popdata) {
 select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") {
   countries_filtered <- df %>%
     filter(confirmed > n) %>% #pick only those countries that have more than n cases
-    group_by_(.dots = group) %>%
+    group_by(.dots = group) %>%
     mutate(N = n()) %>%
     filter( N > w) %>% #pick only those countries that have had outbreak for more than w days
     ungroup() %>%
@@ -491,7 +496,7 @@ rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
     )) %>%
     filter(no_contagion == 0) %>%
     select(-no_contagion) %>%
-    group_by_(.dots = group) %>%
+    group_by(.dots = group) %>%
     mutate(contagion_day = contagion_day - min(contagion_day)) %>%
     ungroup()
 
