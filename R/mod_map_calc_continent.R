@@ -534,6 +534,8 @@ choose_domain <- function(x) {
 
 #' @param x numeric vector of map data
 #' @param var character: variable name
+#'
+#' @importFrom grDevices colorRampPalette
 #' @return palette
 pal_fun = function(var,x){
   domain = choose_domain(x)
