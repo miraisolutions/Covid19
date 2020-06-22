@@ -633,9 +633,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
   p
 }
 
-# graph_palette <- function(nh, pal = "Dark2") {
-#   brewer.pal(nh, pal)
-# }
+#' default palette for graph pages
+#'
 graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
-# background of map
+
+#' background color of maps
+#'
 backgroud_map_col = "grey90"

@@ -62,6 +62,9 @@ get_timeseries_single_data <- function(param) {
   data <- read.csv(file = eval(as.symbol(paste0(param,"_timeseries_csv_url"))), stringsAsFactors = FALSE)
 }
 
+#' named vector of french colonies to be added to France
+#'
+French.Colonies = c("Reunion", "Martinique", "French Guiana", "Guadeloupe", "St. Barth", "St Martin")
 
 #' Get timeseries full data
 #' @rdname get_timeseries_full_data
@@ -104,7 +107,7 @@ get_timeseries_full_data <- function() {
 
   sumcountries = function(data,tocountry, fromcountry) {
     message("Adding ", paste(fromcountry, collapse = ","), " to ", tocountry)
-    data[data$Country.Region == tocountry, c("confirmed", "deaths", "recovered", "active") ] =
+    data[data$Country.Region == tocountry, c("confirmed", "deaths", "recovered") ] =
       data %>% filter(Country.Region %in% c(tocountry,fromcountry ) ) %>% group_by(date) %>%
         select(date, confirmed, deaths, recovered) %>%
         summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered)) %>%
@@ -116,7 +119,7 @@ get_timeseries_full_data <- function() {
   # rename some countries
   data$Country.Region[grepl("^Cura", data$Country.Region)] = "Curasao"
   # clean French colonies
-  data = sumcountries(data, tocountry = "France", fromcountry = c("Reunion", "Martinique", "French Guiana", "Guadeloupe", "St. Barth", "St Martin"))
+  data = sumcountries(data, tocountry = "France", fromcountry = French.Colonies)
   # Add congo Brazzville to Congo
   data = sumcountries(data, tocountry = "Congo", fromcountry = c("Congo (Brazzaville)"))
   # Add "Cape Verde" "Cabo Verde"
@@ -412,6 +415,15 @@ get_pop_data <- function(){
   population$Country.Region[grepl("^Cura", population$Country.Region)] = "Curasao"
 
   population$Country.Region = gsub("*\\(.*?\\) *","", population$Country.Region) # remove all text between brackets
+
+  # sum french colonies
+
+  population$population[population$Country.Region == "France"] =
+    population$population[population$Country.Region == "France"] +
+    sum(population$population[population$Country.Region %in% French.Colonies])
+  # remove french colonies
+  population = population[!(population$Country.Region %in% French.Colonies), , drop = F]
+
   population$population = as.numeric(population$population )
   population$PopulationUN = as.numeric(population$PopulationUN )
   #population$diff = (population$population - population$PopulationUN)/ population$Population *100

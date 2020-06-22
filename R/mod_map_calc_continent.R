@@ -424,7 +424,7 @@ legend_fun <- function(x, var){
       }
 
       form = labelFormat(transform = function(x) x,
-                         suffix = suf, digit = getdg_lab(dg, maxv, minxv))
+                         suffix = suf, digits = getdg_lab(dg, maxv, minxv))
     }  else { # high values, like total
 
       bin = domain(x)
