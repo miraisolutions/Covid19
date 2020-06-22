@@ -409,4 +409,5 @@ gen_text = function(x, namvar) {
 
 #' define character vector of rate variables for labels with %
 #'
+#' @export
 rate_vars = "lethality_rate"
