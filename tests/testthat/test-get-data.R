@@ -70,7 +70,9 @@ test_that("add_growth_death_rate returns expected headers", {
 
 
 pop_data = get_pop_data()
-
+na.pop.data = sum(is.na(pop_data$continent))
+# test pop map data
+mapdata = load_countries_data_map()
 
 test_that("get_pop_data returns expected rows", {
 
@@ -99,7 +101,7 @@ test_that("get_pop_data returns expected rows", {
   # countries with NAs population
   missingpop = unique(df2$Country.Region[is.na(df2$population)])
 
-  expect_true(length(missingpop) == 2) # 9 countries do nt match population data
+  expect_true(length(missingpop) == 2) # 2 countries do nt match population data
   # countries with 0 population
   zeropop = unique(df2$Country.Region[!is.na(df2$population) & df2$population == 0])
 
@@ -129,31 +131,34 @@ test_that("get_pop_data returns expected rows", {
   # expect_true(nrow(na.cont) == 0)
   # expect_true(nrow(na.subcont) == 0)
 
-  # test pop map data
-  mapdata = Covid19:::load_countries_data_map()
+
   # check differences with other data
   setdiff(mapdata$NAME, pop_data$Country.Region)
   setdiff(pop_data$Country.Region, mapdata$NAME)
 
 
-  align_map_pop <- function(map,pop) {
+  .align_map_pop <- function(map,pop) {
     tmp = map@data[,c("NAME","CONTINENT")] %>%
-      merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T)
+      merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T, sort = FALSE, incomparables = NA)
+    tmp = tmp[match(map@data$NAME,tmp$NAME),]
     tmp2 = pop[,c("Country.Region","continent")] %>%
-      merge(map@data[,c("NAME","CONTINENT")], by.x = "Country.Region", by.y = "NAME", all.x = T)
+      merge(map@data[,c("NAME","CONTINENT")], by.x = "Country.Region", by.y = "NAME", all.x = T, sort = FALSE, incomparables = NA)
+    tmp2 = tmp2[match(pop$continent,tmp2$continent),]
 
     map@data$CONTINENT[!is.na(tmp$continent)] = tmp$continent[!is.na(tmp$continent)]
     pop$continent[is.na(pop$continent)] = as.character(tmp2$CONTINENT[is.na(pop$continent)])
+
     list(map = map, pop = pop)
   }
-  res = align_map_pop(mapdata, pop_data)
+  res = .align_map_pop(mapdata, pop_data)
   pop_data = res$pop
   mapdata = res$map
 
   setdiff(mapdata$NAME, pop_data$Country.Region)
   setdiff(pop_data$Country.Region, mapdata$NAME)
 
-  pop_data %>% filter(is.na(continent))
+  expect_true(sum(is.na(pop_data$continent)) <=  na.pop.data )
+
 
 })
 
