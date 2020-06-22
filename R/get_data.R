@@ -102,8 +102,8 @@ get_timeseries_full_data <- function() {
   data <- confirmed %>%
     left_join(deaths, by = join_by_cols) %>%
     left_join(recovered, by = join_by_cols) %>%
-    mutate_if(is.numeric, function(x){x = replace_na(x, 0)}) %>% #control NAs
-    mutate(active = confirmed - deaths - recovered)
+    mutate_if(is.numeric, function(x){x = replace_na(x, 0)}) #%>% #control NAs
+    #mutate(active = confirmed - deaths - recovered)
 
   sumcountries = function(data,tocountry, fromcountry) {
     message("Adding ", paste(fromcountry, collapse = ","), " to ", tocountry)
@@ -116,14 +116,21 @@ get_timeseries_full_data <- function() {
     data = data[!is.element(data$Country.Region,fromcountry), , drop = F]
     data
   }
+
   # rename some countries
   data$Country.Region[grepl("^Cura", data$Country.Region)] = "Curasao"
+
   # clean French colonies
   data = sumcountries(data, tocountry = "France", fromcountry = French.Colonies)
   # Add congo Brazzville to Congo
   data = sumcountries(data, tocountry = "Congo", fromcountry = c("Congo (Brazzaville)"))
   # Add "Cape Verde" "Cabo Verde"
   data = sumcountries(data, tocountry = "Cape Verde", fromcountry = c("Cabo Verde"))
+
+  # compute active
+  data = data %>%
+       mutate(active = confirmed - deaths - recovered)
+
   data
 }
 
