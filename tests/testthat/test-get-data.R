@@ -101,7 +101,7 @@ test_that("get_pop_data returns expected rows", {
   # countries with NAs population
   missingpop = unique(df2$Country.Region[is.na(df2$population)])
 
-  expect_true(length(missingpop) == 2, label = paste("Missing population var in data = 2 fails, value: ", length(missingpop))) # 2 countries do not match population data
+  expect_true(length(missingpop) <= 3, label = paste("Missing population var in data <= 3 fails, value: ", length(missingpop))) # 2 countries do not match population data
   # countries with 0 population
   zeropop = unique(df2$Country.Region[!is.na(df2$population) & df2$population == 0])
 
