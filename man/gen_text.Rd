@@ -8,6 +8,8 @@ gen_text(x, namvar)
 }
 \arguments{
 \item{x}{data}
+
+\item{namvar}{character vector variable name}
 }
 \value{
 text

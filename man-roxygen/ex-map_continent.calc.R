@@ -8,10 +8,10 @@ if (interactive()) {
   library(shinycssloaders)
 
   cont = "LatAm & Carib."
-  cont = "Africa"
+  cont = "Oceania"
 
   variable = "growth vs prevalence" # set variable
-  #variable = "death rate" # set variable
+  variable = "death rate" # set variable
   variable = "prevalence rate" # set variable
   #variable = "active" # set variable
  #variable = "growth factor" # set variable

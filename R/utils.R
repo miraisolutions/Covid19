@@ -387,6 +387,7 @@ getdg_lab = function(dg,maxv,minxv) {
 }
 #' Derives text for plotly popups
 #' @param x data
+#' @param namvar character vector variable name
 #'
 #' @return text
 #'
@@ -410,4 +411,4 @@ gen_text = function(x, namvar) {
 #' define character vector of rate variables for labels with %
 #'
 #' @export
-rate_vars = "lethality_rate"
+rate_vars = c("lethality_rate")
