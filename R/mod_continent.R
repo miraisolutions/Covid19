@@ -119,21 +119,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",
                                               subcontinent_pop_data, allstatuses)})
   # define palette for subcontinent
-  subcont_palette = reactive({
-    pal_subcont = c("empty","empty1", sort(unique(c(subcontinent_pop_data$subcontinent, orig_data_aggregate_cont()$subcontinent))))
-    pal = colorFactor(palette = cont_map_spec(cont, "col")["col"],
-                                domain = pal_subcont, na.color = "white",
-                                reverse = as.logical( cont_map_spec(cont, "col")["rev"]))
-    if (F) {
-      #if using unikn
-      pal = usecol(c(Karpfenblau, Seeblau), n = length(pal_subcont))[-c(1)]
-      pal = usecol(pal_karpfenblau, n = length(pal_subcont))[-c(1)]
-      names(pal) = pal_subcont[-c(1)]
-    }
 
-    pal = pal(pal_subcont)[-c(1,2)]
-    names(pal) = c(pal_subcont)[-c(1,2)] # add empty-s to remove first light colors
-    pal
+  subcont_palette = reactive({
+    subcont_palette_calc(col_cont = cont_map_spec(cont, "col"),
+         x = sort(unique(c(subcontinent_pop_data$subcontinent, orig_data_aggregate_cont()$subcontinent))))
   })
 
   subcontinent_data_filtered <- reactive({subcontinent_data() %>% # select sub-continents with longer outbreaks
@@ -283,4 +272,49 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              subcontinent_data_filtered, maxrowsperpage = 10)
 
 
+}
+
+#' Derives palette for continent maps and graphs based on cont_map_spec
+#'
+#' @param col_cont named character vector cont_map_spec(cont, 'col')
+#' @param x named character vector of areas
+#' @return named character vector of colors for the areas
+subcont_palette_calc = function(col_cont = cont_map_spec(cont, "col"),  x ) {
+  if (length(setdiff(names(col_cont), c("col","rev","skip"))) >0)
+    stop("col_cont arg does not contain all names")
+  #col_cont = cont_map_spec(cont, "col")
+  #x =  sort(unique(c(subcontinent_pop_data$subcontinent, orig_data_aggregate_cont()$subcontinent)))
+  skipn = as.integer(col_cont["skip"])
+  revpal = as.logical(col_cont["rev"])
+  if (skipn >0) { # assumption that first colors in palette are the lightes to be excluded
+    emptycol = paste0("empty", 1:skipn)
+    #if (!revpal) {
+    x = c(x, emptycol)
+    # }
+    # else {
+    #   x = c(emptycol, x)
+    # }
+
+  }
+  pal = colorFactor(palette = col_cont["col"],
+                    domain = x, na.color = "white",
+                    ordered = TRUE,
+                    reverse = TRUE)
+  if (F) {
+    #if using unikn
+    pal = usecol(c(Karpfenblau, Seeblau), n = length(x))[-c(1)]
+    pal = usecol(pal_karpfenblau, n = length(x))[-c(1)]
+    names(pal) = x[-c(1)]
+  }
+
+  palcol = pal(x)
+  names(palcol) = c(x) # add empty-s to remove first light colors
+
+  palcol = palcol[!grepl("empty",names(palcol))]
+  if (revpal) {
+    names(palcol) = rev(names(palcol))
+    palcol = rev(palcol)
+  }
+
+  palcol
 }

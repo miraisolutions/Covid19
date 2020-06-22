@@ -277,6 +277,8 @@ final_population$subcontinent[sub.na] = missingAsia
 
 sub.na = is.na(final_population$subcontinent) & final_population$Country.Region %in% missingOceania
 final_population$subcontinent[sub.na] = "Australia"
+# # adjust micronesia
+# final_population$subcontinent[final_population$Country.Region == "F.S. Micronesia"] = "Micronesia"
 
 sub.na = is.na(final_population$subcontinent) & final_population$Country.Region %in% names(missingAfrica)
 final_population$subcontinent[sub.na] = missingAfrica

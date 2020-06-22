@@ -168,12 +168,12 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
            "LatAm & Carib." =  c(-60, -80, 56, -55),
             "Northern America" = c(22, -147, 82, -39)
   )
-  col = list("Europe" = c(col = "Blues", rev = FALSE),
-             "Asia" =  c(col = "Reds", rev = FALSE),
-             "Africa" = c(col = "RdYlBu", rev = FALSE),
-             "Northern America" = c(col = "RdBu", rev = FALSE),
-             "LatAm & Carib." = c(col = "GnBu", rev = FALSE),
-             "Oceania" = c(col = "Greens", rev = TRUE))
+  col = list("Europe" = c(col = "Blues", rev = TRUE, skip = 1),
+             "Asia" =  c(col = "Reds", rev = TRUE, skip = 1),
+             "Africa" = c(col = "RdYlBu", rev = FALSE, skip = 0),
+             "Northern America" = c(col = "RdBu", rev = TRUE, skip = 0),
+             "LatAm & Carib." = c(col = "GnBu", rev = TRUE, skip = 3),
+             "Oceania" = c(col = "Greens", rev = TRUE, skip = 4))
 
   zoom = list("Europe" = 3,
                 "Africa" = 2.9,

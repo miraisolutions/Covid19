@@ -200,7 +200,9 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
   }
 
   p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
-    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+    #geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), alpha = 0.5, position = 'identity') +
+
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
@@ -242,7 +244,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
       mutate(value = ifelse(value == 0, NA, value))
   }
   p <-  ggplot(df, aes(x = date, y = value)) +
-    geom_line(aes(colour = Country.Region), size = 2) + # size must be specified again being facet
+    geom_line(aes(colour = Country.Region), size = 1.7) + # size must be specified again being facet it is smaller
     #geom_line(aes(colour = Country.Region)) +
 
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
@@ -511,9 +513,10 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   # df_highlight$Value = gen_text(df_highlight$Variable)
 
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
+    geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
+
    # geom_line(data = df_highlight) +
    # scale_color_brewer(palette = g_palette)
     scale_color_manual(values = g_palette)

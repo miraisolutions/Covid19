@@ -4,7 +4,7 @@
 \alias{gen_text}
 \title{Derives text for plotly popups}
 \usage{
-gen_text(x)
+gen_text(x, namvar)
 }
 \arguments{
 \item{x}{data}

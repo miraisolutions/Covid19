@@ -390,12 +390,13 @@ getdg_lab = function(dg,maxv,minxv) {
 #'
 #' @return text
 #'
-gen_text = function(x) {
+gen_text = function(x, namvar) {
   if (is.numeric(x)) {
     maxy = max(x, na.rm = TRUE)
     minxy = min(x, na.rm = TRUE)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
-    if(dg==1 && maxy<=1 && minxy>=0) {
+    #if(dg==1 && maxy<=1 && minxy>=0) {
+    if(namvar %in% rate_vars) {
       text.pop = paste0(roundlab(x*100),"%")
     } else {
       text.pop = formatC(x, format = "f", big.mark = "'", digits  = getdg_lab(dg, maxy, minxy))
@@ -405,3 +406,7 @@ gen_text = function(x) {
     text.pop = x
   text.pop
 }
+
+#' define character vector of rate variables for labels with %
+#'
+rate_vars = "lethality_rate"

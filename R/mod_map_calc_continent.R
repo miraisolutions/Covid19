@@ -193,7 +193,7 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
     leg_par <- legend_fun(data_plot()$indicator, new_var())
     map = map %>%
       addPolygons(layerId = ~NAME,
-                  fillColor = pal_fun(new_var(), data_plot()$indicator)(pal_fun_calc(data_plot()$indicator)),
+                  fillColor = pal_fun(new_var(), data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, new_var())),
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   group = "polygonsmap",
@@ -352,9 +352,10 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
   if (!is.null(textvar)) {
     textvars = list(data = as.list(data@data[c(textvar)]),
                     NAME = names(varsNames(textvar)))
+    names(textvars$data) = textvar
   }
 
-  text.pop.x = gen_text(x)
+  text.pop.x = gen_text(x, namvar)
   .paste_text = function(nam, txt, col = NULL) {
 
     if (!is.null(col)){
@@ -385,7 +386,13 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
   text = paste0(name_text, val_text)
 
   if (!is.null(textvars)) {
-    values.pop.vars = lapply(textvars$data,gen_text )
+
+    values.pop.vars = NULL
+
+    for (tvar in textvar) {
+      values.pop.vars[[tvar]] = gen_text(textvars$data[[tvar]], tvar)
+    }
+    #values.pop.vars = lapply(textvars$data,gen_text, namvar =  textvar)
     names(values.pop.vars) = textvars$NAME
     tex.pop.vars =  lapply(names(values.pop.vars), function(nn)
       .paste_text(nn, values.pop.vars[[nn]] ))
@@ -405,7 +412,7 @@ legend_fun <- function(x, var){
     minxv = min(x, na.rm =T)
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
     #dg = nchar(as.character(round(maxv)))
-    domain = choose_domain(x)
+    domain = choose_domain(x, var)
 
     if (dg < 4){
       bin = domain(x)
@@ -415,10 +422,12 @@ legend_fun <- function(x, var){
       suf = ""
       if (grepl("1M", var))
         suf = " over 1M"
-      if (dg==1 && maxv<=1 && minxv >= 0)
+      #if (dg==1 && maxv<=1 && minxv >= 0)
+      if (var %in% rate_vars)
         suf = " %"
       transf = function(x,dg){
-        if (dg==1 && maxv<=1 && minxv >= 0)
+        #if (dg==1 && maxv<=1 && minxv >= 0)
+        if (var %in% rate_vars)
           x = x * 100
         x
       }
@@ -505,15 +514,18 @@ domainrate <- function(x) {
 }
 #' Utility to choose domain for legend
 #' @param x numeric vector of map data
+#' @param var character vector of variable name
 #' @return numeric vector of range
-choose_domain <- function(x) {
+choose_domain <- function(x, var) {
   if (is.numeric(x)) {
     maxy = max(x, na.rm = T)
     minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
     #dg = nchar(as.character(round(maxy)))
 
-    if (dg == 1 && maxy <=1 && minxy >= 0){ # if rate
+    #if (dg == 1 && maxy <=1 && minxy >= 0){ # if rate
+    if (var %in% rate_vars){ # if rate
+
       domain = domainrate
     } else if (dg <4) {
       if (any(x<0, na.rm = TRUE))
@@ -538,7 +550,7 @@ choose_domain <- function(x) {
 #' @importFrom grDevices colorRampPalette
 #' @return palette
 pal_fun = function(var,x){
-  domain = choose_domain(x)
+  domain = choose_domain(x, var)
 
   if (grepl("confirmed", var)  || grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
     colorNumeric(palette = "Reds", domain = domain(x), na.color = "lightgray")
@@ -565,8 +577,9 @@ pal_fun = function(var,x){
 }
 #' Utility calculate colors given palette
 #' @param x numeric vector of map data
+#' @param var character vector of variable name
 #' @return rescaled x
-pal_fun_calc <- function(x){
+pal_fun_calc <- function(x, var){
   if (is.numeric(x)){
     # maxv = max(x)
     # dg = nchar(as.character(round(maxv)))
@@ -574,7 +587,8 @@ pal_fun_calc <- function(x){
     minxv = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
 
-    if (dg == 1 && maxv<=1 && minxv>=0) {
+    #if (dg == 1 && maxv<=1 && minxv>=0) {
+    if (var %in% rate_vars) {
       y = x *100 # rate
     } else if (dg <4) {
       # linear scale
@@ -584,14 +598,19 @@ pal_fun_calc <- function(x){
         y = rep(NA,length(x))
         y[!is.na(x) & x<0] = -log(-x[!is.na(x) & x<0])
         y[!is.na(x) & x>=0] = log(x[!is.na(x) & x>=0])
-        y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
+        #y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
         #y = log(x-min(x)+1) - log(-min(x))
       }
-      else
+      else{
         y = log(x)
+      }
     }
+    y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
+
   } else
     y = x
+
+
   y
 }
 #' Utility round labels in domain and map
