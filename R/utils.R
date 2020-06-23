@@ -408,7 +408,6 @@ gen_text = function(x, namvar) {
   text.pop
 }
 
-#' define character vector of rate variables for labels with %
-#'
-#' @export
-rate_vars = c("lethality_rate")
+rate_vars <- c(
+  "lethality_rate"
+  )
