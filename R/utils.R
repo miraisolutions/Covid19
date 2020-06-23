@@ -41,6 +41,8 @@ basic_plot_theme <- function() {
     plot.title = element_text(color = "grey45", size = 18, face = "bold.italic", hjust = 0.5),
     text = element_text(size = 12),
     panel.background = element_blank(),
+    panel.grid.major = element_line(colour = "white", size = 0.1),
+    line = element_line(size = 2.2),
     axis.line.x = element_line(color = "grey45", size = 0.5),
     axis.line.y = element_line(color = "grey45", size = 0.5),
     axis.text.x = element_text(size = 10),
@@ -95,8 +97,9 @@ new_case_colors <- c(
 #'
 #' @export
 rate_colors <- c(
-  "growth_factor" = "#dd4b39",
-  "death_rate" = "black"
+  #"growth_factor" = "#dd4b39",
+  "growth_factor" = "chocolate3",
+  "death_rate" = "grey30"
 )
 
 #' Color Palette
@@ -111,7 +114,7 @@ new_total_colors <- c(
 #' @param destpath path to file
 #'
 #' @returns countries shapefile
-#'
+#' @export
 load_countries_data_map <- function(destpath = system.file("./countries_data", package = "Covid19")){
   # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
   url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
@@ -127,6 +130,52 @@ load_countries_data_map <- function(destpath = system.file("./countries_data", p
                               layer = "ne_50m_admin_0_countries",
                               encoding = "utf-8", use_iconv = T,
                               verbose = FALSE)
+  assign_new_level =  function(countrymap , lev, from, to, regexpress = FALSE) {
+    if (regexpress) {
+      if (!any(grepl(from, as.character(countrymap[[lev]]))))
+        stop("wrong expression, not present in map: ", from)
+      from = grep(from, as.character(countrymap[[lev]]), value = TRUE)
+    }
+    if (!any(countrymap[[lev]] == from))
+      stop("wrong name, not present in map: ", from)
+    levels(countrymap[[lev]])[levels(countrymap[[lev]])==from] <- to
+    countrymap[[lev]][countrymap[[lev]] == from] = to
+    countrymap
+  }
+  #rename continents
+  countries = assign_new_level(countries, "CONTINENT", "North America", "Northern America")
+  countries = assign_new_level(countries, "CONTINENT", "South America", "LatAm & Carib.")
+  #rename NAME, i.e. countries
+  #countries = assign_new_level(countries, "NAME", "Macao", "Macau")
+  #countries = assign_new_level(countries, "NAME", "Macao", "Macau")
+  countries = assign_new_level(countries, "NAME", "Macedonia", "North Macedonia")
+  countries = assign_new_level(countries, "NAME", "Czechia", "Czech Republic")
+  countries = assign_new_level(countries, "NAME", "Dominican Rep.", "Dominican Republic")
+  countries = assign_new_level(countries, "NAME", "United Kingdom", "UK")
+  countries = assign_new_level(countries, "NAME", "United States of America", "USA")
+  countries = assign_new_level(countries, "NAME", "United Arab Emirates", "UAE")
+  countries = assign_new_level(countries, "NAME", "^St-Barth", "St. Barth", regexpress = TRUE)
+  countries = assign_new_level(countries, "NAME", "Faeroe Is.", "Faeroe Islands")
+  countries = assign_new_level(countries, "NAME", "Bosnia and Herz.", "Bosnia and Herzegovina")
+  countries = assign_new_level(countries, "NAME", "Vatican", "Vatican City")
+  countries = assign_new_level(countries, "NAME", "St. Vin. and Gren.", "St. Vincent Grenadines")
+  countries = assign_new_level(countries, "NAME", "Dem. Rep. Congo", "Republic of the Congo")
+  #countries = assign_new_level(countries, "NAME", "Central African Rep.", "CAR")
+  countries = assign_new_level(countries, "NAME", "Ivoire", "Cote d'Ivoire", regexpress = TRUE)
+  countries = assign_new_level(countries, "NAME", "St-Martin", "St Martin")
+  countries = assign_new_level(countries, "NAME", "Cayman Is.", "Cayman Islands")
+  countries = assign_new_level(countries, "NAME", "Eq. Guinea", "Equatorial Guinea")
+  countries = assign_new_level(countries, "NAME", "Central African Rep.", "CAR")
+  countries = assign_new_level(countries, "NAME", "eSwatini", "Eswatini")
+  countries = assign_new_level(countries, "NAME", "Cabo Verde", "Cape Verde")
+  countries = assign_new_level(countries, "NAME", "S. Sudan", "South Sudan")
+  countries = assign_new_level(countries, "NAME", "Fr. Polynesia", "French Polynesia")
+  countries = assign_new_level(countries, "NAME", "Antigua and Barb.", "Antigua and Barbuda")
+  countries = assign_new_level(countries, "NAME", "Cook Is.", "Cook Islands")
+  countries = assign_new_level(countries, "NAME", "Falkland Is.", "Falkland Islands")
+  countries = assign_new_level(countries, "NAME", "U.S. Virgin Is.", "U.S. Virgin Islands")
+
+  countries
 }
 
 #' Sort type by max
@@ -227,22 +276,22 @@ aggr_to_cont = function(data, group, time, popdata, allstatuses) {
 
   popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
     group_by(.dots = group) %>%
-    summarize(population = sum(population, rm.na = T))
-
-  continent_data =    data %>%
+    summarize(population = sum(population, na.rm = T))
+  continent_data =    data %>% filter(!is.na(!!rlang::sym(group)))  %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
     group_by(.dots = c(time,group)) %>%
-    #group_by(time, continent) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
     add_growth_death_rate(group, time) %>%
-    left_join(popdata_cont[,c(group, "population")], by = group) %>%
+    left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
     rename(Country.Region = !!group) %>%
     get_timeseries_by_contagion_day_data()  %>%
-    arrange(desc(date))
+    arrange(desc(date)) %>%   ungroup() %>%
+    filter(!is.na(Country.Region)) # filter NAs off again for safety
+
   continent_data
 }
 
@@ -273,7 +322,8 @@ tsdata_areplot <- function(data, levs, n = 1000) {
 #' @return list messages printing Country.Region within subcontinent
 #'
 message_subcountries <- function(data, area, region) {
-  list.countries = data[,c(area,region)] %>% unique() %>%
+  # remove where subcontinent could be NA
+  list.countries = data[,c(area,region)] %>% filter(!is.na(!!rlang::sym(area))) %>% unique() %>%
     group_by(.dots = area) %>% group_split()
   lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
@@ -337,20 +387,27 @@ getdg_lab = function(dg,maxv,minxv) {
 }
 #' Derives text for plotly popups
 #' @param x data
+#' @param namvar character vector variable name
 #'
 #' @return text
 #'
-gen_text = function(x) {
+gen_text = function(x, namvar) {
   if (is.numeric(x)) {
-    maxy = max(x)
-    minxy = min(x)
+    maxy = max(x, na.rm = TRUE)
+    minxy = min(x, na.rm = TRUE)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
-    if(dg==1 && maxy<=1 && minxy>=0) {
+    #if(dg==1 && maxy<=1 && minxy>=0) {
+    if(namvar %in% rate_vars) {
       text.pop = paste0(roundlab(x*100),"%")
     } else {
       text.pop = formatC(x, format = "f", big.mark = "'", digits  = getdg_lab(dg, maxy, minxy))
     }
+    #x = replace("NA")
   } else
     text.pop = x
   text.pop
 }
+
+rate_vars <- c(
+  "lethality_rate"
+  )

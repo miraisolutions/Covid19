@@ -4,16 +4,16 @@
 \alias{plot_rate_hist}
 \title{plot rate as hist}
 \usage{
-plot_rate_hist(df, color, percent = F, y_min = 0)
+plot_rate_hist(df, percent = F, y_min = 0, g_palette)
 }
 \arguments{
 \item{df}{data.frame}
 
-\item{color}{string used to define color}
-
 \item{percent}{logical to make the y axis in percent}
 
 \item{y_min}{min value on y axis}
+
+\item{g_palette}{character vector of colors for the graph and legend}
 }
 \value{
 ggplot plot

@@ -8,15 +8,15 @@ if (interactive()) {
   library(shinycssloaders)
 
   cont = "LatAm & Carib."
-  cont = "Asia"
+  cont = "Oceania"
 
   variable = "growth vs prevalence" # set variable
-  #variable = "death rate" # set variable
+  variable = "death rate" # set variable
   variable = "prevalence rate" # set variable
   #variable = "active" # set variable
  #variable = "growth factor" # set variable
 
- #sapply(file.path("R",list.files("R")), source)
+ sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
@@ -38,9 +38,9 @@ if (interactive()) {
         aggregate_province_timeseries_data() %>%
         add_growth_death_rate() %>%
         arrange(Country.Region) %>%
-        align_country_names_pop() %>%
+        #align_country_names_pop() %>%
         merge_pop_data(pop_data) %>% # compute additional variables
-        align_country_names_pop_reverse() %>%
+        #align_country_names_pop_reverse() %>%
         filter(continent == cont) %>%
         mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
                prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),

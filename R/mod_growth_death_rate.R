@@ -40,6 +40,7 @@ mod_growth_death_rate_ui <- function(id, n_highligth = 5){
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
 #' @param istop logical to choose title
+#' @param g_palette list of character vector of colors for the graph and legend of growth_factor and death_rate
 #'
 #' @import dplyr
 #' @import tidyr
@@ -47,7 +48,10 @@ mod_growth_death_rate_ui <- function(id, n_highligth = 5){
 #' @example ex-mod_growth_death_rate.R
 #'
 #' @noRd
-mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T){
+mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7,
+                                         n_highligth = 5, istop = T,
+                                         g_palette = list("growth_factor" = rate_colors["growth_factor"],
+                                                        "death_rate" = rate_colors["death_rate"])){
   ns <- session$ns
 
   # Help funcs ----
@@ -125,7 +129,8 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   })
 
   output$plot_growth_factor_hist <- renderPlotly({
-    p <- plot_rate_hist(df_base_plot1(), color =  "growth_factor", y_min = 1)
+    g_palette_gf = g_palette[["growth_factor"]]
+    p <- plot_rate_hist(df_base_plot1(), y_min = 1, g_palette =  g_palette_gf)
     p <- p %>%
       plotly::ggplotly() %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
@@ -137,7 +142,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   is_percent <- reactive({ifelse(input$radio_pop == "lethality_rate", T, F)})
 
   output$plot_death_rate_hist <- renderPlotly({
-    p <- plot_rate_hist(df_base_plot2(), color =  "death_rate", percent = is_percent())
+    g_palette_drf = g_palette[["death_rate"]]
+
+    p <- plot_rate_hist(df_base_plot2(), percent = is_percent(), g_palette =  g_palette_drf)
     p <- p %>%
       plotly::ggplotly() %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")

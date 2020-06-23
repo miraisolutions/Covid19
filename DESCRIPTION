@@ -38,6 +38,7 @@ Imports:
     sp,
     markdown,
     scales,
+    grDevices,
     rlang,
     zoo
 Encoding: UTF-8

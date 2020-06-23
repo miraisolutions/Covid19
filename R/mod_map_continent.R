@@ -33,6 +33,8 @@ mod_map_cont_ui <- function(id){
 #' @param orig_data_aggregate reactive data.frame
 #' @param countries_data_map data.frame sp for mapping
 #' @param cont character continent or subcontinent name
+#' @param g_palette character vector of colors for the graph and legend
+#'
 #' @example man-roxygen/ex-mod_map.R
 #'
 #' @import dplyr
@@ -41,7 +43,7 @@ mod_map_cont_ui <- function(id){
 #' @import sp
 #'
 #' @noRd
-mod_map_cont_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont){
+mod_map_cont_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont, g_palette){
   ns <- session$ns
 
   # Data ----
@@ -49,8 +51,8 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
   data_clean <- reactive({
     data <-
       orig_data_aggregate() %>%
-      filter(continent == cont & date == max(date))  %>%# select data from continent only
-      align_country_names() # align names with country data
+      filter(continent == cont & date == max(date)) # %>%# select data from continent only
+      #align_country_names() # align names with country data
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
@@ -73,18 +75,17 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 
     data_selected <- data_selected %>%
       select(country_name, indicator) %>%
-      mutate(country_name = as.factor(country_name))
+      mutate(country_name = factor(country_name, levels = sort(unique(country_name))))
 
     data_plot <-  sp::merge(countries_data_map,
                             data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
-                            all.x = FALSE,
+                            all.x = TRUE, # changed to TRUE since Map is filtered by continent
                             sort = FALSE)
     data_plot
   })
 
-  # TODO: names should be restricted given boundaries
   country_popup <- reactive({
    paste0("<strong>Country: </strong>",
            data_plot()$NAME,
@@ -95,9 +96,10 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
     )
   })
 
-  pal_fun = function(dom,colpal){
-    colorFactor(palette = colpal, domain = dom, na.color = "white")
-  }
+  # pal_fun = function(dom, colpal){
+  #   colorFactor(palette = colpal, domain = dom, na.color = "white")
+  #
+  # }
 
   output[["map_cont"]] <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
@@ -121,9 +123,11 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
         cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4]
       )%>%
       addPolygons(layerId = ~NAME,
-                  fillColor = pal_fun(as.factor(data_plot()[["indicator"]]),
-                                      cont_map_spec(cont, "col"))(as.factor(data_plot()[["indicator"]])),
-                  fillOpacity = 1,
+                  # fillColor = pal_fun(factor(data_plot()[["indicator"]], levels = as.vector(sort(unique(data_plot()[["indicator"]])))),
+                  #                     cont_map_spec(cont, "col"))(factor(data_plot()[["indicator"]], levels = as.vector(sort(unique(data_plot()[["indicator"]]))))),
+                  fillColor = as.character(g_palette[data_plot()[["indicator"]]]),
+
+                 fillOpacity = 1,
                   color = "#BDBDC3",
                   group = "polygonsmap",
                   label = ~NAME,
@@ -139,14 +143,14 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
                                options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                hideMarkerOnCollapse = T,
                                                                moveToLocation = FALSE)
-      )
+                                )
       map = addLegend(map, position = cont_map_spec(cont, "legend"),
                 #group = "legendmap",
 
-                colors = pal_fun(as.factor(unique(data_plot()[["indicator"]])),
-                                 cont_map_spec(cont, "col"))(as.factor(unique(data_plot()[["indicator"]]))),
+                colors = as.character(g_palette), # [unique(data_plot()[["indicator"]])],
                 opacity = 1,
-                labels = as.factor(unique(data_plot()[["indicator"]])),
+                #labels = as.vector(sort(unique(data_plot()[["indicator"]]))),
+                labels = names(g_palette),
                 title = cont)#%>% #%>%
       map
 
@@ -164,9 +168,13 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
            "LatAm & Carib." =  c(-60, -80, 56, -55),
             "Northern America" = c(22, -147, 82, -39)
   )
-  col = list("Europe" = "Blues", "Asia" = "Reds",
-                          "Africa" = "RdYlBu", "Northern America" = "RdBu",
-                          "LatAm & Carib." = "GnBu", "Oceania" = "Oranges")
+  col = list("Europe" = c(col = "Blues", rev = TRUE, skip = 1),
+             "Asia" =  c(col = "Reds", rev = TRUE, skip = 1),
+             "Africa" = c(col = "RdYlBu", rev = FALSE, skip = 0),
+             "Northern America" = c(col = "RdBu", rev = TRUE, skip = 0),
+             "LatAm & Carib." = c(col = "GnBu", rev = TRUE, skip = 3),
+             "Oceania" = c(col = "Greens", rev = TRUE, skip = 4))
+
   zoom = list("Europe" = 3,
                 "Africa" = 2.9,
                 "Asia" = 2.5,

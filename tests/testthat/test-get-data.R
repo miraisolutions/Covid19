@@ -70,13 +70,15 @@ test_that("add_growth_death_rate returns expected headers", {
 
 
 pop_data = get_pop_data()
-
+na.pop.data = sum(is.na(pop_data$continent))
+# test pop map data
+mapdata = load_countries_data_map()
 
 test_that("get_pop_data returns expected rows", {
 
   orig_data_aggregate = aggregate_province_timeseries_data(data) %>%
-    arrange(Country.Region) %>%
-    align_country_names_pop()
+    arrange(Country.Region)
+
   dups = duplicated(orig_data_aggregate[, c("Country.Region", "date")])
 
   expect_true(sum(dups) == 0) # no duplicates
@@ -84,46 +86,88 @@ test_that("get_pop_data returns expected rows", {
   dups = duplicated(pop_data[, c("Country.Region")])
 
   expect_true(sum(dups) == 0) # no duplicates
+
+  pop_not_in_data = setdiff(pop_data$Country.Region, orig_data_aggregate$Country.Region)
+  # pop_data %>% filter(Country.Region %in% pop_not_in_data)
+
+  # merge with population
   df2 = orig_data_aggregate %>%
-    merge_pop_data(pop_data) %>%
-    align_country_names_pop_reverse()
+    merge_pop_data(pop_data)
 
   dups = duplicated(df2[, c("Country.Region", "date")])
 
-  expect_true(sum(dups) == 0) # no duplicates
+  expect_true(sum(dups) == 0) # no missing pop
 
-  df = orig_data_aggregate %>%
-    align_country_names_pop_reverse()
+  # countries with NAs population
+  missingpop = unique(df2$Country.Region[is.na(df2$population)])
 
-  countrynames= unique(df$Country.Region)
+  expect_true(length(missingpop) <= 3, label = paste("Missing population var in data <= 3 fails, value: ", length(missingpop))) # 2 countries do not match population data
+  # countries with 0 population
+  zeropop = unique(df2$Country.Region[!is.na(df2$population) & df2$population == 0])
+
+  expect_true(length(zeropop) == 0) # no zero pop
+
+  countrynames= unique(orig_data_aggregate$Country.Region)
 
   countrynames2= unique(df2$Country.Region)
 
-  diffdf= df %>% filter(Country.Region %in% setdiff(countrynames, countrynames2) &
-                  date == max(date))
+  expect_true(identical(countrynames, countrynames2))
 
-  expect_true(all(diffdf$confirmed <1000))
-  expect_true(all(!is.na(df2$Country.Region))) # no nas
-  expect_true(all(!is.na(df2$population))) # no nas
+  # diffdf= orig_data_aggregate %>% filter(Country.Region %in% setdiff(countrynames, countrynames2) &
+  #                 date == max(date))
+  #
+  # expect_true(all(diffdf$confirmed <1000))
+  # expect_true(all(!is.na(df2$Country.Region))) # no nas
+  # expect_true(all(!is.na(df2$population))) # no nas
 
   na.cont= df2 %>% filter(is.na(continent) &
                           date == max(date))
   na.subcont= df2 %>% filter(is.na(subcontinent) &
                             date == max(date))
-  expect_true(nrow(na.cont) == 0)
 
-  expect_true(nrow(na.subcont) == 0)
+  expect_true(all(na.cont$confirmed < 1000))
+  expect_true(all(na.subcont$confirmed < 1000))
+
+  # expect_true(nrow(na.cont) == 0)
+  # expect_true(nrow(na.subcont) == 0)
+
+
+  # check differences with other data
+  setdiff(mapdata$NAME, pop_data$Country.Region)
+  setdiff(pop_data$Country.Region, mapdata$NAME)
+
+
+  .align_map_pop <- function(map,pop) {
+    tmp = map@data[,c("NAME","CONTINENT")] %>%
+      merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T, sort = FALSE, incomparables = NA)
+    tmp = tmp[match(map@data$NAME,tmp$NAME),]
+    tmp2 = pop[,c("Country.Region","continent")] %>%
+      merge(map@data[,c("NAME","CONTINENT")], by.x = "Country.Region", by.y = "NAME", all.x = T, sort = FALSE, incomparables = NA)
+    tmp2 = tmp2[match(pop$continent,tmp2$continent),]
+
+    map@data$CONTINENT[!is.na(tmp$continent)] = tmp$continent[!is.na(tmp$continent)]
+    pop$continent[is.na(pop$continent)] = as.character(tmp2$CONTINENT[is.na(pop$continent)])
+
+    list(map = map, pop = pop)
+  }
+  res = .align_map_pop(mapdata, pop_data)
+  pop_data = res$pop
+  mapdata = res$map
+
+  setdiff(mapdata$NAME, pop_data$Country.Region)
+  setdiff(pop_data$Country.Region, mapdata$NAME)
+
+  expect_true(sum(is.na(pop_data$continent)) <=  na.pop.data )
+
 
 })
 
 test_that("aggr_to_cont works correctly", {
 
   orig_data_aggregate = aggregate_province_timeseries_data(data) %>%
-    arrange(Country.Region) %>%
-    align_country_names_pop()
+    arrange(Country.Region)
   df = orig_data_aggregate %>%
-    merge_pop_data(pop_data) %>%
-    align_country_names_pop_reverse()
+    merge_pop_data(pop_data)
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
@@ -137,7 +181,7 @@ test_that("aggr_to_cont works correctly", {
   # matching population
   cont_pop_data =  pop_data %>% filter(!is.na(continent)) %>%
     group_by(continent) %>%
-    summarize(population = sum(population, rm.na = T))
+    summarize(population = sum(population, na.rm = T))
 
   popcont = tapply(data_conts$population,
                    data_conts$Country.Region, unique)
@@ -149,7 +193,7 @@ test_that("aggr_to_cont works correctly", {
 
   europe_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% "Europe") %>%
     group_by(subcontinent) %>%
-    summarize(population = sum(population, rm.na = T))
+    summarize(population = sum(population, na.rm = T))
 
   df_europe = df %>%
     filter(continent == "Europe")

@@ -4,12 +4,14 @@
 \alias{time_evol_line_facet_plot}
 \title{Time evolution as area plot facet}
 \usage{
-time_evol_line_facet_plot(df, log)
+time_evol_line_facet_plot(df, log, g_palette = graph_palette)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
 
 \item{log}{character string log or linear}
+
+\item{g_palette}{character vector of colors for the graph and legend}
 }
 \value{
 area plot by date

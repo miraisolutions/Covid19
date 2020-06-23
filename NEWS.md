@@ -1,5 +1,9 @@
 ### Covid19 1.2.1-9000 (develop)
 - Fix colors in lineplot (#95)
+- Align graph colors in continent map (#105)
+- Updated graph style to align with new colors, updated palette
+- Fixed error France, aggregation of colonies
+
 
 ### Covid19 1.2.1 (2020-06-15)
 - correct plot title in country page (#94)

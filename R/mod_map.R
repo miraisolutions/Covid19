@@ -50,7 +50,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   #countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
   data_clean <- reactive({
-    data <- orig_data_aggregate() %>% align_country_names()
+    data <- orig_data_aggregate() #%>% align_country_names()
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 

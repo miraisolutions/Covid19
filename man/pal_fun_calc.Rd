@@ -4,10 +4,12 @@
 \alias{pal_fun_calc}
 \title{Utility calculate colors given palette}
 \usage{
-pal_fun_calc(x)
+pal_fun_calc(x, var)
 }
 \arguments{
 \item{x}{numeric vector of map data}
+
+\item{var}{character vector of variable name}
 }
 \value{
 rescaled x
