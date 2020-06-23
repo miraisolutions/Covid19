@@ -1,3 +1,5 @@
+### Covid19 1.2.2-900 (develop)
+
 ### Covid19 1.2.2 (2020-06-23)
 - Fix colors in lineplot (#95)
 - Align graph colors in continent map (#105)
