@@ -17,7 +17,6 @@ app_server <- function(input, output, session) {
   # Data ----
   # map
   countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
-
   orig_data <- reactive({
     get_timeseries_full_data() %>%
       get_timeseries_by_contagion_day_data()
@@ -25,14 +24,36 @@ app_server <- function(input, output, session) {
 
   pop_data = get_pop_data()
 
+  #align continents from map with pop
+  #country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(pop_data$Country.Region, unique(as.character(countries_data_map$NAME)))])
+  .align_map_pop <- function(map,pop) {
+    tmp = map@data[,c("NAME","CONTINENT")] %>%
+      merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T, sort = FALSE, incomparables = NA)
+    tmp = tmp[match(map@data$NAME,tmp$NAME),]
+    tmp2 = pop[,c("Country.Region","continent")] %>%
+      merge(map@data[,c("NAME","CONTINENT")], by.x = "Country.Region", by.y = "NAME", all.x = T, sort = FALSE, incomparables = NA)
+    tmp2 = tmp2[match(pop$continent,tmp2$continent),]
+
+    map@data$CONTINENT[!is.na(tmp$continent)] = tmp$continent[!is.na(tmp$continent)]
+    pop$continent[is.na(pop$continent)] = as.character(tmp2$CONTINENT[is.na(pop$continent)])
+
+    list(map = map, pop = pop)
+  }
+
+  res = .align_map_pop(countries_data_map, pop_data)
+  pop_data = res$pop
+  countries_data_map = res$map
+  # remove small countries, population <=1000
+  pop_data = pop_data %>% filter(population >1000)
+  # clean countries_data_map
   orig_data_aggregate <- reactive({
     orig_data_aggregate <- orig_data() %>%
       aggregate_province_timeseries_data() %>%
       add_growth_death_rate() %>%
       arrange(Country.Region) %>%
-      align_country_names_pop() %>%
+      #align_country_names_pop() %>%
       merge_pop_data(pop_data) %>% # compute additional variables
-      align_country_names_pop_reverse() %>%
+      #align_country_names_pop_reverse() %>%
       mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
              prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
              new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
@@ -64,7 +85,8 @@ app_server <- function(input, output, session) {
   # })
 
   # Modules ----
-  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate, countries_data_map)
+  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate,
+             data_filtered = data_filtered, countries_data_map)
   callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data = pop_data)
 
   # select continents in tabs

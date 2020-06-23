@@ -4,17 +4,24 @@ if (interactive()) {
   library(Covid19)
   library(tidyr)
   library(scales)
-
+  library(leaflet)
+  library(leaflet.extras)
+  library(plotly)
+  library(grid)
+  library(shinycssloaders)
+  library(RColorBrewer)
   require(DT)
-  #sapply(file.path("R",list.files("R")), source)
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
+  cont = "Northern America"
+  uicont = "northernamerica"
   ui <- fluidPage(
     tabPanel("Continents",
              tabsetPanel(
-               tabPanel("Africa",
+               tabPanel(cont,
                         id = "tab_global",
-    Covid19:::mod_continent_ui("cont_comparison", "africa")
+    Covid19:::mod_continent_ui("cont_comparison", uicont)
                )))
   )
   server <- function(input, output) {
@@ -31,9 +38,9 @@ if (interactive()) {
         aggregate_province_timeseries_data() %>%
         add_growth_death_rate() %>%
         arrange(Country.Region) %>%
-        align_country_names_pop() %>%
+        #align_country_names_pop() %>%
         merge_pop_data(pop_data) %>% # compute additional variables
-        align_country_names_pop_reverse() %>%
+        #align_country_names_pop_reverse() %>%
         mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
                prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
@@ -45,8 +52,8 @@ if (interactive()) {
         rescale_df_contagion(n = n, w = w)
     })
 
-    callModule(Covid19:::mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
-               countries_data_map, n = n, w = w, pop_data, cont = "Africa", uicont = "africa")
+    callModule(mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
+               countries_data_map, n = n, w = w, pop_data, cont = cont, uicont = uicont)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

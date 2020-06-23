@@ -55,6 +55,7 @@ mod_global_ui <- function(id){
 #'
 #' @param orig_data reactive data.frame
 #' @param orig_data_aggregate reactive data.frame
+#' @param data_filtered reactive data.frame from contagion day n
 #' @param countries_data data.frame sp for mapping
 #'
 #' @import dplyr
@@ -65,7 +66,7 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate, countries_data_map){
+mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate, data_filtered, countries_data_map){
   ns <- session$ns
 
   # Datasets ----
@@ -120,16 +121,24 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # > line plot top 5
   df_top_n <- reactive({
-    world_top_5_confirmed() %>%
-      mutate(status = as.factor(Country.Region)) %>%
+    # create factors with first top confirmed
+    countries_order =  world_top_5_confirmed() %>% filter(date == max(date)) %>%
+      arrange(desc(confirmed)) %>%
+      #arrange(!!as.symbol(input$radio_indicator)) %>%
+       .[,"Country.Region"] %>% as.vector()
+
+    df_top_n = world_top_5_confirmed() %>%
+      mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
       mutate(value = confirmed) %>%
       capitalize_names_df()
+    df_top_n
   })
 
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
   # > comparison plot from day of nth contagion
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate)
+
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", data_filtered)
 
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)

@@ -3,6 +3,7 @@ if (interactive()) {
   library(dplyr)
   library(Covid19)
   library(tidyr)
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
@@ -21,9 +22,9 @@ if (interactive()) {
         aggregate_province_timeseries_data() %>%
         add_growth_death_rate() %>%
         arrange(Country.Region) %>%
-        align_country_names_pop() %>%
+        #align_country_names_pop() %>%
         merge_pop_data(pop_data) %>% # compute additional variables
-        align_country_names_pop_reverse() %>%
+        #align_country_names_pop_reverse() %>%
         mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
                prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
@@ -41,7 +42,7 @@ if (interactive()) {
         distinct()
     })
 
-    callModule(Covid19:::mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate,
+    callModule(mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate,
                data_filtered = data_filtered, countries = countries)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

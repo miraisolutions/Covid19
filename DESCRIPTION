@@ -1,6 +1,6 @@
 Package: Covid19
 Title: Covid-19 Data Analysis
-Version: 1.2.1
+Version: 1.2.2
 Authors@R: 
     c(person("Francesca", "Vitalini", role = c("cre", "aut"),
              email = 'francesca.vitalini@mirai-solutions.com'),
@@ -38,6 +38,7 @@ Imports:
     sp,
     markdown,
     scales,
+    grDevices,
     rlang,
     zoo
 Encoding: UTF-8

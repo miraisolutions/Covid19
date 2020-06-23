@@ -22,15 +22,17 @@ mod_plot_log_linear_ui <- function(id){
 #'
 #' @param df reactive data.frame
 #' @param type character string. Either area or line. Used to select plot type.
+#' @param g_palette character vector of colors for the graph and legend
 #'
 #' @example man-roxygen/ex-plot_log_linear.R
 #'
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
 #' @importFrom plotly layout
+#' @importFrom scales label_number
 #'
 #' @noRd
-mod_plot_log_linear_server <- function(input, output, session, df, type){
+mod_plot_log_linear_server <- function(input, output, session, df, type , g_palette = graph_palette){
   ns <- session$ns
 
   log <- reactive({
@@ -47,8 +49,9 @@ mod_plot_log_linear_server <- function(input, output, session, df, type){
           fix_colors()
       } else {
         p <- df() %>%
-          time_evol_line_plot(log = log(), text = "Country")
+          time_evol_line_plot(log = log(), text = "Area" , g_palette = graph_palette)
       }
+      p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
 
       p <- p %>%
         ggplotly(tooltip = c("x", "y", "text")) %>%

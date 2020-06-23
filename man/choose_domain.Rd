@@ -4,10 +4,12 @@
 \alias{choose_domain}
 \title{Utility to choose domain for legend}
 \usage{
-choose_domain(x)
+choose_domain(x, var)
 }
 \arguments{
 \item{x}{numeric vector of map data}
+
+\item{var}{character vector of variable name}
 }
 \value{
 numeric vector of range

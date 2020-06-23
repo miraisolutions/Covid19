@@ -38,6 +38,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' @param df data.frame with column called Date and x column to plot
 #' @param log logical for applying log scale
 #' @param text element for tooltip
+#' @param g_palette character vector of colors for the graph and legend
 #'
 #' @return line plot of given variable by date
 #'
@@ -81,7 +82,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F, text = "") {
+time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palette) {
 
   if (log) {
     df <- df %>%
@@ -90,11 +91,11 @@ time_evol_line_plot <- function(df, log = F, text = "") {
         TRUE ~ Value
       ))
   }
-
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
-    geom_line(size = 1) +
+    geom_line() +
     basic_plot_theme() +
-    scale_colour_brewer(palette = "Dark2") +
+    #scale_colour_brewer(palette = g_palette) +
+    scale_color_manual(values = g_palette) +
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45),
@@ -199,7 +200,9 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
   }
 
   p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
-    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+    #geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), alpha = 0.5, position = 'identity') +
+
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
@@ -225,26 +228,32 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 #'
 #' @param df data.frame with column called Date and x column to plot
 #' @param log character string log or linear
+#' @param g_palette character vector of colors for the graph and legend
 #'
 #' @return area plot by date
 #'
 #' @import ggplot2
 #' @import RColorBrewer
+#' @importFrom scales label_number
 #'
 #' @export
-time_evol_line_facet_plot <- function(df, log) {
+time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
 
   if (log == "log") {
     df <- df %>%
       mutate(value = ifelse(value == 0, NA, value))
   }
-
   p <-  ggplot(df, aes(x = date, y = value)) +
-    geom_line(aes(colour = Country.Region), size = 2) +
+    geom_line(aes(colour = Country.Region), size = 1.7) + # size must be specified again being facet it is smaller
+    #geom_line(aes(colour = Country.Region)) +
+
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
+    theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     # scale_fill_brewer(palette = "Dark2") #+
-    scale_color_brewer(palette = "Dark2") +
+  #  scale_color_brewer(palette = g_palette) +
+    scale_color_manual(values = g_palette) +
+    scale_y_continuous(labels = label_number(big.mark = ",")) +# add label
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -458,14 +467,15 @@ fix_legend_position <- function(p){
 #' @param n_highligth number of elements to highlight
 #' @param percent logical to make the y axis in percent
 #' @param date_x logical to convert x-axis labels to dates
-#'
+#' @param g_palette character vector of colors for the graph and legend
 #'
 #' @import ggplot2
 #' @import RColorBrewer
 #' @import zoo
+#' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F) {
+plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
@@ -481,28 +491,39 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     df$Value <- 100*df$Value
   }
 
-  df_highlight <- df %>%
-    filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
+  # df_highlight <- df %>%
+  #   filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
 
   # rolling weekly average (#80)
-  df_highlight <- df_highlight %>% group_by(Status) %>%
+  df_highlight <- df %>% group_by(Status) %>%
     arrange(Date)  %>%
     mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE))
 
-  df_highlight_max <- df_highlight %>%
-    group_by(Status) %>%
-    filter(Value == max(Value)) %>%
-    ungroup()
+  if (F) { # not used, legacy
+    df_highlight_max <- df_highlight %>%
+      group_by(Status) %>%
+      filter(Value == max(Value)) %>%
+      ungroup()
+  }
+  #TODO y_tooltip should be wrapped with gentext(Value), not so nice below, it does not seem to work
+  # df = df %>% rename(Variable = Value)
+  # df_highlight = df_highlight %>% rename(Variable = Value)
+  #
+  # df$Value = gen_text(df$Variable)
+  # df_highlight$Value = gen_text(df_highlight$Variable)
 
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
-    # geom_line(size = 1, color = "#bbbdb9", alpha = 0.5) +
-    basic_plot_theme() +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
-    scale_color_brewer(palette = "Dark2")
+    basic_plot_theme() +
+    theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
 
+   # geom_line(data = df_highlight) +
+   # scale_color_brewer(palette = g_palette)
+    scale_color_manual(values = g_palette)
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
-  }
+  } else
+    p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
 
   if (log) {
     p <- p %>%
@@ -525,22 +546,28 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
 #' plot rate as hist
 #'
 #' @param df data.frame
-#' @param color string used to define color
 #' @param percent logical to make the y axis in percent
 #' @param y_min min value on y axis
+#' @param g_palette character vector of colors for the graph and legend
 #'
 #' @import ggplot2
 #'
 #' @return ggplot plot
 #' @export
-plot_rate_hist <- function(df, color, percent =  F, y_min = 0) {
+plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
   if (percent) {
     df$Value <- 100*df$Value
   }
+  if(!any(df$Country %in% names(g_palette))){
+    pal = as.character(g_palette) # if normal case
+  } else {
+    pal = g_palette[as.character(df$Country)] # if palette given per country
+  }
 
   p <- ggplot(df, aes(x = Country, y = Value)) +
-    geom_bar(stat = "identity", fill = rate_colors[[color]]) +
+    geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
+    theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     coord_cartesian(ylim = c(y_min, max(df$Value))) +
     theme(
       axis.text.x = element_text(angle = 30)
@@ -609,3 +636,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
   p
 }
 
+#' default palette for graph pages
+#'
+graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
+
+#' background color of maps
+#'
+backgroud_map_col = "grey90"

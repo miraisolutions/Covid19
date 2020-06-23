@@ -54,13 +54,14 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   # select all variables
   allstatuses = c(statuses, paste0("new_", statuses))
 
-  continents = reactive({unique(orig_data_aggregate()$continent)})
+  #continents = reactive({unique(orig_data_aggregate()$continent)})
 
   # continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
   #   group_by(continent) %>%
-  #   summarize(population = sum(as.numeric(population), rm.na = T))
+  #   summarize(population = sum(as.numeric(population), na.rm = T))
   # aggregate data to continent
   continent_data <- reactive({aggr_to_cont(orig_data_aggregate(), "continent", "date", pop_data, allstatuses)})
+  continents = reactive({unique(continent_data()$Country.Region)})
 
   #continent_data_filtered <- reactive({aggr_to_cont(data_filtered(), "continent", "date", pop_data, allstatuses)})
   continent_data_filtered <- reactive({continent_data() %>% # select continents with longer outbreaks
@@ -90,7 +91,8 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"))
   })
 
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data_filtered, n = n, n_highligth = length(continents()), istop = F)
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data_filtered, n = n, w = w,
+             n_highligth = length(continents()), istop = F)
 
   # scatterplot
   output$scatterplot_plots_cont <- renderUI({

@@ -4,7 +4,7 @@
 \alias{time_evol_line_plot}
 \title{Time evolution as line plot}
 \usage{
-time_evol_line_plot(df, log = F, text = "")
+time_evol_line_plot(df, log = F, text = "", g_palette = graph_palette)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
@@ -12,6 +12,8 @@ time_evol_line_plot(df, log = F, text = "")
 \item{log}{logical for applying log scale}
 
 \item{text}{element for tooltip}
+
+\item{g_palette}{character vector of colors for the graph and legend}
 }
 \value{
 line plot of given variable by date

@@ -26,9 +26,9 @@ if (interactive()) {
         aggregate_province_timeseries_data() %>%
         add_growth_death_rate() %>%
         arrange(Country.Region) %>%
-        align_country_names_pop() %>%
+        #align_country_names_pop() %>%
         merge_pop_data(pop_data) %>% # compute additional variables
-        align_country_names_pop_reverse() %>%
+        #align_country_names_pop_reverse() %>%
         mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
                prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
                new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
@@ -59,7 +59,7 @@ if (interactive()) {
     })
 
 
-    callModule(Covid19:::mod_plot_log_linear_server,"plot_log_area_global", df = df_tot, type = "area")
+    callModule(mod_plot_log_linear_server,"plot_log_area_global", df = df_tot, type = "line")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
