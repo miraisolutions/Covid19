@@ -16,13 +16,19 @@ app_server <- function(input, output, session) {
 
   # Data ----
   # map
-  countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
-  orig_data <- reactive({
-    get_timeseries_full_data() %>%
-      get_timeseries_by_contagion_day_data()
+  #countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
+  countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+
+  # orig_data <- reactive({
+  #   get_timeseries_full_data() %>%
+  #     get_timeseries_by_contagion_day_data()
+  # })
+  orig_data <- reactive({ get_datahub() %>%
+    get_timeseries_by_contagion_day_data()
   })
 
-  pop_data = get_pop_data()
+  #pop_data = get_pop_data()
+  pop_data = get_pop_datahub()
 
   #align continents from map with pop
   #country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(pop_data$Country.Region, unique(as.character(countries_data_map$NAME)))])
@@ -44,21 +50,19 @@ app_server <- function(input, output, session) {
   pop_data = res$pop
   countries_data_map = res$map
   # remove small countries, population <=1000
-  pop_data = pop_data %>% filter(population >1000)
-  # clean countries_data_map
-  orig_data_aggregate <- reactive({
-    orig_data_aggregate <- orig_data() %>%
-      aggregate_province_timeseries_data() %>%
-      add_growth_death_rate() %>%
-      arrange(Country.Region) %>%
-      #align_country_names_pop() %>%
-      merge_pop_data(pop_data) %>% # compute additional variables
-      #align_country_names_pop_reverse() %>%
-      mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-             prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-             new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
-    orig_data_aggregate
-  })
+  #pop_data = pop_data %>% filter(population >1000)
+  # orig_data_aggregate <- reactive({
+  #   orig_data_aggregate <- orig_data() %>%
+  #     #aggregate_province_timeseries_data() %>% # not required anymore
+  #     add_growth_death_rate() %>%
+  #     arrange(Country.Region) %>%
+  #     merge_pop_data(pop_data) %>% # compute additional variables
+  #     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
+  #            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
+  #            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
+  #   orig_data_aggregate
+  # })
+  orig_data_aggregate <-reactive({ build_data_aggr(orig_data(), pop_data)})
 
   output$last_update <- renderText({
     paste0("Last updated: ",
