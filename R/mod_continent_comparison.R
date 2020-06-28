@@ -50,9 +50,8 @@ mod_continent_comparison_ui <- function(id){
 mod_continent_comparison_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, pop_data){
   ns <- session$ns
 
-  statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
-  allstatuses = c(statuses, paste0("new_", statuses))
+  #allstatuses = get_aggrvars()
 
   #continents = reactive({unique(orig_data_aggregate()$continent)})
 
@@ -60,10 +59,11 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   #   group_by(continent) %>%
   #   summarize(population = sum(as.numeric(population), na.rm = T))
   # aggregate data to continent
-  continent_data <- reactive({aggr_to_cont(orig_data_aggregate(), "continent", "date", pop_data, allstatuses)})
+  continent_data <- reactive({aggr_to_cont(orig_data_aggregate(), "continent", "date", #pop_data,
+                                           #allstatuses
+                                           )})
   continents = reactive({unique(continent_data()$Country.Region)})
 
-  #continent_data_filtered <- reactive({aggr_to_cont(data_filtered(), "continent", "date", pop_data, allstatuses)})
   continent_data_filtered <- reactive({continent_data() %>% # select continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)
       })
