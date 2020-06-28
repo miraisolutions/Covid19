@@ -144,12 +144,12 @@ get_timeseries_full_data <- function() {
 #'
 #' @return data tibble of confirmed, deaths, active and recovered Country.Region
 #'
-#' @import COVID19
+#' @importFrom COVID19 covid19
 #' @import dplyr
 #'
 #' @export
 get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
-  dataHub <- COVID19::covid19(start = stardate, level = lev) # select level2 to add states
+  dataHub <- covid19(start = stardate, level = lev) # select level2 to add states
 
   # select varaibles for backwards compatibility + some additional variables
   dataHub = dataHub %>% ungroup() %>% select(administrative_area_level_1, #id, # at the moment removing ID
