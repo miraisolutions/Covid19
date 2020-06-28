@@ -226,6 +226,9 @@ get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
 #' @export
 get_timeseries_by_contagion_day_data <- function(data) {
 
+  if (!("tests" %in% names(data))) {
+    data$tests = data$hosp = rep(0,nrow(data))
+  }
   data1 <- data %>%
     arrange(desc(Country.Region), date) %>%
     mutate(no_contagion = case_when(
