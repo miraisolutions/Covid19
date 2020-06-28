@@ -93,9 +93,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   ns <- session$ns
 
   message("Process continent ", cont)
-  statuses <- c("confirmed", "deaths", "recovered", "active")
-  # select all variables
-  allstatuses = c(statuses, paste0("new_", statuses))
+  # statuses <- c("confirmed", "deaths", "recovered", "active")
+  # # select all variables
+  # allstatuses = c(statuses, paste0("new_", statuses), "tests", "hosp", "population")
+  #allstatuses = get_aggrvars()
 
   orig_data_aggregate_cont <- reactive({
     orig_data_aggregate() %>% filter(continent == cont)
@@ -104,25 +105,29 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
       rescale_df_contagion(n = n, w = w)})
 
   subcontinents = reactive({sort(unique(orig_data_aggregate_cont()$subcontinent))})
+  # continent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) %>%
+  #   group_by(continent) %>%
+  #   summarize(population = sum(population, na.rm = T))
 
-  continent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) %>%
-    group_by(continent) %>%
-    summarize(population = sum(population, na.rm = T))
-
-  subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) %>%
-    group_by(subcontinent) %>%
-    summarize(population = sum(population, na.rm = T))
+  subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) #%>%
+    #group_by(subcontinent)# %>%
+    #summarize(population = sum(population, na.rm = T))
 
   continent_data <- reactive({ aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
-                                           continent_pop_data, allstatuses)})
+                                           #continent_pop_data,
+                                           #allstatuses
+                                           )})
 
   subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",
-                                              subcontinent_pop_data, allstatuses)})
+                                              #subcontinent_pop_data,
+                                              #allstatuses
+                                              )})
   # define palette for subcontinent
 
   subcont_palette = reactive({
     subcont_palette_calc(col_cont = cont_map_spec(cont, "col"),
-         x = sort(unique(c(subcontinent_pop_data$subcontinent, orig_data_aggregate_cont()$subcontinent))))
+         x = sort(unique(c(subcontinent_pop_data$subcontinent,
+                           orig_data_aggregate_cont()$subcontinent))))
   })
 
   subcontinent_data_filtered <- reactive({subcontinent_data() %>% # select sub-continents with longer outbreaks
