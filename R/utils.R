@@ -115,7 +115,7 @@ new_total_colors <- c(
 #'
 #' @returns countries shapefile
 #' @export
-load_countries_data_map <- function(destpath = system.file("./countries_data", package = "Covid19")){
+load_countries_data_map <- function(destpath = system.file("./countries_data", package = "Covid19Mirai")){
   # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
   url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
   zip_path <- file.path(destpath,"ne_50m_admin_0_countries.zip")
@@ -174,6 +174,79 @@ load_countries_data_map <- function(destpath = system.file("./countries_data", p
   countries = assign_new_level(countries, "NAME", "Cook Is.", "Cook Islands")
   countries = assign_new_level(countries, "NAME", "Falkland Is.", "Falkland Islands")
   countries = assign_new_level(countries, "NAME", "U.S. Virgin Is.", "U.S. Virgin Islands")
+
+  countries
+}
+
+#' load countries data to match with get_datahub
+#' @param destpath path to file
+#'
+#' @returns countries shapefile
+#' @export
+load_countries_datahub_map <- function(destpath = system.file("./countries_data", package = "Covid19Mirai")){
+  # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
+  url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"
+  zip_path <- file.path(destpath,"ne_50m_admin_0_countries.zip")
+  dsn_path <- file.path(destpath, "ne_50m_admin_0_countries")
+
+  if (!file.exists(zip_path)) {
+    download.file(url = url, destfile = zip_path)
+    unzip(zip_path, exdir = dsn_path)
+  }
+
+  countries <- rgdal::readOGR(dsn = dsn_path,
+                              layer = "ne_50m_admin_0_countries",
+                              encoding = "utf-8", use_iconv = T,
+                              verbose = FALSE)
+  assign_new_level =  function(countrymap , lev, from, to, regexpress = FALSE) {
+    if (regexpress) {
+      if (!any(grepl(from, as.character(countrymap[[lev]]))))
+        stop("wrong expression, not present in map: ", from)
+      from = grep(from, as.character(countrymap[[lev]]), value = TRUE)
+    }
+    if (!any(countrymap[[lev]] == from))
+      stop("wrong name, not present in map: ", from)
+    levels(countrymap[[lev]])[levels(countrymap[[lev]])==from] <- to
+    countrymap[[lev]][countrymap[[lev]] == from] = to
+    countrymap
+  }
+  #rename continents
+  countries = assign_new_level(countries, "CONTINENT", "North America", "Northern America")
+  countries = assign_new_level(countries, "CONTINENT", "South America", "LatAm & Carib.")
+  #rename NAME, i.e. countries
+  #countries = assign_new_level(countries, "NAME", "Macao", "Macau")
+  #countries = assign_new_level(countries, "NAME", "Macao", "Macau")
+  countries = assign_new_level(countries, "NAME", "Macedonia", "North Macedonia")
+  countries = assign_new_level(countries, "NAME", "Czechia", "Czech Republic")
+  countries = assign_new_level(countries, "NAME", "Dominican Rep.", "Dominican Republic")
+  countries = assign_new_level(countries, "NAME", "United Kingdom", "UK")
+  countries = assign_new_level(countries, "NAME", "United States of America", "USA")
+  #countries = assign_new_level(countries, "NAME", "United Arab Emirates", "UAE") # now has new name
+  countries = assign_new_level(countries, "NAME", "^St-Barth", "St. Barth", regexpress = TRUE) # not needed but ok
+  countries = assign_new_level(countries, "NAME", "Faeroe Is.", "Faeroe Islands")
+  countries = assign_new_level(countries, "NAME", "Bosnia and Herz.", "Bosnia and Herzegovina")
+  countries = assign_new_level(countries, "NAME", "Vatican", "Vatican City")
+  countries = assign_new_level(countries, "NAME", "St. Vin. and Gren.", "St. Vincent Grenadines")
+  countries = assign_new_level(countries, "NAME", "Dem. Rep. Congo", "Republic of the Congo")
+  #countries = assign_new_level(countries, "NAME", "Central African Rep.", "CAR")
+  countries = assign_new_level(countries, "NAME", "Ivoire", "Cote d'Ivoire", regexpress = TRUE)
+  countries = assign_new_level(countries, "NAME", "St-Martin", "St Martin")
+  countries = assign_new_level(countries, "NAME", "Cayman Is.", "Cayman Islands")
+  countries = assign_new_level(countries, "NAME", "Eq. Guinea", "Equatorial Guinea")
+  countries = assign_new_level(countries, "NAME", "Central African Rep.", "Central African Republic")
+  countries = assign_new_level(countries, "NAME", "eSwatini", "Swaziland")
+  countries = assign_new_level(countries, "NAME", "Cabo Verde", "Cape Verde")
+  countries = assign_new_level(countries, "NAME", "S. Sudan", "South Sudan")
+  countries = assign_new_level(countries, "NAME", "Fr. Polynesia", "French Polynesia")
+  countries = assign_new_level(countries, "NAME", "Antigua and Barb.", "Antigua and Barbuda")
+  countries = assign_new_level(countries, "NAME", "Cook Is.", "Cook Islands")
+  countries = assign_new_level(countries, "NAME", "Falkland Is.", "Falkland Islands")
+  countries = assign_new_level(countries, "NAME", "U.S. Virgin Is.", "U.S. Virgin Islands") # new name
+  countries = assign_new_level(countries, "NAME", "St. Kitts and Nevis", "Saint Kitts and Nevis" ) # new name
+  countries = assign_new_level(countries, "NAME", "Principe", "Sao Tome and Principe", regexpress = TRUE )
+  countries = assign_new_level(countries, "NAME", "N. Mariana Is.", "Northern Mariana Islands")
+  countries = assign_new_level(countries, "NAME", "Marshall Is.", "Marshall Iselands")
+  countries = assign_new_level(countries, "NAME", "St. Pierre and Miquelon", "St. Pierre and Miquelon")
 
   countries
 }
@@ -272,18 +345,19 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
 #'
 #' @importFrom rlang sym
 #' @export
-aggr_to_cont = function(data, group, time, popdata, allstatuses) {
+aggr_to_cont = function(data, group, time, #popdata,
+                        allstatuses = get_aggrvars()) {
 
-  popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
-    group_by(.dots = group) %>%
-    summarize(population = sum(population, na.rm = T))
+  # popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
+  #   group_by(.dots = group) %>%
+  #   summarize(population = sum(population, na.rm = T))
   continent_data =    data %>% filter(!is.na(!!rlang::sym(group)))  %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
     group_by(.dots = c(time,group)) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
     add_growth_death_rate(group, time) %>%
-    left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
+    #left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
@@ -411,3 +485,33 @@ gen_text = function(x, namvar) {
 rate_vars <- c(
   "lethality_rate"
   )
+
+#' Builds dataset to be used in modules merging pop_data with data
+#' @param data data
+#' @param popdata population data with continent info
+#'
+#' @return data
+#'
+build_data_aggr <- function(data, popdata) {
+  orig_data_aggregate <- data %>%
+    #aggregate_province_timeseries_data() %>% # not required anymore
+    add_growth_death_rate() %>%
+    arrange(Country.Region) %>%
+    merge_pop_data(popdata) %>% # compute additional variables
+    mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
+           prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
+           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
+  orig_data_aggregate
+}
+
+#'Global definition of numeric aggregatable vars in dataset
+#'
+#' @return character vector
+#'
+get_aggrvars = function() {
+
+  statuses <- c("confirmed", "deaths", "recovered", "active")
+  # select all variables
+  allstatuses = c(statuses, paste0("new_", statuses), "tests", "hosp", "population")
+  allstatuses
+}
