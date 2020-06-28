@@ -10,24 +10,23 @@
 #' @noRd
 app_server <- function(input, output, session) {
 
+#profvis({
   # Params ----
   n <- 1000 #  min number of cases for a country to be considered. Default 1000
   w <- 7 # number of days of outbreak. Default 7
 
   # Data ----
   # map
-  #countries_data_map <- load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
-  countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+  #countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+  rds_map = "WorldMap_sp_rds"
+  message("read map from RDS ", rds_map)
+  countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-  # orig_data <- reactive({
-  #   get_timeseries_full_data() %>%
-  #     get_timeseries_by_contagion_day_data()
-  # })
-  orig_data <- reactive({ get_datahub() %>%
-    get_timeseries_by_contagion_day_data()
-  })
+  orig_data <- #reactive({
+    get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
+  #})
 
-  #pop_data = get_pop_data()
   pop_data = get_pop_datahub()
 
   #align continents from map with pop
@@ -50,47 +49,35 @@ app_server <- function(input, output, session) {
   pop_data = res$pop
   countries_data_map = res$map
   # remove small countries, population <=1000
-  #pop_data = pop_data %>% filter(population >1000)
-  # orig_data_aggregate <- reactive({
-  #   orig_data_aggregate <- orig_data() %>%
-  #     #aggregate_province_timeseries_data() %>% # not required anymore
-  #     add_growth_death_rate() %>%
-  #     arrange(Country.Region) %>%
-  #     merge_pop_data(pop_data) %>% # compute additional variables
-  #     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-  #            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-  #            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
-  #   orig_data_aggregate
-  # })
-  orig_data_aggregate <-reactive({ build_data_aggr(orig_data(), pop_data)})
+  # TODO pop_data = pop_data %>% filter(population >1000)
+
+  orig_data_aggregate <-
+    build_data_aggr(orig_data, pop_data)
+
 
   output$last_update <- renderText({
     paste0("Last updated: ",
-           max(orig_data()$date)
+           max(orig_data$date)
     )
   })
 
-  data_filtered <- reactive({
-    orig_data_aggregate() %>%
+  data_filtered <-
+    orig_data_aggregate %>%
       rescale_df_contagion(n = n, w = w)
-  })
+
 
   countries <- reactive({
-    data_filtered() %>%
+    data_filtered %>%
       select(Country.Region) %>%
       distinct()
   })
 
 
-  # continents <- reactive({
-  #   data_filtered() %>%
-  #     select(continent) %>%
-  #     distinct()
-  # })
-
   # Modules ----
+
   callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate,
              data_filtered = data_filtered, countries_data_map)
+
   callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data = pop_data)
 
   # select continents in tabs
@@ -102,12 +89,10 @@ app_server <- function(input, output, session) {
                orig_data_aggregate = orig_data_aggregate, n = n, w = w,
                pop_data = pop_data, countries_data_map = countries_data_map,
                cont = continents[i.cont], uicont = uicontinents[i.cont])
-
   }
+  callModule(mod_country_server, "country", data_filtered = data_filtered, countries = countries, n = n, w = w)
 
-
-  callModule(mod_country_server, "country", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, countries = countries, n = n, w = w)
-  callModule(mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate, data_filtered = data_filtered, countries = countries, n = n, w = w)
+  callModule(mod_country_comparison_server, "country_comparison", data_filtered = data_filtered, countries = countries, n = n, w = w)
 
   # Modal ----
   # what is new pop-up
@@ -121,5 +106,7 @@ app_server <- function(input, output, session) {
       fade = FALSE
     ))
   })
+#})
 
 }
+
