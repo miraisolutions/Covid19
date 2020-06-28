@@ -4,7 +4,7 @@
 \alias{aggr_to_cont}
 \title{Aggregates data to continent or subcontinent (group)}
 \usage{
-aggr_to_cont(data, group, time, popdata, allstatuses)
+aggr_to_cont(data, group, time, allstatuses = get_aggrvars())
 }
 \arguments{
 \item{data}{data.frame aggregated data per Country.Region}
@@ -13,9 +13,9 @@ aggr_to_cont(data, group, time, popdata, allstatuses)
 
 \item{time}{character date or contagion_day}
 
-\item{popdata}{data with population info}
-
 \item{allstatuses}{character vector of statuses to base the recomputation from: confirmed recovered deaths active}
+
+\item{popdata}{data with population info}
 }
 \value{
 data.frame aggregated at group level
