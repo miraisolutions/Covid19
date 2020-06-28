@@ -350,7 +350,7 @@ aggr_to_cont = function(data, group, time,
   # popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
   #   group_by(.dots = group) %>%
   #   summarize(population = sum(population, na.rm = T))
-  continent_data =    data %>% filter(!is.na(!!rlang::sym(group)))  %>%
+  continent_data =    data %>% filter(!is.na(!!rlang::sym(group))) %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
     group_by(.dots = c(time,group)) %>%
@@ -359,7 +359,13 @@ aggr_to_cont = function(data, group, time,
     #left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3)) %>%
+           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
+           tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
+           new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
+           tests_rate_confirmed = round(tests/confirmed, digits = 3),
+           new_tests_rate_confirmed = round(new_tests/new_confirmed, digits = 3),
+           hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
+           deaths_rate_hosp =  round(deaths/hosp, digits = 5)) %>%
     rename(Country.Region = !!group) %>%
     get_timeseries_by_contagion_day_data()  %>%
     arrange(desc(date)) %>%   ungroup() %>%
@@ -499,7 +505,14 @@ build_data_aggr <- function(data, popdata) {
     merge_pop_data(popdata) %>% # compute additional variables
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
+           new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
+           tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
+           new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
+           tests_rate_confirmed = round(tests/confirmed, digits = 3),
+           new_tests_rate_confirmed = round(new_tests/new_confirmed, digits = 3),
+           hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
+           deaths_rate_hosp =  round(deaths/hosp, digits = 5)
+           )
   orig_data_aggregate
 }
 
@@ -511,6 +524,6 @@ get_aggrvars = function() {
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
-  allstatuses = c(statuses, paste0("new_", statuses), "tests", "hosp", "population")
+  allstatuses = c(statuses, paste0("new_", statuses), "tests", "hosp", paste0("new_",c("tests", "hosp")), "population")
   allstatuses
 }
