@@ -79,7 +79,7 @@ mod_continent_ui <- function(id, uicont){
 
 #' continent Server Function
 #'
-#' @param orig_data_aggregate reactive data.frame with data from 1 continent
+#' @param orig_data_aggregate data.frame with data from 1 continent
 #' @param countries_data_map full sp data.frame with map details
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
@@ -98,50 +98,54 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # allstatuses = c(statuses, paste0("new_", statuses), "tests", "hosp", "population")
   #allstatuses = get_aggrvars()
 
-  orig_data_aggregate_cont <- reactive({
-    orig_data_aggregate() %>% filter(continent == cont)
-      })
-  data_filtered_cont <- reactive({orig_data_aggregate_cont() %>% # select sub-continents with longer outbreaks
-      rescale_df_contagion(n = n, w = w)})
+  orig_data_aggregate_cont <-
+    orig_data_aggregate %>% filter(continent == cont)
 
-  subcontinents = reactive({sort(unique(orig_data_aggregate_cont()$subcontinent))})
-  # continent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) %>%
-  #   group_by(continent) %>%
-  #   summarize(population = sum(population, na.rm = T))
+  data_filtered_cont <-
+    orig_data_aggregate_cont %>% # select sub-continents with longer outbreaks
+      rescale_df_contagion(n = n, w = w)
+
+
+ # subcontinents = reactive({sort(unique(orig_data_aggregate_cont$subcontinent))})
+  subcontinents = sort(unique(orig_data_aggregate_cont$subcontinent))
+
 
   subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) #%>%
     #group_by(subcontinent)# %>%
     #summarize(population = sum(population, na.rm = T))
 
-  continent_data <- reactive({ aggr_to_cont(orig_data_aggregate_cont(), "continent", "date",
+  continent_data <-
+    aggr_to_cont(orig_data_aggregate_cont, "continent", "date",
                                            #continent_pop_data,
                                            #allstatuses
-                                           )})
+                                           )
 
-  subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",
+  subcontinent_data <-
+    aggr_to_cont(orig_data_aggregate_cont, "subcontinent", "date",
                                               #subcontinent_pop_data,
                                               #allstatuses
-                                              )})
+                                              )
   # define palette for subcontinent
 
-  subcont_palette = reactive({
+  subcont_palette =
     subcont_palette_calc(col_cont = cont_map_spec(cont, "col"),
          x = sort(unique(c(subcontinent_pop_data$subcontinent,
-                           orig_data_aggregate_cont()$subcontinent))))
-  })
+                           orig_data_aggregate_cont$subcontinent))))
+ # })
 
-  subcontinent_data_filtered <- reactive({subcontinent_data() %>% # select sub-continents with longer outbreaks
+  subcontinent_data_filtered <-
+    subcontinent_data %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)
-  })
 
-  continent_data_today <- reactive({
-    continent_data() %>%
+
+  continent_data_today <-
+    continent_data %>%
       filter(date == max(date))
-  })
-  continent_timeseries <- reactive({
-    continent_data() %>%
+
+  continent_timeseries <-
+    continent_data %>%
       get_timeseries_global_data()
-  })
+
 
   # filter map only continent
   #countries_data_map_cont = countries_data_map[countries_data_map@data$CONTINENT == cont,]
@@ -161,15 +165,15 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Map
   # Boxes ----
-  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map_cont, cont = cont, g_palette = subcont_palette())
+  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map_cont, cont = cont, g_palette = subcont_palette)
 
   # > area plot global
   levs <- sort_type_hardcoded()
 
-  df_continent = reactive({
-    tsdata_areplot(continent_timeseries(),levs)
-  })
-  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area", g_palette = subcont_palette())
+  df_continent =
+    tsdata_areplot(continent_timeseries,levs)
+
+  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area", g_palette = subcont_palette)
 
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
     paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
@@ -177,7 +181,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # list of countries
   list.message = reactive({
       #message_subcountries(data_filtered_cont(),"subcontinent","Country.Region")
-      message_subcountries(orig_data_aggregate_cont(),"subcontinent","Country.Region")
+      message_subcountries(orig_data_aggregate_cont,"subcontinent","Country.Region")
 
   })
 
@@ -195,16 +199,16 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   callModule(mod_lineplots_day_contagion_server,
              "lineplots_day_contagion_cont",
-             subcontinent_data_filtered, g_palette = subcont_palette())
+             subcontinent_data_filtered, g_palette = subcont_palette)
 
   # Rate plots ----
   output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_growth_death_rate_ui(ns("rate_plots_cont"), n_highligth = length(subcontinents()))
+    mod_growth_death_rate_ui(ns("rate_plots_cont"), n_highligth = length(subcontinents))
   })
 
   callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered,
-             n = n, n_highligth = length(subcontinents()), istop = F, g_palette = list("growth_factor" = subcont_palette(),
-                                                                                       "death_rate" = subcont_palette()))
+             n = n, n_highligth = length(subcontinents), istop = F, g_palette = list("growth_factor" = subcont_palette,
+                                                                                       "death_rate" = subcont_palette))
 
   # Line with bullet plot
 
@@ -213,7 +217,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data_filtered, n = n, w = w,
-             n_highligth = length(subcontinents()), istop = F , g_palette = subcont_palette())
+             n_highligth = length(subcontinents), istop = F , g_palette = subcont_palette)
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
@@ -221,7 +225,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont",
-             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents()),
+             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents),
              istop = F, countries = subcontinents)
 
 
@@ -229,7 +233,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
   })
   callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
-             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents()), istop = F)
+             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents), istop = F)
 
   #maps confirmed
   output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
@@ -287,8 +291,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 subcont_palette_calc = function(col_cont = cont_map_spec(cont, "col"),  x ) {
   if (length(setdiff(names(col_cont), c("col","rev","skip"))) >0)
     stop("col_cont arg does not contain all names")
-  #col_cont = cont_map_spec(cont, "col")
-  #x =  sort(unique(c(subcontinent_pop_data$subcontinent, orig_data_aggregate_cont()$subcontinent)))
+
   skipn = as.integer(col_cont["skip"])
   revpal = as.logical(col_cont["rev"])
   if (skipn >0) { # assumption that first colors in palette are the lightes to be excluded

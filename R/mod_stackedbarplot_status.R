@@ -17,7 +17,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 }
 #' stackedbarplot_status Server Function
 #'
-#' @param df reactive data.frame for multiple countries
+#' @param df data.frame for multiple countries
 #'
 #' @import dplyr
 #' @import tidyr
@@ -40,7 +40,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
       filter( date == max(date))
     df1
   }
-  df_pop <- reactive({prep_data(df(), n,w)})
+  df_pop <- reactive({prep_data(df, n,w)})
 
   statuses <- c("deaths", "active", "recovered")
 

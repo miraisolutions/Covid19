@@ -22,7 +22,7 @@ mod_scatterplot_ui <- function(id, n_highligth = 5){
 }
 #' Scatterplot prevalence vs growth
 #'
-#' @param df reactive data.frame for multiple countries
+#' @param df data.frame for multiple countries
 #' @param countries reactive character vector of country names
 
 #' @import dplyr
@@ -47,8 +47,8 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
     df
   }
 
-  world = function(orig_data_aggregate, n, w){
-    orig_data_aggregate %>%
+  world = function(dat, n, w){
+    dat %>%
       select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date)) %>%
       select(Country.Region,date,confirmed,starts_with("growth"),prevalence_rate_1M_pop)
@@ -61,7 +61,8 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
   # prepare data select those with more than 10000
   world_data = reactive({
-    world(df(), n,w)})
+    world(df, n,w)
+    })
 
   confirmed1000 = isolate(
     any(world_data()$confirmed > 10000)
@@ -85,7 +86,7 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
       top_n(n_highligth, wt = Value)})
   } else {
     df_top_new = reactive({df_top() %>%
-        filter(Country.Region %in% countries())})
+        filter(Country.Region %in% countries)})
   }
 
   dfnew = reactive({addgrowth(df_top_new(),input$growth_factor)})

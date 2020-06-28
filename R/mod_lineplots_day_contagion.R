@@ -18,7 +18,7 @@ mod_lineplots_day_contagion_ui <- function(id){
 
 #' lineplots_day_contagion Server Function
 #'
-#' @param countries_data reactive data.frame for multiple countries
+#' @param countries_data data.frame for multiple countries
 #' @param g_palette character vector of colors for the graph and legend
 #'
 #' @import dplyr
@@ -41,7 +41,7 @@ mod_lineplots_day_contagion_server <- function(input, output, session, countries
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
   output$line_plot_day_contagion <- renderPlot({
-    df <- countries_data() %>%
+    df <- countries_data %>%
       select(statuses, date, Country.Region) %>%
       arrange(date) %>%
       pivot_longer(cols = -c(date, Country.Region), names_to = "status", values_to = "value") %>%
