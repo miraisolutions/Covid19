@@ -169,11 +169,11 @@ test_that("aggr_to_cont works correctly", {
   df = orig_data_aggregate %>%
     merge_pop_data(pop_data)
 
-  statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
-  allstatuses = c(statuses, paste0("new_", statuses))
+  statuses <- c("confirmed", "deaths", "recovered", "active")
+  allstatuses = c(statuses, paste0("new_", statuses), "tests", "hosp", "population")
 
-  data_conts = aggr_to_cont(df, group = "continent", time = "date", popdata = pop_data, allstatuses)
+  data_conts = aggr_to_cont(df, group = "continent", time = "date")#, popdata = pop_data)
 
   dups = duplicated(data_conts[, c("Country.Region", "date")])
 
@@ -198,7 +198,7 @@ test_that("aggr_to_cont works correctly", {
   df_europe = df %>%
     filter(continent == "Europe")
 
-  data_subcont = aggr_to_cont(df_europe, group = "subcontinent", time = "date", popdata = europe_pop_data, allstatuses)
+  data_subcont = aggr_to_cont(df_europe, group = "subcontinent", time = "date")#, popdata = europe_pop_data)
 
   dups = duplicated(data_subcont[, c("Country.Region", "date")])
 
