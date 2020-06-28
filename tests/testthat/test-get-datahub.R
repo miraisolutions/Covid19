@@ -94,10 +94,8 @@ test_that("test pop_data and that build_data_aggr returns expected format", {
 
   expect_true(all(na.cont$confirmed < 1000))
   expect_true(all(na.subcont$confirmed < 1000))
-  expect_false(any(!(sort(na.cont$Country.Region) %in% # none of the missing countries is outside the 3 ships
-                        c("Diamond Princess", "Grand Princess", "MS Zaandam" )))) # the 3 ships
-
-
+  expect_false(any((sort(na.cont$Country.Region) %in% # none of the missing countries is a valid country
+                        c(pop_data$Country.Region)))) #
 
   # check differences with other data
   setdiff(mapdata$NAME, pop_data$Country.Region)
