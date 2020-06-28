@@ -139,6 +139,7 @@ get_timeseries_full_data <- function() {
 #'
 #' @param stardate character staring date
 #' @param lev integer 1 for country level, 2 for reagions
+#' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
 #'
 #' @details data sourced from https://github.com/covid19datahub/COVID19/
 #'

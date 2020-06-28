@@ -14,8 +14,6 @@ aggr_to_cont(data, group, time, allstatuses = get_aggrvars())
 \item{time}{character date or contagion_day}
 
 \item{allstatuses}{character vector of statuses to base the recomputation from: confirmed recovered deaths active}
-
-\item{popdata}{data with population info}
 }
 \value{
 data.frame aggregated at group level

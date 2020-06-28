@@ -10,6 +10,8 @@ get_datahub(stardate = "2020-01-15", lev = 1, verbose = FALSE)
 \item{stardate}{character staring date}
 
 \item{lev}{integer 1 for country level, 2 for reagions}
+
+\item{verbose}{logical. Print data sources? Default FALSE (opposite from \code{covid19})}
 }
 \value{
 data tibble of confirmed, deaths, active and recovered Country.Region

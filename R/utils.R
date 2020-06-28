@@ -335,7 +335,6 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
 #' @param data data.frame aggregated data per Country.Region
 #' @param group character continent or subcontinent
 #' @param time character date or contagion_day
-#' @param popdata data with population info
 #' @param allstatuses character vector of statuses to base the recomputation from: confirmed recovered deaths active
 #'
 #' @note growth and mortality variables must be recomputed after the aggregation
@@ -345,7 +344,7 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
 #'
 #' @importFrom rlang sym
 #' @export
-aggr_to_cont = function(data, group, time, #popdata,
+aggr_to_cont = function(data, group, time,
                         allstatuses = get_aggrvars()) {
 
   # popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
