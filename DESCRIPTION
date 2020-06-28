@@ -1,4 +1,4 @@
-Package: Covid19
+Package: Covid19Mirai
 Title: Covid-19 Data Analysis
 Version: 1.2.2-900
 Authors@R: 
@@ -38,6 +38,7 @@ Imports:
     sp,
     markdown,
     scales,
+    COVID19,
     grDevices,
     rlang,
     zoo
