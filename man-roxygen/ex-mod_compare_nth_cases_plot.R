@@ -1,5 +1,4 @@
 if (interactive()) {
-  library(Covid19)
   library(shiny)
   library(dplyr)
   library(tidyr)
@@ -10,22 +9,19 @@ if (interactive()) {
   sapply(file.path("R",list.files("R")), source)
   ui <- fluidPage(
     tagList(
-      Covid19:::golem_add_external_resources(),
+      Covid19Mirai:::golem_add_external_resources(),
       mod_compare_nth_cases_plot_ui("plot_compare_nth")
     )
   )
   server <- function(input, output, session) {
-      orig_data =  get_timeseries_full_data() %>%
+    # Data ----
+    orig_data <- reactive({ get_datahub() %>%
         get_timeseries_by_contagion_day_data()
-
-
-    orig_data_aggregate <- reactive({
-      orig_data_aggregate <- orig_data %>%
-        aggregate_province_timeseries_data() %>%
-        add_growth_death_rate() %>%
-        arrange(Country.Region)
-      orig_data_aggregate
     })
+
+    pop_data = get_pop_datahub()
+    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+
     n = 1000; w = 7
     data_filtered <- reactive({
       orig_data_aggregate() %>%
@@ -37,7 +33,6 @@ if (interactive()) {
 }
 
 if (interactive()) {
-  library(Covid19)
   library(shiny)
   library(dplyr)
   library(tidyr)
@@ -46,23 +41,19 @@ if (interactive()) {
 
   ui <- fluidPage(
     tagList(
-      Covid19:::golem_add_external_resources(),
+      Covid19Mirai:::golem_add_external_resources(),
       mod_compare_nth_cases_plot_ui("lines_points_plots")
     )
   )
   server <- function(input, output, session) {
-    orig_data <- reactive({
-      get_timeseries_full_data() %>%
+    # Data ----
+    orig_data <- reactive({ get_datahub() %>%
         get_timeseries_by_contagion_day_data()
     })
 
-    orig_data_aggregate <- reactive({
-      orig_data_aggregate <- orig_data() %>%
-        aggregate_province_timeseries_data() %>%
-        add_growth_death_rate() %>%
-        arrange(Country.Region)
-      orig_data_aggregate
-    })
+    pop_data = get_pop_datahub()
+    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+
     n = 1000
     countries = c("Switzerland", "Italy", "France")
     countries_data <- reactive({
