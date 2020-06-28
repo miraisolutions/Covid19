@@ -14,17 +14,17 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data <- reactive({ get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    })
+    orig_data <- get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
+
 
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-    data_filtered <- reactive({
+    data_filtered <-
       orig_data_aggregate() %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-    })
+
 
     country_data <- reactive({
       data_filtered() %>%

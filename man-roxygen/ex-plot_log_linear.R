@@ -11,18 +11,18 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- reactive({ get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    })
+    # Data ----
+    orig_data <- get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
 
     n = 100
     w = 7
-    data_filtered <- reactive({
+    data_filtered <-
       orig_data() %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-    })
 
-    country_data <- reactive({data_filtered() %>%
+
+    country_data <- reactive({data_filtered %>%
         filter(Country.Region %in% "Switzerland") %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))

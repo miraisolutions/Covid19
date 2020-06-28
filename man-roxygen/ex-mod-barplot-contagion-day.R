@@ -14,25 +14,24 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data <- reactive({ get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    })
+    orig_data <- get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
+
 
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-
-    data_filtered <- reactive({
-      orig_data_aggregate() %>%
+    data_filtered <-
+      orig_data_aggregate %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-    })
 
-    country_data <- reactive({
-      data_filtered() %>%
+
+    country_data <-
+      data_filtered %>%
         filter(Country.Region %in% "Switzerland") %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
-    })
+
 
     callModule(Covid19Mirai:::mod_bar_plot_day_contagion_server,"bar_plot_day_contagion", country_data = country_data)
   }

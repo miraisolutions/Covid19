@@ -4,10 +4,14 @@ if (interactive()) {
   library(tidyr)
   library(plotly)
   library(leaflet)
+  library(leaflet.extras)
+
   library(shinycssloaders)
+  library(RColorBrewer)
+  library(COVID19)
 
   cont = "LatAm & Carib."
-  cont = "Oceania"
+  cont = "Asia"
 
   variable = "growth vs prevalence" # set variable
   variable = "death rate" # set variable
@@ -25,18 +29,21 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- reactive({ get_datahub() %>%
+    orig_data <- get_datahub() %>%
         get_timeseries_by_contagion_day_data()
-    })
+
 
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+    orig_data_aggregate =  build_data_aggr(orig_data, pop_data)
 
-    countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+    #countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+    rds_map = "WorldMap_sp_rds"
+    message("read map from RDS ", rds_map)
+    countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-    orig_data_aggregate_cont <- reactive({
-      orig_data_aggregate() %>% filter(continent == cont)
-    })
+    orig_data_aggregate_cont <-
+      orig_data_aggregate %>% filter(continent == cont)
+
 
     callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
                cont = cont, variable = variable)

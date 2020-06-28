@@ -1,6 +1,8 @@
 if (interactive()) {
   library(shiny)
   library(dplyr)
+  sapply(file.path("R",list.files("R")), source)
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
@@ -12,15 +14,16 @@ if (interactive()) {
 
   server <- function(input, output, session) {
 
-    countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+    #countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+    rds_map = "WorldMap_sp_rds"
+    message("read map from RDS ", rds_map)
+    countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-
-    orig_data <- reactive({ get_datahub() %>%
+    orig_data <-get_datahub() %>%
         get_timeseries_by_contagion_day_data()
-    })
 
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
   }

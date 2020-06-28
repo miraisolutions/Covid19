@@ -10,13 +10,13 @@ if (interactive()) {
   )
   server <- function(input, output, session) {
 
-    orig_data <- reactive({ get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    })
+    # Data ----
+    orig_data <- get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
+
 
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
-
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     callModule(mod_growth_death_rate_server, "plot", orig_data_aggregate)
   }

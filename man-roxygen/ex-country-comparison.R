@@ -17,27 +17,26 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- reactive({ get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    })
+    orig_data <- get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
 
-    #pop_data = get_pop_data()
+
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     n = 1000; w = 7
 
-    data_filtered <- reactive({
+    data_filtered <-
       orig_data_aggregate() %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-    })
+
     countries <- reactive({
       data_filtered() %>%
         select(Country.Region) %>%
         distinct()
     })
 
-    callModule(mod_country_comparison_server, "country_comparison", orig_data_aggregate = orig_data_aggregate,
+    callModule(mod_country_comparison_server, "country_comparison",
                data_filtered = data_filtered, countries = countries)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
