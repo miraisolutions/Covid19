@@ -150,6 +150,7 @@ get_timeseries_full_data <- function() {
 #'
 #' @export
 get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
+  message("get_datahub startdate ", stardate, " level ", lev)
   dataHub <- covid19(start = stardate, level = lev) # select level2 to add states
 
   # select varaibles for backwards compatibility + some additional variables
@@ -185,7 +186,7 @@ get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
     # separate Hong Kong
     if (!("Hong Kong" %in% dataHub$Country.Region)) {
       dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
-        mutate(Country.Region = "Hong Kong") %>% ungroup() %>% select(-administrative_area_level_2)
+        mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
       dataHub = rbind(dataHub, dataHG)
     }
     dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
@@ -231,7 +232,6 @@ get_timeseries_by_contagion_day_data <- function(data) {
       confirmed == 0 ~ 1,
       TRUE ~ 0
     )) %>%
-    #group_by(Province.State, Country.Region, Lat, Long) %>%
     group_by(Country.Region) %>%
     mutate(incremental = seq(1:n())) %>%
     mutate(offset = sum(no_contagion)) %>%
@@ -241,14 +241,16 @@ get_timeseries_by_contagion_day_data <- function(data) {
       TRUE ~ tmp
     )) %>%
     select(-incremental, -offset, -no_contagion, -tmp) %>%
-    mutate(new_confirmed = confirmed - lag(confirmed)) %>%
-    mutate(new_deaths = deaths - lag(deaths)) %>%
-    mutate(new_active = active - lag(active)) %>%
-    mutate(new_recovered = recovered - lag(recovered)) %>%
-    mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
-    mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
-    mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
-    mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
+    mutate(new_confirmed = confirmed - lag(confirmed),
+        new_deaths = deaths - lag(deaths),
+        new_active = active - lag(active),
+        new_recovered = recovered - lag(recovered),
+        new_tests = tests - lag(tests),
+        new_hosp = hosp - lag(hosp)) %>%
+    # mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
+    # mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
+    # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
+    # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
     ungroup()
   data1
 }
@@ -344,14 +346,16 @@ aggregate_province_timeseries_data <- function(data){
 #' @export
 add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
 
-  df1 <- df %>% ungroup() %>%
+  df1 <- df %>% #ungroup() %>%
     arrange(!!as.symbol(group), !!as.symbol(time)) %>%
     group_by(.dots = group) %>%
     mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
            daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
            daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
-           daily_lethality_rate = replace_na(deaths / confirmed, 0)) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
+           daily_lethality_rate = replace_na(deaths / confirmed, 0)
+           ) %>%
+    #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
+
     ungroup()
   df2 <- df1 %>%
     group_by(.dots = group)  %>%
@@ -362,8 +366,10 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
            growth_factor_7 = round(daily_growth_factor_5, digits = 3),
            lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
     ungroup() %>%
-    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
+    #mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
+    #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
+    mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} ) %>%
+
     arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
     select(-starts_with("daily_"))
   df2
