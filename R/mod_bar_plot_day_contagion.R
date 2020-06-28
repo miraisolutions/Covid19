@@ -16,7 +16,7 @@ mod_bar_plot_day_contagion_ui <- function(id){
 
 #' bar_plot_day_contagion Server Function
 #'
-#' @param country_data reactive data.frame for one country
+#' @param country_data data.frame for one country
 #'
 #' @import dplyr
 #' @import tidyr
@@ -31,7 +31,7 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
   allstatuses = c(statuses, paste0("new_", statuses))
 
   output$bar_plot_day_contagion <- renderPlot({
-    df <- country_data() %>%
+    df <- country_data %>%
       ungroup() %>%
       #select(-Country.Region, -date) %>%
       select(contagion_day, !!allstatuses) %>%
