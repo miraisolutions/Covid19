@@ -1,4 +1,4 @@
-context("get data tests")
+context("get datahub tests")
 
 data_full <- get_datahub()
 
@@ -22,8 +22,9 @@ test_that("get_datahub returns data from today", {
 data <- get_timeseries_by_contagion_day_data(data_full)
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
-  expect_equal(sort(names(data)), sort(c("Country.Region", "date", "tests", "confirmed", "deaths", "recovered", "active", "hosp", "population",
-                                         "new_confirmed", "new_deaths", "new_active", "new_recovered", "contagion_day")))
+  varnames = c("confirmed", "deaths", "recovered", "active","tests","hosp")
+  expect_equal(sort(names(data)), sort(c("Country.Region", "date",varnames ,"population",
+                                         paste0("new_",varnames), "contagion_day")))
   expect_equal(class(data$contagion_day),"numeric")
   expect_false(any(sapply(data, class) == "integer"))
 
