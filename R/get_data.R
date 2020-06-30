@@ -179,7 +179,7 @@ get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
   # some countried are missing
   if (!(any(c("Hong Kong","China") %in% dataHub$Country.Region))) {
     message("Taking chinese data from level 2")
-    dataMiss <- covid19("China",2, start = "2020-01-01") %>% ungroup() %>%
+    dataMiss <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
       select(administrative_area_level_1, administrative_area_level_2, date, tests,
              confirmed, recovered, deaths, hosp, population) %>%
       rename(Country.Region = administrative_area_level_1)
