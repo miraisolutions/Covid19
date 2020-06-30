@@ -48,7 +48,7 @@ app_ui <- function(request) {
               "Data source: COVID-19 Data Hub",
               textOutput("last_update", inline = TRUE) %>%
                 #bs_embed_tooltip(title = "Data Repository by bumbeishvili. More information on the README.", placement = "right")
-                bs_embed_tooltip(title = "Data Repository by COVID-19 Data. More information on the README on our github.", placement = "right")
+                bs_embed_tooltip(title = "Data Repository by COVID-19 Data Hub. More information in the README on our github page.", placement = "right")
 
             )
           )
