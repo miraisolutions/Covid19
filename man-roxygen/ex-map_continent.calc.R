@@ -11,12 +11,12 @@ if (interactive()) {
   library(COVID19)
 
   cont = "LatAm & Carib."
-  cont = "Asia"
+  cont = "Oceania"
 
   variable = "growth vs prevalence" # set variable
   variable = "death rate" # set variable
   variable = "prevalence rate" # set variable
-  #variable = "active" # set variable
+  variable = "active" # set variable
  #variable = "growth factor" # set variable
 
  sapply(file.path("R",list.files("R")), source)
@@ -44,8 +44,18 @@ if (interactive()) {
     orig_data_aggregate_cont <-
       orig_data_aggregate %>% filter(continent == cont)
 
+    .subsetmap = function(map,cc) {
+      idx = map$CONTINENT %in% cc
+      countries = map$NAME[idx]
+      map_cont = subset(map, NAME %in% countries, drop = T)
+      map_cont$CONTINENT = factor(map_cont$CONTINENT)
+      map_cont$NAME = factor(map_cont$NAME)
+      map_cont
+    }
+    countries_data_map_cont = .subsetmap(countries_data_map, cc = cont)
 
-    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map,
+
+    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
                cont = cont, variable = variable)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

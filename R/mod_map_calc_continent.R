@@ -558,7 +558,7 @@ pal_fun = function(var,x){
   } else if (grepl("death", var) || grepl("mortality", var) || grepl("lethal", var)) {
     colorNumeric(palette = "Greys", domain = domain(x), na.color = "lightgray")
   } else if (grepl("active", var)) {
-    if (grepl("new", var)) {
+    if (grepl("new", var) && any(x<0, na.rm = TRUE)) {
       # colorRampPalette to customize and mix 2 palettes
        colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
                    domain = domain(x), na.color = "lightgray")
