@@ -292,7 +292,7 @@ update_radio<- function(var, growthvar = 3){
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
-    textvar = c("growth_factor_3", "prevalence_rate_1M_pop")
+    textvar = c("growth_factor_3", "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop")
   } else if (grepl("active", var)) {
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
@@ -304,7 +304,7 @@ update_radio<- function(var, growthvar = 3){
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
     graph_title = "Active cases today"
-    textvar = c("growth_factor_3", "confirmed", "new_confirmed")
+    textvar = c("confirmed", "new_confirmed", "recovered","new_recovered")
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
     names(mapvar) = c("Total Confirmed", "New Confirmed Today")
