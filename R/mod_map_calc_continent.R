@@ -262,7 +262,7 @@ update_radio<- function(var, growthvar = 3){
     caption <- paste0("growth factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
     graph_title = "Growth factor as of Today"
-    textvar = c("new_confirmed","new_active")
+    textvar = c("new_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
