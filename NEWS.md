@@ -1,4 +1,4 @@
-### Covid19 1.2.2-900 (develop)
+### Covid19Mirai 1.2.2-900 (develop)
 - Update data source from covid19datahub (#104)
 https://github.com/covid19datahub/COVID19
 - Population size taken from covid19datahub, some variables over 1M will differ
