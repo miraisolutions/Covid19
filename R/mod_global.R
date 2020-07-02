@@ -53,9 +53,9 @@ mod_global_ui <- function(id){
 
 #' global Server Function
 #'
-#' @param orig_data reactive data.frame
-#' @param orig_data_aggregate reactive data.frame
-#' @param data_filtered reactive data.frame from contagion day n
+#' @param orig_data data.frame
+#' @param orig_data_aggregate data.frame
+#' @param data_filtered data.frame from contagion day n
 #' @param countries_data data.frame sp for mapping
 #'
 #' @import dplyr
@@ -71,37 +71,37 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # Datasets ----
 
-  global <- reactive({
-    global <- orig_data() %>%
-      get_timeseries_global_data()
+  global <-
+    global <- orig_data %>%
+      get_timeseries_global_data() # possibly not needed
     global
-  })
 
-  global_today <- reactive({
-    global() %>%
+
+  global_today <-
+    global %>%
       filter(date == max(date))
-  })
 
-  orig_data_aggregate_today <- reactive({
-    orig_data_aggregate() %>%
+
+  orig_data_aggregate_today <-
+    orig_data_aggregate %>%
       filter( date == max(date))
-  })
 
-  world <- reactive({
-    orig_data_aggregate_today() %>%
+
+  world <-
+    orig_data_aggregate_today %>%
       arrange(desc(confirmed) )
-  })
 
-  world_top_5_today <- reactive({
-    world() %>%
+
+  world_top_5_today <-
+    world %>%
       head(5)
-  })
 
-  world_top_5_confirmed <- reactive({
-    orig_data_aggregate() %>%
-      filter(Country.Region %in% world_top_5_today()$Country.Region) %>%
+
+  world_top_5_confirmed <-
+    orig_data_aggregate %>%
+      filter(Country.Region %in% world_top_5_today$Country.Region) %>%
       select(Country.Region, date, confirmed)
-  })
+
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", global_today)
 
@@ -112,27 +112,27 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # plots ----
   levs <- sort_type_hardcoded()
 
-  df_global = reactive({
-    tsdata_areplot(global(),levs, 1000) # start from day qith |1000
-  })
+  df_global =
+    tsdata_areplot(global,levs, 1000) # start from day qith |1000
+
 
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
 
   # > line plot top 5
-  df_top_n <- reactive({
+  #df_top_n <-
     # create factors with first top confirmed
-    countries_order =  world_top_5_confirmed() %>% filter(date == max(date)) %>%
+    countries_order =  world_top_5_confirmed %>% filter(date == max(date)) %>%
       arrange(desc(confirmed)) %>%
       #arrange(!!as.symbol(input$radio_indicator)) %>%
        .[,"Country.Region"] %>% as.vector()
 
-    df_top_n = world_top_5_confirmed() %>%
+    df_top_n = world_top_5_confirmed %>%
       mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
       mutate(value = confirmed) %>%
       capitalize_names_df()
-    df_top_n
-  })
+    #df_top_n
+
 
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 

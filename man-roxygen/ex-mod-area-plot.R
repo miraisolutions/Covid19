@@ -1,13 +1,12 @@
 if (interactive()) {
   library(shiny)
-  library(Covid19)
   library(dplyr)
   library(tidyr)
   library(ggplot2)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19:::mod_plot_log_linear_ui("plot_log_area_global")
+    Covid19Mirai:::mod_plot_log_linear_ui("plot_log_area_global")
   )
   server <- function(input, output) {
 
@@ -15,30 +14,17 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data <- reactive({
-      get_timeseries_full_data() %>%
-        get_timeseries_by_contagion_day_data()
-    })
-    pop_data = get_pop_data()
+    orig_data <- get_datahub() %>%
+      get_timeseries_by_contagion_day_data()
 
-    orig_data_aggregate <- reactive({
-      orig_data_aggregate <- orig_data() %>%
-        aggregate_province_timeseries_data() %>%
-        add_growth_death_rate() %>%
-        arrange(Country.Region) %>%
-        #align_country_names_pop() %>%
-        merge_pop_data(pop_data) %>% # compute additional variables
-        #align_country_names_pop_reverse() %>%
-        mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-               prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-               new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
-      orig_data_aggregate
-    })
 
-    data_filtered <- reactive({
+    pop_data = get_pop_datahub()
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+
+    data_filtered <-
       orig_data_aggregate() %>%
-        Covid19:::rescale_df_contagion(n = n, w = w)
-    })
+        Covid19Mirai:::rescale_df_contagion(n = n, w = w)
+
 
     country_data <- reactive({
       data_filtered() %>%
@@ -46,7 +32,7 @@ if (interactive()) {
         filter(contagion_day > 0) %>%
         arrange(desc(date))
     })
-    levs <- Covid19:::sort_type_hardcoded()
+    levs <- Covid19Mirai:::sort_type_hardcoded()
 
     df_tot <- reactive({
       country_data() %>%

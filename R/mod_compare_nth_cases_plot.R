@@ -36,7 +36,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
 
 #' compare_nth_cases_plot Server Function
 #'
-#' @param orig_data_aggregate reactive data.frame
+#' @param orig_data_aggregate data.frame
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
@@ -61,14 +61,16 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
   # Give DF standard structure; reacts to input$radio_indicator
   df <- reactive({
     if(istop) {
-      countries_order =  orig_data_aggregate() %>% filter(date == max(date)) %>%
+      countries_order =  orig_data_aggregate %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(input$radio_indicator))) %>%
         #arrange(!!as.symbol(input$radio_indicator)) %>%
         top_n(n_highligth, wt = !!as.symbol(input$radio_indicator)) %>% .[,"Country.Region"] %>% as.vector()
-      data = orig_data_aggregate() %>% right_join(countries_order)  %>%  # reordering according to variable if istop
+      data = orig_data_aggregate %>% right_join(countries_order)  %>%  # reordering according to variable if istop
                 mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
-    } else
-      data = orig_data_aggregate()
+    } else {
+      data = orig_data_aggregate
+
+    }
     df_tmp <- data %>% .[,c("Country.Region", input$radio_indicator, "contagion_day")] %>%
       bind_cols(data[,input$radio_indicator] %>% setNames("Value")) %>%
       rename(Status = Country.Region ) %>%

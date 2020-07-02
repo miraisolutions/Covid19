@@ -134,6 +134,84 @@ get_timeseries_full_data <- function() {
   data
 }
 
+#' Get timeseries full data from datahub
+#' @rdname get_datahub
+#'
+#' @param stardate character staring date
+#' @param lev integer 1 for country level, 2 for reagions
+#' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
+#'
+#' @details data sourced from https://github.com/covid19datahub/COVID19/
+#'
+#' @return data tibble of confirmed, deaths, active and recovered Country.Region
+#'
+#' @importFrom COVID19 covid19
+#' @import dplyr
+#'
+#' @export
+get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
+  message("get_datahub startdate ", stardate, " level ", lev)
+  dataHub <- covid19(start = stardate, level = lev) # select level2 to add states
+
+  # select varaibles for backwards compatibility + some additional variables
+  dataHub = dataHub %>% ungroup() %>% select(administrative_area_level_1, #id, # at the moment removing ID
+                                             date, tests,
+                                             confirmed, recovered, deaths, hosp, population) %>%
+    rename(Country.Region = administrative_area_level_1) # rename country variable
+
+  # recode some countries for bacwards compatibility
+  dataHub$Country.Region = dataHub$Country.Region %>%
+    recode(
+      "Congo, the Democratic Republic of the" = "Republic of the Congo",
+      "Holy See" = "Vatican City",
+      "Korea, South" = "South Korea",
+      "Macedonia" = "North Macedonia",
+      "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
+      "United Kingdom" = "UK",
+      "United States" = "USA",
+      "Virgin Islands, U.S." = "U.S. Virgin Islands"
+
+    )
+
+  # "Northern Mariana Islands" belongs to USA
+  # "Virgin Islands, U.S." belongs to USA
+
+  # some countried are missing
+  if (!(any(c("Hong Kong","China") %in% dataHub$Country.Region))) {
+    message("Taking chinese data from level 2")
+    dataMiss <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
+      select(administrative_area_level_1, administrative_area_level_2, date, tests,
+             confirmed, recovered, deaths, hosp, population) %>%
+      rename(Country.Region = administrative_area_level_1)
+    # separate Hong Kong
+    if (!("Hong Kong" %in% dataHub$Country.Region)) {
+      dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
+        mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
+      dataHub = rbind(dataHub, dataHG)
+    }
+    dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
+      group_by(Country.Region,date) %>%
+      summarise_if(is.numeric, sum, na.rm = TRUE) %>%
+      ungroup()
+
+    dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
+
+    dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
+    dataHub
+  }
+  # compute active
+  dataHub = dataHub %>%
+    mutate(active = confirmed - deaths - recovered)
+
+  # convert integers into numeric
+  dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
+
+  # take yesterday, data are updated hourly
+  dataHub = dataHub %>% filter(date != Sys.Date())
+
+  dataHub
+}
+
 
 #' Get data by day contagion
 #' @rdname get_timeseries_by_contagion_day_data
@@ -148,13 +226,15 @@ get_timeseries_full_data <- function() {
 #' @export
 get_timeseries_by_contagion_day_data <- function(data) {
 
+  if (!("tests" %in% names(data))) {
+    data$tests = data$hosp = rep(0,nrow(data))
+  }
   data1 <- data %>%
     arrange(desc(Country.Region), date) %>%
     mutate(no_contagion = case_when(
       confirmed == 0 ~ 1,
       TRUE ~ 0
     )) %>%
-    #group_by(Province.State, Country.Region, Lat, Long) %>%
     group_by(Country.Region) %>%
     mutate(incremental = seq(1:n())) %>%
     mutate(offset = sum(no_contagion)) %>%
@@ -164,14 +244,16 @@ get_timeseries_by_contagion_day_data <- function(data) {
       TRUE ~ tmp
     )) %>%
     select(-incremental, -offset, -no_contagion, -tmp) %>%
-    mutate(new_confirmed = confirmed - lag(confirmed)) %>%
-    mutate(new_deaths = deaths - lag(deaths)) %>%
-    mutate(new_active = active - lag(active)) %>%
-    mutate(new_recovered = recovered - lag(recovered)) %>%
-    mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
-    mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
-    mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
-    mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
+    mutate(new_confirmed = confirmed - lag(confirmed),
+        new_deaths = deaths - lag(deaths),
+        new_active = active - lag(active),
+        new_recovered = recovered - lag(recovered),
+        new_tests = tests - lag(tests),
+        new_hosp = hosp - lag(hosp)) %>%
+    # mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
+    # mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
+    # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
+    # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
     ungroup()
   data1
 }
@@ -267,14 +349,16 @@ aggregate_province_timeseries_data <- function(data){
 #' @export
 add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
 
-  df1 <- df %>% ungroup() %>%
+  df1 <- df %>% #ungroup() %>%
     arrange(!!as.symbol(group), !!as.symbol(time)) %>%
     group_by(.dots = group) %>%
     mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
            daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
            daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
-           daily_lethality_rate = replace_na(deaths / confirmed, 0)) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
+           daily_lethality_rate = replace_na(deaths / confirmed, 0)
+           ) %>%
+    #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
+
     ungroup()
   df2 <- df1 %>%
     group_by(.dots = group)  %>%
@@ -285,8 +369,10 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
            growth_factor_7 = round(daily_growth_factor_5, digits = 3),
            lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
     ungroup() %>%
-    mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-    mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
+    #mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
+    #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
+    mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} ) %>%
+
     arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
     select(-starts_with("daily_"))
   df2
@@ -362,7 +448,7 @@ get_pop_data <- function(){
   # write.csv2(pop, "./inst/population_data/pop.csv")
   # population <- read.csv2(system.file("population_data/pop.csv", package = "Covid19"),stringsAsFactors = F) %>%
   #   select(-X)
-  population <- read.csv2(system.file("population_data/popUN.csv", package = "Covid19"),stringsAsFactors = F)
+  population <- read.csv2(system.file("population_data/popUN.csv", package = "Covid19Mirai"),stringsAsFactors = F)
 
   population$Country.Region <- population$Country.Region %>%
     # recode(
@@ -437,6 +523,86 @@ get_pop_data <- function(){
   population$population = population$PopulationUN # hwere when we need to change population with new data
   # the old population seems wrong for few countries
   population = population[, c("Country.Region", "continent", "subcontinent","population")]
+
+  population
+}
+
+#' retrieves population data, matches countries with continents and subcontinents in line with get_datahub
+#' @rdname get_pop_datahub
+#'
+#' @import dplyr
+#' @import tidyr
+#'
+#' @note additional demographic variables are available for further development
+#'
+#' @return global tibble of confirmed, deaths, active and recovered for each day by population
+#'
+#' @examples
+#' \dontrun{
+#' orig_data <- get_timeseries_full_data() %>%
+#'               get_timeseries_by_contagion_day_data()
+#' data <- orig_data %>% align_country_names()
+#'
+#'}
+#'
+#' @export
+get_pop_datahub <- function(){
+  #Reference: https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population
+  # pop_url <- "https://raw.githubusercontent.com/DrFabach/Corona/master/pop.csv"
+  population <- read.csv2(system.file("population_data/popUN.csv", package = "Covid19Mirai"),stringsAsFactors = F)
+
+  population$Country.Region <- population$Country.Region %>%
+  recode(
+    "Ivory Coast" = "Cote d'Ivoire", # ok
+    "DR Congo" = "Republic of the Congo", #ok
+    #"United Arab Emirates" = "UAE", same name
+    "East Timor" = "Timor-Leste" , #ok
+    "Saint Vincent and the Grenadines" = "St. Vincent Grenadines", #ok
+    "Puerto Rico(US)" = "Puerto Rico", # ok
+    #"Comoros" = "Mayotte", same name
+    "Guam(US)" = "Guam", #ok
+    "Greenland(Denmark)" = "Greenland", # missing in datahub anyway
+    "Eswatini" = "Swaziland", # called Swaziland in new DF
+    "Isle of Man(UK)" = "Channel Islands", # called Channel Islands in new DF
+    #"Isle of Man(UK)" = "Isle of Man",
+    #"Central African Republic" = "CAR", same name
+    "United States" = "USA",
+
+    ##################################################
+    "Bosnia and Herz." = "Bosnia and Herzegovina",
+    "Czechia" = "Czech Republic", # taken from reverse
+    "Dominican Rep." = "Dominican Republic", # taken from reverse
+    "Macedonia" = "North Macedonia", # taken from reverse
+    "United Kingdom" = "UK", # taken from reverse
+    "Vatican" = "Vatican City", # taken from reverse
+    "Faeroe Is." = "Faeroe Islands", # possibly it is with DK in new DF
+    "Gibraltar(UK)" = "Gibraltar", # possibly it is with UK in new DF
+    "Saint Martin(France)" = "St Martin", # possibly it is with France in new DF
+    "Cayman Islands(UK)" = "Cayman Islands", # possibly it is with UK in new DF
+    "New Caledonia(France)" = "New Caledonia", # possibly it is with France in new DF
+    "F.S. Micronesia" = "Micronesia"
+  )
+  # rename non ASCII characters
+  population$Country.Region[grepl("^St-Barth", population$Country.Region)] = "St. Barth" # ok
+  population$Country.Region[grepl("and Pr", population$Country.Region)] = "Sao Tome and Principe" # ok
+  population$Country.Region[grepl("^Cura", population$Country.Region)] = "Curasao" # missing in new DF
+
+  population$Country.Region = gsub("*\\(.*?\\) *","", population$Country.Region) # remove all text between brackets
+
+  # # sum french colonies not needed, we do not take population from here
+  #
+  # population$population[population$Country.Region == "France"] =
+  #   population$population[population$Country.Region == "France"] +
+  #   sum(population$population[population$Country.Region %in% French.Colonies])
+  # # remove french colonies
+  # population = population[!(population$Country.Region %in% French.Colonies), , drop = F]
+
+  population$population = as.numeric(population$population )
+  population$PopulationUN = as.numeric(population$PopulationUN )
+  #population$diff = (population$population - population$PopulationUN)/ population$Population *100
+  population$populationOLD = population$PopulationUN # hwere when we need to change population with new data
+  # populationOLD to be used for checks vs new DF
+  population = population[, c("Country.Region", "continent", "subcontinent")]
 
   population
 }

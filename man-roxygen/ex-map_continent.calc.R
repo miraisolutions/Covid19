@@ -1,11 +1,14 @@
 if (interactive()) {
   library(shiny)
   library(dplyr)
-  library(Covid19)
   library(tidyr)
   library(plotly)
   library(leaflet)
+  library(leaflet.extras)
+
   library(shinycssloaders)
+  library(RColorBrewer)
+  library(COVID19)
 
   cont = "LatAm & Carib."
   cont = "Oceania"
@@ -13,48 +16,46 @@ if (interactive()) {
   variable = "growth vs prevalence" # set variable
   variable = "death rate" # set variable
   variable = "prevalence rate" # set variable
-  #variable = "active" # set variable
+  variable = "active" # set variable
  #variable = "growth factor" # set variable
 
  sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
-      Covid19:::golem_add_external_resources(),
-      Covid19:::mod_map_cont_calc_ui("map_cont_calc_ui")
+      Covid19Mirai:::golem_add_external_resources(),
+      Covid19Mirai:::mod_map_cont_calc_ui("map_cont_calc_ui")
     )
   )
   server <- function(input, output) {
 
-    orig_data <- reactive({
-      get_timeseries_full_data() %>%
+    orig_data <- get_datahub() %>%
         get_timeseries_by_contagion_day_data()
-    })
-    pop_data = get_pop_data()
-    countries_data_map <- Covid19:::load_countries_data_map(destpath = system.file("./countries_data", package = "Covid19"))
-
-    orig_data_aggregate <- reactive({
-      orig_data_aggregate <- orig_data() %>%
-        aggregate_province_timeseries_data() %>%
-        add_growth_death_rate() %>%
-        arrange(Country.Region) %>%
-        #align_country_names_pop() %>%
-        merge_pop_data(pop_data) %>% # compute additional variables
-        #align_country_names_pop_reverse() %>%
-        filter(continent == cont) %>%
-        mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
-               prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
-               new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3))
-      orig_data_aggregate
-    })
-    # data_filtered <- reactive({
-    #   orig_data_aggregate() %>%
-    #     Covid19:::rescale_df_contagion(n = n, w = w)
-    # })
 
 
+    pop_data = get_pop_datahub()
+    orig_data_aggregate =  build_data_aggr(orig_data, pop_data)
 
-    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate,  countries_data_map,
+    #countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
+    rds_map = "WorldMap_sp_rds"
+    message("read map from RDS ", rds_map)
+    countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
+
+    orig_data_aggregate_cont <-
+      orig_data_aggregate %>% filter(continent == cont)
+
+    .subsetmap = function(map,cc) {
+      idx = map$CONTINENT %in% cc
+      countries = map$NAME[idx]
+      map_cont = subset(map, NAME %in% countries, drop = T)
+      map_cont$CONTINENT = factor(map_cont$CONTINENT)
+      map_cont$NAME = factor(map_cont$NAME)
+      map_cont
+    }
+    countries_data_map_cont = .subsetmap(countries_data_map, cc = cont)
+
+
+    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
                cont = cont, variable = variable)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
