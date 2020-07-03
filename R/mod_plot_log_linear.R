@@ -20,7 +20,7 @@ mod_plot_log_linear_ui <- function(id){
 
 #' plot_log_linear Server Function
 #'
-#' @param df reactive data.frame
+#' @param df data.frame
 #' @param type character string. Either area or line. Used to select plot type.
 #' @param g_palette character vector of colors for the graph and legend
 #'
@@ -44,11 +44,11 @@ mod_plot_log_linear_server <- function(input, output, session, df, type , g_pale
 
       if (type == "area") {
 
-        p <- df() %>%
+        p <- df %>%
           time_evol_area_plot(stack = T, log = log(), text = "Status") %>%
           fix_colors()
       } else {
-        p <- df() %>%
+        p <- df %>%
           time_evol_line_plot(log = log(), text = "Area" , g_palette = graph_palette)
       }
       p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label

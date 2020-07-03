@@ -8,5 +8,5 @@
 #'
 #' @export
 get_Covid19_version <- function() {
-  as.character(utils::packageVersion("Covid19"))
+  as.character(utils::packageVersion("Covid19Mirai"))
 }

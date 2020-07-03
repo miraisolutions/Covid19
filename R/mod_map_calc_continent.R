@@ -29,7 +29,7 @@ mod_map_cont_calc_ui <- function(id){
 
 #' map calc Server Function
 #'
-#' @param orig_data_aggregate reactive data.frame
+#' @param orig_data_aggregate data.frame
 #' @param countries_data_map data.frame sp for mapping
 #' @param cont character continent or subcontinent name
 #' @param variable character variable name
@@ -86,7 +86,7 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 
 
   data_clean <- reactive({
-    data <- orig_data_aggregate() %>%
+    data <- orig_data_aggregate %>%
       filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
               #align_country_names()
     # if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", variable) ||
@@ -101,13 +101,13 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
       mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
 
     if (!is.null(button$radio) && req(button$radio) == "last week") {
-      numvars = sapply(data, is.numeric)
+      #numvars = sapply(data, is.numeric)
       # remove factors?
       numvars = names(numvars)[numvars]
       data = data %>%
         group_by(Country.Region) %>%
-          summarize_at(
-            numvars , sum ) # average over the week
+          summarize_if(
+            is.numeric , sum) # average over the week
     }
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
@@ -225,7 +225,8 @@ varsNames = function(vars) {
   allvars = c(names(case_colors), paste("new", names(case_colors), sep = "_"),
               paste("growth_factor", c(3,5,7), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
-              "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop", "population", "growth_vs_prev")
+              "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop", "population", "growth_vs_prev",
+              "tests","new_tests", "hosp", "new_hosp")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
   names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
@@ -261,7 +262,7 @@ update_radio<- function(var, growthvar = 3){
     caption <- paste0("growth factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
     graph_title = "Growth factor as of Today"
-    textvar = c("new_confirmed","new_active")
+    textvar = c("new_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
@@ -291,7 +292,7 @@ update_radio<- function(var, growthvar = 3){
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
-    textvar = c("growth_factor_3", "prevalence_rate_1M_pop")
+    textvar = c("growth_factor_3", "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop")
   } else if (grepl("active", var)) {
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
@@ -303,7 +304,7 @@ update_radio<- function(var, growthvar = 3){
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
     graph_title = "Active cases today"
-    textvar = c("growth_factor_3", "confirmed")
+    textvar = c("confirmed", "new_confirmed", "recovered","new_recovered")
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
     names(mapvar) = c("Total Confirmed", "New Confirmed Today")
@@ -311,7 +312,7 @@ update_radio<- function(var, growthvar = 3){
                        choices = mapvar, selected = mapvar["New Confirmed Today"])
     caption <- "New and Total Confirmed cases today"
     graph_title = "Confirmed cases today"
-    textvar = c("growth_factor_3", "active")
+    textvar = c("growth_factor_3", "active", "tests")
   } else {
     new_buttons = NULL
     caption = NULL
@@ -557,7 +558,7 @@ pal_fun = function(var,x){
   } else if (grepl("death", var) || grepl("mortality", var) || grepl("lethal", var)) {
     colorNumeric(palette = "Greys", domain = domain(x), na.color = "lightgray")
   } else if (grepl("active", var)) {
-    if (grepl("new", var)) {
+    if (grepl("new", var) && any(x<0, na.rm = TRUE)) {
       # colorRampPalette to customize and mix 2 palettes
        colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
                    domain = domain(x), na.color = "lightgray")

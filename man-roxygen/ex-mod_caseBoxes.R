@@ -3,8 +3,8 @@ if (interactive()) {
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
-      Covid19:::golem_add_external_resources(),
-      Covid19:::mod_caseBoxes_ui("boxes")
+      Covid19Mirai:::golem_add_external_resources(),
+      Covid19Mirai:::mod_caseBoxes_ui("boxes")
     )
   )
   server <- function(input, output, session) {
@@ -15,7 +15,7 @@ if (interactive()) {
       invalidateLater(2000)
       as.list(stats::setNames(sample.int(1000, length(allstatuses)), allstatuses))
     })
-    callModule(Covid19:::mod_caseBoxes_server, "boxes", counts = counts)
+    callModule(Covid19Mirai:::mod_caseBoxes_server, "boxes", counts = counts)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

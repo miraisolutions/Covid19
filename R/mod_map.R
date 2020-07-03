@@ -33,7 +33,7 @@ mod_map_ui <- function(id){
 
 #' map Server Function
 #'
-#' @param orig_data_aggregate reactive data.frame
+#' @param orig_data_aggregate data.frame
 #' @param countries_data_map data.frame sp for mapping
 #' @example man-roxygen/ex-mod_map.R
 #'
@@ -49,29 +49,29 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   #load data
   #countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
-  data_clean <- reactive({
-    data <- orig_data_aggregate() #%>% align_country_names()
+  #data_clean <- reactive({
+    data <- orig_data_aggregate #%>% align_country_names()
 
-    data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
+    orig_data_aggregate$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(orig_data_aggregate$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
-    data_clean <- data %>%
+    data_clean <- orig_data_aggregate %>%
       filter(!is.na(country_name))
     keepcols = c("country_name","Country.Region","date",
                  names(data_clean)[sapply(data_clean, is.numeric)])
     data_clean = data_clean[, keepcols] # remove, not used
     data_clean
-  })
+  #})
 
   # UI controls ----
   output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate()$date), max = max(orig_data_aggregate()$date), value = max(orig_data_aggregate()$date), dragRange = FALSE, animate = T, step = 1)
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate$date), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date), dragRange = FALSE, animate = T, step = 1)
   })
 
   # Map ----
 
   # Data for a given date
   data_date <- reactive({
-    data_date <- data_clean() %>%
+    data_date <- data_clean %>%
       filter(date == req(input$slider_day)) %>%
       #filter(date == max(date)) %>%
       select(-c(Country.Region, date, contagion_day)) %>%
@@ -102,7 +102,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                             sort = FALSE)
 
     data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
-
+    #data_plot[["indicator"]] <- data_plot[["indicator"]] # could be removed but the code would have to be adjusted to handle NAs
     data_plot
   })
 
@@ -150,7 +150,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   observeEvent(data_plot(),{
     mapdata = leafletProxy("map", data = data_plot())  %>%
       addPolygons(layerId = ~NAME,
-                  fillColor = pal2()(log(data_plot()$indicator)),
+                  fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   group = "mapdata",

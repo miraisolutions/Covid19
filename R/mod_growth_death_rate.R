@@ -56,8 +56,8 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
 
   # Help funcs ----
 
-  scale_mortality_rate <- function(orig_data_aggregate){
-    df1 <- orig_data_aggregate %>%
+  scale_mortality_rate <- function(dat){
+    df1 <- dat %>%
       select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date))
     df1
@@ -82,7 +82,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
 
   # Dataset ----
 
-  df_pop <- reactive(scale_mortality_rate(df()))
+  df_pop <- reactive(scale_mortality_rate(df))
 
   df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), input$growth_factor)})
   df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), input$radio_pop)})

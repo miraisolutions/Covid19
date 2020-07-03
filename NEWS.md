@@ -1,3 +1,12 @@
+### Covid19Mirai 2.0.0
+- Update data source from covid19datahub (#104)
+https://github.com/covid19datahub/COVID19
+- Population size taken from covid19datahub, some variables over 1M will differ
+- Package name renamed to Covid19Mirai to avoid conflict with COVID19
+- SP data saved in RDS for faster reading
+- updated info on data source, updated ReadMe page
+- correction on color palette for new active maps when there are no negative values
+
 ### Covid19 1.2.2 (2020-06-23)
 - Fix colors in lineplot (#95)
 - Align graph colors in continent map (#105)

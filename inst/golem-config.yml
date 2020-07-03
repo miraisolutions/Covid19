@@ -1,5 +1,5 @@
 default:
-  golem_name: Covid19
+  golem_name: Covid19Mirai
   golem_version: 0.0.0.9000
   app_prod: no
 production:

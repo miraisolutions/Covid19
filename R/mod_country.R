@@ -39,9 +39,8 @@ mod_country_ui <- function(id){
 
 #' country Server Function
 #'
-#' @param orig_data_aggregate reactive data.frame
-#' @param data_filtered reactive data.frame
-#' @param countries reactive data.frame
+#' @param data_filtered data.frame
+#' @param countries reactive character vector
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #'
@@ -50,7 +49,7 @@ mod_country_ui <- function(id){
 #' @importFrom plotly renderPlotly
 #'
 #' @noRd
-mod_country_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries, n = 1000, w = 7){
+mod_country_server <- function(input, output, session, data_filtered, countries, n = 1000, w = 7){
   ns <- session$ns
 
   observe(
@@ -60,7 +59,7 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
   observeEvent(input$select_country, {
 
     # Data ----
-    country_data <- reactive({data_filtered() %>%
+    country_data <- reactive({data_filtered %>%
         filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
@@ -72,10 +71,10 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
     })
 
     # Boxes ----
-    callModule(mod_caseBoxes_server, "count-boxes", country_data_today)
+    callModule(mod_caseBoxes_server, "count-boxes", country_data_today())
 
     # tables ----
-    callModule(mod_add_table_server, "add_table_country", country_data,  maxrowsperpage = 10)
+    callModule(mod_add_table_server, "add_table_country", country_data(),  maxrowsperpage = 10)
 
     # plots ----
 
@@ -88,16 +87,16 @@ mod_country_server <- function(input, output, session, orig_data_aggregate, data
     df_tot = reactive({
       tsdata_areplot(global(),levs, 1000) # start from day with >1000
     })
-    callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
+    callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot(), type = "area")
 
 
     output$barplots <- renderUI({
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data , n = n, w = w, istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data() , n = n, w = w, istop = F)
 
-    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
+    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data())
 
   })
 

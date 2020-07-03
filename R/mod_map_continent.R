@@ -50,7 +50,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
 
   data_clean <- reactive({
     data <-
-      orig_data_aggregate() %>%
+      orig_data_aggregate %>%
       filter(continent == cont & date == max(date)) # %>%# select data from continent only
       #align_country_names() # align names with country data
 
@@ -95,11 +95,6 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
            data_plot()[["indicator"]]
     )
   })
-
-  # pal_fun = function(dom, colpal){
-  #   colorFactor(palette = colpal, domain = dom, na.color = "white")
-  #
-  # }
 
   output[["map_cont"]] <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
@@ -168,7 +163,7 @@ cont_map_spec <- function(cont, feat= c("lat","col","zoom")){
            "LatAm & Carib." =  c(-60, -80, 56, -55),
             "Northern America" = c(22, -147, 82, -39)
   )
-  col = list("Europe" = c(col = "Blues", rev = TRUE, skip = 1),
+  col = list("Europe" = c(col = "Blues", rev = TRUE, skip = 0),
              "Asia" =  c(col = "Reds", rev = TRUE, skip = 1),
              "Africa" = c(col = "RdYlBu", rev = FALSE, skip = 0),
              "Northern America" = c(col = "RdBu", rev = TRUE, skip = 0),

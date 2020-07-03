@@ -25,7 +25,7 @@ mod_add_table_ui <- function(id){
 mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5){
   ns <- session$ns
   output$table <- renderDT(
-    datatable(df() %>% capitalize_names_df(),
+    datatable(df %>% capitalize_names_df(),
               rownames = FALSE,
               selection = "single",
               #filter = 'bottom',
@@ -39,7 +39,7 @@ mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5)
     paste("data-", Sys.Date(), ".csv", sep = "")
   },
   content = function(file) {
-    write.csv(df(), file)
+    write.csv(df, file)
   }
   )
 }
