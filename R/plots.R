@@ -637,7 +637,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
 }
 
 #' default palette for graph pages
-#'
+#' @import RColorBrewer
 graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
 
 #' background color of maps
