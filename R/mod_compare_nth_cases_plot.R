@@ -22,7 +22,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
       column(7,
              offset = 1,
              selectInput(inputId = ns("radio_indicator"), label = "",
-                          choices = choices_plot, selected ="confirmed")
+                          choices = choices_plot, selected ="active")
       ),
       column(4,
              selectInput(inputId = ns("radio_log_linear"), label = "",
@@ -103,7 +103,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
     p <- plot_all_highlight(df(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "lethality_rate", T, F), date_x = F, g_palette)
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
     p
 
   })
