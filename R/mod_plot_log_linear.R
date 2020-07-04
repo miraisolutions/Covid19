@@ -43,10 +43,9 @@ mod_plot_log_linear_server <- function(input, output, session, df, type , g_pale
     output$plot_log_linear <- renderPlotly({
 
       if (type == "area") {
-
         p <- df %>%
-          time_evol_area_plot(stack = T, log = log(), text = "Status") %>%
-          fix_colors()
+          time_evol_area_plot(stack = T, log = log(), text = "Status") #%>%
+          #fix_colors()
       } else {
         p <- df %>%
           time_evol_line_plot(log = log(), text = "Area" , g_palette = graph_palette)
