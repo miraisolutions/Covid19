@@ -17,7 +17,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
                text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
                label = paste("count: ",
-                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
+                             formatC(countstatus, format = "f", big.mark = "'", digits  = 0)))))+
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
@@ -200,8 +200,9 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 
   df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
 
-  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", statuslabel))) +
-    #geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
+  p <- ggplot(df, aes(x = Date, y = Value,
+                      text = paste0(text, ": ", statuslabel)
+              )) +
     geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
@@ -251,7 +252,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     scale_color_manual(values = g_palette) +
-    scale_y_continuous(labels = label_number(big.mark = ",")) +# add label
+    scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -522,7 +523,7 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
   if (log) {
     p <- p %>%
@@ -608,7 +609,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
   p <- ggplot(df) +
     basic_plot_theme() +
     scale_x_continuous(labels = label_number(
-                                             big.mark = ","
+                                             big.mark = "'"
                                              #suffix = "K"
                                              )) +
     scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
@@ -619,7 +620,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
     # ) +
     #labs(x="prevalence over 1M", y = "growth factor") +
     geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
-                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = ",", digits  = 1), "</br>")),
+                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
                color = color_cntry, size = 1.5) +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
