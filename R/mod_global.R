@@ -71,15 +71,13 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # Datasets ----
 
-  global <-
-    global <- orig_data %>%
-      get_timeseries_global_data() # possibly not needed
-    global
-
-
   global_today <-
-    global %>%
+    orig_data %>%
       filter(date == max(date))
+
+   total <-
+     global <- global_today %>%
+      get_timeseries_global_data() # possibly not needed
 
 
   orig_data_aggregate_today <-
@@ -96,14 +94,13 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
     world %>%
       head(5)
 
-
   world_top_5_confirmed <-
     orig_data_aggregate %>%
       filter(Country.Region %in% world_top_5_today$Country.Region) %>%
       select(Country.Region, date, confirmed)
 
   # Boxes ----
-  callModule(mod_caseBoxes_server, "count-boxes", global_today)
+  callModule(mod_caseBoxes_server, "count-boxes", total)
 
   # map ----
 
@@ -113,8 +110,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   levs <- sort_type_hardcoded()
 
   df_global =
-    tsdata_areplot(global,levs, 1000) # start from day qith |1000
-
+    tsdata_areplot(orig_data,levs, 1000) # start from day qith |1000
 
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
@@ -122,17 +118,15 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # > line plot top 5
   #df_top_n <-
     # create factors with first top confirmed
-    countries_order =  world_top_5_confirmed %>% filter(date == max(date)) %>%
-      arrange(desc(confirmed)) %>%
-      #arrange(!!as.symbol(input$radio_indicator)) %>%
-       .[,"Country.Region"] %>% as.vector()
+  countries_order =  world_top_5_confirmed %>% filter(date == max(date)) %>%
+    arrange(desc(confirmed)) %>%
+    #arrange(!!as.symbol(input$radio_indicator)) %>%
+     .[,"Country.Region"] %>% as.vector()
 
-    df_top_n = world_top_5_confirmed %>%
-      mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
-      mutate(value = confirmed) %>%
-      capitalize_names_df()
-    #df_top_n
-
+  df_top_n = world_top_5_confirmed %>%
+    mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
+    mutate(value = confirmed) %>%
+    capitalize_names_df()
 
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
