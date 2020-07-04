@@ -80,18 +80,26 @@ case_colors <- c(
   "confirmed" = "#dd4b39",
   "deaths" = "black",
   "recovered" = "#00a65a",
-  "active" = "#3c8dbc"
+  "active" = "#3c8dbc",
+  "hosp" = "#08306B"
 )
-
-#' Color Palette
+#' Color Palette for Variable labels
 #'
 #' @export
-new_case_colors <- c(
-  "new_confirmed" = "#dd4b39",
-  "new_deaths" = "black",
-  "new_recovered" = "#00a65a",
-  "new_active" = "#3c8dbc"
-)
+case_colors_labs <- function(cc = case_colors) {
+  x = cc
+  names(x) = names(varsNames(names(cc)))
+  x
+}
+
+#' Color Palette for new variables
+#'
+#' @export
+new_case_colors <- function(cc = case_colors) {
+  x = cc
+  names(x) = paste0("new_", names(cc))
+  x
+}
 
 #' Color Palette
 #'
@@ -385,11 +393,20 @@ aggr_to_cont = function(data, group, time,
 #'
 #' @import tidyr
 tsdata_areplot <- function(data, levs, n = 1000) {
+
+  # varlabels = varsNames(levs)
+  # renamevars = function(dat) {
+  #   colnames(dat)[match(levs, colnames(dat))] = names(varlabels)
+  #   dat
+  # }
+
   data %>%
-    #filter(date > date[min(which(confirmed>0))]) %>% #remove initial dates
     filter(confirmed > n) %>% #remove initial dates
-    select(-starts_with("new_"), -confirmed) %>%
+    select( date, !!levs) %>% #rename vars with labels
+    #select(Country.Region, date, levs) %>%
+    #renamevars() %>%
     pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
+    #mutate(status = factor(status, levels = names(varlabels))) %>%
     mutate(status = factor(status, levels = levs)) %>%
     capitalize_names_df()
 }
@@ -496,7 +513,7 @@ rate_vars <- c(
 #' @param popdata population data with continent info
 #'
 #' @return data
-#'
+#' @export
 build_data_aggr <- function(data, popdata) {
   orig_data_aggregate <- data %>%
     #aggregate_province_timeseries_data() %>% # not required anymore
