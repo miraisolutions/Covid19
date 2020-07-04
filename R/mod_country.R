@@ -59,48 +59,41 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
   observeEvent(input$select_country, {
 
     # Data ----
-    country_data <- reactive({data_filtered %>%
+    country_data <-  data_filtered %>%
         filter(Country.Region %in% input$select_country) %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
-    })
 
-    country_data_today <- reactive({
-      country_data() %>%
+    country_data_today <- country_data %>%
         filter(date == max(date))
-    })
 
     # Boxes ----
-    callModule(mod_caseBoxes_server, "count-boxes", country_data_today())
+    callModule(mod_caseBoxes_server, "count-boxes", country_data_today)
 
     # tables ----
-    callModule(mod_add_table_server, "add_table_country", country_data(),  maxrowsperpage = 10)
+    callModule(mod_add_table_server, "add_table_country", country_data,  maxrowsperpage = 10)
 
     # plots ----
 
     levs <- sort_type_hardcoded()
 
-    global <- reactive({
-      country_data() %>%
+    global <- country_data %>%
         get_timeseries_global_data()
-    })
-    df_tot = reactive({
-      tsdata_areplot(global(),levs, 1000) # start from day with >1000
-    })
-    callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot(), type = "area")
+
+    df_tot = tsdata_areplot(global,levs, 1000) # start from day with >1000
+
+    callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
 
 
     output$barplots <- renderUI({
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data() , n = n, w = w, istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", country_data , n = n, w = w, istop = F)
 
-    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data())
+    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
 
   })
-
-
 
 }
 
