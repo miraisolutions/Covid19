@@ -222,14 +222,15 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 #' @details The name of the list component correspond to the variable label
 #' @return list All variables, if vars is missing, or one variable.
 varsNames = function(vars) {
-  allvars = c(names(case_colors), paste("new", names(case_colors), sep = "_"),
+  allvars = c(names(case_colors), names(new_case_colors()),
               paste("growth_factor", c(3,5,7), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop", "population", "growth_vs_prev",
-              "tests","new_tests", "hosp", "new_hosp")
+              "tests","new_tests")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
   names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
+  names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
   allvars = as.list(allvars)
 
   if (!missing(vars)){
