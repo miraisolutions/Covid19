@@ -503,11 +503,14 @@ gen_text = function(x, namvar) {
     text.pop = x
   text.pop
 }
-
+#' Variables defined as rate in map plot
 rate_vars <- c(
   "lethality_rate"
   )
-
+#' Variables where negative values are allowed in map plot
+neg_vars <- c(
+  "new_active"
+)
 #' Builds dataset to be used in modules merging pop_data with data
 #' @param data data
 #' @param popdata population data with continent info
