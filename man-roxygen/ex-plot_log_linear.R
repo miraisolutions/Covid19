@@ -3,7 +3,7 @@ if (interactive()) {
   library(dplyr)
   library(ggplot2)
   library(tidyr)
-  #sapply(file.path("R",list.files("R")), source)
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
@@ -18,7 +18,7 @@ if (interactive()) {
     n = 100
     w = 7
     data_filtered <-
-      orig_data() %>%
+      orig_data %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
 
@@ -41,7 +41,7 @@ if (interactive()) {
 
 
 
-    callModule(mod_plot_log_linear_server,"test", df = df_country, type = "area")
+    callModule(mod_plot_log_linear_server,"test", df = df_country(), type = "line")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -59,17 +59,17 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- reactive({ get_datahub() %>%
+    orig_data <- get_datahub() %>%
         get_timeseries_by_contagion_day_data()
-    })
+
     n = 100
     w = 7
-    data_filtered <- reactive({
-      orig_data() %>%
+    data_filtered <-
+      orig_data %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-    })
 
-    country_data <- reactive({data_filtered() %>%
+
+    country_data <- reactive({data_filtered %>%
         filter(Country.Region %in% "Switzerland") %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
@@ -88,7 +88,7 @@ if (interactive()) {
 
 
 
-    callModule(mod_plot_log_linear_server,"test", df = df_country, type = "area")
+    callModule(mod_plot_log_linear_server,"test", df = df_country(), type = "area")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
