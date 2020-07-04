@@ -84,7 +84,7 @@ case_colors <- c(
   "hosp" = "#08306B"
 )
 #' Color Palette for Variable labels
-#'
+#' @param cc vector \code{case_colors}
 #' @export
 case_colors_labs <- function(cc = case_colors) {
   x = cc
@@ -93,7 +93,7 @@ case_colors_labs <- function(cc = case_colors) {
 }
 
 #' Color Palette for new variables
-#'
+#' @param cc vector \code{case_colors}
 #' @export
 new_case_colors <- function(cc = case_colors) {
   x = cc

@@ -6,6 +6,9 @@
 \usage{
 new_case_colors(cc = case_colors)
 }
+\arguments{
+\item{cc}{vector \code{case_colors}}
+}
 \description{
 Color Palette for new variables
 }
