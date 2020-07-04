@@ -60,7 +60,7 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
 
     # Data ----
     country_data <-  data_filtered %>%
-        filter(Country.Region %in% input$select_country) %>%
+        filter(Country.Region %in% req(input$select_country)) %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
 
@@ -72,15 +72,17 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
 
     # tables ----
     callModule(mod_add_table_server, "add_table_country", country_data,  maxrowsperpage = 10)
-
     # plots ----
-
     levs <- sort_type_hardcoded()
+    if (sum(country_data$hosp)>0) {
+      message("Adding hospitalised data for ", req(input$select_country))
+      levs = c(levs, "hosp")
+    }
 
-    global <- country_data %>%
-        get_timeseries_global_data()
+    # global <- country_data %>%
+    #     get_timeseries_global_data()
 
-    df_tot = tsdata_areplot(global,levs, 1000) # start from day with >1000
+    df_tot = tsdata_areplot(country_data,levs, 1000) # start from day with >1000
 
     callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
 
