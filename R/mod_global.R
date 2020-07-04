@@ -123,7 +123,9 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
     #arrange(!!as.symbol(input$radio_indicator)) %>%
      .[,"Country.Region"] %>% as.vector()
 
-  df_top_n = world_top_5_confirmed %>%
+  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>1000])
+
+  df_top_n = world_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than 1000
     mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
     mutate(value = confirmed) %>%
     capitalize_names_df()
