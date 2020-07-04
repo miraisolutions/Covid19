@@ -43,7 +43,6 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' @return line plot of given variable by date
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom  dplyr mutate
 #' @importFrom  dplyr case_when
 #'
@@ -233,7 +232,6 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 #' @return area plot by date
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom scales label_number
 #'
 #' @export
@@ -250,8 +248,6 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    # scale_fill_brewer(palette = "Dark2") #+
-  #  scale_color_brewer(palette = g_palette) +
     scale_color_manual(values = g_palette) +
     scale_y_continuous(labels = label_number(big.mark = ",")) +# add label
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
@@ -275,7 +271,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -425,7 +421,6 @@ date_bar_plot <- function(df){
 #' @param p ggplot object
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #'
 #' @return p ggplot object
 #'
@@ -470,7 +465,6 @@ fix_legend_position <- function(p){
 #' @param g_palette character vector of colors for the graph and legend
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @import zoo
 #' @importFrom scales label_number
 #'
@@ -516,10 +510,8 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-
-   # geom_line(data = df_highlight) +
-   # scale_color_brewer(palette = g_palette)
     scale_color_manual(values = g_palette)
+
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   } else
@@ -539,7 +531,6 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   }
 
   p
-
 }
 
 
@@ -587,7 +578,6 @@ plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
 #' @param y.min numeric adjustment for cartesian y axis
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom scales label_number
 #'
 #' @return ggplot plot
@@ -610,12 +600,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
 
   p <- ggplot(df) +
     basic_plot_theme() +
-    scale_x_continuous(labels = label_number(#scale = 1/100,
+    scale_x_continuous(labels = label_number(
                                              big.mark = ","
                                              #suffix = "K"
                                              )) +
-    # coord_cartesian(ylim = ylim,
-    #                 xlim = xlim) +
     scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
                        labels = label_number(accuracy = 0.01)) +
 
