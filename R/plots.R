@@ -198,9 +198,11 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
       ungroup()
   }
 
-  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
+  df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
+
+  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", statuslabel))) +
     #geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
-    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), alpha = 0.5, position = 'identity') +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
@@ -211,7 +213,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     )
 
   p <- p %>%
-    fix_colors()
+    fix_colors(labs = T)
 
   if (log) {
     p <- p %>%
@@ -372,7 +374,7 @@ from_contagion_day_bar_facet_plot <- function(df){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -425,12 +427,16 @@ date_bar_plot <- function(df){
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p) {
-  # "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_recovered", "new_active"
-  p <- p +
-    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors))) +
-    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors)))
+fix_colors <- function(p, labs = F) {
+  if (labs) {
+    cc_vect = c(case_colors_labs(), case_colors_labs(new_case_colors()))
+  } else {
+    cc_vect = c(case_colors, new_case_colors())
+  }
 
+  p <- p +
+    suppressWarnings(scale_color_manual(values = c(cc_vect))) +
+    suppressWarnings(scale_fill_manual(values = c(cc_vect)))
   p
 }
 
