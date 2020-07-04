@@ -1,4 +1,9 @@
-### Covid19Mirai 2.0.0
+### Covid19Mirai 2.0.1 (2020-07-04)
+
+- Fix broken deployment to shinyapps.io (#116)
+
+### Covid19Mirai 2.0.0 (2020-07-03)
+
 - Update data source from covid19datahub (#104)
 https://github.com/covid19datahub/COVID19
 - Population size taken from covid19datahub, some variables over 1M will differ
