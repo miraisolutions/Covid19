@@ -4,10 +4,12 @@
 \alias{fix_colors}
 \title{Fix colors}
 \usage{
-fix_colors(p)
+fix_colors(p, labs = FALSE)
 }
 \arguments{
 \item{p}{ggplot object}
+
+\item{labs}{logical, if TRUE then variables labels arte used}
 }
 \value{
 p ggplot object

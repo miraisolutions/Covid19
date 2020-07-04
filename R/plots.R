@@ -421,13 +421,14 @@ date_bar_plot <- function(df){
 #' @rdname fix_colors
 #'
 #' @param p ggplot object
+#' @param labs logical, if TRUE then variables labels arte used
 #'
 #' @import ggplot2
 #'
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p, labs = F) {
+fix_colors <- function(p, labs = FALSE) {
   if (labs) {
     cc_vect = c(case_colors_labs(), case_colors_labs(new_case_colors()))
   } else {
