@@ -22,7 +22,7 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     data_filtered <-
-      orig_data_aggregate() %>%
+      orig_data_aggregate %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
 

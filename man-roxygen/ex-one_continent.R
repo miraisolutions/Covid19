@@ -37,7 +37,7 @@ if (interactive()) {
     countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
 
     orig_data_aggregate_cont <- reactive({
-      orig_data_aggregate() %>% filter(continent == cont)
+      orig_data_aggregate %>% filter(continent == cont)
     })
 
     n = 1000; w = 7
