@@ -142,9 +142,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     continent_data %>%
       filter(date == max(date))
 
-  continent_timeseries <-
-    continent_data %>%
-      get_timeseries_global_data()
+  # continent_timeseries <-
+  #   continent_data %>%
+  #     get_timeseries_global_data()
 
 
   # filter map only continent
@@ -171,7 +171,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   levs <- sort_type_hardcoded()
 
   df_continent =
-    tsdata_areplot(continent_timeseries,levs)
+    tsdata_areplot(continent_data,levs)
 
   callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area", g_palette = subcont_palette)
 

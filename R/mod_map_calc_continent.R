@@ -44,12 +44,9 @@ mod_map_cont_calc_ui <- function(id){
 mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont, variable = "confirmed"){
   ns <- session$ns
 
-
   update_ui <- update_radio(variable)
 
   if (!is.null(update_ui$new_buttons)){
-    # choices = reactive({update_ui$new_buttons$choices})
-    # default = reactive({update_ui$new_buttons$selected})
     observe({
 
       output$controls <- renderUI({
@@ -72,9 +69,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
   } else
     button = NULL
 
-
-  #ns <- session$ns
-
   # Data ----
   # if radio_time present  then evaluate, else take last day by default
   day = reactive({
@@ -88,21 +82,15 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
   data_clean <- reactive({
     data <- orig_data_aggregate %>%
       filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
-              #align_country_names()
-    # if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", variable) ||
-    #     grepl("death", variable)  ||
-    #     grepl("(growth)*prev",variable)) {
     # remove for all variables, otherwise some countries appear in a map and not in another one
       message("remove very small countries not to mess up map")
       data = data %>%
         filter(population > 100000)
-    # }
     data = data %>%
       mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
 
     if (!is.null(button$radio) && req(button$radio) == "last week") {
-      #numvars = sapply(data, is.numeric)
-      # remove factors?
+
       numvars = names(numvars)[numvars]
       data = data %>%
         group_by(Country.Region) %>%
@@ -222,14 +210,15 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 #' @details The name of the list component correspond to the variable label
 #' @return list All variables, if vars is missing, or one variable.
 varsNames = function(vars) {
-  allvars = c(names(case_colors), paste("new", names(case_colors), sep = "_"),
+  allvars = c(names(case_colors), names(new_case_colors()),
               paste("growth_factor", c(3,5,7), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop", "population", "growth_vs_prev",
-              "tests","new_tests", "hosp", "new_hosp")
+              "tests","new_tests")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
   names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
+  names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
   allvars = as.list(allvars)
 
   if (!missing(vars)){
@@ -242,6 +231,7 @@ varsNames = function(vars) {
     res = allvars
   res
 }
+
 #' Updates UI radiobuttons depending to variable va
 #' @param var variable name
 #' @param growthvar integer, 3 5 7 depending on choice
@@ -522,19 +512,16 @@ choose_domain <- function(x, var) {
     maxy = max(x, na.rm = T)
     minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
-    #dg = nchar(as.character(round(maxy)))
 
-    #if (dg == 1 && maxy <=1 && minxy >= 0){ # if rate
     if (var %in% rate_vars){ # if rate
-
       domain = domainrate
     } else if (dg <4) {
-      if (any(x<0, na.rm = TRUE))
+      if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
         domain = domainlin
     } else {
-      if (any(x<0, na.rm = TRUE))
+      if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlog_neg
       else
         domain = domainlog

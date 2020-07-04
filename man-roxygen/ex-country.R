@@ -3,6 +3,7 @@ if (interactive()) {
   library(dplyr)
   library(tidyr)
   library(RColorBrewer)
+  library(COVID19)
   library(plotly)
   library(shinycssloaders)
   library(DT)
@@ -13,7 +14,7 @@ if (interactive()) {
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_country_comparison_ui("country_comparison")
+    Covid19Mirai:::mod_country_ui("country")
   )
   server <- function(input, output) {
 
@@ -31,12 +32,12 @@ if (interactive()) {
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
     countries <- reactive({
-      data_filtered() %>%
+      data_filtered %>%
         select(Country.Region) %>%
         distinct()
     })
 
-    callModule(mod_country_comparison_server, "country_comparison",
+    callModule(mod_country_server, "country",
                data_filtered = data_filtered, countries = countries)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

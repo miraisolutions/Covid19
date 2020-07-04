@@ -11,8 +11,10 @@
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id){
   ns <- NS(id)
-  choices_plot <- c(names(case_colors), "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
-    setNames(gsub("_", " ",c(names(case_colors), "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
+  choices_plot <- c(names(case_colors)[!grepl("hosp",names(case_colors))],
+                    "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
+    setNames(gsub("_", " ",c(names(case_colors)[!grepl("hosp",names(case_colors))],
+                             "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
   # UI ----
   tagList(
     uiOutput(ns("title")),
@@ -20,7 +22,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
       column(7,
              offset = 1,
              selectInput(inputId = ns("radio_indicator"), label = "",
-                          choices = choices_plot, selected ="confirmed")
+                          choices = choices_plot, selected ="active")
       ),
       column(4,
              selectInput(inputId = ns("radio_log_linear"), label = "",
@@ -60,6 +62,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
 
   # Give DF standard structure; reacts to input$radio_indicator
   df <- reactive({
+
     if(istop) {
       countries_order =  orig_data_aggregate %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(input$radio_indicator))) %>%
@@ -82,7 +85,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
     max_contagion_no_china <- df_tmp %>%
       filter(Status != "China") %>%
       filter(Date == max(Date)) %>%
-      select(Date) %>%
+      select(Date) %>% unique() %>%
       as.numeric()
   df <- df_tmp %>%
       #filter(Status %in% as.vector(countries$Status)) %>% #pick only filtered countries, not needed, now done before
@@ -100,7 +103,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
     p <- plot_all_highlight(df(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(input$radio_indicator == "lethality_rate", T, F), date_x = F, g_palette)
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom"))
+      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
     p
 
   })

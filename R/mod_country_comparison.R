@@ -55,17 +55,17 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
     updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
   )
 
+  all_countries_data <- data_filtered %>%
+    filter(contagion_day > 0) %>%
+    arrange(desc(date))
+
   observeEvent(input$select_countries,{
     if (input$select_countries != "") {
       # Data ----
-      all_countries_data <- reactive({data_filtered %>%
-          filter(contagion_day > 0) %>%
-          arrange(desc(date))
-      })
-      countries_data <- reactive({all_countries_data() %>%
+
+      countries_data <- all_countries_data %>%
           filter(Country.Region %in% input$select_countries) %>%
           arrange(desc(date))
-      })
 
 
       output$from_nth_case <- renderText({
@@ -84,9 +84,9 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       })
 
       lapply(input$select_countries, function(country){
-        country_data <- reactive({countries_data() %>%
-            filter(Country.Region %in% country)})
-        callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data())
+        country_data <- countries_data %>%
+            filter(Country.Region %in% country)
+        callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data)
       })
     }
 
@@ -98,14 +98,14 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       )
     })
 
-    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data())
+    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data)
 
     # Rate plots ----
     output$rateplots <- renderUI({
       mod_growth_death_rate_ui(ns("rate_plots"), n_highligth = length(input$select_countries))
     })
 
-    callModule(mod_growth_death_rate_server, "rate_plots", countries_data(), n = n, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
     # Line with bullet plot
 
@@ -113,22 +113,22 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data(), n = n, w = w, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, w = w, n_highligth = length(input$select_countries), istop = F)
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
 
-    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data(), n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries())
+    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries())
 
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
     })
-    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data(), n = n, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
     # tables ----
-    callModule(mod_add_table_server, "add_table_countries", countries_data(), maxrowsperpage = 10)
+    callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
   })
 
 }

@@ -17,7 +17,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
                text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
                label = paste("count: ",
-                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
+                             formatC(countstatus, format = "f", big.mark = "'", digits  = 0)))))+
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
@@ -43,7 +43,6 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' @return line plot of given variable by date
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom  dplyr mutate
 #' @importFrom  dplyr case_when
 #'
@@ -199,9 +198,12 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
       ungroup()
   }
 
-  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
-    #geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
-    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), alpha = 0.5, position = 'identity') +
+  df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
+
+  p <- ggplot(df, aes(x = Date, y = Value,
+                      text = paste0(text, ": ", statuslabel)
+              )) +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
@@ -212,7 +214,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     )
 
   p <- p %>%
-    fix_colors()
+    fix_colors(labs = T)
 
   if (log) {
     p <- p %>%
@@ -233,7 +235,6 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 #' @return area plot by date
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom scales label_number
 #'
 #' @export
@@ -250,10 +251,8 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    # scale_fill_brewer(palette = "Dark2") #+
-  #  scale_color_brewer(palette = g_palette) +
     scale_color_manual(values = g_palette) +
-    scale_y_continuous(labels = label_number(big.mark = ",")) +# add label
+    scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
     scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -275,7 +274,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -376,7 +375,7 @@ from_contagion_day_bar_facet_plot <- function(df){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -423,19 +422,23 @@ date_bar_plot <- function(df){
 #' @rdname fix_colors
 #'
 #' @param p ggplot object
+#' @param labs logical, if TRUE then variables labels arte used
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #'
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p) {
-  # "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_recovered", "new_active"
-  p <- p +
-    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors))) +
-    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors)))
+fix_colors <- function(p, labs = FALSE) {
+  if (labs) {
+    cc_vect = c(case_colors_labs(), case_colors_labs(new_case_colors()))
+  } else {
+    cc_vect = c(case_colors, new_case_colors())
+  }
 
+  p <- p +
+    suppressWarnings(scale_color_manual(values = c(cc_vect))) +
+    suppressWarnings(scale_fill_manual(values = c(cc_vect)))
   p
 }
 
@@ -470,7 +473,6 @@ fix_legend_position <- function(p){
 #' @param g_palette character vector of colors for the graph and legend
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @import zoo
 #' @importFrom scales label_number
 #'
@@ -516,14 +518,12 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-
-   # geom_line(data = df_highlight) +
-   # scale_color_brewer(palette = g_palette)
     scale_color_manual(values = g_palette)
+
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
   if (log) {
     p <- p %>%
@@ -539,7 +539,6 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   }
 
   p
-
 }
 
 
@@ -587,7 +586,6 @@ plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
 #' @param y.min numeric adjustment for cartesian y axis
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom scales label_number
 #'
 #' @return ggplot plot
@@ -610,12 +608,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
 
   p <- ggplot(df) +
     basic_plot_theme() +
-    scale_x_continuous(labels = label_number(#scale = 1/100,
-                                             big.mark = ","
+    scale_x_continuous(labels = label_number(
+                                             big.mark = "'"
                                              #suffix = "K"
                                              )) +
-    # coord_cartesian(ylim = ylim,
-    #                 xlim = xlim) +
     scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
                        labels = label_number(accuracy = 0.01)) +
 
@@ -624,7 +620,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
     # ) +
     #labs(x="prevalence over 1M", y = "growth factor") +
     geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
-                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = ",", digits  = 1), "</br>")),
+                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
                color = color_cntry, size = 1.5) +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +

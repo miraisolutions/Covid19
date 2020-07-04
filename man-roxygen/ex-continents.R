@@ -35,7 +35,7 @@ if (interactive()) {
 
     n = 1000; w = 7
     data_filtered <-
-      orig_data_aggregate() %>%
+      orig_data_aggregate %>%
         Covid19:::rescale_df_contagion(n = n, w = w)
 
 

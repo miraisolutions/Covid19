@@ -31,7 +31,7 @@ if (interactive()) {
 
 
     orig_data_aggregate_cont <-
-      orig_data_aggregate() %>% filter(continent == cont)
+      orig_data_aggregate %>% filter(continent == cont)
 
 
     subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) #%>%
