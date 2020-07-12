@@ -3,18 +3,33 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
+#' @param vars variable names in the drop down option.
+#' @param actives if TRUE then add new_active and active variables to vars.
+#' @param tests if TRUE then add new_test and test variables to vars.
+#' @param hosp if TRUE then add new_hosp and hosp variables to vars.
 #'
 #' @noRd
 #'
 #' @import shiny
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
-mod_compare_nth_cases_plot_ui <- function(id){
+mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "new_confirmed",
+                                                       "new_active", "growth_factor_3", "lethality_rate"),
+                                          actives = TRUE, tests = FALSE, hosp = FALSE){
   ns <- NS(id)
-  choices_plot <- c(names(case_colors)[!grepl("hosp",names(case_colors))],
-                    "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
-    setNames(gsub("_", " ",c(names(case_colors)[!grepl("hosp",names(case_colors))],
-                             "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
+
+  # choices_plot <- c(names(case_colors)[!grepl("hosp",names(case_colors))],
+  #                   "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
+  #   setNames(gsub("_", " ",c(names(case_colors)[!grepl("hosp",names(case_colors))],
+  #                            "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
+  choices_plot = varsNames(vars)
+
+  if (!actives && any(grepl("Active", names(choices_plot)))) {
+    choices_plot = choices_plot[!grepl("Active", names(choices_plot))]
+  }
+  if (actives && (!any(grepl("Active", names(choices_plot))))) {
+    choices_plot = c(choices_plot, varsNames(grep("active", unlist(varsNames()), value = T)))
+  }
   # UI ----
   tagList(
     uiOutput(ns("title")),
@@ -54,6 +69,7 @@ mod_compare_nth_cases_plot_ui <- function(id){
 #' @import tidyr
 #' @import ggplot2
 #'
+#' @export
 #' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_aggregate,
                                               n = 1000, w = 7,
@@ -62,7 +78,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, orig_data_
 
   # Give DF standard structure; reacts to input$radio_indicator
   df <- reactive({
-
     if(istop) {
       countries_order =  orig_data_aggregate %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(input$radio_indicator))) %>%
