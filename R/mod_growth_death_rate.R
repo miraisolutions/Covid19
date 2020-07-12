@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner
-mod_growth_death_rate_ui <- function(id, n_highligth = 5){
+mod_growth_death_rate_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidRow(
@@ -81,7 +81,6 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   }
 
   # Dataset ----
-
   df_pop <- reactive(scale_mortality_rate(df))
 
   df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), input$growth_factor)})

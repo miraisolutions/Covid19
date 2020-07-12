@@ -203,7 +203,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Rate plots ----
   output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_growth_death_rate_ui(ns("rate_plots_cont"), n_highligth = length(subcontinents))
+    mod_growth_death_rate_ui(ns("rate_plots_cont"))
   })
 
   callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered,

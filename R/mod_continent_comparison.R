@@ -84,7 +84,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   # Rate plots ----
   output$rateplots_cont <- renderUI({
-    mod_growth_death_rate_ui(ns("rate_plots_cont"), n_highligth = length(continents()))
+    mod_growth_death_rate_ui(ns("rate_plots_cont"))
   })
 
   callModule(mod_growth_death_rate_server, "rate_plots_cont", continent_data_filtered, n = n, n_highligth = length(continents), istop = F)
