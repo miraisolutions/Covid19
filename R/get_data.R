@@ -150,7 +150,7 @@ get_timeseries_full_data <- function() {
 #'
 #' @export
 get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose = FALSE) {
-  message("get_datahub country = ", country, " startdate = ", stardate, " level = ", lev)
+  message("get_datahub: country = ", country, "/ startdate = ", stardate, "/ level = ", lev)
   if (!is.null(country)) {
     # remap country )
     country = recode(country,
