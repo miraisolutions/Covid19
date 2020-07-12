@@ -76,7 +76,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
       filter(date == max(date))
 
    total <-
-     global <- global_today %>%
+     global_today %>%
       get_timeseries_global_data() # possibly not needed
 
 
