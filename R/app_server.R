@@ -56,7 +56,7 @@ app_server <- function(input, output, session) {
 
 
   output$last_update <- renderText({
-    paste0("Last updated: ",
+    paste0("Latest updated: ",
            max(orig_data$date)
     )
   })
