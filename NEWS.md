@@ -1,5 +1,6 @@
 ### Covid19Mirai 2.0.1-9000 (develop)
-- add hospedalised area in area plot in country page where available (#114)
+- added hospedalised area in area plot in country page where available (#114)
+- added some plots for level 2 areas within countries, if available (#115)
 
 ### Covid19Mirai 2.0.1 (2020-07-04)
 - Fix broken deployment to shinyapps.io (#116)
