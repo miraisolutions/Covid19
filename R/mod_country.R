@@ -236,7 +236,7 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
       callModule(mod_plot_log_linear_server, paste(paste0("area",lev2id()),"plot_log_linear_top_n_area2", sep = "-"), df = df_top_n, type = "line")
 
       # > comparison plot from day of nth contagion
-      callModule(mod_compare_nth_cases_plot_server, paste(paste0("area",lev2id()),"plot_compare_nth_area2", sep = "-"), orig_data_aggregate = data_2_filtered, n = n2)
+      callModule(mod_compare_nth_cases_plot_server, paste(paste0("area",lev2id()),"plot_compare_nth_area2", sep = "-"), df = data_2_filtered, n = n2)
 
       # > growth_death_rate, INPUT IS NOT CORRECT
       callModule(mod_growth_death_rate_server, paste(paste0("area",lev2id()),"plot_growth_death_rate_area2", sep = "-"), df = area_data_2_aggregate, n = n2)

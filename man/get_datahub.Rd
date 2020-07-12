@@ -7,6 +7,8 @@
 get_datahub(country = NULL, stardate = "2020-01-15", lev = 1, verbose = FALSE)
 }
 \arguments{
+\item{country}{character country, to chose with lev = 2}
+
 \item{stardate}{character staring date}
 
 \item{lev}{integer 1 for country level, 2 for reagions}
