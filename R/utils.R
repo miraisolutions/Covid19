@@ -521,8 +521,15 @@ build_data_aggr <- function(data, popdata) {
   orig_data_aggregate <- data %>%
     #aggregate_province_timeseries_data() %>% # not required anymore
     add_growth_death_rate() %>%
-    arrange(Country.Region) %>%
-    merge_pop_data(popdata) %>% # compute additional variables
+    arrange(Country.Region)
+
+  if (!missing(popdata)) {
+    orig_data_aggregate = orig_data_aggregate %>%
+      merge_pop_data(popdata)
+
+  }
+  orig_data_aggregate = orig_data_aggregate %>%
+    #merge_pop_data(popdata) %>% # compute additional variables
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
@@ -533,6 +540,7 @@ build_data_aggr <- function(data, popdata) {
            hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
            deaths_rate_hosp =  round(deaths/hosp, digits = 5)
            )
+
   orig_data_aggregate
 }
 
