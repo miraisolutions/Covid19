@@ -590,7 +590,7 @@ plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
 #'
 #' @return ggplot plot
 #' @export
-scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02)) {
+scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01)) {
 
   df = df %>% rename(
     growthfactor = starts_with("growth")
@@ -604,8 +604,11 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
 
   xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
             max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
-  ylim = c(min(1, df$growthfactor,med$y)*y.min[1], max(df$growthfactor, med$y)*y.min[2])
+  ylimtop = max(df$growthfactor, med$y)
+  ylimbot = min(1, df$growthfactor,med$y)
+  ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
 
+  accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +
     basic_plot_theme() +
     scale_x_continuous(labels = label_number(
@@ -613,7 +616,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
                                              #suffix = "K"
                                              )) +
     scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
-                       labels = label_number(accuracy = 0.01)) +
+                       labels = label_number(accuracy = accy)) +
 
     # theme(
     #   axis.text.x = element_text()
@@ -625,7 +628,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
-              check_overlap = TRUE, color = color_cntry, size = 4) +
+              check_overlap = TRUE, color = color_cntry, size = 3.8) +
     coord_cartesian(ylim = ylim,
                     xlim = xlim)
 
