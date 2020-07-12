@@ -102,7 +102,7 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
 
     # Rate plots ----
     output$rateplots <- renderUI({
-      mod_growth_death_rate_ui(ns("rate_plots"), n_highligth = length(input$select_countries))
+      mod_growth_death_rate_ui(ns("rate_plots"))
     })
 
     callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)

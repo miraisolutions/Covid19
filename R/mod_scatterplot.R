@@ -8,7 +8,7 @@
 #'
 #' @importFrom shiny NS tagList selectInput
 #' @importFrom shinycssloaders withSpinner
-mod_scatterplot_ui <- function(id, n_highligth = 5){
+mod_scatterplot_ui <- function(id){
   ns <- NS(id)
   tagList(
          uiOutput(ns("title_scatterplot")),
@@ -31,7 +31,7 @@ mod_scatterplot_ui <- function(id, n_highligth = 5){
 #' @importFrom plotly ggplotly layout plotly_build
 #'
 #' @noRd
-mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T, countries){
+mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = TRUE, countries){
   ns <- session$ns
   # titles
   if (istop) {
@@ -39,7 +39,6 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
   } else {
     output$title_scatterplot <- renderUI(div(h4("Growth vs Prevalence"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
-
   # select growth factor
   addgrowth = function(df, grate) {
     df$growthfact = df[[grate]]
@@ -60,26 +59,24 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
   }
 
   # prepare data select those with more than 10000
-  world_data = reactive({
-    world(df, n,w)
-    })
+  world_data = world(df, n,w)
 
-  confirmed1000 = isolate(
-    any(world_data()$confirmed > 10000)
-  )
-  world_10000 = reactive({
+  #confirmed1000 = #isolate(
+  confirmed1000 =  any(world_data$confirmed > 10000)
+  #)
+  world_10000 = #reactive({
     if (confirmed1000)
-      world_data() %>% filter(confirmed > 10000)
+      world_data %>% filter(confirmed > 10000)
     else
-      world_data()
-  })
+      world_data#()
+  #})
   # compute stats for all growth factors
-  med_growth = reactive({apply(world_10000()[, grepl("growth", names(world_10000())), drop = F],2,  median)})
-  med_prevalence = reactive({median(world_10000()$prevalence_rate_1M_pop)})
+  med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2,  median)})
+  med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop)})
 
   medgr = reactive({med_growth()[input$growth_factor]})
 
-  df_top = reactive({pick_rate(world_data(), "confirmed") %>%
+  df_top = reactive({pick_rate(world_data, "confirmed") %>%
       arrange(desc(Value)) })
   if (istop)  { # choose top n_highligth
     df_top_new = reactive({df_top() %>%
@@ -107,9 +104,9 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
 
   output$plot_scatterplot_xy <- renderPlotly({
 
-    df <- dfnew() %>%
+    df_plot <- dfnew() %>%
       mutate(Country.Region = as.factor(Country.Region))
-    p = df %>%
+    p = df_plot %>%
         scatter_plot(list(x = med_prevalence(),
                           y = medgr()))
     p <- p %>%
