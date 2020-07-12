@@ -14,7 +14,7 @@ if (interactive()) {
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_country_ui("country")
+    mod_country_ui("country")
   )
   server <- function(input, output) {
 

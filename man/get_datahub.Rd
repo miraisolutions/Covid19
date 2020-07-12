@@ -4,7 +4,7 @@
 \alias{get_datahub}
 \title{Get timeseries full data from datahub}
 \usage{
-get_datahub(stardate = "2020-01-15", lev = 1, verbose = FALSE)
+get_datahub(country = NULL, stardate = "2020-01-15", lev = 1, verbose = FALSE)
 }
 \arguments{
 \item{stardate}{character staring date}
