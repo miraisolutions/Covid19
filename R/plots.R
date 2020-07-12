@@ -477,7 +477,7 @@ fix_legend_position <- function(p){
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
+plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
