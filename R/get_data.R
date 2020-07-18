@@ -194,7 +194,8 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
     # "Northern Mariana Islands" belongs to USA
     # "Virgin Islands, U.S." belongs to USA
 
-    # some countried are missing
+    # some countries are missing
+
     if (!(any(c("Hong Kong","China") %in% dataHub$Country.Region))) {
       if (lev == 1) {
         message("Taking chinese data from level 2")
@@ -217,12 +218,14 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
 
         dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
         dataHub
-      } else if (lev == 2){
-        if (country == "China")
-          dataHub = filter(dataHub, Country.Region != "Hong Kong")
       }
-
     }
+    if (lev == 2 && country == "China") {
+        message("remove Hong Kong from China")
+        dataHub = filter(dataHub, Country.Region != "Hong Kong")
+    }
+    # adjust recovered where they do not make sense, e.g. France lev 2
+    dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed)
     # compute active
     dataHub = dataHub %>%
       mutate(active = confirmed - deaths - recovered)
