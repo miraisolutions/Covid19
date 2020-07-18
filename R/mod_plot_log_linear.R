@@ -37,7 +37,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
   ns <- session$ns
 
   log <- reactive({
-    input$radio_log_linear != "linear"
+    req(input$radio_log_linear) != "linear"
   })
 
   observeEvent(input$radio_log_linear, {

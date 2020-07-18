@@ -22,7 +22,7 @@ mod_growth_death_rate_ui <- function(id){
              withSpinner(uiOutput(ns("plot_growth_factor")))
       ),
       column(6,
-             uiOutput(ns("title_dath_toll")),
+             uiOutput(ns("title_death_toll")),
              radioButtons(inputId = ns("radio_pop"), label = "",
                           choices = list("lethality rate" = "lethality_rate",
                                          "mortality rate 1M pop" = "mortality_rate_1M_pop"),
@@ -83,24 +83,24 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   # Dataset ----
   df_pop <- reactive(scale_mortality_rate(df))
 
-  df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), input$growth_factor)})
-  df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), input$radio_pop)})
+  df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), req(input$growth_factor))})
+  df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), req(input$radio_pop))})
 
   # Plots ----
 
   # titles
   if (istop) {
     output$title_growth_factor <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries growth factor")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
-    output$title_dath_toll <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries death toll")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_death_toll <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries death toll")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   } else {
     output$title_growth_factor <- renderUI(div(h4("Growth factor"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
-    output$title_dath_toll <- renderUI(div(h4("Death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_death_toll <- renderUI(div(h4("Death toll"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
   # captions
-  caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
+  caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
   caption_death_rate_radio <- reactive({
-    if (input$radio_pop == "lethality_rate") {
+    if (req(input$radio_pop) == "lethality_rate") {
       p <- "/ total confirmed cases today."
     } else {
       p <- "per 1 M population "
@@ -138,9 +138,10 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p
   })
 
-  is_percent <- reactive({ifelse(input$radio_pop == "lethality_rate", T, F)})
-
+  is_percent <- reactive({ifelse(req(input$radio_pop) == "lethality_rate", T, F)})
   output$plot_death_rate_hist <- renderPlotly({
+    message("is_percent = ", is_percent())
+
     g_palette_drf = g_palette[["death_rate"]]
 
     p <- plot_rate_hist(df_base_plot2(), percent = is_percent(), g_palette =  g_palette_drf)

@@ -33,6 +33,7 @@ mod_scatterplot_ui <- function(id){
 #' @noRd
 mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = TRUE, countries){
   ns <- session$ns
+  #browser()
   # titles
   if (istop) {
     output$title_scatterplot <- renderUI(div(h4(paste0("Current top ", n_highligth, " Growth vs Prevalence")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
@@ -74,7 +75,7 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
   med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2,  median)})
   med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop)})
 
-  medgr = reactive({med_growth()[input$growth_factor]})
+  medgr = reactive({med_growth()[req(input$growth_factor)]})
 
   df_top = reactive({pick_rate(world_data, "confirmed") %>%
       arrange(desc(Value)) })
@@ -86,9 +87,9 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
         filter(Country.Region %in% countries)})
   }
 
-  dfnew = reactive({addgrowth(df_top_new(),input$growth_factor)})
+  dfnew = reactive({addgrowth(df_top_new(),req(input$growth_factor))})
 
-  caption_growth_factor <- reactive({paste0("(y) growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", input$growth_factor) ," days ago.")})
+  caption_growth_factor <- reactive({paste0("(y) growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
   caption_prevalence <- "(x) Prevalence: confirmed cases over 1 M people."
   caption_median <- paste("Dotted lines show median values",
           ifelse(confirmed1000, "among countries with more than 10k cases.", ""))
