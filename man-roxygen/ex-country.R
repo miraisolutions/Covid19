@@ -21,7 +21,6 @@ if (interactive()) {
     orig_data <- get_datahub() %>%
       get_timeseries_by_contagion_day_data()
 
-
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
@@ -38,7 +37,7 @@ if (interactive()) {
     })
 
     callModule(mod_country_server, "country",
-               data_filtered = data_filtered, countries = countries)
+               data_filtered = data_filtered, countries = countries, n = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
