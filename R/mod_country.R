@@ -8,7 +8,6 @@
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
-#' @importFrom plotly plotlyOutput
 mod_country_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -39,13 +38,21 @@ mod_country_ui <- function(id){
   )
 }
 
-#areaUI = function(id,ns){
+#' Level 2 areas UI function
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#'
+#' @noRd
+#'
+#' @import shiny
+#' @importFrom shinycssloaders withSpinner
 areaUI = function(id){
   ns = shiny::NS(id)
-  message("areaUI:", ns("plot_growth_death_rate_area2"))
     tagList(
       div(id = id,
            div(h3("Country split at level 2"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+           hr(),
            div(h5("Some countries have unreliable or inconsistent data at regional level. They may not match those at Country Level or they may miss information. We have decided to display them anyway for sake of semplicity"), align = "left", style = "margin-top:20px; margin-bottom:20px;"),
            hr(),
            fluidRow(
@@ -96,7 +103,7 @@ areaUI = function(id){
 #'
 #' @import dplyr
 #' @import tidyr
-#' @importFrom plotly renderPlotly
+#' @import shiny
 #'
 #' @noRd
 mod_country_server <- function(input, output, session, data_filtered, countries, n = 1000, w = 7){
@@ -195,7 +202,17 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
     }
   })
 }
-
+#' country Server Function for level 2
+#'
+#' @param datahub_2 data.frame with level 2 countries
+#' @param n2 min number of cases for a country to be considered. Default 1000
+#' @param w number of days of outbreak. Default 7
+#'
+#' @import dplyr
+#' @import tidyr
+#' @import shiny
+#'
+#' @noRd
 mod_country_area_server <- function(input, output, session, datahub_2, n2 = 100, w = 7) {
   ns <- session$ns
 
