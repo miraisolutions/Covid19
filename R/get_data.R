@@ -167,8 +167,15 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
   }
   dataHub <- covid19(country = country, start = stardate, level = lev, verbose = verbose) # select level2 to add states
 
-  if (!is.null(dataHub)) {
-
+  # if Hong Kong was chosen in country
+  if (is.null(dataHub) && lev == 1 && country == "Hong Kong") {
+    message("Taking Hong Kong from chinese data from level 2")
+    dataHub <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
+      select( administrative_area_level_2, date, tests,
+             confirmed, recovered, deaths, hosp, population) %>%
+      rename(Country.Region = administrative_area_level_2) %>%
+      filter(Country.Region == "Hong Kong")
+  } else if (!is.null(dataHub)) {
     adminvar = paste("administrative_area_level", lev, sep = "_")
     # select varaibles for backwards compatibility + some additional variables
     dataHub = dataHub %>% ungroup() %>% select(!!adminvar, #id, # at the moment removing ID
@@ -188,15 +195,13 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
           "United Kingdom" = "UK",
           "United States" = "USA",
           "Virgin Islands, U.S." = "U.S. Virgin Islands"
-
         )
     }
     # "Northern Mariana Islands" belongs to USA
     # "Virgin Islands, U.S." belongs to USA
 
-    # some countries are missing
-
-    if (!(any(c("Hong Kong","China") %in% dataHub$Country.Region))) {
+    # if either china or hong kong missing
+    if (length(setdiff(c("Hong Kong","China"), dataHub$Country.Region))>0) {
       if (lev == 1) {
         message("Taking chinese data from level 2")
         dataMiss <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
@@ -204,7 +209,7 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
                  confirmed, recovered, deaths, hosp, population) %>%
           rename(Country.Region = administrative_area_level_1)
         # separate Hong Kong
-        if (!("Hong Kong" %in% dataHub$Country.Region)) {
+        if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
           dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
             mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
           dataHub = rbind(dataHub, dataHG)
@@ -224,8 +229,12 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
         message("remove Hong Kong from China")
         dataHub = filter(dataHub, Country.Region != "Hong Kong")
     }
+  }
+  if (!is.null(dataHub)) {
     # adjust recovered where they do not make sense, e.g. France lev 2
     dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed)
+    dataHub$deaths    = pmin(dataHub$deaths, dataHub$confirmed)
+
     # compute active
     dataHub = dataHub %>%
       mutate(active = confirmed - deaths - recovered)
@@ -242,8 +251,7 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
 
     dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
 
-
-  } else {
+  }  else {
     warning("Data not found for country = ", country, " startdate = ", stardate, " level = ", lev)
   }
 
