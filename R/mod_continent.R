@@ -20,7 +20,7 @@ mod_continent_ui <- function(id, uicont){
        ),
       column(6,
             div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                mod_plot_log_linear_ui(ns("plot_log_area_global"))
+                mod_plot_log_linear_ui(ns("plot_log_area_cont"))
          ),
      ),
     hr(),
@@ -173,7 +173,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   df_continent =
     tsdata_areplot(continent_data,levs)
 
-  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area", g_palette = subcont_palette)
+  callModule(mod_plot_log_linear_server, "plot_log_area_cont", df = df_continent, type = "area", g_palette = subcont_palette)
 
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
     paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
