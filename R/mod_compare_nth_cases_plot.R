@@ -87,7 +87,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                 mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
     } else {
       data = df
-
     }
     df_tmp <- data %>% .[,c("Country.Region", req(input$radio_indicator), "contagion_day")] %>%
       bind_cols(data[,req(input$radio_indicator)] %>% setNames("Value")) %>%
@@ -96,17 +95,21 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       select(-req(input$radio_indicator))
 
 
-    # Day of the country with max contagions after china
-    max_contagion_no_china <- df_tmp %>%
-      filter(Status != "China") %>%
-      filter(Date == max(Date)) %>%
-      select(Date) %>% unique() %>%
-      as.numeric()
-  df_out <- df_tmp %>%
-      #filter(Status %in% as.vector(countries$Status)) %>% #pick only filtered countries, not needed, now done before
-      filter(Date <= max_contagion_no_china) #%>% #cut china
+    if (istop && ("China" %in% df_tmp$Status)) {
+      # Day of the country with max contagions after china
+      max_contagion_no_china <- df_tmp %>%
+        filter(Status != "China") %>%
+        filter(Date == max(Date)) %>%
+        select(Date) %>% unique() %>%
+        as.numeric()
+      df_out <- df_tmp %>%
+        #filter(Status %in% as.vector(countries$Status)) %>% #pick only filtered countries, not needed, now done before
+        filter(Date <= max_contagion_no_china) #%>% #cut china
+    } else {
+      df_out = df_tmp
+    }
 
-  df_out
+    df_out
   })
 
   log <- reactive({
@@ -134,8 +137,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   }
 
   output$caption <- renderUI({
-      p(paste0("Computed as rolling weekly average. Considering countries with at least ", n," confirmed cases, and outbreaks longer than ",w," days. Day 0 is the day the country reached ", n," confirmed cases. Notice that China has been cut off to the second longest outbreak."))
+      p(paste0("Computed as rolling weekly average. Day 0 is the day when ", n," confirmed cases are reached."))
   })
-
 }
 
