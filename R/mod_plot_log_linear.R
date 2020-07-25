@@ -3,7 +3,8 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#'
+#' @param select logical, if TRUE selectInput UI added as uiOutput, default FALSE
+#' @param area logical, if TRUE area plot UI is done, no radiobutton, default TRUE
 #' @noRd
 #'
 #' @import shiny
@@ -41,6 +42,7 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #'
 #' @example man-roxygen/ex-plot_log_linear.R
 #'
+#' @import dplyr
 #' @importFrom plotly renderPlotly
 #' @importFrom plotly ggplotly
 #' @importFrom plotly layout
