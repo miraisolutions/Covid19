@@ -14,19 +14,19 @@ mod_growth_death_rate_ui <- function(id){
     fluidRow(
       column(6,
              uiOutput(ns("title_growth_factor")),
-             radioButtons(inputId = ns("growth_factor"), label = "",
+             selectInput(inputId = ns("growth_factor"), label = "",
                           choices = list("Over 3 days" = "growth_factor_3",
                                          "Over 5 days" = "growth_factor_5",
                                          "Over one week" = "growth_factor_7"),
-                          selected = "growth_factor_3", inline = TRUE),
+                          selected = "growth_factor_3"),
              withSpinner(uiOutput(ns("plot_growth_factor")))
       ),
       column(6,
              uiOutput(ns("title_death_toll")),
-             radioButtons(inputId = ns("radio_pop"), label = "",
+             selectInput(inputId = ns("radio_pop"), label = "",
                           choices = list("lethality rate" = "lethality_rate",
                                          "mortality rate 1M pop" = "mortality_rate_1M_pop"),
-                          selected = "lethality_rate", inline = TRUE),
+                          selected = "lethality_rate"),
              withSpinner(uiOutput(ns("plot_death_rate")))
       )
     )
