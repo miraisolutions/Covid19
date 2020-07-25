@@ -92,12 +92,12 @@ case_colors_labs <- function(cc = case_colors) {
   x
 }
 
-#' Color Palette for new variables
+#' Color Palette for new and last week variables
 #' @param cc vector \code{case_colors}
 #' @export
-new_case_colors <- function(cc = case_colors) {
+prefix_case_colors <- function(cc = case_colors, prefix = "new") {
   x = cc
-  names(x) = paste0("new_", names(cc))
+  names(x) = paste(prefix, names(cc), sep = "_")
   x
 }
 
@@ -394,12 +394,6 @@ aggr_to_cont = function(data, group, time,
 #' @import tidyr
 tsdata_areplot <- function(data, levs, n = 1000) {
 
-  # varlabels = varsNames(levs)
-  # renamevars = function(dat) {
-  #   colnames(dat)[match(levs, colnames(dat))] = names(varlabels)
-  #   dat
-  # }
-
   data %>%
     filter(confirmed > n) %>% #remove initial dates
     select( date, !!levs) %>% #rename vars with labels
@@ -509,13 +503,15 @@ rate_vars <- c(
   )
 #' Variables where negative values are allowed in map plot
 neg_vars <- c(
-  "new_active"
+  c("new_active","lw_active")
 )
 #' Builds dataset to be used in modules merging pop_data with data
 #' @param data data
 #' @param popdata population data with continent info
 #'
 #' @return data
+#'
+#' @import dplyr
 #' @export
 build_data_aggr <- function(data, popdata) {
   orig_data_aggregate <- data %>%
@@ -542,6 +538,34 @@ build_data_aggr <- function(data, popdata) {
            )
 
   orig_data_aggregate
+}
+
+#' Computes last week variables from \code{build_data_aggr}
+#' @param data data.frame
+#'
+#' @note Last week variables have prefix 'lw'
+#'
+#' @return data.frame withe last week variables added
+#'
+#' @import dplyr
+#' @export
+lw_vars_calc <- function(data) {
+  data7 = filter(data, date > (max(date)-7))# last week
+  aggr_vars = intersect(colnames(data7),get_aggrvars())
+  aggr_vars = grep("new", aggr_vars, value = TRUE) # select new ones
+  data7vars = data7 %>% group_by(Country.Region) %>%
+    summarise_at(aggr_vars, sum, na.rm = TRUE) %>% ungroup()
+  # rename columns
+  colnames(data7vars) = gsub("new","lw",colnames(data7vars))
+  # add back population
+  data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population")]))
+  # compute rates
+  data7vars = data7vars %>%
+    mutate(lw_prevalence_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
+           lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
+           lw_tests_rate_confirmed = round(lw_tests/lw_confirmed, digits = 3)
+    )
+  data7vars
 }
 
 #'Global definition of numeric aggregatable vars in dataset

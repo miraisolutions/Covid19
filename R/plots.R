@@ -431,9 +431,10 @@ date_bar_plot <- function(df){
 #' @export
 fix_colors <- function(p, labs = FALSE) {
   if (labs) {
-    cc_vect = c(case_colors_labs(), case_colors_labs(new_case_colors()))
+    cc_vect = c(case_colors_labs(), case_colors_labs(prefix_case_colors(prefix = "lw")),
+                case_colors_labs(prefix_case_colors(prefix = "new")))
   } else {
-    cc_vect = c(case_colors, new_case_colors())
+    cc_vect = c(case_colors, prefix_case_colors(prefix = "lw"), prefix_case_colors(prefix = "new"))
   }
 
   p <- p +
