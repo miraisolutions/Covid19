@@ -21,11 +21,11 @@ mod_global_ui <- function(id){
     fluidRow(
       column(6,
              div(h4("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             mod_plot_log_linear_ui(ns("plot_log_area_global"))
+             mod_plot_log_linear_ui(ns("plot_area_global"))
       ),
       column(6,
              div(h4("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"))
+             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       )
     ),
     hr(),
@@ -113,7 +113,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
     tsdata_areplot(orig_data,levs, 1000) # start from day qith |1000
 
 
-  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_global, type = "area")
+  callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
   # > line plot top 5
   #df_top_n <-
