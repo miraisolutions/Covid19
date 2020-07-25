@@ -25,7 +25,7 @@ mod_country_ui <- function(id){
              br(),
              div( h4("Total cases"), align = "center",
              div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
-             withSpinner(mod_plot_log_linear_ui(ns("plot_log_linear_tot")))
+             withSpinner(mod_plot_log_linear_ui(ns("plot_area_tot"), area = TRUE))
              )
       ),
       column(6,
@@ -58,8 +58,8 @@ areaUI = function(id){
            fluidRow(
              column(6,
                     div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                    #mod_plot_log_linear_ui(ns("plot_log_area_area2"))
-                    withSpinner(uiOutput(ns("plot_log_area_area2")))
+                    #mod_plot_log_linear_ui(ns("plot_area_area2"))
+                    withSpinner(uiOutput(ns("plot_area_area2")))
              ),
              column(6,
                     div(h4("Confirmed cases for top 5 Areas"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -98,7 +98,7 @@ areaUI = function(id){
 #'
 #' @param data_filtered data.frame
 #' @param countries reactive character vector
-#' @param n min number of cases for a country to be considered. Default 1000
+#' @param n min number of cases for a country to be considered. Default n
 #' @param w number of days of outbreak. Default 7
 #'
 #' @import dplyr
@@ -106,7 +106,7 @@ areaUI = function(id){
 #' @import shiny
 #'
 #' @noRd
-mod_country_server <- function(input, output, session, data_filtered, countries, n = 1000, w = 7){
+mod_country_server <- function(input, output, session, data_filtered, countries, n = 1, w = 7){
   ns <- session$ns
   observe(
     updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = "Switzerland")
@@ -138,18 +138,18 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
       levs = c(levs, "hosp")
       country_data_area$active = country_data_area$active - country_data_area$hosp
     }
+    #n_country = select_n(country_data_area$confirmed,n)
+    message("n for ", req(input$select_country), " = ", n)
 
-    df_tot = tsdata_areplot(country_data_area,levs, 1000) # start from day with >1000
+    df_tot = tsdata_areplot(country_data_area,levs, n) # start from day with >n
 
-    callModule(mod_plot_log_linear_server, "plot_log_linear_tot", df = df_tot, type = "area")
-
+    callModule(mod_plot_log_linear_server, "plot_area_tot", df = df_tot, type = "area")
 
     output$barplots <- renderUI({
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_tot", country_data , n = n, w = w, istop = F)
-
 
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
 
@@ -174,7 +174,6 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
                  # the first one works locally with area module
                  #ui = areaUI(ns(paste0("area",lev2id()))),#,  good for example
                  ui = areaUI(ns(id)),#,  good for example
-                 #ui = areaUI(ns(paste0("area",id)), ns), # with ns = country, does not work in package
                  #ui = areaUI(ns(paste0("area",lev2id()))), # with ns = country, does not work in package
 
                  session = session,
@@ -186,7 +185,7 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
 
       # works in example
       message("id lev2 = ", id)
-      callModule(mod_country_area_server, id, datahub_2 = area_data_2)
+      callModule(mod_country_area_server, id, datahub_2 = area_data_2, n2 = max(1,n/10))
 
     } else{
       message("remove level 2 UI for ", req(input$select_country))
@@ -205,7 +204,7 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
 #' country Server Function for level 2
 #'
 #' @param datahub_2 data.frame with level 2 countries
-#' @param n2 min number of cases for a country to be considered. Default 1000
+#' @param n2 min number of cases for a country to be considered. Default n
 #' @param w number of days of outbreak. Default 7
 #'
 #' @import dplyr
@@ -213,7 +212,7 @@ mod_country_server <- function(input, output, session, data_filtered, countries,
 #' @import shiny
 #'
 #' @noRd
-mod_country_area_server <- function(input, output, session, datahub_2, n2 = 100, w = 7) {
+mod_country_area_server <- function(input, output, session, datahub_2, n2 = 1, w = 7) {
   ns <- session$ns
 
   message("mod_country_area_server")
@@ -231,28 +230,16 @@ mod_country_area_server <- function(input, output, session, datahub_2, n2 = 100,
   areas <- reactive({
     data_2_filtered %>%
       select(Country.Region) %>%
-      distinct() %>% .$Country.Region
+      distinct() #%>% .$Country.Region
   })
-
-  area_2_today <-
-    area_data_2 %>%
-    filter(date == max(date))
-
-  total_2 <-
-    area_2_today %>%
-    get_timeseries_global_data() # possibly not needed
-
 
   area_data_2_aggregate_today <-
     area_data_2_aggregate %>%
     filter( date == max(date))
 
-  area_2 <-
-    area_data_2_aggregate_today %>%
-    arrange(desc(confirmed) )
-
   area_2_top_5_today <-
-    area_2 %>%
+    area_data_2_aggregate_today %>%
+    arrange(desc(confirmed)) %>%
     head(5)
 
   area_2_top_5_confirmed <-
@@ -262,28 +249,35 @@ mod_country_area_server <- function(input, output, session, datahub_2, n2 = 100,
 
   # plots ----
   levs <- sort_type_hardcoded()
-  df_area_2 = tsdata_areplot(area_data_2,levs, n2) # start from day with |100
-  #callModule(mod_plot_log_linear_server, ns("plot_log_area_area2"), df = df_area_2, type = "area")
-  output[["plot_log_area_area2"]] <- renderUI({
-    mod_plot_log_linear_ui(ns("plot_area_area2"))
-  })
-  callModule(mod_plot_log_linear_server, "plot_area_area2", df = df_area_2, type = "area" )
-
-  # > line plot top 5
+  df_area_2 = purrr::map(unique(area_data_2$Country.Region),
+    function(un) {
+      dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, n2)
+      dat$Country.Region = rep(un, nrow(dat))
+      dat
+      })
+  df_area_2 = Reduce("rbind",df_area_2)
   # create factors with first top confirmed
   countries_order =  area_2_top_5_confirmed %>% filter(date == max(date)) %>%
     arrange(desc(confirmed)) %>%
     .[,"Country.Region"] %>% as.vector()
+  #callModule(mod_plot_log_linear_server, ns("plot_area_area2"), df = df_area_2, type = "area")
+  output[["plot_area_area2"]] <- renderUI({
+    mod_plot_log_linear_ui(ns("plot_area_area2"), select = TRUE, area = TRUE)
+  })
+  #callModule(mod_plot_log_linear_server, "plot_area_area2", df = df_area_2, type = "area" , countries = reactive(countries_order[, "Country.Region", drop = T]))
+  callModule(mod_plot_log_linear_server, "plot_area_area2", df = df_area_2, type = "area" , countries = areas)
+
+  # > line plot top 5
 
   mindate = min(area_2_top_5_confirmed$date[area_2_top_5_confirmed$confirmed>n2])
 
-  df_top_n = area_2_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than 1000
+  df_top_n = area_2_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than n
     mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
     mutate(value = confirmed) %>%
     capitalize_names_df()
 
   output[["plot_log_linear_top_n_area2"]] <- renderUI({
-    mod_plot_log_linear_ui(ns("log_linear_top_n_area2"))
+    mod_plot_log_linear_ui(ns("log_linear_top_n_area2"), area = FALSE)
   })
   callModule(mod_plot_log_linear_server, "log_linear_top_n_area2", df = df_top_n, type = "line")
 
@@ -292,7 +286,7 @@ mod_country_area_server <- function(input, output, session, datahub_2, n2 = 100,
   output[["plot_compare_nth_area2"]] <- renderUI({
     mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"))
   })
-  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data_2_filtered, n = n2)
+  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data_2_filtered, n = n2, istop = TRUE)
 
   # > growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
@@ -304,10 +298,21 @@ mod_country_area_server <- function(input, output, session, datahub_2, n2 = 100,
   output[["plot_scatterplot_area_2"]] <- renderUI({
     mod_scatterplot_ui(ns("scatterplot_plots_area2"))
   })
-
-  callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = area_data_2_aggregate, istop = FALSE, n = n2, countries = areas())
+  areasC <- reactive({
+    areas() %>% .$Country.Region
+  })
+  callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = area_data_2_aggregate, istop = FALSE, n = n2, countries = areasC())
 
   # > stacked barplot with status split
   callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = area_data_2_aggregate, n = n2)
 }
 
+# select_n <- function(var, n = 100) {
+#   ifelse(max(var) > 10000,
+#                      n,
+#                      ifelse(max(var) > 1000,
+#                             n/10,
+#                             ifelse(max(var) > 100,
+#                                    n/100,
+#                                    1)))
+# }
