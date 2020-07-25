@@ -711,7 +711,7 @@ select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") 
 }
 
 
-#' Reescale contagion day for countries with at least n cases and outbreaks longer than w days
+#' Rescale contagion day for countries with at least n cases and outbreaks longer than w days
 #'
 #' @param df data.frame
 #' @param n number of cases
