@@ -113,19 +113,19 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, w = w, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, n = n, w = w, n_highligth = length(input$select_countries), istop = FALSE)
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
 
-    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries())
+    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, n = n, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
 
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
     })
-    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n = n, n_highligth = length(input$select_countries), istop = FALSE)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
