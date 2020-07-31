@@ -11,11 +11,9 @@
 mod_continent_comparison_ui <- function(id){
   ns <- NS(id)
   tagList(
-    div(
-      #selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
-      textOutput(ns("from_nth_case"))
-    ),
-    #withSpinner(uiOutput(ns("barplots"))),
+    # div(
+    #   textOutput(ns("from_nth_case"))
+    # ),
     withSpinner(uiOutput(ns("lineplots_cont"))),
     fluidRow(
       column(5,
@@ -49,29 +47,14 @@ mod_continent_comparison_ui <- function(id){
 mod_continent_comparison_server <- function(input, output, session, orig_data_aggregate, n = 1000, w = 7, pop_data){
   ns <- session$ns
 
-  # select all variables
-  #allstatuses = get_aggrvars()
-
-  #continents = reactive({unique(orig_data_aggregate()$continent)})
-
-  # continent_pop_data = pop_data %>% filter(!is.na(continent)) %>%
-  #   group_by(continent) %>%
-  #   summarize(population = sum(as.numeric(population), na.rm = T))
   # aggregate data to continent
-  continent_data <- #reactive({
-    aggr_to_cont(orig_data_aggregate, "continent", "date", #pop_data,
-                                           #allstatuses
-                                           )
-  #})
-  continents = #reactive({
-    unique(continent_data$Country.Region)
-  #})
+  continent_data <- aggr_to_cont(orig_data_aggregate, "continent", "date")
 
-  continent_data_filtered <- #reactive({
-    continent_data %>% # select continents with longer outbreaks
+  continents = unique(continent_data$Country.Region)
+
+  # create data for comparison with common starting point
+  continent_data_filtered <- continent_data %>%
       rescale_df_contagion(n = n, w = w)
-      #})
-
 
   output$lineplots_cont <- renderUI({
     tagList(
@@ -87,7 +70,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     mod_growth_death_rate_ui(ns("rate_plots_cont"))
   })
 
-  callModule(mod_growth_death_rate_server, "rate_plots_cont", continent_data_filtered, n = n, n_highligth = length(continents), istop = F)
+  callModule(mod_growth_death_rate_server, "rate_plots_cont", continent_data_filtered, n = n, n_highligth = length(continents), istop = FALSE)
 
   # Line with bullet plot
 
@@ -96,20 +79,19 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data_filtered, n = n, w = w,
-             n_highligth = length(continents), istop = F)
+             n_highligth = length(continents), istop = FALSE)
 
   # scatterplot
   output$scatterplot_plots_cont <- renderUI({
     mod_scatterplot_ui(ns("scatterplot_plots_cont"))
   })
 
-  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered, n = n, n_highligth = length(continents), istop = F, countries = continents)
-
+  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered, nmed = n, n_highligth = length(continents), istop = FALSE, countries = continents)
 
   output$status_stackedbarplot_cont <- renderUI({
     mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
   })
-  callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered, n = n, n_highligth = length(continents), istop = F)
+  callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered, n = n, n_highligth = length(continents), istop = FALSE)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_cont", continent_data_filtered, maxrowsperpage = 10)
