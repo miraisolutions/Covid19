@@ -108,22 +108,22 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     p
   })
   caption_death_rate <- reactive({paste0("Computed as total deaths today ",caption_death_rate_radio())})
-  caption_countries <- paste0("More than ", n, " confirmed cases and outbreaks longer than ", w, " days.")
+  #caption_countries <- paste0("More than ", n, " confirmed cases and outbreaks longer than ", w, " days.")
 
   # plots
   output$plot_growth_factor <- renderUI({
     tagList(
       plotlyOutput(ns("plot_growth_factor_hist"), height = 400),
-      div(p(caption_growth_factor()), align = "center"),
-      div(p(caption_countries), align = "center"),
+      div(p(caption_growth_factor()), align = "center")#,
+      #div(p(caption_countries), align = "center"),
     )
   })
 
   output$plot_death_rate <- renderUI({
     tagList(
       plotlyOutput(ns("plot_death_rate_hist"), height = 400),
-      div(p(caption_death_rate()), align = "center"),
-      div(p(caption_countries), align = "center"),
+      div(p(caption_death_rate()), align = "center")#,
+      #div(p(caption_countries), align = "center"),
     )
   })
 
