@@ -250,21 +250,20 @@ update_radio<- function(var, growthvar = 3){
   if (grepl("(growth)*fact",var)) { # growth factor
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
-    #caption <- paste0("growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
-    caption <- paste0("growth factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
-    graph_title = "Growth factor as of Today"
+    graph_title = "Growth factor"
     textvar = c("new_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
     namesmapvar = c("Total", "Last Week",
-                    "Today")
+                    "Last Day")
     #TODO: order is not stable
     names(mapvar) = namesmapvar
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar["Today"])
+                       choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Prevalence: confirmed cases over 1 M people"
     graph_title = "Prevalence of contagion over 1M"
     textvar = c("confirmed","new_confirmed","population")
@@ -292,9 +291,9 @@ update_radio<- function(var, growthvar = 3){
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
     names(mapvar) = c("Total", "Last Week",
-                      "Today")
+                      "Last Day")
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar["Today"])
+                       choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Active values can be biased by non reported recovered cases"
     caption_color <- "Yellow scale to represent negative active."
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
@@ -304,9 +303,9 @@ update_radio<- function(var, growthvar = 3){
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
     names(mapvar) = c("Total", "Last Week",
-                      "Today")
+                      "Last Day")
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar["Today"])
+                       choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Total, Last Week and New Confirmed cases"
     graph_title = "Confirmed cases"
     textvar = c("growth_factor_3", "active", "tests")
