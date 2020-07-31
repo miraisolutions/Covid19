@@ -37,7 +37,7 @@ if (interactive()) {
     })
 
     callModule(mod_country_server, "country",
-               data_filtered = data_filtered, countries = countries, n = n,  w = w)
+               data = data_filtered, countries = countries, n = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

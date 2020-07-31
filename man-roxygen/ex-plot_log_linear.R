@@ -39,8 +39,6 @@ if (interactive()) {
       tsdata_areplot(country(),levs)
     })
 
-
-
     callModule(mod_plot_log_linear_server,"test", df = df_country(), type = "line")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
@@ -85,8 +83,6 @@ if (interactive()) {
     df_country = reactive({
       tsdata_areplot(country(),levs)
     })
-
-
 
     callModule(mod_plot_log_linear_server,"test", df = df_country(), type = "area")
   }

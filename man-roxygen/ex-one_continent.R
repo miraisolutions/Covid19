@@ -23,7 +23,7 @@ if (interactive()) {
              tabsetPanel(
                tabPanel(cont,
                         id = "tab_global",
-    Covid19Mirai:::mod_continent_ui("cont_comparison", uicont)
+    mod_continent_ui("cont_comparison", uicont)
                )))
   )
   server <- function(input, output) {
@@ -33,17 +33,12 @@ if (interactive()) {
         get_timeseries_by_contagion_day_data()
     #})
 
-    #pop_data = get_pop_data()
     pop_data = get_pop_datahub()
     orig_data_aggregate = #reactive({
       build_data_aggr(orig_data, pop_data)
       #})
 
     countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
-
-    # orig_data_aggregate_cont <- #reactive({
-    #   orig_data_aggregate %>% filter(continent == cont)
-    # #})
 
     n = 1000; w = 7
     # data_filtered <- reactive({

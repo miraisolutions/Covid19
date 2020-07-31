@@ -8,6 +8,8 @@ prefix_case_colors(cc = case_colors, prefix = "new")
 }
 \arguments{
 \item{cc}{vector \code{case_colors}}
+
+\item{prefix}{character, new or lw}
 }
 \description{
 Color Palette for new and last week variables
