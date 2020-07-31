@@ -94,6 +94,7 @@ case_colors_labs <- function(cc = case_colors) {
 
 #' Color Palette for new and last week variables
 #' @param cc vector \code{case_colors}
+#' @param prefix character, new or lw
 #' @export
 prefix_case_colors <- function(cc = case_colors, prefix = "new") {
   x = cc
@@ -415,9 +416,10 @@ message_subcountries <- function(data, area, region) {
   # remove where subcontinent could be NA
   list.countries = data[,c(area,region)] %>% filter(!is.na(!!rlang::sym(area))) %>% unique() %>%
     group_by(.dots = area) %>% group_split()
-  lapply(list.countries, function(x)
+  list.message = lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
            paste(x[[region]], collapse = ",")))
+  c("Continent Area composition: ", list.message)
 }
 #' Calculates growth vs prevalence factors
 #' @param data data.frame aggregated data per region
@@ -448,14 +450,16 @@ growth_v_prev_calc <- function(data, growthvar,prevvar) {
 
 #' Rounds up numbers for labels in plots
 #' @param maxv numeric max value
+#' @param down logical if TRUE then floor is used instead of ceiling
 #'
 #' @return numeric vector after ceiling()
 #'
-round_up = function(maxv) {
+round_up = function(maxv, down = FALSE) {
   dg = nchar(as.character(round(maxv)))
   if (dg == 1 && maxv>1)
     dg = 0
-  ceiling(maxv/(10^(dg-1)))*10^(dg-1)
+  ifelse(!down, ceiling(maxv/(10^(dg-1)))*10^(dg-1),
+         floor(maxv/(10^(dg-1)))*10^(dg-1))
 }
 #' Derives number of digits for rounding
 #' @param dg integer number of characters of figure, say 1000 = 4
