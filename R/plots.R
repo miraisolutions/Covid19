@@ -90,12 +90,20 @@ time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palett
         TRUE ~ Value
       ))
   }
+  x.d.lim = range(df$Date)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line() +
     basic_plot_theme() +
     #scale_colour_brewer(palette = g_palette) +
     scale_color_manual(values = g_palette) +
-    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_x_date(breaks = x.d.breaks,
+                 date_minor_breaks = "1 week",
+                 limits = x.d.lim,
+                 date_labels = "%d-%m") +
+    #xlim(min(df$Date),NA)
+    # scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 week", limits = range(df$Date),
+    #              date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45),
     )
@@ -200,6 +208,9 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 
   df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
 
+  x.d.lim = range(df$Date)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
   p <- ggplot(df, aes(x = Date, y = Value,
                       text = paste0(text, ": ", statuslabel)
               )) +
@@ -208,13 +219,16 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
-    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    #scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_x_date(breaks = x.d.breaks,
+                 date_minor_breaks = "1 week", limits = x.d.lim,
+                  date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45)
     )
 
   p <- p %>%
-    fix_colors(labs = T)
+    fix_colors(labs = TRUE)
 
   if (log) {
     p <- p %>%
@@ -244,6 +258,8 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     df <- df %>%
       mutate(value = ifelse(value == 0, NA, value))
   }
+  x.d.lim = range(df$date)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
   p <-  ggplot(df, aes(x = date, y = value)) +
     geom_line(aes(colour = Country.Region), size = 1.7) + # size must be specified again being facet it is smaller
     #geom_line(aes(colour = Country.Region)) +
@@ -253,7 +269,11 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     scale_color_manual(values = g_palette) +
     scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
-    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    #scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_x_date(breaks = x.d.breaks,
+                 date_minor_breaks = "1 week", limits = x.d.lim,
+                 date_labels = "%d-%m") +
+
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
     )
@@ -532,8 +552,13 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
   }
 
   if (date_x) { # mutate x axis to a date format
+    x.d.lim = range(df$Date)
+    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
     p <- p +
-      scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+      scale_x_date(breaks = x.d.breaks,
+                   limits = x.d.lim,
+                   date_minor_breaks = "1 week", date_labels = "%d-%m") +
       theme(
         axis.text.x = element_text(angle = 45)
       )
