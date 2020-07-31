@@ -23,17 +23,22 @@ mod_scatterplot_ui <- function(id){
 #' Scatterplot prevalence vs growth
 #'
 #' @param df data.frame for multiple countries
-#' @param countries reactive character vector of country names
-
+#' @param nmed number of cases of countries to be used for median computation
+#' @param wmed days of outbreak of countries to be used for median computation
+#' @param n_highligth number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param countries countries selected
+#'
+#' @note if there are no countries with confirmed cases > nmed then all are taken to compute medians
+#'
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
 #' @importFrom plotly ggplotly layout plotly_build
 #'
 #' @noRd
-mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = TRUE, countries){
+mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wmed = 7, n_highligth = 5, istop = TRUE, countries){
   ns <- session$ns
-  #browser()
   # titles
   if (istop) {
     output$title_scatterplot <- renderUI(div(h4(paste0("Current top ", n_highligth, " Growth vs Prevalence")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
@@ -47,9 +52,10 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
     df
   }
 
-  world = function(dat, n, w){
-    dat %>%
-      select_countries_n_cases_w_days(n = n, w = w) %>%
+  #world = function(dat, n, w){
+  world = function(dat){
+    dat %>% #TODO select_countries_n_cases_w_days can be removed if data_filtered is the input
+      #select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date)) %>%
       select(Country.Region,date,confirmed,starts_with("growth"),prevalence_rate_1M_pop)
   }
@@ -60,17 +66,16 @@ mod_scatterplot_server <- function(input, output, session, df, n = 1000, w = 7, 
   }
 
   # prepare data select those with more than 10000
-  world_data = world(df, n,w)
+  #world_data = world(df, n,w)
+  world_data = world(df)
 
-  #confirmed1000 = #isolate(
-  confirmed1000 =  any(world_data$confirmed > 10000)
-  #)
-  world_10000 = #reactive({
+  confirmed1000 =  any(world_data$confirmed > nmed)
+  world_10000 =
     if (confirmed1000)
-      world_data %>% filter(confirmed > 10000)
+      world_data %>% filter(confirmed > nmed)
     else
-      world_data#()
-  #})
+      world_data
+
   # compute stats for all growth factors
   med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2,  median)})
   med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop)})
