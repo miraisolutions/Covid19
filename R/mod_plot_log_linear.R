@@ -13,18 +13,20 @@
 mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
   ns <- NS(id)
   if (!select && (!area)) {
+    # linear plot
     tagList(
       radioButtons(inputId = ns("radio_log_linear"), label = "",
                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE),
       withSpinner(plotlyOutput(ns("plot_log_linear"), height = 400))#,
     )
   } else if (!select && (area)){
+    # global page
     tagList(
       withSpinner(plotlyOutput(ns("plot_area"), height = 400))#,
     )
   } else if (select && (area)) {
+    # country page
     tagList(
-      #selectInput(label = "Area", inputId = ns("select_area"), choices = NULL, selected = NULL),
       uiOutput(ns("select_area_ui")),
       withSpinner(plotlyOutput(ns("plot_area_select"), height = 400))#,
     )
@@ -69,13 +71,9 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
     })
     # area plot with selection of countries
     observeEvent(input$select_area,  {    #
-      #updateSelectInput(session, "select_area", choices = sort(countries()), selected = selectedcountry)
-      #updateSelectInput(session, "select_area", choices = sort(countries()$Country.Region), selected = selectedcountry)
-    # )
       if (input$select_area == "" || (!(input$select_area %in% df$Country.Region))) {
         return()
       }
-    # observeEvent(input$select_area, {
       message("process area ", req(input$select_area))
       # Data ----
       #browser()
@@ -123,7 +121,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
 
     output$plot_area <- renderPlotly({
       p <- df %>%
-          time_evol_area_plot(stack = T, log = log(), text = "Status") #%>%
+          time_evol_area_plot(stack = TRUE, log = log(), text = "Status") #%>%
 
       p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
