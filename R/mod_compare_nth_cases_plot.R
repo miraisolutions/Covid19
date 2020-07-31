@@ -18,10 +18,6 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
                                           actives = TRUE, tests = FALSE, hosp = FALSE){
   ns <- NS(id)
 
-  # choices_plot <- c(names(case_colors)[!grepl("hosp",names(case_colors))],
-  #                   "new_confirmed", "new_active", "growth_factor_3", "lethality_rate") %>%
-  #   setNames(gsub("_", " ",c(names(case_colors)[!grepl("hosp",names(case_colors))],
-  #                            "new_confirmed", "new_active", "growth_factor_3", "lethality_rate"))) %>% as.list()
   choices_plot = varsNames(vars)
 
   if (!actives && any(grepl("Active", names(choices_plot)))) {
@@ -56,9 +52,10 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
 #' @param df data.frame
 #' @param n min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
-#' @param n_highligth number of countries to highlight
-#' @param istop logical to choose title
+#' @param n_highligth number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highligth countries are selected
 #' @param g_palette character vector of colors for the graph and legend
+#' @noRd
 #'
 #' @example ex-mod_compare_nth_cases_plot.R
 #'
@@ -70,7 +67,6 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
 #' @import ggplot2
 #'
 #' @export
-#' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               n = 1000, w = 7,
                                               n_highligth = 5, istop = TRUE, g_palette = graph_palette){
