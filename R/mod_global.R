@@ -71,25 +71,28 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   # Datasets ----
 
-  global_today <-
-    orig_data %>%
-      filter(date == max(date))
+  # global_today <-
+  #   orig_data %>%
+  #     filter(date == max(date))
 
+  # world time series
    total <-
-     global_today %>%
-      get_timeseries_global_data() # possibly not needed
+     orig_data %>%
+      get_timeseries_global_data()
 
+   total_today <-
+     total %>%
+        filter(date == max(date))
 
+  # countries today
   orig_data_aggregate_today <-
     orig_data_aggregate %>%
       filter( date == max(date))
 
-
   world <-
     orig_data_aggregate_today %>%
       arrange(desc(confirmed) )
-
-
+  # todp 5 countries today by confirmed
   world_top_5_today <-
     world %>%
       head(5)
@@ -100,7 +103,7 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
       select(Country.Region, date, confirmed)
 
   # Boxes ----
-  callModule(mod_caseBoxes_server, "count-boxes", total)
+  callModule(mod_caseBoxes_server, "count-boxes", total_today)
 
   # map ----
 
@@ -109,9 +112,9 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # plots ----
   levs <- sort_type_hardcoded()
 
+  n = 1000 # define areaplot start
   df_global =
-    tsdata_areplot(orig_data,levs, 1000) # start from day qith |1000
-
+    tsdata_areplot(total,levs, n) # start from day with >1000
 
   callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
@@ -120,16 +123,16 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
     # create factors with first top confirmed
   countries_order =  world_top_5_confirmed %>% filter(date == max(date)) %>%
     arrange(desc(confirmed)) %>%
-    #arrange(!!as.symbol(input$radio_indicator)) %>%
      .[,"Country.Region"] %>% as.vector()
 
-  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>1000])
+  # start lineplot from a later date
+  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>n])
 
   df_top_n = world_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than 1000
     mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
     mutate(value = confirmed) %>%
     capitalize_names_df()
-
+  # lineplot of top 5 countries confirmed cases with date x axis
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
   # > comparison plot from day of nth contagion
@@ -139,8 +142,8 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
 
-  # > scatterplot prevalence vs growth
-  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate)
+  # > scatterplot prevalence vs growth, nmed = 10000 by default
+  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today)
 
   # > stacked barplot with status split
   callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate)
