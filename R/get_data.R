@@ -150,7 +150,7 @@ get_timeseries_full_data <- function() {
 #' @import dplyr
 #'
 #' @export
-get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose = FALSE) {
+get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose = FALSE) {
   message("get_datahub: country = ", country, "/ startdate = ", stardate, "/ level = ", lev)
   if (!is.null(country)) {
     # remap country )
@@ -243,12 +243,12 @@ get_datahub = function(country = NULL, stardate = "2020-01-15", lev = 1, verbose
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
 
     # take yesterday, data are updated hourly and they are complete around mid day, 36h later
-    # regardless of the timezone, select the day 36h ago
-    now = as.POSIXct(Sys.time()) # GMT simply for consistency
-    maxdate =  as.character(as.Date(now - 36*60*60))
+    # regardless of the timezone, select the day 40h ago
+    now = as.POSIXct(Sys.time()) # given time zone
+    maxdate =  as.character(as.Date(now - 40*60*60))
 
     message("Maximum date set to: ", maxdate)
-
+    #TODO: arrange should go descending, many rows could be filtered out for many countries
     dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
 
   }  else {
@@ -301,6 +301,8 @@ get_timeseries_by_contagion_day_data <- function(data) {
     # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
     # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
     ungroup()
+  #TODO: remove all 0s confirmed from all countries
+  #data1 = filter(data1, contagion_day != 0)
   data1
 }
 
