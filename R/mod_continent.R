@@ -25,7 +25,7 @@ mod_continent_ui <- function(id, uicont){
      ),
     hr(),
     div(
-      textOutput(ns(paste("from_nth_case", uicont , sep = "_")))
+      uiOutput(ns(paste("from_nth_case", uicont , sep = "_")))
     ),
    hr(),
    div(
@@ -76,7 +76,9 @@ mod_continent_ui <- function(id, uicont){
             withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
      )
    ),
-    mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_")))
+    mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_"))),
+    hr(),
+    mod_add_table_ui(ns(paste("add_table_countries", uicont , sep = "_")))
     )
 }
 
@@ -165,20 +167,19 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     tsdata_areplot(continent_data,levs)
 
   callModule(mod_plot_log_linear_server, "plot_area_cont", df = df_continent, type = "area", g_palette = subcont_palette)
-
-  output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
-    paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
+  output[[paste("from_nth_case", uicont , sep = "_")]]<- renderUI({
+    HTML(paste(
+      paste0(cont, " countries are grouped in Macro Areas as defined by United Nations."),
+      paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
+      paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered."),
+      paste0("Contagion day 0 is the first day with more than ", n ," cases."), sep = "<br/>"))
   })
   # list of countries
-  list.message = reactive({
-      #message_subcountries(data_filtered_cont(),"subcontinent","Country.Region")
+  list.message =
       message_subcountries(orig_data_aggregate_cont,"subcontinent","Country.Region")
 
-  })
-
   output[[paste("subcontinents_countries", uicont , sep = "_")]]<- renderUI({
-   HTML(paste(as.character(unlist(list.message())), collapse = '<br/>'))
-
+   HTML(paste(as.character(unlist(list.message)), collapse = '<br/>'))
   })
 
   output[[paste("lineplots_cont", uicont , sep = "_")]] <- renderUI({
@@ -209,7 +210,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data_filtered, n = n, w = w,
-             n_highligth = length(subcontinents), istop = F , g_palette = subcont_palette)
+             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette)
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
@@ -217,15 +218,15 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont",
-             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents),
-             istop = F, countries = subcontinents)
+             subcontinent_data_filtered, nmed = n, n_highligth = length(subcontinents),
+             istop = FALSE, countries = subcontinents)
 
 
   output[[paste("status_stackedbarplot_cont", uicont , sep = "_")]] <- renderUI({
     mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
   })
   callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
-             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents), istop = F)
+             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents), istop = FALSE)
 
   # Compute Last week variables
 
@@ -280,6 +281,12 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   callModule(mod_add_table_server, paste("add_table_cont", uicont , sep = "_"),
              subcontinent_data_filtered, maxrowsperpage = 10)
 
+  # prepare data for table with country data
+  orig_data_aggregate_cont_tab = orig_data_aggregate_cont %>% # only data from today
+    filter(date == max(date)) %>%
+    arrange(desc(confirmed) )
+  callModule(mod_add_table_server, paste("add_table_countries", uicont , sep = "_"),
+             orig_data_aggregate_cont_tab, maxrowsperpage = 10)
 
 }
 
