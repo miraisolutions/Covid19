@@ -34,9 +34,9 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
     output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
-  prep_data <- function(orig_data_aggregate, n, w){
-    df1 <- orig_data_aggregate %>%
-      select_countries_n_cases_w_days(n = n, w = w) %>%
+  prep_data <- function(data, n, w){
+    df1 <- data %>%
+      #select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date))
     df1
   }
@@ -69,7 +69,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
            status = factor(status, levels = statuses)) %>%
     arrange(status)})
 
-  caption_explain <- "Status split as of today."
+  caption_explain <- "The Plot shows what countries have more to recover from their confirmed cases. Not all of them are providing Recovered numbers."
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(
