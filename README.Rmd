@@ -40,12 +40,12 @@ We are very thankful to [David Bumbeishvili](https://github.com/bumbeishvili) fo
 It consists of 4 main pages:   
 
 * **Global**: Summarizing top 5 countries in the world in each variable.   
-* **Continents**: Summarizing world data per continent (defined according to UN), underneath subtabs with insight within continent:   
-  + **Europe**: European data split by macroareas with heatmaps per country.   
-  + **Asia**: Asia data split by macroareas with heatmaps per country.  
-  + **Africa**: African data split by macroareas with heatmaps per country.   
-  + **Latin America & Carib.**: South and Central American with Caribbean Isles  by macroareas with heatmaps per country.   
-  + **Northern America**: Northern America (USA and Canada) data split by macroareas with heatmaps per country.   
+* **Continents**: Summarizing world data per continent (defined according to UN), underneath sub-tabs with insight within continent:   
+  + **Europe**: European data split by macro-areas with heatmaps per country.   
+  + **Asia**: Asia data split by macro-areas with heatmaps per country.  
+  + **Africa**: African data split by macro-areas with heatmaps per country.   
+  + **Latin America & Carib.**: South and Central American with Caribbean Isles  by macro-areas with heatmaps per country.   
+  + **Northern America**: Northern America (USA and Canada) data split by macro-areas with heatmaps per country.   
 * **Country**: Single country report.   
   + If available regional graphs and data will be displayed.
 * **Country Comparison**: Comparison report between N countries from all over the world.  
