@@ -81,8 +81,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palette) {
-
+time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_palette) {
   if (log) {
     df <- df %>%
       mutate(Value = case_when(
@@ -95,13 +94,12 @@ time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palett
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line() +
     basic_plot_theme() +
-    #scale_colour_brewer(palette = g_palette) +
     scale_color_manual(values = g_palette) +
     scale_x_date(breaks = x.d.breaks,
                  date_minor_breaks = "1 week",
                  limits = x.d.lim,
                  date_labels = "%d-%m") +
-    #xlim(min(df$Date),NA)
+    scale_y_continuous(labels = label_number(big.mark = "'")) +
     # scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 week", limits = range(df$Date),
     #              date_labels = "%d-%m") +
     theme(
@@ -223,6 +221,8 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     scale_x_date(breaks = x.d.breaks,
                  date_minor_breaks = "1 week", limits = x.d.lim,
                   date_labels = "%d-%m") +
+    scale_y_continuous(labels = label_number(big.mark = "'")) + # add label
+
     theme(
       axis.text.x = element_text(angle = 45)
     )
@@ -654,7 +654,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
-              check_overlap = TRUE, color = color_cntry, size = 3.8) +
+              check_overlap = TRUE, color = color_cntry, size = 3.3) +
     coord_cartesian(ylim = ylim,
                     xlim = xlim)
 

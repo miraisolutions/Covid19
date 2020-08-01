@@ -63,9 +63,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
       arrange(desc(conf)) %>% .$Country.Region %>% .[1]
     log = reactive(FALSE)
     message("selected first country: ", selectedcountry)
-    # observe(
-    #   updateSelectInput(session, "select_area", choices = sort(countries()$Country.Region), selected = selectedcountry)
-    # )
+
     output[["select_area_ui"]] <- renderUI({
       selectInput(label = "Area", inputId = ns("select_area"), choices = sort(countries()$Country.Region), selected = selectedcountry)
     })
@@ -76,15 +74,14 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
       }
       message("process area ", req(input$select_area))
       # Data ----
-      #browser()
       area_data <-  df %>%
         filter(Country.Region %in% req(input$select_area)) %>%
         select(-Country.Region)
       output$plot_area_select <- renderPlotly({
 
         p <- area_data %>%
-          time_evol_area_plot(stack = T, log = log(), text = "Status")
-        p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
+          time_evol_area_plot(stack = TRUE, log = log(), text = "Status")
+        #p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
         p <- p %>%
           ggplotly(tooltip = c("x", "y", "text")) %>%
@@ -103,8 +100,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
       output$plot_log_linear <- renderPlotly({
         p <- df %>%
             time_evol_line_plot(log = log(), text = "Area" , g_palette = graph_palette)
-
-        p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
+       # p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
         p <- p %>%
           ggplotly(tooltip = c("x", "y", "text")) %>%
@@ -123,7 +119,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
       p <- df %>%
           time_evol_area_plot(stack = TRUE, log = log(), text = "Status") #%>%
 
-      p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
+     # p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
       p <- p %>%
         ggplotly(tooltip = c("x", "y", "text")) %>%
