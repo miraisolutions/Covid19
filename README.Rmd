@@ -28,7 +28,7 @@ The goal of Covid19Mirai is to provide an insight on coronavirus data taken from
 
 However, due to a format change on the data source, we had to switch, **starting the 26th of March 2020**, to the [work](https://github.com/bumbeishvili/covid19-daily-data) of [David Bumbeishvili](https://github.com/bumbeishvili), who is maintaining the old JHU CSSE data set format with updates declared as from [worldometers](https://www.worldometers.info/coronavirus/). This is a new project and we cannot guarantee the long-term reliability of the data source. We are, however, grateful to [David Bumbeishvili](https://github.com/bumbeishvili) for his [work](https://github.com/bumbeishvili/covid19-daily-data). 
 
-**Update 04 of July 2020**, Data from few European countries have been readjusted recently, 
+**Update 4th of July 2020**, Data from few European countries have been readjusted recently, 
 getting this update has given us the push to switch to a new and richer data source.
 We have decided for the [COVID 19 Data Hub](https://covid19datahub.io/) project led
 by [Emanuele Guidotti](https://guidotti.dev/) and [David Ardia](https://ardiad.github.io/). 
@@ -47,7 +47,7 @@ It consists of 4 main pages:
   + **Latin America & Carib.**: South and Central American with Caribbean Isles  by macroareas with heatmaps per country.   
   + **Northern America**: Northern America (USA and Canada) data split by macroareas with heatmaps per country.   
 * **Country**: Single country report.   
-  + If available regional graphs and data will be displayed
+  + If available regional graphs and data will be displayed.
 * **Country Comparison**: Comparison report between N countries from all over the world.  
 
 ## The Variables
