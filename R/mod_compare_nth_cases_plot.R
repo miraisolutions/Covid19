@@ -114,7 +114,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
   # Plot -----
   output$plot <- renderPlotly({
-    p <- plot_all_highlight(df_data(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(req(input$radio_indicator) == "lethality_rate", T, F), date_x = F, g_palette)
+    p <- plot_all_highlight(df_data(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(req(input$radio_indicator) %in% rate_vars, TRUE, FALSE), date_x = FALSE, g_palette)
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
