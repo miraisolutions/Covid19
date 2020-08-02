@@ -458,8 +458,11 @@ round_up = function(maxv, down = FALSE) {
   dg = nchar(as.character(round(maxv)))
   if (dg == 1 && maxv>1)
     dg = 0
-  ifelse(!down, ceiling(maxv/(10^(dg-1)))*10^(dg-1),
-         floor(maxv/(10^(dg-1)))*10^(dg-1))
+  if(!down)
+   res =   ceiling(maxv/(10^(dg-1)))*10^(dg-1)
+  else
+   res =   floor(maxv/(10^(dg-1)))*10^(dg-1)
+  res
 }
 #' Derives number of digits for rounding
 #' @param dg integer number of characters of figure, say 1000 = 4

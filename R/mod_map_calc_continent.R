@@ -373,7 +373,6 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
       " </strong>",
       .pastecol(ptxt = coltext ),txt, ifelse(is.null(col), "", "</style>"),
       "<br>")
-
   }
 
   name_text = .paste_text("Country", NAME, case_colors["confirmed"])
@@ -493,7 +492,8 @@ domainlog_neg <- function(x) {
 }
 
 domainlin <- function(x) {
-  c(floor(min(x, na.rm = TRUE)),round_up(max(x, na.rm = TRUE)))
+  #negative values incorrect
+  c(max(0,floor(min(x, na.rm = TRUE))),round_up(max(x, na.rm = TRUE)))
 }
 domainlin_neg <- function(x) {
   maxlimit = max(abs(x), na.rm = TRUE)
