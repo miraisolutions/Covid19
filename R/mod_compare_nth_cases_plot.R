@@ -55,7 +55,6 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
 #' @param n_highligth number of countries to highlight if istop == TRUE
 #' @param istop logical to choose title, if top n_highligth countries are selected
 #' @param g_palette character vector of colors for the graph and legend
-#' @noRd
 #'
 #' @example ex-mod_compare_nth_cases_plot.R
 #'
@@ -66,7 +65,7 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
 #' @import tidyr
 #' @import ggplot2
 #'
-#' @export
+#' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               n = 1000, w = 7,
                                               n_highligth = 5, istop = TRUE, g_palette = graph_palette){
