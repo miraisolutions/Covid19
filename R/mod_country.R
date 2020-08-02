@@ -176,7 +176,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
 
   #   # Data ----
     area_data_2 = get_datahub(country = req(input$select_country), stardate = "2020-01-22", lev = 2, verbose = FALSE)
-    if (!is.null(area_data_2)) {
+    if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # insert UI components
       if (lev2id() == 0) {
         lev2id(lev2id()+1)

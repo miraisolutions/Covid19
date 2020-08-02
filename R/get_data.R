@@ -168,14 +168,14 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
   dataHub <- covid19(country = country, start = stardate, level = lev, verbose = verbose) # select level2 to add states
 
   # if Hong Kong was chosen in country
-  if (is.null(dataHub) && lev == 1 && country == "Hong Kong") {
+  if ((is.null(dataHub) || nrow(dataHub) == 0) && lev == 1 && country == "Hong Kong") {
     message("Taking Hong Kong from chinese data from level 2")
     dataHub <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
       select( administrative_area_level_2, date, tests,
              confirmed, recovered, deaths, hosp, population) %>%
       rename(Country.Region = administrative_area_level_2) %>%
       filter(Country.Region == "Hong Kong")
-  } else if (!is.null(dataHub)) {
+  } else if (!is.null(dataHub) && nrow(dataHub) > 0) {
     adminvar = paste("administrative_area_level", lev, sep = "_")
     # select varaibles for backwards compatibility + some additional variables
     dataHub = dataHub %>% ungroup() %>% select(!!adminvar, #id, # at the moment removing ID
@@ -230,7 +230,7 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
         dataHub = filter(dataHub, Country.Region != "Hong Kong")
     }
   }
-  if (!is.null(dataHub)) {
+  if (!is.null(dataHub) && nrow(dataHub) > 0) {
     # adjust recovered where they do not make sense, e.g. France lev 2
     dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed)
     dataHub$deaths    = pmin(dataHub$deaths, dataHub$confirmed)
