@@ -97,7 +97,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   caption_growth_factor <- reactive({paste0("(y) growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
   caption_prevalence <- "(x) Prevalence: confirmed cases over 1 M people."
   caption_median <- paste("Dotted lines show median values",
-          ifelse(confirmed1000, "among countries with more than 10k cases.", ""))
+          ifelse(confirmed1000, paste0("among countries with more than ", nmed," cases."), ""))
 
   output$plot_scatterplot <- renderUI({
     tagList(
