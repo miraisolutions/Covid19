@@ -2,22 +2,38 @@ context("get datahub tests")
 
 data_full <- get_datahub()
 
-test_that("get_datahub returns expected headers", {
+test_that("get_datahub returns expected headers and variables", {
   expect_true(length(setdiff(names(data_full), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","hosp"))) == 0)
   expect_false(any(sapply(data_full, class) == "integer"))
-
-  # sapply(names(data), function(i){
-  #   expect_true(all(c("Province.State", "Country.Region", "Lat", "Long") %in% names(data[[i]])))
-  # })
-  # sapply(c("confirmed", "deaths", "recovered"), function(i) {
-  #   expect_true(all(c("Province.State", "Country.Region", "Lat", "Long") %in% names(get_timeseries_single_data(i))))
-  # })
+  expect_true(all(data_full$confirmed >= data_full$recovered))
+  expect_true(all(data_full$confirmed >= data_full$deaths))
 })
-test_that("get_datahub returns data from today", {
+test_that("get_datahub does not return data from today", {
+  expect_false(identical(Sys.Date(),max(data_full$date)))
+})
+test_that("get_datahub contains Hong Kong", {
+  expect_true("Hong Kong" %in% unique(data_full$Country.Region))
+})
 
-  expect_true(identical(Sys.Date()-1,max(data_full$date)))
+data_CH <- get_datahub("China", lev = 2)
+
+test_that("get_datahub lev = 2 China does not contain Hong Kong", {
+  expect_false("Hong Kong" %in% unique(data_CH$Country.Region))
+  expect_true(length(setdiff(names(data_CH), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","hosp"))) == 0)
+  expect_false(any(sapply(data_CH, class) == "integer"))
+  expect_true(all(data_CH$confirmed >= data_CH$recovered))
+  expect_true(all(data_CH$confirmed >= data_CH$deaths))
 
 })
+
+data_HK <- get_datahub("Hong Kong", lev = 1)
+
+test_that("get_datahub lev = 1 Hong Kong works", {
+  expect_true("Hong Kong" %in% unique(data_HK$Country.Region))
+  expect_true(length(setdiff(names(data_HK), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","hosp"))) == 0)
+  expect_false(any(sapply(data_HK, class) == "integer"))
+})
+
 
 data <- get_timeseries_by_contagion_day_data(data_full)
 

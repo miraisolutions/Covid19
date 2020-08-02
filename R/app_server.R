@@ -13,6 +13,7 @@ app_server <- function(input, output, session) {
 #profvis({
   # Params ----
   n <- 1000 #  min number of cases for a country to be considered. Default 1000
+  # to be used in Global and Comparison
   w <- 7 # number of days of outbreak. Default 7
 
   # Data ----
@@ -54,24 +55,24 @@ app_server <- function(input, output, session) {
   orig_data_aggregate <-
     build_data_aggr(orig_data, pop_data)
 
-
   output$last_update <- renderText({
-    paste0("Last updated: ",
+    paste0("Latest updated: ",
            max(orig_data$date)
     )
   })
 
+  # align contagion day for comparisons
   data_filtered <-
     orig_data_aggregate %>%
       rescale_df_contagion(n = n, w = w)
 
-
+  # determine vector of countries to be used in Global and Comparison pages
+  # reactive
   countries <- reactive({
     data_filtered %>%
       select(Country.Region) %>%
       distinct()
   })
-
 
   # Modules ----
 
@@ -90,9 +91,9 @@ app_server <- function(input, output, session) {
                pop_data = pop_data, countries_data_map = countries_data_map,
                cont = continents[i.cont], uicont = uicontinents[i.cont])
   }
-  callModule(mod_country_server, "country", data_filtered = data_filtered, countries = countries, n = n, w = w)
+  callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countries, n = 10, w = w, n.select = n)
 
-  callModule(mod_country_comparison_server, "country_comparison", data_filtered = data_filtered, countries = countries, n = n, w = w)
+  callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, n = 10, w = w, n.select = n)
 
   # Modal ----
   # what is new pop-up

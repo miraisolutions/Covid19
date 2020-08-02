@@ -1,5 +1,10 @@
 ### Covid19Mirai 2.0.1-9000 (develop)
-- add hospedalised area in area plot in country page where available (#114)
+- Added hospedalised area in area plot in country page where available (#114)
+- Added some plots for level 2 areas within countries, if available (#115)
+- Correction bug for country page China
+- Updated UI for area plot, with level 2 selection, removed log option
+- SelectInput instead of RadioButtons in rates plot
+- Added Last Week option for Continent Maps
 
 ### Covid19Mirai 2.0.1 (2020-07-04)
 - Fix broken deployment to shinyapps.io (#116)

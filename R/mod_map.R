@@ -11,8 +11,9 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
-  choices_map <- c(names(case_colors), "new_confirmed", "new_active") %>%
-    setNames(gsub("_", " ",c(names(case_colors), "new_confirmed", "new_active"))) %>% as.list()
+  vars = setdiff(names(case_colors), "hosp") # remove hosp for now
+  choices_map <- c(vars, "new_confirmed", "new_active") %>%
+    setNames(gsub("_", " ",c(vars, "new_confirmed", "new_active"))) %>% as.list()
   div(
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering

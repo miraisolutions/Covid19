@@ -20,12 +20,12 @@ mod_continent_ui <- function(id, uicont){
        ),
       column(6,
             div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                mod_plot_log_linear_ui(ns("plot_log_area_global"))
+                mod_plot_log_linear_ui(ns("plot_area_cont"))
          ),
      ),
     hr(),
     div(
-      textOutput(ns(paste("from_nth_case", uicont , sep = "_")))
+      uiOutput(ns(paste("from_nth_case", uicont , sep = "_")))
     ),
    hr(),
    div(
@@ -49,6 +49,9 @@ mod_continent_ui <- function(id, uicont){
              withSpinner(uiOutput(ns(paste("status_stackedbarplot_cont", uicont , sep = "_"))))
       )
     ),
+   hr(),
+   div(h3("Country Heat Maps within Continent"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+   hr(),
    fluidRow(
      column(6,
             withSpinner(uiOutput(ns(paste("map_countries_confirmed", uicont , sep = "_"))))
@@ -73,7 +76,9 @@ mod_continent_ui <- function(id, uicont){
             withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
      )
    ),
-    mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_")))
+    mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_"))),
+    hr(),
+    mod_add_table_ui(ns(paste("add_table_countries", uicont , sep = "_")))
     )
 }
 
@@ -101,30 +106,24 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   orig_data_aggregate_cont <-
     orig_data_aggregate %>% filter(continent == cont)
 
-  data_filtered_cont <-
-    orig_data_aggregate_cont %>% # select sub-continents with longer outbreaks
+  if (F) {
+    # not used at the moment
+    data_filtered_cont <-
+      orig_data_aggregate_cont %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)
-
+  }
 
  # subcontinents = reactive({sort(unique(orig_data_aggregate_cont$subcontinent))})
   subcontinents = sort(unique(orig_data_aggregate_cont$subcontinent))
 
-
-  subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) #%>%
-    #group_by(subcontinent)# %>%
-    #summarize(population = sum(population, na.rm = T))
+  subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont)
 
   continent_data <-
-    aggr_to_cont(orig_data_aggregate_cont, "continent", "date",
-                                           #continent_pop_data,
-                                           #allstatuses
-                                           )
+    aggr_to_cont(orig_data_aggregate_cont, "continent", "date" )
 
   subcontinent_data <-
-    aggr_to_cont(orig_data_aggregate_cont, "subcontinent", "date",
-                                              #subcontinent_pop_data,
-                                              #allstatuses
-                                              )
+    aggr_to_cont(orig_data_aggregate_cont, "subcontinent", "date" )
+
   # define palette for subcontinent
 
   subcont_palette =
@@ -137,15 +136,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     subcontinent_data %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = n, w = w)
 
-
   continent_data_today <-
     continent_data %>%
       filter(date == max(date))
-
-  # continent_timeseries <-
-  #   continent_data %>%
-  #     get_timeseries_global_data()
-
 
   # filter map only continent
   #countries_data_map_cont = countries_data_map[countries_data_map@data$CONTINENT == cont,]
@@ -173,21 +166,20 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   df_continent =
     tsdata_areplot(continent_data,levs)
 
-  callModule(mod_plot_log_linear_server, "plot_log_area_global", df = df_continent, type = "area", g_palette = subcont_palette)
-
-  output[[paste("from_nth_case", uicont , sep = "_")]]<- renderText({
-    paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
+  callModule(mod_plot_log_linear_server, "plot_area_cont", df = df_continent, type = "area", g_palette = subcont_palette)
+  output[[paste("from_nth_case", uicont , sep = "_")]]<- renderUI({
+    HTML(paste(
+      paste0(cont, " countries are grouped in Macro Areas as defined by United Nations."),
+      paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
+      paste0("Only Areas with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered."),
+      paste0("Contagion day 0 is the first day with more than ", n ," cases."), sep = "<br/>"))
   })
   # list of countries
-  list.message = reactive({
-      #message_subcountries(data_filtered_cont(),"subcontinent","Country.Region")
+  list.message =
       message_subcountries(orig_data_aggregate_cont,"subcontinent","Country.Region")
 
-  })
-
   output[[paste("subcontinents_countries", uicont , sep = "_")]]<- renderUI({
-   HTML(paste(as.character(unlist(list.message())), collapse = '<br/>'))
-
+   HTML(paste(as.character(unlist(list.message)), collapse = '<br/>'))
   })
 
   output[[paste("lineplots_cont", uicont , sep = "_")]] <- renderUI({
@@ -203,12 +195,13 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Rate plots ----
   output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_growth_death_rate_ui(ns("rate_plots_cont"), n_highligth = length(subcontinents))
+    mod_growth_death_rate_ui(ns("rate_plots_cont"))
   })
 
   callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered,
-             n = n, n_highligth = length(subcontinents), istop = F, g_palette = list("growth_factor" = subcont_palette,
-                                                                                       "death_rate" = subcont_palette))
+             n = n, n_highligth = length(subcontinents), istop = FALSE,
+             g_palette = list("growth_factor" = subcont_palette,
+                                       "death_rate" = subcont_palette))
 
   # Line with bullet plot
 
@@ -217,7 +210,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data_filtered, n = n, w = w,
-             n_highligth = length(subcontinents), istop = F , g_palette = subcont_palette)
+             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette)
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
@@ -225,61 +218,75 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont",
-             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents),
-             istop = F, countries = subcontinents)
+             subcontinent_data_filtered, nmed = n, n_highligth = length(subcontinents),
+             istop = FALSE, countries = subcontinents)
 
 
   output[[paste("status_stackedbarplot_cont", uicont , sep = "_")]] <- renderUI({
     mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
   })
   callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
-             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents), istop = F)
+             subcontinent_data_filtered, n = n, n_highligth = length(subcontinents), istop = FALSE)
+
+  # Compute Last week variables
+
+  data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
+
+  # create datasets for maps merging today with data7
+  data_cont_maps = orig_data_aggregate_cont %>% filter(date == max(date)) %>%
+    left_join(data7_aggregate_cont %>% select(-population))
 
   #maps confirmed
   output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
     mod_map_cont_calc_ui(ns("map_countries_confirmed"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_confirmed", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
+  callModule(mod_map_cont_cal_server, "map_countries_confirmed", df = data_cont_maps,  countries_data_map_cont,
              cont = cont, variable = "confirmed")
 
   #maps active
   output[[paste("map_countries_active", uicont , sep = "_")]] <- renderUI({
     mod_map_cont_calc_ui(ns("map_countries_active"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_active", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
+  callModule(mod_map_cont_cal_server, "map_countries_active", df = data_cont_maps,  countries_data_map_cont,
              cont = cont, variable = "active")
 
   #maps growth vs prev
   output[[paste("map_countries_growthvsprev", uicont , sep = "_")]] <- renderUI({
     mod_map_cont_calc_ui(ns("map_countries_growthvsprev"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_growthvsprev", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
+  callModule(mod_map_cont_cal_server, "map_countries_growthvsprev", df = data_cont_maps,  countries_data_map_cont,
              cont = cont, variable = "growth vs prev")
 
   #maps prevalence
   output[[paste("map_countries_prev", uicont , sep = "_")]] <- renderUI({
     mod_map_cont_calc_ui(ns("map_countries_prev"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_prev", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
+  callModule(mod_map_cont_cal_server, "map_countries_prev", df = data_cont_maps,  countries_data_map_cont,
              cont = cont, variable = "prevalence rate")
   #maps growth
   output[[paste("map_countries_growth", uicont , sep = "_")]] <- renderUI({
     mod_map_cont_calc_ui(ns("map_countries_growth"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_growth", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
+  callModule(mod_map_cont_cal_server, "map_countries_growth", df = data_cont_maps,  countries_data_map_cont,
              cont = cont, variable = "growth factor")
 
   #maps death
   output[[paste("map_countries_death", uicont , sep = "_")]] <- renderUI({
     mod_map_cont_calc_ui(ns("map_countries_death"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_death", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
+  callModule(mod_map_cont_cal_server, "map_countries_death", df = data_cont_maps,  countries_data_map_cont,
              cont = cont, variable = "death")
 
   # tables ----
   callModule(mod_add_table_server, paste("add_table_cont", uicont , sep = "_"),
              subcontinent_data_filtered, maxrowsperpage = 10)
 
+  # prepare data for table with country data
+  orig_data_aggregate_cont_tab = orig_data_aggregate_cont %>% # only data from today
+    filter(date == max(date)) %>%
+    arrange(desc(confirmed) )
+  callModule(mod_add_table_server, paste("add_table_countries", uicont , sep = "_"),
+             orig_data_aggregate_cont_tab, maxrowsperpage = 10)
 
 }
 

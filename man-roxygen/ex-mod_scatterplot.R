@@ -8,7 +8,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_scatterplot_ui("plot", 5)
+      Covid19Mirai:::mod_scatterplot_ui("plot")
     )
   )
   server <- function(input, output, session) {
@@ -39,7 +39,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_scatterplot_ui("plot_oceania", 5)
+      Covid19Mirai:::mod_scatterplot_ui("plot_oceania")
     )
   )
   server <- function(input, output, session) {

@@ -6,7 +6,7 @@
 \usage{
 plot_all_highlight(
   df,
-  log = F,
+  log = FALSE,
   text = "",
   n_highligth = 10,
   percent = F,

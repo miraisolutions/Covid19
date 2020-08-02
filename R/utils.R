@@ -92,12 +92,13 @@ case_colors_labs <- function(cc = case_colors) {
   x
 }
 
-#' Color Palette for new variables
+#' Color Palette for new and last week variables
 #' @param cc vector \code{case_colors}
+#' @param prefix character, new or lw
 #' @export
-new_case_colors <- function(cc = case_colors) {
+prefix_case_colors <- function(cc = case_colors, prefix = "new") {
   x = cc
-  names(x) = paste0("new_", names(cc))
+  names(x) = paste(prefix, names(cc), sep = "_")
   x
 }
 
@@ -394,12 +395,6 @@ aggr_to_cont = function(data, group, time,
 #' @import tidyr
 tsdata_areplot <- function(data, levs, n = 1000) {
 
-  # varlabels = varsNames(levs)
-  # renamevars = function(dat) {
-  #   colnames(dat)[match(levs, colnames(dat))] = names(varlabels)
-  #   dat
-  # }
-
   data %>%
     filter(confirmed > n) %>% #remove initial dates
     select( date, !!levs) %>% #rename vars with labels
@@ -421,9 +416,10 @@ message_subcountries <- function(data, area, region) {
   # remove where subcontinent could be NA
   list.countries = data[,c(area,region)] %>% filter(!is.na(!!rlang::sym(area))) %>% unique() %>%
     group_by(.dots = area) %>% group_split()
-  lapply(list.countries, function(x)
+  list.message = lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
            paste(x[[region]], collapse = ",")))
+  c("Continent Area composition: ", list.message)
 }
 #' Calculates growth vs prevalence factors
 #' @param data data.frame aggregated data per region
@@ -454,14 +450,19 @@ growth_v_prev_calc <- function(data, growthvar,prevvar) {
 
 #' Rounds up numbers for labels in plots
 #' @param maxv numeric max value
+#' @param down logical if TRUE then floor is used instead of ceiling
 #'
 #' @return numeric vector after ceiling()
 #'
-round_up = function(maxv) {
+round_up = function(maxv, down = FALSE) {
   dg = nchar(as.character(round(maxv)))
   if (dg == 1 && maxv>1)
     dg = 0
-  ceiling(maxv/(10^(dg-1)))*10^(dg-1)
+  if(!down)
+   res =   ceiling(maxv/(10^(dg-1)))*10^(dg-1)
+  else
+   res =   floor(maxv/(10^(dg-1)))*10^(dg-1)
+  res
 }
 #' Derives number of digits for rounding
 #' @param dg integer number of characters of figure, say 1000 = 4
@@ -509,20 +510,29 @@ rate_vars <- c(
   )
 #' Variables where negative values are allowed in map plot
 neg_vars <- c(
-  "new_active"
+  c("new_active","lw_active")
 )
 #' Builds dataset to be used in modules merging pop_data with data
 #' @param data data
 #' @param popdata population data with continent info
 #'
 #' @return data
+#'
+#' @import dplyr
 #' @export
 build_data_aggr <- function(data, popdata) {
   orig_data_aggregate <- data %>%
     #aggregate_province_timeseries_data() %>% # not required anymore
     add_growth_death_rate() %>%
-    arrange(Country.Region) %>%
-    merge_pop_data(popdata) %>% # compute additional variables
+    arrange(Country.Region)
+
+  if (!missing(popdata)) {
+    orig_data_aggregate = orig_data_aggregate %>%
+      merge_pop_data(popdata)
+
+  }
+  orig_data_aggregate = orig_data_aggregate %>%
+    #merge_pop_data(popdata) %>% # compute additional variables
     mutate(mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
            prevalence_rate_1M_pop = round(10^6*confirmed/population, digits = 3),
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
@@ -533,7 +543,36 @@ build_data_aggr <- function(data, popdata) {
            hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
            deaths_rate_hosp =  round(deaths/hosp, digits = 5)
            )
+
   orig_data_aggregate
+}
+
+#' Computes last week variables from \code{build_data_aggr}
+#' @param data data.frame
+#'
+#' @note Last week variables have prefix 'lw'
+#'
+#' @return data.frame withe last week variables added
+#'
+#' @import dplyr
+#' @export
+lw_vars_calc <- function(data) {
+  data7 = filter(data, date > (max(date)-7))# last week
+  aggr_vars = intersect(colnames(data7),get_aggrvars())
+  aggr_vars = grep("new", aggr_vars, value = TRUE) # select new ones
+  data7vars = data7 %>% group_by(Country.Region) %>%
+    summarise_at(aggr_vars, sum, na.rm = TRUE) %>% ungroup()
+  # rename columns
+  colnames(data7vars) = gsub("new","lw",colnames(data7vars))
+  # add back population
+  data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population")]))
+  # compute rates
+  data7vars = data7vars %>%
+    mutate(lw_prevalence_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
+           lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
+           lw_tests_rate_confirmed = round(lw_tests/lw_confirmed, digits = 3)
+    )
+  data7vars
 }
 
 #'Global definition of numeric aggregatable vars in dataset

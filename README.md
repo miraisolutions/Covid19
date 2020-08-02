@@ -30,7 +30,7 @@ data source. We are, however, grateful to [David
 Bumbeishvili](https://github.com/bumbeishvili) for his
 [work](https://github.com/bumbeishvili/covid19-daily-data).
 
-**Update XX of June 2020**, Data from few European countries have been
+**Update 4th of July 2020**, Data from few European countries have been
 readjusted recently, getting this update has given us the push to switch
 to a new and richer data source. We have decided for the [COVID 19 Data
 Hub](https://covid19datahub.io/) project led by [Emanuele
@@ -46,18 +46,19 @@ It consists of 4 main pages:
   - **Global**: Summarizing top 5 countries in the world in each
     variable.  
   - **Continents**: Summarizing world data per continent (defined
-    according to UN), underneath subtabs with insight within continent:
-      - **Europe**: European data split by macroareas with heatmaps per
+    according to UN), underneath sub-tabs with insight within continent:
+      - **Europe**: European data split by macro-areas with heatmaps per
         country.  
-      - **Asia**: Asia data split by macroareas with heatmaps per
+      - **Asia**: Asia data split by macro-areas with heatmaps per
         country.  
-      - **Africa**: African data split by macroareas with heatmaps per
+      - **Africa**: African data split by macro-areas with heatmaps per
         country.  
       - **Latin America & Carib.**: South and Central American with
-        Caribbean Isles by macroareas with heatmaps per country.  
+        Caribbean Isles by macro-areas with heatmaps per country.  
       - **Northern America**: Northern America (USA and Canada) data
-        split by macroareas with heatmaps per country.  
+        split by macro-areas with heatmaps per country.  
   - **Country**: Single country report.  
+      - If available regional graphs and data will be displayed.
   - **Country Comparison**: Comparison report between N countries from
     all over the world.
 
@@ -70,7 +71,7 @@ The Covid19datahub project can allow us to use the following variables:
     countries have stopped reporting recovered cases.  
   - *deaths*: number of dead confirmed cases.  
   - *tests*: number of tests. Not available for all countries.  
-  - *hosp*: number of hospitalised confirmed cases. Not available for
+  - *hosp*: number of hospitalized confirmed cases. Not available for
     all countries.  
   - *population*: population size.
 

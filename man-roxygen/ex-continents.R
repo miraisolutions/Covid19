@@ -36,7 +36,7 @@ if (interactive()) {
     n = 1000; w = 7
     data_filtered <-
       orig_data_aggregate %>%
-        Covid19:::rescale_df_contagion(n = n, w = w)
+        Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
 
     # countries <- reactive({

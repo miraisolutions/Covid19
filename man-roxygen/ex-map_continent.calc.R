@@ -11,13 +11,14 @@ if (interactive()) {
   library(COVID19)
 
   cont = "LatAm & Carib."
-  cont = "Oceania"
+  cont = "Europe"
 
   variable = "growth vs prevalence" # set variable
-  variable = "death rate" # set variable
-  variable = "prevalence rate" # set variable
+  #variable = "death rate" # set variable
+  #variable = "prevalence rate" # set variable
   variable = "active" # set variable
  #variable = "growth factor" # set variable
+  #variable = "confirmed" # set variable
 
  sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
@@ -29,10 +30,9 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-
-
+    # orig_data <- get_datahub() %>%
+    #     get_timeseries_by_contagion_day_data()
+    orig_data = readRDS("orig_data.rds")
     pop_data = get_pop_datahub()
     orig_data_aggregate =  build_data_aggr(orig_data, pop_data)
 
@@ -44,6 +44,12 @@ if (interactive()) {
     orig_data_aggregate_cont <-
       orig_data_aggregate %>% filter(continent == cont)
 
+    data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
+
+    # create datasets for maps merging today with data7
+    data_cont_maps = orig_data_aggregate_cont %>% filter(date == max(date)) %>%
+      left_join(data7_aggregate_cont %>% select(-population))
+
     .subsetmap = function(map,cc) {
       idx = map$CONTINENT %in% cc
       countries = map$NAME[idx]
@@ -54,9 +60,8 @@ if (interactive()) {
     }
     countries_data_map_cont = .subsetmap(countries_data_map, cc = cont)
 
-
-    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", orig_data_aggregate = orig_data_aggregate_cont,  countries_data_map_cont,
-               cont = cont, variable = variable)
+    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", df = data_cont_maps,
+               countries_data_map_cont, cont = cont, variable = variable)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
