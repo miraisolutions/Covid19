@@ -10,18 +10,15 @@
 #' @import shiny
 #' @importFrom leaflet leafletOutput
 #' @importFrom shinycssloaders withSpinner
-mod_map_cont_calc_ui <- function(id){
+mod_map_area_calc_ui <- function(id){
   ns <- NS(id)
   tagList(
-    #div(tags$style(HTML(".leaflet ,legend {font-size: 10px; line-height: 15px;}")),
-    #tags$style(type = "text/css", " .leaflet ,legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
     tags$style(type = "text/css", " .leaflet .legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
-    #tags$style(type = "text/css", " .leaflet .legend {background-color: 'white';font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
 
     uiOutput(ns("title_map")),
     uiOutput(ns("controls")), # radio buttons to be updated in server
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    withSpinner(leafletOutput(ns("map_cont_calc"), width = "100%", height = "500")),
+    withSpinner(leafletOutput(ns("map_area_calc"), width = "100%", height = "500")),
     div(uiOutput(ns("caption")), align = "center")
 )
  # )
@@ -31,9 +28,11 @@ mod_map_cont_calc_ui <- function(id){
 #'
 #' @param df data.frame as of today
 #' @param countries_data_map data.frame sp for mapping
-#' @param cont character continent or subcontinent name
+#' @param area character continent or subcontinent or area name
 #' @param variable character variable name
-#' @example man-roxygen/ex-mod_map_cont_calc.R
+#' @param max.pop integer cut off Country.Region with lower population
+#'
+#' @example man-roxygen/ex-mod_map_area_calc.R
 #'
 #' @import dplyr
 #' @import tidyr
@@ -41,11 +40,10 @@ mod_map_cont_calc_ui <- function(id){
 #' @import leaflet.extras
 #'
 #' @noRd
-mod_map_cont_cal_server <- function(input, output, session, df, countries_data_map, cont, variable = "confirmed"){
+mod_map_area_calc_server <- function(input, output, session, df, countries_data_map, area, variable = "confirmed", max.pop = 100000, countrymap = FALSE){
   ns <- session$ns
 
   update_ui <- update_radio(variable)
-
   if (!is.null(update_ui$new_buttons)){
     observe({
 
@@ -69,35 +67,18 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
   } else
     button = NULL
 
-  # Data ----
-  # if radio_time present  then evaluate, else take last day by default
-  # day = reactive({
-  #   if (!is.null(req(new_var()))) {
-  #     if(req(new_var()) == "last week")  7  else if (req(new_var())  == "today") 1 else 1
-  #   }else
-  #     1
-  #   })
-
-
   data_clean <- reactive({
     # data <- orig_data_aggregate %>%
     #   filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
      # remove for all variables, otherwise some countries appear in a map and not in another one
       message("remove very small countries not to mess up map")
       data = df %>%
-        filter(population > 100000)
+        filter(population > max.pop)
     # TODO: it can be moved outside, in the data preparation
     if (grepl("(growth)*prev",variable))
       data = data %>%
         mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
 
-    # if (!is.null(button$radio) && req(button$radio) == "last week") {
-    #   numvars = names(numvars)[numvars]
-    #   data = data %>%
-    #     group_by(Country.Region) %>%
-    #       summarize_if(
-    #         is.numeric , sum) # average over the week
-    # }
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
     data_clean <- data %>%
@@ -156,27 +137,48 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
     )
   }
 
-  output[["map_cont_calc"]] <- renderLeaflet({
-    map = leaflet(
-      data = data_plot(),
-      options = leafletOptions(zoomControl = FALSE,
-                               minZoom = cont_map_spec(cont, "zoom")*0.95, maxZoom = cont_map_spec(cont, "zoom")*1.05,
-                               dragging = TRUE,
-                               centerFixed = TRUE,
-                               maxBounds = list(
-                                 c(cont_map_spec(cont, "lat")[1], cont_map_spec(cont, "lat")[2]),
-                                 c(cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4])
-                               ),
-                               #sizingPolicy =leafletSizingPolicy(
+  output[["map_area_calc"]] <- renderLeaflet({
+    if (!countrymap) {
+      map = leaflet(
+        data = data_plot(),
+        options = leafletOptions(zoomControl = FALSE,
+                                 minZoom = area_map_spec(area, "zoom")*0.95, maxZoom = area_map_spec(area, "zoom")*1.05,
+                                 dragging = TRUE,
+                                 centerFixed = TRUE,
+                                 maxBounds = list(
+                                   c(area_map_spec(area, "lat")[1], area_map_spec(area, "lat")[2]),
+                                   c(area_map_spec(area, "lat")[3], area_map_spec(area, "lat")[4])
+                                 ),
+                                 #sizingPolicy =leafletSizingPolicy(
+                                   browser.defaultWidth = "80%",
+                                   browser.fill = F
+                                   # browser.padding = 100,
+                                   # viewer.suppress = TRUE, knitr.figure = FALSE,
+                                   # knitr.defaultWidth = "100%"
+                                   #)
+        )) %>%
+        setView(
+          lng = mean(area_map_spec(area, "lat")[c(1,3)]), lat = mean(area_map_spec(area, "lat")[c(2,4)]),
+                zoom = area_map_spec(area, "zoom"))
+    } else {
+      map = leaflet(
+        data = data_plot(),
+        options = leafletOptions(zoomControl = FALSE,
+                                 minZoom = area_map_spec(area, "zoom")*0.975, maxZoom = area_map_spec(area, "zoom")*1.025,
+                                 maxBounds = list(
+                                   c(area2_data_map@bbox["y","min"], area2_data_map@bbox["x","min"]),
+                                   c(area2_data_map@bbox["y","max"], area2_data_map@bbox["x","max"])
+                                 ),
+                                 dragging = TRUE,
+                                 centerFixed = TRUE,
+                                 #sizingPolicy =leafletSizingPolicy(
                                  browser.defaultWidth = "80%",
-                                 browser.fill = F,
-                                 #browser.padding = 100,
-                                 # viewer.suppress = TRUE, knitr.figure = FALSE,
-                                 # knitr.defaultWidth = "100%"
-                                 #)
-      )) %>%
-      setView(lng = mean(cont_map_spec(cont, "lat")[c(1,3)]), lat = mean(cont_map_spec(cont, "lat")[c(2,4)]),
-              zoom = cont_map_spec(cont, "zoom"))
+                                 browser.fill = F
+        ))  %>% clearBounds() %>%
+        setView(
+          lng = mean(area2_data_map@bbox["y",]), lat = mean(area2_data_map@bbox["x",]),
+          zoom = area_map_spec(area, "zoom"))
+    }
     leg_par <- legend_fun(data_plot()$indicator, new_var())
     map = map %>%
       addPolygons(layerId = ~NAME,
@@ -198,7 +200,7 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
                                                      hideMarkerOnCollapse = T,
                                                      moveToLocation = FALSE)
                       )
-      do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = cont_map_spec(cont, "legend"))))
+      do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = area_map_spec(area, "legend"))))
 
   })
 
@@ -318,21 +320,6 @@ update_radio<- function(var, growthvar = 3){
 
 }
 
-
-# update_var <- function(var, data, input){
-#   if (grepl("(growth)*fact",var)) { # growth factor
-#     new_var = input$radio
-#   } else if (grepl("death", var) || grepl("mortality", var)){ # growth factor
-#     new_var = ifelse(input$radio == "lethality rate", "lethality_rate", "mortality_rate_1M_pop")
-#   }else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
-#     new_var = ifelse(input$radio == "New", "new_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
-#   }else if (grepl("(growth)*prev",var)) {
-#     new_var = "growth_vs_prev"
-#   } else
-#     new_var = var
-#
-#   list(new_var = new_var)
-# }
 #' Utility for popup message in map
 #' @param data map data
 #' @param nam character: component of country names from data, NAME
@@ -373,6 +360,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
       " </strong>",
       .pastecol(ptxt = coltext ),txt, ifelse(is.null(col), "", "</style>"),
       "<br>")
+
   }
 
   name_text = .paste_text("Country", NAME, case_colors["confirmed"])
@@ -492,7 +480,6 @@ domainlog_neg <- function(x) {
 }
 
 domainlin <- function(x) {
-  #negative values incorrect
   c(max(0,floor(min(x, na.rm = TRUE))),round_up(max(x, na.rm = TRUE)))
 }
 domainlin_neg <- function(x) {
