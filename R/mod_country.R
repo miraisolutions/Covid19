@@ -56,6 +56,7 @@ areaUI = function(id){
   ns = shiny::NS(id)
     tagList(
       div(id = id,
+           hr(),
            div(h3("Country split at level 2"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
            hr(),
            #div(h5("Some countries have unreliable or inconsistent data at regional level. They may not match those at Country Level or they may miss information."), align = "left", style = "margin-top:20px; margin-bottom:20px;"),
@@ -119,8 +120,9 @@ areaUI = function(id){
 #' @noRd
 mod_country_server <- function(input, output, session, data, countries, n = 1, w = 7, n.select = 1000){
   ns <- session$ns
+  message("mod_country_server")
   observe(
-    updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = "Switzerland")
+    updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = "USA")
   )
   lev2id <- reactiveVal(0) # for removeUI
 
@@ -133,7 +135,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
 
   observeEvent(input$select_country, {
 
-    message("process country ", req(input$select_country))
+    message("process country page ", req(input$select_country))
     # Data ----
     country_data <-  data %>%
         filter(Country.Region %in% req(input$select_country)) %>%
@@ -175,7 +177,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
   # # ##### country split within areas #############################################
 
   #   # Data ----
-    area_data_2 = get_datahub(country = req(input$select_country), stardate = "2020-01-22", lev = 2, verbose = FALSE)
+    area_data_2 = get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # insert UI components
       if (lev2id() == 0) {
@@ -197,9 +199,14 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
         id = paste0("area",lev2id())
       area2id <<-id
 
+      area_data_2 = area_data_2 %>%
+        get_timeseries_by_contagion_day_data()
+
+      area_data_2_aggregate <-
+        build_data_aggr(area_data_2)
       # works in example
       message("id lev2 = ", id)
-      callModule(mod_country_area_server, id, datahub_2 = area_data_2, n2 = max(1,n/10))
+      callModule(mod_country_area_server, id, area_data_2_aggregate = area_data_2_aggregate, n2 = max(1,n/10))
 
     } else{
       message("remove level 2 UI for ", req(input$select_country))
@@ -217,7 +224,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
 }
 #' country Server Function for level 2
 #'
-#' @param datahub_2 data.frame with level 2 countries
+#' @param area_data_2_aggregate data.frame with level 2 countries
 #' @param n2 min number of cases for a country to be considered. Default n
 #' @param w number of days of outbreak. Default 7
 #'
@@ -226,15 +233,15 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
 #' @import shiny
 #'
 #' @noRd
-mod_country_area_server <- function(input, output, session, datahub_2, n2 = 1, w = 7) {
+mod_country_area_server <- function(input, output, session, area_data_2_aggregate, n2 = 1, w = 7) {
   ns <- session$ns
 
   message("mod_country_area_server n2 = ", n2)
-  area_data_2 = datahub_2 %>%
-    get_timeseries_by_contagion_day_data()
-
-  area_data_2_aggregate <-
-    build_data_aggr(area_data_2)
+  # area_data_2 = datahub_2 %>%
+  #   get_timeseries_by_contagion_day_data()
+  #
+  # area_data_2_aggregate <-
+  #   build_data_aggr(area_data_2)
 
   data_2_filtered <-
     area_data_2_aggregate %>%
@@ -266,15 +273,15 @@ mod_country_area_server <- function(input, output, session, datahub_2, n2 = 1, w
   output$from_nth_case_area2<- renderUI({
     HTML(paste(
       "Some countries have unreliable or inconsistent data at regional level. They may not match those at Country Level or they may miss information.",
-      paste0("Some countries or some regions within countries are not providing Recovered data"),
+      paste0("Some countries or some regions within countries are not providing Recovered data."),
       paste0("Contagion day 0 is the day when ", n2 ," confirmed cases are reached."), sep = "<br/>"))
   })
 
   # plots ----
   levs <- sort_type_hardcoded()
-  df_area_2 = purrr::map(unique(area_data_2$Country.Region),
+  df_area_2 = purrr::map(unique(area_data_2_aggregate$Country.Region),
     function(un) {
-      dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, 0) #n = 0 for area plot
+      dat = tsdata_areplot(area_data_2_aggregate[area_data_2_aggregate$Country.Region == un, ], levs, 0) #n = 0 for area plot
       dat$Country.Region = rep(un, nrow(dat))
       dat
       })
@@ -284,9 +291,9 @@ mod_country_area_server <- function(input, output, session, datahub_2, n2 = 1, w
     arrange(desc(confirmed)) %>%
     .[,"Country.Region"] %>% as.vector()
   output[["plot_area_area2"]] <- renderUI({
-    mod_plot_log_linear_ui(ns("plot_area_area2"), select = TRUE, area = TRUE)
+    mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE)
   })
-  callModule(mod_plot_log_linear_server, "plot_area_area2", df = df_area_2, type = "area" , countries = areas)
+  callModule(mod_plot_log_linear_server, "plot_area2_area2", df = df_area_2, type = "area" , countries = areas)
 
   # > line plot top 5
 
