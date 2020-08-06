@@ -3,48 +3,41 @@ if (interactive()) {
   library(dplyr)
   library(tidyr)
   library(RColorBrewer)
-  library(DT)
-  library(leaflet)
-  library(leaflet.extras)
-  library(scales)
-  library(grid)
-  library(shinycssloaders)
-  library(plotly)
   library(COVID19)
+  library(plotly)
+  library(shinycssloaders)
+  library(DT)
+  library(grid)
+  library(scales)
 
   sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    tabPanel("Continents",
-             tabsetPanel(
-               tabPanel("Summary",
-                        id = "tab_global",
-    mod_continent_comparison_ui("continent_comparison")
-               )))
+    mod_country_ui("country")
   )
   server <- function(input, output) {
 
-    # Data ----
     orig_data <- get_datahub() %>%
       get_timeseries_by_contagion_day_data()
-
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     n = 1000; w = 7
+
     data_filtered <-
       orig_data_aggregate %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
+    countries <- reactive({
+      data_filtered %>%
+        select(Country.Region) %>%
+        distinct()
+    })
 
-    # countries <- reactive({
-    #   data_filtered() %>%
-    #     select(Country.Region) %>%
-    #     distinct()
-    # })
-    callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data)
+    callModule(mod_country_server, "country",
+               data = data_filtered, countries = countries, n = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

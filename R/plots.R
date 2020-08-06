@@ -17,7 +17,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
                text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
                label = paste("count: ",
-                             formatC(countstatus, format = "f", big.mark = ",", digits  = 0)))))+
+                             formatC(countstatus, format = "f", big.mark = "'", digits  = 0)))))+
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
@@ -43,7 +43,6 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' @return line plot of given variable by date
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom  dplyr mutate
 #' @importFrom  dplyr case_when
 #'
@@ -82,8 +81,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palette) {
-
+time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_palette) {
   if (log) {
     df <- df %>%
       mutate(Value = case_when(
@@ -91,12 +89,19 @@ time_evol_line_plot <- function(df, log = F, text = "", g_palette = graph_palett
         TRUE ~ Value
       ))
   }
+  x.d.lim = range(df$Date)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line() +
     basic_plot_theme() +
-    #scale_colour_brewer(palette = g_palette) +
     scale_color_manual(values = g_palette) +
-    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_x_date(breaks = x.d.breaks,
+                 date_minor_breaks = "1 week",
+                 limits = x.d.lim,
+                 date_labels = "%d-%m") +
+    scale_y_continuous(labels = label_number(big.mark = "'")) +
+    # scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 week", limits = range(df$Date),
+    #              date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45),
     )
@@ -199,20 +204,31 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
       ungroup()
   }
 
-  p <- ggplot(df, aes(x = Date, y = Value, text = paste0(text, ": ", Status))) +
-    #geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), size = 1, alpha = 0.5, position = 'identity') +
-    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status), alpha = 0.5, position = 'identity') +
+  df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
+
+  x.d.lim = range(df$Date)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
+  p <- ggplot(df, aes(x = Date, y = Value,
+                      text = paste0(text, ": ", statuslabel)
+              )) +
+    geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
     # shall we instead go for a step-area done with a (wide) barplot? This would reflect the integer nature of the data
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
-    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    #scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_x_date(breaks = x.d.breaks,
+                 date_minor_breaks = "1 week", limits = x.d.lim,
+                  date_labels = "%d-%m") +
+    scale_y_continuous(labels = label_number(big.mark = "'")) + # add label
+
     theme(
       axis.text.x = element_text(angle = 45)
     )
 
   p <- p %>%
-    fix_colors()
+    fix_colors(labs = TRUE)
 
   if (log) {
     p <- p %>%
@@ -233,7 +249,6 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 #' @return area plot by date
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom scales label_number
 #'
 #' @export
@@ -243,6 +258,8 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     df <- df %>%
       mutate(value = ifelse(value == 0, NA, value))
   }
+  x.d.lim = range(df$date)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
   p <-  ggplot(df, aes(x = date, y = value)) +
     geom_line(aes(colour = Country.Region), size = 1.7) + # size must be specified again being facet it is smaller
     #geom_line(aes(colour = Country.Region)) +
@@ -250,11 +267,13 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    # scale_fill_brewer(palette = "Dark2") #+
-  #  scale_color_brewer(palette = g_palette) +
     scale_color_manual(values = g_palette) +
-    scale_y_continuous(labels = label_number(big.mark = ",")) +# add label
-    scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
+    #scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+    scale_x_date(breaks = x.d.breaks,
+                 date_minor_breaks = "1 week", limits = x.d.lim,
+                 date_labels = "%d-%m") +
+
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
     )
@@ -275,7 +294,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -376,7 +395,7 @@ from_contagion_day_bar_facet_plot <- function(df){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors #c("#dd4b39","black","#00a65a","#3c8dbc")
+  fills <- case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -423,19 +442,24 @@ date_bar_plot <- function(df){
 #' @rdname fix_colors
 #'
 #' @param p ggplot object
+#' @param labs logical, if TRUE then variables labels arte used
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #'
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p) {
-  # "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_recovered", "new_active"
-  p <- p +
-    suppressWarnings(scale_color_manual(values = c(case_colors, new_case_colors))) +
-    suppressWarnings(scale_fill_manual(values = c(case_colors, new_case_colors)))
+fix_colors <- function(p, labs = FALSE) {
+  if (labs) {
+    cc_vect = c(case_colors_labs(), case_colors_labs(prefix_case_colors(prefix = "lw")),
+                case_colors_labs(prefix_case_colors(prefix = "new")))
+  } else {
+    cc_vect = c(case_colors, prefix_case_colors(prefix = "lw"), prefix_case_colors(prefix = "new"))
+  }
 
+  p <- p +
+    suppressWarnings(scale_color_manual(values = c(cc_vect))) +
+    suppressWarnings(scale_fill_manual(values = c(cc_vect)))
   p
 }
 
@@ -470,12 +494,11 @@ fix_legend_position <- function(p){
 #' @param g_palette character vector of colors for the graph and legend
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @import zoo
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
+plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
@@ -516,14 +539,12 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-
-   # geom_line(data = df_highlight) +
-   # scale_color_brewer(palette = g_palette)
     scale_color_manual(values = g_palette)
+
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = ",")) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
   if (log) {
     p <- p %>%
@@ -531,15 +552,19 @@ plot_all_highlight <- function(df, log = F, text = "", n_highligth = 10, percent
   }
 
   if (date_x) { # mutate x axis to a date format
+    x.d.lim = range(df$Date)
+    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
     p <- p +
-      scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
+      scale_x_date(breaks = x.d.breaks,
+                   limits = x.d.lim,
+                   date_minor_breaks = "1 week", date_labels = "%d-%m") +
       theme(
         axis.text.x = element_text(angle = 45)
       )
   }
 
   p
-
 }
 
 
@@ -587,12 +612,11 @@ plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
 #' @param y.min numeric adjustment for cartesian y axis
 #'
 #' @import ggplot2
-#' @import RColorBrewer
 #' @importFrom scales label_number
 #'
 #' @return ggplot plot
 #' @export
-scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02)) {
+scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01)) {
 
   df = df %>% rename(
     growthfactor = starts_with("growth")
@@ -606,30 +630,31 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
 
   xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
             max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
-  ylim = c(min(1, df$growthfactor,med$y)*y.min[1], max(df$growthfactor, med$y)*y.min[2])
+  ylimtop = max(df$growthfactor, med$y)
+  ylimbot = min(1, df$growthfactor,med$y)
+  ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
 
+  accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +
     basic_plot_theme() +
-    scale_x_continuous(labels = label_number(#scale = 1/100,
-                                             big.mark = ","
+    scale_x_continuous(labels = label_number(
+                                             big.mark = "'"
                                              #suffix = "K"
                                              )) +
-    # coord_cartesian(ylim = ylim,
-    #                 xlim = xlim) +
     scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
-                       labels = label_number(accuracy = 0.01)) +
+                       labels = label_number(accuracy = accy)) +
 
     # theme(
     #   axis.text.x = element_text()
     # ) +
     #labs(x="prevalence over 1M", y = "growth factor") +
     geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
-                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = ",", digits  = 1), "</br>")),
-               color = color_cntry, size = 1.5) +
+                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
+               color = color_cntry, size = 1.3) +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
-              check_overlap = TRUE, color = color_cntry, size = 4) +
+              check_overlap = TRUE, color = color_cntry, size = 3.3) +
     coord_cartesian(ylim = ylim,
                     xlim = xlim)
 
@@ -637,7 +662,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.02))
 }
 
 #' default palette for graph pages
-#'
+#' @import RColorBrewer
 graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
 
 #' background color of maps

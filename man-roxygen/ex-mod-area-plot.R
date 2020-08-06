@@ -3,6 +3,12 @@ if (interactive()) {
   library(dplyr)
   library(tidyr)
   library(ggplot2)
+  library(RColorBrewer)
+  library(COVID19)
+  library(plotly)
+  library(scales)
+
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
@@ -22,20 +28,20 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     data_filtered <-
-      orig_data_aggregate() %>%
+      orig_data_aggregate %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
 
-    country_data <- reactive({
-      data_filtered() %>%
+    country_data <-
+      data_filtered %>%
         filter(Country.Region %in% "Switzerland") %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
-    })
+
     levs <- Covid19Mirai:::sort_type_hardcoded()
 
     df_tot <- reactive({
-      country_data() %>%
+      country_data %>%
         #select(-Country.Region, -contagion_day) %>%
         select(date, !!levs) %>%
         #select(-starts_with("new"), -confirmed, -starts_with("growth_"), -ends_with("_rate"), -contains("1M")) %>%
@@ -45,7 +51,7 @@ if (interactive()) {
     })
 
 
-    callModule(mod_plot_log_linear_server,"plot_log_area_global", df = df_tot, type = "line")
+    callModule(mod_plot_log_linear_server,"plot_log_area_global", df = df_tot(), type = "area")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

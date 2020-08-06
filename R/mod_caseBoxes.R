@@ -75,10 +75,10 @@ countBox <- function(title1, subtitle1, title2, subtitle2, color, background, wi
   div(
     class = "count-box",
     shiny::h3(title1),
-    shiny::p(formatC(subtitle1, format = "f", big.mark = ",", digits  = 0)),
+    shiny::p(formatC(subtitle1, format = "f", big.mark = "'", digits  = 0)),
     br(),
     shiny::h3(title2),
-    shiny::p(formatC(subtitle2, format = "f", big.mark = ",", digits  = 0)),
+    shiny::p(formatC(subtitle2, format = "f", big.mark = "'", digits  = 0)),
     style = sprintf(
       "color: %s; background-color: %s; width: %s;",
       color, background, width

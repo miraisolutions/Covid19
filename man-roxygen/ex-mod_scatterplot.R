@@ -8,7 +8,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_scatterplot_ui("plot", 5)
+      Covid19Mirai:::mod_scatterplot_ui("plot")
     )
   )
   server <- function(input, output, session) {
@@ -39,7 +39,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_scatterplot_ui("plot_oceania", 5)
+      Covid19Mirai:::mod_scatterplot_ui("plot_oceania")
     )
   )
   server <- function(input, output, session) {
@@ -53,13 +53,12 @@ if (interactive()) {
 
     cont = "Oceania"
 
-
     subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) %>%
       group_by(subcontinent) %>%
       summarize(population = sum(population, na.rm = T))
 
     orig_data_aggregate_cont <- reactive({
-      orig_data_aggregate() %>% filter(continent == cont)})
+      orig_data_aggregate %>% filter(continent == cont)})
     # select all variables
     allstatuses = get_aggrvars()
     subcontinent_data <- reactive({aggr_to_cont(orig_data_aggregate_cont(), "subcontinent", "date",

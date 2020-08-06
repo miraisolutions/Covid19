@@ -12,8 +12,12 @@ mod_country_comparison_ui <- function(id){
   ns <- NS(id)
   tagList(
     div(
-      selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE),
-      textOutput(ns("from_nth_case"))
+      hr(),
+      div(
+        uiOutput(ns("from_nth_case"))
+      ),
+      hr(),
+      selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
     ),
     withSpinner(uiOutput(ns("barplots"))),
     withSpinner(uiOutput(ns("lineplots"))),
@@ -39,14 +43,15 @@ mod_country_comparison_ui <- function(id){
 
 #' country_comparison Server Function
 #'
-#' @param data_filtered data.frame
-#' @param n min number of cases for a country to be considered. Default 1000
+#' @param data data.frame with countries
+#' @param n min number of cases for used to filter country data
 #' @param w number of days of outbreak. Default 7
+#' @param n.select min number of cases for a country to be considered in selectInput.
 #'
 #' @import dplyr
 #'
 #' @noRd
-mod_country_comparison_server <- function(input, output, session, data_filtered, countries, n = 1000, w = 7){
+mod_country_comparison_server <- function(input, output, session, data, countries, n = 1000, w = 7, n.select){
   ns <- session$ns
 
   # Data ----
@@ -54,23 +59,32 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
   observe(
     updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
   )
+  output$from_nth_case<- renderUI({
+    HTML(paste(paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
+               paste0("Some countries are not providing Recovered data."),
+               paste0("Contagion day 0 is the day when ", n ," confirmed cases are reached."), sep = "<br/>"))
+  })
+
+  all_countries_data <- data %>%
+    filter(contagion_day > 0) %>%
+    arrange(desc(date))
 
   observeEvent(input$select_countries,{
     if (input$select_countries != "") {
       # Data ----
-      all_countries_data <- reactive({data_filtered %>%
-          filter(contagion_day > 0) %>%
-          arrange(desc(date))
-      })
-      countries_data <- reactive({all_countries_data() %>%
+
+      countries_data <- all_countries_data %>%
           filter(Country.Region %in% input$select_countries) %>%
           arrange(desc(date))
-      })
 
+      # align contagion day for comparisons
+      data_filtered <-
+        countries_data %>%
+        rescale_df_contagion(n = n, w = w)
 
-      output$from_nth_case <- renderText({
-        paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
-      })
+      # output$from_nth_case <- renderText({
+      #   paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
+      # })
 
       # Bar plots ----
 
@@ -84,9 +98,9 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       })
 
       lapply(input$select_countries, function(country){
-        country_data <- reactive({countries_data() %>%
-            filter(Country.Region %in% country)})
-        callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data())
+        country_data <- countries_data %>%
+            filter(Country.Region %in% country)
+        callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data)
       })
     }
 
@@ -98,14 +112,14 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       )
     })
 
-    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data())
+    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data)
 
     # Rate plots ----
     output$rateplots <- renderUI({
-      mod_growth_death_rate_ui(ns("rate_plots"), n_highligth = length(input$select_countries))
+      mod_growth_death_rate_ui(ns("rate_plots"))
     })
 
-    callModule(mod_growth_death_rate_server, "rate_plots", countries_data(), n = n, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, n = n, n_highligth = length(input$select_countries), istop = F)
 
     # Line with bullet plot
 
@@ -113,22 +127,22 @@ mod_country_comparison_server <- function(input, output, session, data_filtered,
       mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data(), n = n, w = w, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", data_filtered, n = n, w = w, n_highligth = length(input$select_countries), istop = FALSE)
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
-
-    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data(), n = n, n_highligth = length(input$select_countries), istop = F, countries = inputcountries())
+    # set nmed to 10000 like in global page, istop == FALSE
+    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
 
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
     })
-    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data(), n = n, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n = n, n_highligth = length(input$select_countries), istop = FALSE)
 
     # tables ----
-    callModule(mod_add_table_server, "add_table_countries", countries_data(), maxrowsperpage = 10)
+    callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
   })
 
 }

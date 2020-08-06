@@ -29,7 +29,7 @@ mod_map_cont_calc_ui <- function(id){
 
 #' map calc Server Function
 #'
-#' @param orig_data_aggregate data.frame
+#' @param df data.frame as of today
 #' @param countries_data_map data.frame sp for mapping
 #' @param cont character continent or subcontinent name
 #' @param variable character variable name
@@ -41,15 +41,12 @@ mod_map_cont_calc_ui <- function(id){
 #' @import leaflet.extras
 #'
 #' @noRd
-mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate, countries_data_map, cont, variable = "confirmed"){
+mod_map_cont_cal_server <- function(input, output, session, df, countries_data_map, cont, variable = "confirmed"){
   ns <- session$ns
-
 
   update_ui <- update_radio(variable)
 
   if (!is.null(update_ui$new_buttons)){
-    # choices = reactive({update_ui$new_buttons$choices})
-    # default = reactive({update_ui$new_buttons$selected})
     observe({
 
       output$controls <- renderUI({
@@ -72,43 +69,35 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
   } else
     button = NULL
 
-
-  #ns <- session$ns
-
   # Data ----
   # if radio_time present  then evaluate, else take last day by default
-  day = reactive({
-    if (!is.null(req(new_var()))) {
-      if(req(new_var()) == "last week")  7  else if (req(new_var())  == "today") 1 else 1
-    }else
-      1
-    })
+  # day = reactive({
+  #   if (!is.null(req(new_var()))) {
+  #     if(req(new_var()) == "last week")  7  else if (req(new_var())  == "today") 1 else 1
+  #   }else
+  #     1
+  #   })
 
 
   data_clean <- reactive({
-    data <- orig_data_aggregate %>%
-      filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
-              #align_country_names()
-    # if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", variable) ||
-    #     grepl("death", variable)  ||
-    #     grepl("(growth)*prev",variable)) {
-    # remove for all variables, otherwise some countries appear in a map and not in another one
+    # data <- orig_data_aggregate %>%
+    #   filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
+     # remove for all variables, otherwise some countries appear in a map and not in another one
       message("remove very small countries not to mess up map")
-      data = data %>%
+      data = df %>%
         filter(population > 100000)
-    # }
-    data = data %>%
-      mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
-
-    if (!is.null(button$radio) && req(button$radio) == "last week") {
-      #numvars = sapply(data, is.numeric)
-      # remove factors?
-      numvars = names(numvars)[numvars]
+    # TODO: it can be moved outside, in the data preparation
+    if (grepl("(growth)*prev",variable))
       data = data %>%
-        group_by(Country.Region) %>%
-          summarize_if(
-            is.numeric , sum) # average over the week
-    }
+        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
+
+    # if (!is.null(button$radio) && req(button$radio) == "last week") {
+    #   numvars = names(numvars)[numvars]
+    #   data = data %>%
+    #     group_by(Country.Region) %>%
+    #       summarize_if(
+    #         is.numeric , sum) # average over the week
+    # }
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
     data_clean <- data %>%
@@ -116,7 +105,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 
     data_clean
   })
-
 
   # update variable name
 
@@ -156,7 +144,6 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
                             sort = FALSE)
     data_plot
   })
-
 
   # add Title to output
   output$title_map <- renderUI(div(h4(update_ui$graph_title), align = "center",
@@ -222,14 +209,18 @@ mod_map_cont_cal_server <- function(input, output, session, orig_data_aggregate,
 #' @details The name of the list component correspond to the variable label
 #' @return list All variables, if vars is missing, or one variable.
 varsNames = function(vars) {
-  allvars = c(names(case_colors), paste("new", names(case_colors), sep = "_"),
+  allvars = c(names(case_colors), names(prefix_case_colors(prefix = "lw")),
+              names(prefix_case_colors(prefix = "new")),
               paste("growth_factor", c(3,5,7), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
-              "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop", "population", "growth_vs_prev",
-              "tests","new_tests", "hosp", "new_hosp")
+              "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
+              "population", "growth_vs_prev",
+              "tests","new_tests")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
   names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
+  names(allvars)  = gsub("Lw", "Last Week", names(allvars))
+  names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
   allvars = as.list(allvars)
 
   if (!missing(vars)){
@@ -242,6 +233,7 @@ varsNames = function(vars) {
     res = allvars
   res
 }
+
 #' Updates UI radiobuttons depending to variable va
 #' @param var variable name
 #' @param growthvar integer, 3 5 7 depending on choice
@@ -258,19 +250,21 @@ update_radio<- function(var, growthvar = 3){
   if (grepl("(growth)*fact",var)) { # growth factor
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
-    #caption <- paste0("growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
-    caption <- paste0("growth factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
-    graph_title = "Growth factor as of Today"
+    graph_title = "Growth factor"
     textvar = c("new_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
-    names(mapvar) = c("Total", "Today")
+    namesmapvar = c("Total", "Last Week",
+                    "Last Day")
+    #TODO: order is not stable
+    names(mapvar) = namesmapvar
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar["Today"])
-    caption <- "Prevalence: confirmed cases over 1 M people."
+                       choices = mapvar, selected = mapvar["Last Week"])
+    caption <- "Prevalence: confirmed cases over 1 M people"
     graph_title = "Prevalence of contagion over 1M"
     textvar = c("confirmed","new_confirmed","population")
   } else if (grepl("death", var) || grepl("mortality", var)) {
@@ -296,22 +290,24 @@ update_radio<- function(var, growthvar = 3){
   } else if (grepl("active", var)) {
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
-    names(mapvar) = c("Total Active", "New Active Today")
+    names(mapvar) = c("Total", "Last Week",
+                      "Last Day")
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar["New Active Today"])
+                       choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Active values can be biased by non reported recovered cases"
     caption_color <- "Yellow scale to represent negative active."
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
-    graph_title = "Active cases today"
+    graph_title = "Active cases"
     textvar = c("confirmed", "new_confirmed", "recovered","new_recovered")
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
-    names(mapvar) = c("Total Confirmed", "New Confirmed Today")
+    names(mapvar) = c("Total", "Last Week",
+                      "Last Day")
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar["New Confirmed Today"])
-    caption <- "New and Total Confirmed cases today"
-    graph_title = "Confirmed cases today"
+                       choices = mapvar, selected = mapvar["Last Week"])
+    caption <- "Total, Last Week and New Confirmed cases"
+    graph_title = "Confirmed cases"
     textvar = c("growth_factor_3", "active", "tests")
   } else {
     new_buttons = NULL
@@ -323,21 +319,20 @@ update_radio<- function(var, growthvar = 3){
 }
 
 
-update_var <- function(var, data, input){
-  if (grepl("(growth)*fact",var)) { # growth factor
-    new_var = input$radio
-  } else if (grepl("death", var) || grepl("mortality", var)){ # growth factor
-    new_var = ifelse(input$radio == "lethality rate", "lethality_rate", "mortality_rate_1M_pop")
-  }else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
-    new_var = ifelse(input$radio == "New", "new_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
-  }else if (grepl("(growth)*prev",var)) {
-    new_var = "growth_vs_prev"
-  } else
-    new_var = var
-
-  list(new_var = new_var)
-
-}
+# update_var <- function(var, data, input){
+#   if (grepl("(growth)*fact",var)) { # growth factor
+#     new_var = input$radio
+#   } else if (grepl("death", var) || grepl("mortality", var)){ # growth factor
+#     new_var = ifelse(input$radio == "lethality rate", "lethality_rate", "mortality_rate_1M_pop")
+#   }else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
+#     new_var = ifelse(input$radio == "New", "new_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
+#   }else if (grepl("(growth)*prev",var)) {
+#     new_var = "growth_vs_prev"
+#   } else
+#     new_var = var
+#
+#   list(new_var = new_var)
+# }
 #' Utility for popup message in map
 #' @param data map data
 #' @param nam character: component of country names from data, NAME
@@ -378,7 +373,6 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
       " </strong>",
       .pastecol(ptxt = coltext ),txt, ifelse(is.null(col), "", "</style>"),
       "<br>")
-
   }
 
   name_text = .paste_text("Country", NAME, case_colors["confirmed"])
@@ -498,17 +492,18 @@ domainlog_neg <- function(x) {
 }
 
 domainlin <- function(x) {
-  c(floor(min(x, na.rm = TRUE)),round_up(max(x, na.rm = TRUE)))
+  #negative values incorrect
+  c(max(0,floor(min(x, na.rm = TRUE))),round_up(max(x, na.rm = TRUE)))
 }
 domainlin_neg <- function(x) {
   maxlimit = max(abs(x), na.rm = TRUE)
   c(-round_up(maxlimit),round_up(maxlimit))
-  #bound = c(-round_up(-min(x)),round_up(max(x)))
-  #bound
 }
 domainfact <- function(x) {
-  #x = data_plot()$indicator
   unique(sort(x))
+}
+domaingrowth <- function(x) {
+  c(1,round_up(max(x, na.rm = TRUE)))
 }
 domainrate <- function(x) {
   c(floor(min(x, na.rm = TRUE)*100),round_up(max(x, na.rm = TRUE)*100))
@@ -522,19 +517,18 @@ choose_domain <- function(x, var) {
     maxy = max(x, na.rm = T)
     minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
-    #dg = nchar(as.character(round(maxy)))
-
-    #if (dg == 1 && maxy <=1 && minxy >= 0){ # if rate
     if (var %in% rate_vars){ # if rate
-
       domain = domainrate
+    } else if (grepl("(growth)*fact",var)){
+      # growth factors variables
+      domain = domaingrowth
     } else if (dg <4) {
-      if (any(x<0, na.rm = TRUE))
+      if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
         domain = domainlin
     } else {
-      if (any(x<0, na.rm = TRUE))
+      if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlog_neg
       else
         domain = domainlog
@@ -558,7 +552,8 @@ pal_fun = function(var,x){
   } else if (grepl("death", var) || grepl("mortality", var) || grepl("lethal", var)) {
     colorNumeric(palette = "Greys", domain = domain(x), na.color = "lightgray")
   } else if (grepl("active", var)) {
-    if (grepl("new", var) && any(x<0, na.rm = TRUE)) {
+    # totale active to be excluded because of bad data that could be negative
+    if ((grepl("new", var) || grepl("lw", var)) && any(x<0, na.rm = TRUE)) {
       # colorRampPalette to customize and mix 2 palettes
        colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
                    domain = domain(x), na.color = "lightgray")

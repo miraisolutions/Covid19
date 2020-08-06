@@ -4,10 +4,12 @@
 \alias{round_up}
 \title{Rounds up numbers for labels in plots}
 \usage{
-round_up(maxv)
+round_up(maxv, down = FALSE)
 }
 \arguments{
 \item{maxv}{numeric max value}
+
+\item{down}{logical if TRUE then floor is used instead of ceiling}
 }
 \value{
 numeric vector after ceiling()

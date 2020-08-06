@@ -137,6 +137,7 @@ get_timeseries_full_data <- function() {
 #' Get timeseries full data from datahub
 #' @rdname get_datahub
 #'
+#' @param country character country, to chose with lev = 2
 #' @param stardate character staring date
 #' @param lev integer 1 for country level, 2 for reagions
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
@@ -149,65 +150,110 @@ get_timeseries_full_data <- function() {
 #' @import dplyr
 #'
 #' @export
-get_datahub = function(stardate = "2020-01-15", lev = 1, verbose = FALSE) {
-  message("get_datahub startdate ", stardate, " level ", lev)
-  dataHub <- covid19(start = stardate, level = lev) # select level2 to add states
-
-  # select varaibles for backwards compatibility + some additional variables
-  dataHub = dataHub %>% ungroup() %>% select(administrative_area_level_1, #id, # at the moment removing ID
-                                             date, tests,
-                                             confirmed, recovered, deaths, hosp, population) %>%
-    rename(Country.Region = administrative_area_level_1) # rename country variable
-
-  # recode some countries for bacwards compatibility
-  dataHub$Country.Region = dataHub$Country.Region %>%
-    recode(
-      "Congo, the Democratic Republic of the" = "Republic of the Congo",
-      "Holy See" = "Vatican City",
-      "Korea, South" = "South Korea",
-      "Macedonia" = "North Macedonia",
-      "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
-      "United Kingdom" = "UK",
-      "United States" = "USA",
-      "Virgin Islands, U.S." = "U.S. Virgin Islands"
-
-    )
-
-  # "Northern Mariana Islands" belongs to USA
-  # "Virgin Islands, U.S." belongs to USA
-
-  # some countried are missing
-  if (!(any(c("Hong Kong","China") %in% dataHub$Country.Region))) {
-    message("Taking chinese data from level 2")
-    dataMiss <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
-      select(administrative_area_level_1, administrative_area_level_2, date, tests,
-             confirmed, recovered, deaths, hosp, population) %>%
-      rename(Country.Region = administrative_area_level_1)
-    # separate Hong Kong
-    if (!("Hong Kong" %in% dataHub$Country.Region)) {
-      dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
-        mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
-      dataHub = rbind(dataHub, dataHG)
-    }
-    dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
-      group_by(Country.Region,date) %>%
-      summarise_if(is.numeric, sum, na.rm = TRUE) %>%
-      ungroup()
-
-    dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
-
-    dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
-    dataHub
+get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose = FALSE) {
+  message("get_datahub: country = ", country, "/ startdate = ", stardate, "/ level = ", lev)
+  if (!is.null(country)) {
+    # remap country )
+    country = recode(country,
+                     "Republic of the Congo" = "Congo, the Democratic Republic of the",
+                     "Vatican City" = "Holy See",
+                     "South Korea" = "Korea, South",
+                     "North Macedonia" = "Saint Vincent and the Grenadine",
+                     "St. Vincent Grenadines" = "Saint Vincent and the Grenadines",
+                     "UK" = "United Kingdom",
+                     "USA" = "United States",
+                     "U.S. Virgin Islands" = "U.S. Virgin Islands",
+                     )
   }
-  # compute active
-  dataHub = dataHub %>%
-    mutate(active = confirmed - deaths - recovered)
+  dataHub <- covid19(country = country, start = stardate, level = lev, verbose = verbose) # select level2 to add states
 
-  # convert integers into numeric
-  dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
+  # if Hong Kong was chosen in country
+  if ((is.null(dataHub) || nrow(dataHub) == 0) && lev == 1 && country == "Hong Kong") {
+    message("Taking Hong Kong from chinese data from level 2")
+    dataHub <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
+      select( administrative_area_level_2, date, tests,
+             confirmed, recovered, deaths, hosp, population) %>%
+      rename(Country.Region = administrative_area_level_2) %>%
+      filter(Country.Region == "Hong Kong")
+  } else if (!is.null(dataHub) && nrow(dataHub) > 0) {
+    adminvar = paste("administrative_area_level", lev, sep = "_")
+    # select varaibles for backwards compatibility + some additional variables
+    dataHub = dataHub %>% ungroup() %>% select(!!adminvar, #id, # at the moment removing ID
+                                               date, tests,
+                                               confirmed, recovered, deaths, hosp, population) %>%
+      rename(Country.Region = !!adminvar) # rename country variable
 
-  # take yesterday, data are updated hourly
-  dataHub = dataHub %>% filter(date != Sys.Date())
+    if (lev == 1) {
+      # recode some countries for backwards compatibility
+      dataHub$Country.Region = dataHub$Country.Region %>%
+        recode(
+          "Congo, the Democratic Republic of the" = "Republic of the Congo",
+          "Holy See" = "Vatican City",
+          "Korea, South" = "South Korea",
+          "Macedonia" = "North Macedonia",
+          "Saint Vincent and the Grenadines" = "St. Vincent Grenadines",
+          "United Kingdom" = "UK",
+          "United States" = "USA",
+          "Virgin Islands, U.S." = "U.S. Virgin Islands"
+        )
+    }
+    # "Northern Mariana Islands" belongs to USA
+    # "Virgin Islands, U.S." belongs to USA
+
+    # if either china or hong kong missing
+    if (length(setdiff(c("Hong Kong","China"), dataHub$Country.Region))>0) {
+      if (lev == 1) {
+        message("Taking chinese data from level 2")
+        dataMiss <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
+          select(administrative_area_level_1, administrative_area_level_2, date, tests,
+                 confirmed, recovered, deaths, hosp, population) %>%
+          rename(Country.Region = administrative_area_level_1)
+        # separate Hong Kong
+        if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
+          dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
+            mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
+          dataHub = rbind(dataHub, dataHG)
+        }
+        dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
+          group_by(Country.Region,date) %>%
+          summarise_if(is.numeric, sum, na.rm = TRUE) %>%
+          ungroup()
+
+        dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
+
+        dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
+        dataHub
+      }
+    }
+    if (lev == 2 && country == "China") {
+        message("remove Hong Kong from China")
+        dataHub = filter(dataHub, Country.Region != "Hong Kong")
+    }
+  }
+  if (!is.null(dataHub) && nrow(dataHub) > 0) {
+    # adjust recovered where they do not make sense, e.g. France lev 2
+    dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed)
+    dataHub$deaths    = pmin(dataHub$deaths, dataHub$confirmed)
+
+    # compute active
+    dataHub = dataHub %>%
+      mutate(active = confirmed - deaths - recovered)
+
+    # convert integers into numeric
+    dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
+
+    # take yesterday, data are updated hourly and they are complete around mid day, 36h later
+    # regardless of the timezone, select the day 40h ago
+    now = as.POSIXct(Sys.time()) # given time zone
+    maxdate =  as.character(as.Date(now - 40*60*60))
+
+    message("Maximum date set to: ", maxdate)
+    #TODO: arrange should go descending, many rows could be filtered out for many countries
+    dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
+
+  }  else {
+    warning("Data not found for country = ", country, " startdate = ", stardate, " level = ", lev)
+  }
 
   dataHub
 }
@@ -255,6 +301,8 @@ get_timeseries_by_contagion_day_data <- function(data) {
     # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
     # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
     ungroup()
+  #TODO: remove all 0s confirmed from all countries
+  #data1 = filter(data1, contagion_day != 0)
   data1
 }
 
@@ -364,9 +412,9 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     group_by(.dots = group)  %>%
     # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
-    mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
-           growth_factor_5 = round(daily_growth_factor_5, digits = 3),
-           growth_factor_7 = round(daily_growth_factor_5, digits = 3),
+    mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 4),
+           growth_factor_5 = round(daily_growth_factor_5, digits = 4),
+           growth_factor_7 = round(daily_growth_factor_5, digits = 4),
            lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
     ungroup() %>%
     #mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
@@ -665,7 +713,7 @@ select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") 
 }
 
 
-#' Reescale contagion day for countries with at least n cases and outbreaks longer than w days
+#' Rescale contagion day for countries with at least n cases and outbreaks longer than w days
 #'
 #' @param df data.frame
 #' @param n number of cases

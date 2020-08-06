@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_data.R
 \name{rescale_df_contagion}
 \alias{rescale_df_contagion}
-\title{Reescale contagion day for countries with at least n cases and outbreaks longer than w days}
+\title{Rescale contagion day for countries with at least n cases and outbreaks longer than w days}
 \usage{
 rescale_df_contagion(df, n, w, group = "Country.Region")
 }
@@ -16,5 +16,5 @@ rescale_df_contagion(df, n, w, group = "Country.Region")
 \item{group}{character Country.Region or continent or subcontinent}
 }
 \description{
-Reescale contagion day for countries with at least n cases and outbreaks longer than w days
+Rescale contagion day for countries with at least n cases and outbreaks longer than w days
 }
