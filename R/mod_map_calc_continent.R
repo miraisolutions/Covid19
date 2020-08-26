@@ -166,8 +166,8 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
         options = leafletOptions(zoomControl = FALSE,
                                  minZoom = area_map_spec(area, "zoom")*0.975, maxZoom = area_map_spec(area, "zoom")*1.025,
                                  maxBounds = list(
-                                   c(area2_data_map@bbox["y","min"], area2_data_map@bbox["x","min"]),
-                                   c(area2_data_map@bbox["y","max"], area2_data_map@bbox["x","max"])
+                                   c(data_plot()@bbox["y","min"], data_plot()@bbox["x","min"]),
+                                   c(data_plot()@bbox["y","max"], data_plot()@bbox["x","max"])
                                  ),
                                  dragging = TRUE,
                                  centerFixed = TRUE,
@@ -176,7 +176,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
                                  browser.fill = F
         ))  %>% clearBounds() %>%
         setView(
-          lng = mean(area2_data_map@bbox["y",]), lat = mean(area2_data_map@bbox["x",]),
+          lng = mean(data_plot()@bbox["y",]), lat = mean(data_plot()@bbox["x",]),
           zoom = area_map_spec(area, "zoom"))
     }
     leg_par <- legend_fun(data_plot()$indicator, new_var())
@@ -254,7 +254,7 @@ update_radio<- function(var, growthvar = 3){
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
     caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
-    graph_title = "Growth factor"
+    graph_title = "Growth Factor"
     textvar = c("new_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
