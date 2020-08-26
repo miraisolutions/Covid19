@@ -162,7 +162,7 @@ area_map_spec <- function(area, feat= c("lat","col","zoom")){
     "Oceania" = c(-48, 110, 8, 180),
     "LatAm & Carib." =  c(-60, -80, 56, -55),
     "Northern America" = c(22, -147, 82, -39),
-    "other" = c(NA,NA,NA,NA)
+    "other" = c(NA,NA,NA,NA) # currently switzerand
   )
   col = list("Europe" = c(col = "Blues", rev = TRUE, skip = 0),
              "Asia" =  c(col = "Reds", rev = TRUE, skip = 1),
@@ -178,7 +178,7 @@ area_map_spec <- function(area, feat= c("lat","col","zoom")){
               "Oceania" = 3.15,
               "LatAm & Carib." = 2.6,
               "Northern America" = 2.15,
-              "other" = 7.5
+              "other" = 7.25
   )
   legend =  list("Europe" = "topright",
                  "Africa" = "bottomleft",
