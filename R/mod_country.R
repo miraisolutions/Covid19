@@ -47,14 +47,14 @@ mod_country_ui <- function(id){
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#'
+#' @param tab logical, if TRUE then also the data table ui is called
 #' @noRd
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
-areaUI = function(id){
+areaUI = function(id, tab = TRUE){
   ns = shiny::NS(id)
-    tagList(
+   tg = tagList(
       div(id = id,
            hr(),
            div(h3("Country split at level 2"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -67,12 +67,10 @@ areaUI = function(id){
            fluidRow(
              column(6,
                     div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                    #mod_plot_log_linear_ui(ns("plot_area_area2"))
                     withSpinner(uiOutput(ns("plot_area_area2")))
              ),
              column(6,
                     div(h4("Confirmed cases for top 5 Areas"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                    #mod_plot_log_linear_ui(ns("plot_log_linear_top_n_area2"))
                     withSpinner(uiOutput(ns("plot_log_linear_top_n_area2")))
                  )
            ),
@@ -80,30 +78,37 @@ areaUI = function(id){
            fluidRow(
 
              column(6,
-                    #mod_compare_nth_cases_plot_ui(ns("plot_compare_nth_area2"), actives = FALSE)
                     withSpinner(uiOutput(ns("plot_compare_nth_area2")))
 
                     ),
              column(6,
-                    #mod_growth_death_rate_ui(ns("plot_growth_death_rate_area2"))
                     withSpinner(uiOutput(ns("plot_growth_death_rate_area2")))
                     )
            ),
            hr(),
            fluidRow(
              column(6,
-                    #mod_scatterplot_ui(ns("plot_scatterplot_area_2"))
                     withSpinner(uiOutput(ns("plot_scatterplot_area_2")))
-
              ),
              column(6,
                     mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2"))
              )
-           ),
-          hr(),
-          mod_add_table_ui(ns("add_table_area2"))
+          )#,
+          # hr(),
+          # mod_add_table_ui(ns("add_table_area2"))
        )
   )
+  if(tab) {
+    tg = tagList(
+      div(id = id,
+          tg,
+          hr(),
+          mod_add_table_ui(ns("add_table_area2"))
+      )
+    )
+  }
+   tg
+
 }
 #' country Server Function
 #'
@@ -206,7 +211,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
         build_data_aggr(area_data_2)
       # works in example
       message("id lev2 = ", id)
-      callModule(mod_country_area_server, id, area_data_2_aggregate = area_data_2_aggregate, n2 = max(1,n/10))
+      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,n/10))
 
     } else{
       message("remove level 2 UI for ", req(input$select_country))
@@ -227,13 +232,14 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
 #' @param area_data_2_aggregate data.frame with level 2 countries
 #' @param n2 min number of cases for a country to be considered. Default n
 #' @param w number of days of outbreak. Default 7
+#' @param tab logical, if TRUE then also the data table module is called
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import shiny
 #'
 #' @noRd
-mod_country_area_server <- function(input, output, session, area_data_2_aggregate, n2 = 1, w = 7) {
+mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE) {
   ns <- session$ns
 
   message("mod_country_area_server n2 = ", n2)
@@ -244,7 +250,7 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
   #   build_data_aggr(area_data_2)
 
   data_2_filtered <-
-    area_data_2_aggregate %>%
+    data %>%
     rescale_df_contagion(n = n2, w = w) # take where 100 confirmed
 
   data_2_filtered_today = data_2_filtered %>% filter(date == max(date))
@@ -257,7 +263,7 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
   })
 
   area_data_2_aggregate_today <-
-    area_data_2_aggregate %>%
+    data %>%
     filter( date == max(date))
 
   area_2_top_5_today <-
@@ -266,7 +272,7 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
     head(5)
 
   area_2_top_5_confirmed <-
-    area_data_2_aggregate %>%
+    data %>%
     filter(Country.Region %in% area_2_top_5_today$Country.Region) %>%
     select(Country.Region, date, confirmed)
 
@@ -279,9 +285,9 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
 
   # plots ----
   levs <- sort_type_hardcoded()
-  df_area_2 = purrr::map(unique(area_data_2_aggregate$Country.Region),
+  df_area_2 = purrr::map(unique(data$Country.Region),
     function(un) {
-      dat = tsdata_areplot(area_data_2_aggregate[area_data_2_aggregate$Country.Region == un, ], levs, 0) #n = 0 for area plot
+      dat = tsdata_areplot(data[data$Country.Region == un, ], levs, 0) #n = 0 for area plot
       dat$Country.Region = rep(un, nrow(dat))
       dat
       })
@@ -290,6 +296,9 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
   countries_order =  area_2_top_5_confirmed %>% filter(date == max(date)) %>%
     arrange(desc(confirmed)) %>%
     .[,"Country.Region"] %>% as.vector()
+
+  message("ns(plot_area2_area2)", ns("plot_area2_area2"))
+
   output[["plot_area_area2"]] <- renderUI({
     mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE)
   })
@@ -320,7 +329,7 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_growth_death_rate_ui(ns("rate_plots_area2"))
   })
-  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = area_data_2_aggregate, n = n2)
+  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data, n = n2)
 
   # > scatterplot prevalence vs growth
   output[["plot_scatterplot_area_2"]] <- renderUI({
@@ -335,12 +344,17 @@ mod_country_area_server <- function(input, output, session, area_data_2_aggregat
   # > stacked barplot with status split, use data_2_filtered_today
   callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, n = n2)
 
-  # prepare data for table with country data
-  area_data_2_aggregate_tab = area_data_2_aggregate %>% # only data from today
-    filter(date == max(date)) %>%
-    arrange(desc(confirmed) )
-  callModule(mod_add_table_server, "add_table_area2",
-             area_data_2_aggregate_tab, maxrowsperpage = 10)
+  if(tab) {
+    # prepare data for table with country data
+    area_data_2_aggregate_tab = data %>% # only data from today
+      filter(date == max(date)) %>%
+      arrange(desc(confirmed) )
+
+    callModule(mod_add_table_server, "add_table_area2",
+               area_data_2_aggregate_tab, maxrowsperpage = 10)
+
+  }
+
 }
 
 # select_n <- function(var, n = 100) {
