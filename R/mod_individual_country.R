@@ -58,7 +58,7 @@ mod_ind_country_ui <- function(id){
 #' @importFrom shinycssloaders withSpinner
 areamapUI = function(id, country){
   ns = shiny::NS(id)
-  message("areamapUI: ", ns("map_countries_confirmed"))
+  message("areamapUI")
   tagList(
     div(id = id,
         hr(),

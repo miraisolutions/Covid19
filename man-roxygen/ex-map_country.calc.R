@@ -17,7 +17,7 @@ if (interactive()) {
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable
 
- sapply(file.path("R",list.files("R")), source)
+ #sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(

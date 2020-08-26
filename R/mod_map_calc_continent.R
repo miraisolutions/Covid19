@@ -280,7 +280,7 @@ update_radio<- function(var, growthvar = 3){
     caption_mrt_rate <- "Mortality Rate: total deaths today per 1 M population"
     caption =HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
-    textvar = c("deaths", "lw_deaths", "new_deaths", "population")
+    textvar = c("new_deaths", "lw_deaths", "deaths", "population")
 
   } else if (grepl("(growth)*prev",var)) {
     new_buttons = NULL
@@ -301,7 +301,7 @@ update_radio<- function(var, growthvar = 3){
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
     graph_title = "Active cases"
-    textvar = c("confirmed", "new_confirmed", "recovered","new_recovered")
+    textvar = c("new_confirmed", "confirmed","new_recovered","recovered")
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
     names(mapvar) = c("Total", "Last Week",
