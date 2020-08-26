@@ -9,7 +9,8 @@ if (interactive()) {
   library(COVID19)
 
   library(scales)
-  sapply(file.path("R",list.files("R")), source)
+  #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),

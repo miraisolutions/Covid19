@@ -8,8 +8,8 @@ if (interactive()) {
   library(plotly)
   library(scales)
 
-  sapply(file.path("R",list.files("R")), source)
-
+  #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19Mirai:::mod_plot_log_linear_ui("plot_log_area_global")
