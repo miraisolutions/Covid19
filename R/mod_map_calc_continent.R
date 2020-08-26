@@ -255,7 +255,7 @@ update_radio<- function(var, growthvar = 3){
     caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
 
     graph_title = "Growth Factor"
-    textvar = c("new_confirmed","confirmed","new_active")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
@@ -268,7 +268,7 @@ update_radio<- function(var, growthvar = 3){
                        choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Prevalence: confirmed cases over 1 M people"
     graph_title = "Prevalence of contagion over 1M"
-    textvar = c("confirmed","new_confirmed","population")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","population")
   } else if (grepl("death", var) || grepl("mortality", var)) {
     mapvar = c("Lethality Rate", "Mortality Rate")
     mapvar = varsNames()[mapvar]
@@ -280,7 +280,7 @@ update_radio<- function(var, growthvar = 3){
     caption_mrt_rate <- "Mortality Rate: total deaths today per 1 M population"
     caption =HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
-    textvar = c("deaths", "new_deaths")
+    textvar = c("deaths", "lw_deaths", "new_deaths", "population")
 
   } else if (grepl("(growth)*prev",var)) {
     new_buttons = NULL
@@ -288,7 +288,7 @@ update_radio<- function(var, growthvar = 3){
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
-    textvar = c("growth_factor_3", "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop")
+    textvar = c("growth_factor_3", "new_prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
   } else if (grepl("active", var)) {
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
