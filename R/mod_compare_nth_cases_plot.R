@@ -33,13 +33,11 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
       column(7,
              offset = 1,
              selectInput(inputId = ns("radio_indicator"), label = "",
-                          choices = choices_plot, selected ="active")
+                          choices = choices_plot, selected ="new_confirmed")
       ),
       column(4,
              selectInput(inputId = ns("radio_log_linear"), label = "",
                           choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
-              # radioButtons(inputId = ns("radio_log_linear"), label = "",
-              #            choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
       )
     ),
     withSpinner(plotlyOutput(ns("plot"), height = 400)),

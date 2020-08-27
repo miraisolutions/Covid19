@@ -9,8 +9,8 @@ if (interactive()) {
   library(grid)
   library(scales)
 
-  sapply(file.path("R",list.files("R")), source)
-
+  #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19Mirai:::mod_country_comparison_ui("country_comparison")

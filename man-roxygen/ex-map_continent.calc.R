@@ -20,12 +20,13 @@ if (interactive()) {
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable
 
- sapply(file.path("R",list.files("R")), source)
+ #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_map_cont_calc_ui("map_cont_calc_ui")
+      Covid19Mirai:::mod_map_area_calc_ui("map_cont_calc_ui")
     )
   )
   server <- function(input, output) {
@@ -60,7 +61,7 @@ if (interactive()) {
     }
     countries_data_map_cont = .subsetmap(countries_data_map, cc = cont)
 
-    callModule(mod_map_cont_cal_server, "map_cont_calc_ui", df = data_cont_maps,
+    callModule(mod_map_area_calc_server, "map_cont_calc_ui", df = data_cont_maps,
                countries_data_map_cont, cont = cont, variable = variable)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

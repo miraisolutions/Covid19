@@ -37,7 +37,7 @@ if (interactive()) {
     subcontinent_pop_data =  pop_data %>% filter(!is.na(continent) & continent %in% cont) #%>%
 
     subcont_palette =
-      subcont_palette_calc(col_cont = cont_map_spec(cont, "col"),
+      subcont_palette_calc(col_cont = area_map_spec(cont, "col"),
                            x = sort(unique(c(subcontinent_pop_data$subcontinent,
                                              orig_data_aggregate_cont$subcontinent))))
 

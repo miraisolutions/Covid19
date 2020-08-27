@@ -13,7 +13,8 @@ if (interactive()) {
   require(DT)
   require(COVID19)
 
-  sapply(file.path("R",list.files("R")), source)
+  #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   cont = "Europe"

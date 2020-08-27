@@ -2,12 +2,12 @@
 % Please edit documentation in R/mod_continent.R
 \name{subcont_palette_calc}
 \alias{subcont_palette_calc}
-\title{Derives palette for continent maps and graphs based on cont_map_spec}
+\title{Derives palette for continent maps and graphs based on area_map_spec}
 \usage{
-subcont_palette_calc(col_cont = cont_map_spec(cont, "col"), x)
+subcont_palette_calc(col_cont = area_map_spec(cont, "col"), x)
 }
 \arguments{
-\item{col_cont}{named character vector cont_map_spec(cont, 'col')}
+\item{col_cont}{named character vector area_map_spec(cont, 'col')}
 
 \item{x}{named character vector of areas}
 }
@@ -15,5 +15,5 @@ subcont_palette_calc(col_cont = cont_map_spec(cont, "col"), x)
 named character vector of colors for the areas
 }
 \description{
-Derives palette for continent maps and graphs based on cont_map_spec
+Derives palette for continent maps and graphs based on area_map_spec
 }
