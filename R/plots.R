@@ -16,9 +16,9 @@ stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30
     suffix = "%"
   }
 
-  if (length(unique(df$Country)) > 38) {
-    labsize = labsize - min(length(unique(df$Country))/38-1,2.75)
-    labangle = labangle + min(length(unique(df$Country))-38,30)
+  if (length(unique(df$Country)) > 32) {
+    labsize = labsize - min(length(unique(df$Country))/32-1,2.8)
+    labangle = labangle + min(length(unique(df$Country))-32,30)
   }
 
   p <- df %>%
@@ -599,7 +599,7 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
   }
 
   if (length(unique(df$Country)) > 18) {
-    labsize = labsize - min(length(unique(df$Country))/18-1,2.75)
+    labsize = labsize - min(length(unique(df$Country))/18-1,2.8)
     labangle = labangle + min(length(unique(df$Country))-18,30)
   }
   p <- ggplot(df, aes(x = Country, y = Value)) +
