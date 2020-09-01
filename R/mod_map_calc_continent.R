@@ -77,7 +77,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
     # TODO: it can be moved outside, in the data preparation
     if (grepl("(growth)*prev",variable))
       data = data %>%
-        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
+        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_7",prevvar = "prevalence_rate_1M_pop"))
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
@@ -213,7 +213,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 varsNames = function(vars) {
   allvars = c(names(case_colors), names(prefix_case_colors(prefix = "lw")),
               names(prefix_case_colors(prefix = "new")),
-              paste("growth_factor", c(3,5,7), sep = "_"),
+              paste("growth_factor", c(3,7,15), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
               "population", "growth_vs_prev",
@@ -245,14 +245,15 @@ varsNames = function(vars) {
 #' graph_title: graph title
 #' caption: vaption
 #' textvar: variables to add in popup
-update_radio<- function(var, growthvar = 3){
+update_radio<- function(var, growthvar = 7){
 
   graph_title = var
   textvar = NULL
   if (grepl("(growth)*fact",var)) { # growth factor
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
-    caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    #caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    caption_growth_factor <- caption_growth_factor_fun("(3 7 15)")
 
     graph_title = "Growth Factor"
     textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
@@ -284,7 +285,10 @@ update_radio<- function(var, growthvar = 3){
 
   } else if (grepl("(growth)*prev",var)) {
     new_buttons = NULL
-    caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+    #caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+    #caption_growth_factor <- paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
+    caption_growth_factor <- caption_growth_factor_fun(growthvar)
+
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
