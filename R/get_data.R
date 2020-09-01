@@ -242,13 +242,13 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
 
-    # take yesterday, data are updated hourly and they are complete around mid day, 36h later
-    # regardless of the timezone, select the day 40h ago
+    # take yesterday, data are updated hourly and they are complete around mid day, 42h later
+    # regardless of the timezone, select the day 42h ago
     now = as.POSIXct(Sys.time()) # given time zone
-    maxdate =  as.character(as.Date(now - 40*60*60))
+    maxdate =  as.character(as.Date(now - 42*60*60))
 
     message("Maximum date set to: ", maxdate)
-    #TODO: arrange should go descending, many rows could be filtered out for many countries
+    #TODO: arrange should go descending, many rows could be filtered out for many countries#
     dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
 
   }  else {
@@ -290,12 +290,13 @@ get_timeseries_by_contagion_day_data <- function(data) {
       TRUE ~ tmp
     )) %>%
     select(-incremental, -offset, -no_contagion, -tmp) %>%
-    mutate(new_confirmed = confirmed - lag(confirmed),
-        new_deaths = deaths - lag(deaths),
-        new_active = active - lag(active),
-        new_recovered = recovered - lag(recovered),
-        new_tests = tests - lag(tests),
-        new_hosp = hosp - lag(hosp)) %>%
+    # added replace_na around lag to avoid NA in fist position
+    mutate(new_confirmed = confirmed - replace_na(lag(confirmed),0),
+        new_deaths = deaths - replace_na(lag(deaths),0),
+        new_active = active - replace_na(lag(active),0),
+        new_recovered = recovered - replace_na(lag(recovered),0),
+        new_tests = tests - replace_na(lag(tests),0),
+        new_hosp = hosp - replace_na(lag(hosp),0)) %>%
     # mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
     # mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
     # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
@@ -400,11 +401,21 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   df1 <- df %>% #ungroup() %>%
     arrange(!!as.symbol(group), !!as.symbol(time)) %>%
     group_by(.dots = group) %>%
-    mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
-           daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
-           daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
-           daily_lethality_rate = replace_na(deaths / confirmed, 0)
-           ) %>%
+    # mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
+    #        daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
+    #        daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
+    #        daily_lethality_rate = replace_na(deaths / confirmed, 0)
+    #        ) %>%
+    mutate(daily_growth_factor_3 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 63, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,3), 60, sum, partial=TRUE, align = "right"),1)),
+           daily_growth_factor_7 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 67, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,7), 60, sum, partial=TRUE, align = "right"),1)),
+           daily_growth_factor_15 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 75, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,15), 60, sum, partial=TRUE, align = "right"),1)),
+           daily_lethality_rate = replace_na(deaths / confirmed, 0),
+    ) %>%
+    # mutate(daily_growth_factor_3 = pmax(0, replace_na(zoo::rollapplyr(new_confirmed, 7, sum, partial=TRUE, align = "right") / zoo::rollapplyr(new_confirmed, 37, sum, partial=TRUE, align = "right"))),
+    #        daily_growth_factor_5 = pmax(0, replace_na(zoo::rollapplyr(new_confirmed, 5, sum, partial=TRUE, align = "right") / zoo::rollapplyr(new_confirmed, 35, sum, partial=TRUE, align = "right"))),
+    #        daily_growth_factor_7 = pmax(0, replace_na(zoo::rollapplyr(new_confirmed, 7, sum, partial=TRUE, align = "right") / zoo::rollapplyr(new_confirmed, 33, sum, partial=TRUE, align = "right"))),
+    #        daily_lethality_rate = replace_na(deaths / confirmed, 0)
+    # ) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
 
     ungroup()
@@ -412,9 +423,10 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     group_by(.dots = group)  %>%
     # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
-    mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 4),
-           growth_factor_5 = round(daily_growth_factor_5, digits = 4),
-           growth_factor_7 = round(daily_growth_factor_5, digits = 4),
+    mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
+           #growth_factor_5 = round(daily_growth_factor_5, digits = 4),
+           growth_factor_15 = round(daily_growth_factor_15, digits = 3),
+           growth_factor_7 = round(daily_growth_factor_7, digits = 3),
            lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
     ungroup() %>%
     #mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
