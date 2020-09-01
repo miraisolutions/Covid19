@@ -16,9 +16,11 @@ mod_growth_death_rate_ui <- function(id){
              uiOutput(ns("title_growth_factor")),
              selectInput(inputId = ns("growth_factor"), label = "",
                           choices = list("Over 3 days" = "growth_factor_3",
-                                         "Over 5 days" = "growth_factor_5",
-                                         "Over one week" = "growth_factor_7"),
-                          selected = "growth_factor_3"),
+                                        # "Over 5 days" = "growth_factor_5",
+                                         "Over one week" = "growth_factor_7",
+                                          "Over 2 weeks" = "growth_factor_15")
+                         ,
+                          selected = "growth_factor_7"),
              withSpinner(uiOutput(ns("plot_growth_factor")))
       ),
       column(6,
@@ -49,7 +51,7 @@ mod_growth_death_rate_ui <- function(id){
 #'
 #' @noRd
 mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7,
-                                         n_highligth = 5, istop = T,
+                                         n_highligth = 5, istop = TRUE,
                                          g_palette = list("growth_factor" = rate_colors["growth_factor"],
                                                         "death_rate" = rate_colors["death_rate"])){
   ns <- session$ns
@@ -69,7 +71,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     df
   }
 
-  pick_rate_hist <- function(df1, rate){
+  pick_rate_hist <- function(df1, rate, istop = istop) {
     df_plot <- df1 %>%
       pick_rate(rate) %>%
       arrange(desc(Value)) %>%
@@ -98,7 +100,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
   }
 
   # captions
-  caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
+  #caption_growth_factor <- reactive({paste0("Computed as total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
+  #caption_growth_factor <- reactive({paste0("Total confirmed cases since ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago. / total confirmed cases in previous 30 days")})
+  caption_growth_factor <- reactive({ caption_growth_factor_fun(req(input$growth_factor))})
   caption_death_rate_radio <- reactive({
     if (req(input$radio_pop) == "lethality_rate") {
       p <- "/ total confirmed cases today."
@@ -129,7 +133,9 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
 
   output$plot_growth_factor_hist <- renderPlotly({
     g_palette_gf = g_palette[["growth_factor"]]
-    p <- plot_rate_hist(df_base_plot1(), y_min = 1, g_palette =  g_palette_gf)
+    p <- plot_rate_hist(df_base_plot1(), y_min = 1,
+                        #percent = is_percent(),
+                        g_palette =  g_palette_gf)
     p <- p %>%
       plotly::ggplotly() %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
