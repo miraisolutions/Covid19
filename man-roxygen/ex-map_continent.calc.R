@@ -20,8 +20,9 @@ if (interactive()) {
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable
 
- #sapply(file.path("R",list.files("R")), source)
-  #devtools::load_all()
+  #sapply(file.path("R",list.files("R")), source)
+  #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
@@ -31,9 +32,9 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    # orig_data <- get_datahub() %>%
-    #     get_timeseries_by_contagion_day_data()
-    orig_data = readRDS("orig_data.rds")
+    orig_data <- get_datahub() %>%
+        get_timeseries_by_contagion_day_data()
+    # orig_data = readRDS("orig_data.rds")
     pop_data = get_pop_datahub()
     orig_data_aggregate =  build_data_aggr(orig_data, pop_data)
 
