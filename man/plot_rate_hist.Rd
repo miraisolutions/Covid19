@@ -4,7 +4,14 @@
 \alias{plot_rate_hist}
 \title{plot rate as hist}
 \usage{
-plot_rate_hist(df, percent = F, y_min = 0, g_palette)
+plot_rate_hist(
+  df,
+  percent = FALSE,
+  y_min = 0,
+  g_palette,
+  labsize = 10,
+  labangle = 30
+)
 }
 \arguments{
 \item{df}{data.frame}
@@ -14,6 +21,10 @@ plot_rate_hist(df, percent = F, y_min = 0, g_palette)
 \item{y_min}{min value on y axis}
 
 \item{g_palette}{character vector of colors for the graph and legend}
+
+\item{labsize}{numeric, x axis label size}
+
+\item{labangle}{numeric, x axis label angle}
 }
 \value{
 ggplot plot

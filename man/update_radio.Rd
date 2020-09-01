@@ -4,7 +4,7 @@
 \alias{update_radio}
 \title{Updates UI radiobuttons depending to variable va}
 \usage{
-update_radio(var, growthvar = 3)
+update_radio(var, growthvar = 7)
 }
 \arguments{
 \item{var}{variable name}
