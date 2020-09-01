@@ -71,7 +71,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
     df
   }
 
-  pick_rate_hist <- function(df1, rate, istop = istop) {
+  pick_rate_hist <- function(df1, rate) {
     df_plot <- df1 %>%
       pick_rate(rate) %>%
       arrange(desc(Value)) %>%

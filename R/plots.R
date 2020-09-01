@@ -692,7 +692,8 @@ graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8,
 backgroud_map_col = "grey90"
 
 #' caption growth factor
-#'
+#' @param growthvar character growth factor variable
+#' @return character gtext for caption
 caption_growth_factor_fun <- function(growthvar)
   #paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
   paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago. (within last 2 months)")
