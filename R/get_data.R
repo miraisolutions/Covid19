@@ -409,7 +409,7 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     mutate(daily_growth_factor_3 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 63, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,3), 60, sum, partial=TRUE, align = "right"),1)),
            daily_growth_factor_7 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 67, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,7), 60, sum, partial=TRUE, align = "right"),1)),
            daily_growth_factor_14 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 74, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,14), 60, sum, partial=TRUE, align = "right"),1)),
-           daily_lethality_rate = replace_na(deaths / confirmed, 0),
+           daily_lethality_rate = pmax(0, replace_na(deaths / confirmed, 0)),
     ) %>%
     # mutate(daily_growth_factor_3 = pmax(0, replace_na(zoo::rollapplyr(new_confirmed, 7, sum, partial=TRUE, align = "right") / zoo::rollapplyr(new_confirmed, 37, sum, partial=TRUE, align = "right"))),
     #        daily_growth_factor_5 = pmax(0, replace_na(zoo::rollapplyr(new_confirmed, 5, sum, partial=TRUE, align = "right") / zoo::rollapplyr(new_confirmed, 35, sum, partial=TRUE, align = "right"))),
@@ -417,17 +417,20 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     #        daily_lethality_rate = replace_na(deaths / confirmed, 0)
     # ) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
-
     ungroup()
+
   df2 <- df1 %>%
-    group_by(.dots = group)  %>%
+    #group_by(.dots = group)  %>%
     # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
     # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
     mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
            growth_factor_14 = round(daily_growth_factor_14, digits = 3),
            growth_factor_7 = round(daily_growth_factor_7, digits = 3),
            lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
-    ungroup() %>%
+    mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
+           growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
+           growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
+    #ungroup() %>%
     #mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
     mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} ) %>%
