@@ -16,7 +16,7 @@ mod_scatterplot_ui <- function(id){
                           choices = list("Over 3 days" = "growth_factor_3",
                                          "Over one week" = "growth_factor_7",
                                          "Over 2 weeks" = "growth_factor_14"),
-                          selected = "growth_factor_3"),
+                          selected = "growth_factor_7"),
          withSpinner(uiOutput(ns("plot_scatterplot"))),
       )
 }
@@ -77,8 +77,8 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
       world_data
 
   # compute stats for all growth factors
-  med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2,  median)})
-  med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop)})
+  med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2, median, na.rm = TRUE)})
+  med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop, na.rm = TRUE)})
 
   medgr = reactive({med_growth()[req(input$growth_factor)]})
 
