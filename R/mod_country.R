@@ -82,16 +82,20 @@ areaUI = function(id, tab = TRUE){
 
                     ),
              column(6,
-                    withSpinner(uiOutput(ns("plot_growth_death_rate_area2")))
+                    withSpinner(uiOutput(ns("plot_scatterplot_area_2")))
                     )
            ),
            hr(),
+          fluidRow(
+            column(12,
+                   withSpinner(uiOutput(ns("plot_growth_death_rate_area2")))
+            )
+          ),
            fluidRow(
-             column(6,
-                    withSpinner(uiOutput(ns("plot_scatterplot_area_2")))
-             ),
-             column(6,
-                    mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2"))
+             column(12,
+
+                    mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2")
+                )
              )
           )#,
           # hr(),
@@ -297,8 +301,6 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     arrange(desc(confirmed)) %>%
     .[,"Country.Region"] %>% as.vector()
 
-  message("ns(plot_area2_area2)", ns("plot_area2_area2"))
-
   output[["plot_area_area2"]] <- renderUI({
     mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE)
   })
@@ -329,7 +331,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_growth_death_rate_ui(ns("rate_plots_area2"))
   })
-  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data, n = n2)
+  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data, n = n2, istop = FALSE, n_highligth = length(unique(data$Country.Region)))
 
   # > scatterplot prevalence vs growth
   output[["plot_scatterplot_area_2"]] <- renderUI({
@@ -342,7 +344,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_2_filtered_today, istop = FALSE, nmed = n2, countries = areasC())
 
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, n = n2)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, n = n2, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)))
 
   if(tab) {
     # prepare data for table with country data
