@@ -253,7 +253,7 @@ update_radio<- function(var, growthvar = 7){
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
     #caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
-    caption_growth_factor <- caption_growth_factor_fun("(3 7 14)")
+    caption <- caption_growth_factor_fun("(3 7 14)")
 
     graph_title = "Growth Factor"
     textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
