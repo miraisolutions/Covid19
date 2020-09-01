@@ -14,9 +14,8 @@ mod_scatterplot_ui <- function(id){
          uiOutput(ns("title_scatterplot")),
          selectInput(inputId = ns("growth_factor"), label = "Select growth factor",
                           choices = list("Over 3 days" = "growth_factor_3",
-                                         #"Over 5 days" = "growth_factor_5",
                                          "Over one week" = "growth_factor_7",
-                                         "Over 2 weeks" = "growth_factor_15"),
+                                         "Over 2 weeks" = "growth_factor_14"),
                           selected = "growth_factor_3"),
          withSpinner(uiOutput(ns("plot_scatterplot"))),
       )

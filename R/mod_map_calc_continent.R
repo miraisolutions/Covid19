@@ -213,7 +213,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 varsNames = function(vars) {
   allvars = c(names(case_colors), names(prefix_case_colors(prefix = "lw")),
               names(prefix_case_colors(prefix = "new")),
-              paste("growth_factor", c(3,7,15), sep = "_"),
+              paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
               "population", "growth_vs_prev",
@@ -253,7 +253,7 @@ update_radio<- function(var, growthvar = 7){
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
     #caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
-    caption_growth_factor <- caption_growth_factor_fun("(3 7 15)")
+    caption_growth_factor <- caption_growth_factor_fun("(3 7 14)")
 
     graph_title = "Growth Factor"
     textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
