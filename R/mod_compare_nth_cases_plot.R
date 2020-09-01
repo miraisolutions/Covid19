@@ -13,8 +13,8 @@
 #' @import shiny
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
-mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "new_confirmed",
-                                                       "new_active", "growth_factor_3", "lethality_rate"),
+mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_prevalence_rate_1M_pop",
+                                                       "new_active", "new_tests","growth_factor_3", "lethality_rate" ),
                                           actives = TRUE, tests = FALSE, hosp = FALSE){
   ns <- NS(id)
 
@@ -75,7 +75,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       countries_order =  df %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(req(input$radio_indicator)))) %>%
         #arrange(!!as.symbol(input$radio_indicator)) %>%
-        top_n(n_highligth, wt = !!as.symbol(req(input$radio_indicator))) %>% .[,"Country.Region"] %>% as.vector()
+        top_n(n_highligth, wt = !!as.symbol(req(input$radio_indicator))) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
       data = df %>% right_join(countries_order)  %>%  # reordering according to variable if istop
                 mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
     } else {
