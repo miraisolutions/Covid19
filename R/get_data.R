@@ -311,16 +311,20 @@ get_timeseries_by_contagion_day_data <- function(data) {
 #' @rdname get_timeseries_global_data
 #'
 #' @param data data.frame
+#' @param new logical, if TRUE then new variables are also considered
 #'
 #' @import dplyr
 #'
 #' @return global tibble of global confirmed, deaths, active and recovered, for each day
 #'
 #' @export
-get_timeseries_global_data <- function(data){
-  global <- data %>%
+get_timeseries_global_data <- function(data, new = FALSE){
+  vars = get_aggrvars()
+  if (!new)
+    vars = setdiff(vars, grep("new",vars, value = TRUE))
+  data %>%
     group_by(date) %>%
-    summarize_at(c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered"), sum) %>%
+    summarize_at(vars, sum) %>%
     ungroup()
 }
 
