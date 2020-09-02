@@ -322,6 +322,7 @@ get_timeseries_global_data <- function(data, new = FALSE){
   vars = get_aggrvars()
   if (!new)
     vars = setdiff(vars, grep("new",vars, value = TRUE))
+  vars = intersect(vars, names(data))
   data %>%
     group_by(date) %>%
     summarize_at(vars, sum) %>%

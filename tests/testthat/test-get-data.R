@@ -35,7 +35,7 @@ test_that("get_timeseries_by_contagion_day_data returns expected headers", {
 
 test_that("get_timeseries_global_data returns expected headers", {
   df <- get_timeseries_global_data(data)
-  expect_equal(sort(names(df)), sort(c("date", "confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_active", "new_recovered")))
+  expect_equal(sort(names(df)), sort(c("date", setdiff(get_aggrvars(), c("population",grep("new",get_aggrvars(), value = TRUE))))))
 })
 
 test_that("get_timeseries_country_data returns expected headers", {
