@@ -178,7 +178,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_tot", country_data , n = n, w = w, istop = F)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_tot", country_data , n = n, w = w, istop = FALSE)
 
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
 
