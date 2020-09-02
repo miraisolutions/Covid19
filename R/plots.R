@@ -15,12 +15,10 @@ stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30
     df$ratio.over.cases <- 100*df$ratio.over.cases
     suffix = "%"
   }
-
-  if (length(unique(df$Country)) > 30) {
-    labsize = labsize - min(length(unique(df$Country))/30-1,2.8)
-    labangle = labangle + min(length(unique(df$Country))-30,30)
+  if (length(unique(df$Country.Region)) > 25) {
+    labsize = labsize - min(length(unique(df$Country.Region))/20-1,3.2)
+    labangle = labangle + min(length(unique(df$Country.Region))-25,30)
   }
-
   p <- df %>%
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
                text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
@@ -598,10 +596,11 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     pal = g_palette[as.character(df$Country)] # if palette given per country
   }
 
-  if (length(unique(df$Country)) > 18) {
-    labsize = labsize - min(length(unique(df$Country))/18-1,2.8)
-    labangle = labangle + min(length(unique(df$Country))-18,30)
+  if (length(unique(df$Country)) > 16) {
+    labsize = labsize - min(length(unique(df$Country))/14-1,3.2)
+    labangle = labangle + min(length(unique(df$Country))-16,30)
   }
+
   p <- ggplot(df, aes(x = Country, y = Value)) +
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
