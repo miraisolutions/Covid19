@@ -12,8 +12,8 @@
 mod_map_ui <- function(id){
   ns <- NS(id)
   vars = setdiff(names(case_colors), "hosp") # remove hosp for now
-  choices_map <- c(vars, "new_confirmed", "new_active") %>%
-    setNames(gsub("_", " ",c(vars, "new_confirmed", "new_active"))) %>% as.list()
+  choices_map <- c(vars, "new_confirmed", "new_active","new_deaths") %>%
+    setNames(gsub("_", " ",c(vars, "new_confirmed", "new_active", "new_deaths"))) %>% as.list()
   div(
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
@@ -65,7 +65,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # UI controls ----
   output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate$date), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date), dragRange = FALSE, animate = T, step = 1)
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate$date), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date), dragRange = FALSE, animate = TRUE, step = 7)
   })
 
   # Map ----

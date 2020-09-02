@@ -77,7 +77,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
     # TODO: it can be moved outside, in the data preparation
     if (grepl("(growth)*prev",variable))
       data = data %>%
-        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
+        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_7",prevvar = "prevalence_rate_1M_pop"))
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
@@ -213,7 +213,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 varsNames = function(vars) {
   allvars = c(names(case_colors), names(prefix_case_colors(prefix = "lw")),
               names(prefix_case_colors(prefix = "new")),
-              paste("growth_factor", c(3,5,7), sep = "_"),
+              paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
               "population", "growth_vs_prev",
@@ -245,14 +245,15 @@ varsNames = function(vars) {
 #' graph_title: graph title
 #' caption: vaption
 #' textvar: variables to add in popup
-update_radio<- function(var, growthvar = 3){
+update_radio<- function(var, growthvar = 7){
 
   graph_title = var
   textvar = NULL
   if (grepl("(growth)*fact",var)) { # growth factor
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
-    caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    #caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    caption <- caption_growth_factor_fun("(3 7 14)")
 
     graph_title = "Growth Factor"
     textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
@@ -284,7 +285,10 @@ update_radio<- function(var, growthvar = 3){
 
   } else if (grepl("(growth)*prev",var)) {
     new_buttons = NULL
-    caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+    #caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+    #caption_growth_factor <- paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
+    caption_growth_factor <- caption_growth_factor_fun(growthvar)
+
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
@@ -397,7 +401,7 @@ legend_fun <- function(x, var){
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x, var)
 
-    if (dg < 5){
+    if (dg < 6){
       bin = domain(x)
       bin = seq(bin[1],bin[2], length = 4)
       val = seq(min(bin),max(bin), length = 5000)
@@ -509,7 +513,7 @@ choose_domain <- function(x, var) {
     } else if (grepl("(growth)*fact",var)){
       # growth factors variables
       domain = domaingrowth
-    } else if (dg < 5) {
+    } else if (dg < 6) {
       if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
@@ -573,7 +577,7 @@ pal_fun_calc <- function(x, var){
     #if (dg == 1 && maxv<=1 && minxv>=0) {
     if (var %in% rate_vars) {
       y = x *100 # rate
-    } else if (dg < 5) {
+    } else if (dg < 6) {
       # linear scale
       y = x
     } else {

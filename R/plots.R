@@ -2,16 +2,22 @@
 #'
 #' @param df data.frame
 #' @param percent logical to make the y axis in percent
+#' @param labsize numeric, x axis label size
+#' @param labangle numeric, x axis label angle
 #'
 #' @import ggplot2
 #'
 #' @return ggplot plot
 #' @export
-stackedbarplot_plot <- function(df, percent =  T) {
+stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30) {
   suffix = NULL
   if (percent) {
     df$ratio.over.cases <- 100*df$ratio.over.cases
     suffix = "%"
+  }
+  if (length(unique(df$Country.Region)) > 25) {
+    labsize = labsize - min(length(unique(df$Country.Region))/20-1,3.2)
+    labangle = labangle + min(length(unique(df$Country.Region))-25,30)
   }
   p <- df %>%
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
@@ -21,7 +27,7 @@ stackedbarplot_plot <- function(df, percent =  T) {
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
-      axis.text.x = element_text(angle = 30)
+      axis.text.x = element_text(angle = labangle, size = labsize)
     )
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
@@ -513,14 +519,13 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
   if (percent) {
     df$Value <- 100*df$Value
   }
-
   # df_highlight <- df %>%
   #   filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
 
-  # rolling weekly average (#80)
+  # rolling weekly average (#80), changed alignment to right
   df_highlight <- df %>% group_by(Status) %>%
     arrange(Date)  %>%
-    mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE))
+    mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right"))
 
   if (F) { # not used, legacy
     df_highlight_max <- df_highlight %>%
@@ -574,12 +579,14 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
 #' @param percent logical to make the y axis in percent
 #' @param y_min min value on y axis
 #' @param g_palette character vector of colors for the graph and legend
+#' @param labsize numeric, x axis label size
+#' @param labangle numeric, x axis label angle
 #'
 #' @import ggplot2
 #'
 #' @return ggplot plot
 #' @export
-plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
+plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize = 10, labangle = 30) {
   if (percent) {
     df$Value <- 100*df$Value
   }
@@ -589,13 +596,18 @@ plot_rate_hist <- function(df, percent =  F, y_min = 0, g_palette) {
     pal = g_palette[as.character(df$Country)] # if palette given per country
   }
 
+  if (length(unique(df$Country)) > 16) {
+    labsize = labsize - min(length(unique(df$Country))/14-1,3.2)
+    labangle = labangle + min(length(unique(df$Country))-16,30)
+  }
+
   p <- ggplot(df, aes(x = Country, y = Value)) +
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     coord_cartesian(ylim = c(y_min, max(df$Value))) +
     theme(
-      axis.text.x = element_text(angle = 30)
+      axis.text.x = element_text(angle = labangle, size = labsize)
     )
 
   if (percent) {
@@ -631,8 +643,14 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
             max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
   ylimtop = max(df$growthfactor, med$y)
-  ylimbot = min(1, df$growthfactor,med$y)
+
+ # ylimbot = min(1, df$growthfactor,med$y)
+  ylimbot = min(df$growthfactor,med$y)- diff(range(df$growthfactor,med$y))*(1-y.min[1])
+
   ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
+
+  # ylim =  c(min(df$growthfactor,med$y)- diff(range(df$growthfactor,med$y))*(1-y.min[1]),
+  #           max(df$growthfactor,med$y)*y.min[2])
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +
@@ -642,7 +660,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
                                              #suffix = "K"
                                              )) +
     scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
-                       labels = label_number(accuracy = accy)) +
+                       labels = label_number(accuracy = accy),
+                       n.break = 5
+                       #labels = function(x) paste0(x, "%")
+                       ) +
 
     # theme(
     #   axis.text.x = element_text()
@@ -668,3 +689,11 @@ graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8,
 #' background color of maps
 #'
 backgroud_map_col = "grey90"
+
+#' caption growth factor
+#' @param growthvar character growth factor variable
+#' @return character gtext for caption
+caption_growth_factor_fun <- function(growthvar)
+  #paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
+  paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago. (within last 2 months)")
+

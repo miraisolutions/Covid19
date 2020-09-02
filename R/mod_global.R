@@ -24,17 +24,22 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_area_global"))
       ),
       column(6,
-             div(h4("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global")))
       )
     ),
     hr(),
     fluidRow(
+      column(12,
+             mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
+      )
+    ),
+    fluidRow(
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"))
+             div(h4("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"))
       )
     ),
     hr(),
@@ -53,7 +58,6 @@ mod_global_ui <- function(id){
 
 #' global Server Function
 #'
-#' @param orig_data data.frame
 #' @param orig_data_aggregate data.frame
 #' @param data_filtered data.frame from contagion day n
 #' @param countries_data data.frame sp for mapping
@@ -66,7 +70,7 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data, orig_data_aggregate, data_filtered, countries_data_map){
+mod_global_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries_data_map){
   ns <- session$ns
 
   # Datasets ----
@@ -76,9 +80,18 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   #     filter(date == max(date))
 
   # world time series
+   # total <-
+   #   orig_data %>%
+   #    get_timeseries_global_data()
+  # data at World level with get_timeseries_global_data
    total <-
-     orig_data %>%
-      get_timeseries_global_data()
+     orig_data_aggregate %>%
+     get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%
+     get_timeseries_by_contagion_day_data()
+
+
+   total_aggregate <- total %>%  # add additional vars
+     build_data_aggr()
 
    total_today <-
      total %>%
@@ -118,6 +131,8 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
 
   callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, n = n, istop = FALSE)
+
   # > line plot top 5
   #df_top_n <-
     # create factors with first top confirmed
@@ -140,13 +155,13 @@ mod_global_server <- function(input, output, session, orig_data, orig_data_aggre
   callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", data_filtered)
 
   # > growth_death_rate
-  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate)
+  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate, n_highligth = 10)
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
-  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today)
+  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)
 
   # > stacked barplot with status split
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate, n_highligth = 10)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)

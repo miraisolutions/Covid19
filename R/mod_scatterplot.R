@@ -14,9 +14,9 @@ mod_scatterplot_ui <- function(id){
          uiOutput(ns("title_scatterplot")),
          selectInput(inputId = ns("growth_factor"), label = "Select growth factor",
                           choices = list("Over 3 days" = "growth_factor_3",
-                                         "Over 5 days" = "growth_factor_5",
-                                         "Over one week" = "growth_factor_7"),
-                          selected = "growth_factor_3"),
+                                         "Over one week" = "growth_factor_7",
+                                         "Over 2 weeks" = "growth_factor_14"),
+                          selected = "growth_factor_7"),
          withSpinner(uiOutput(ns("plot_scatterplot"))),
       )
 }
@@ -77,8 +77,8 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
       world_data
 
   # compute stats for all growth factors
-  med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2,  median)})
-  med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop)})
+  med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2, median, na.rm = TRUE)})
+  med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop, na.rm = TRUE)})
 
   medgr = reactive({med_growth()[req(input$growth_factor)]})
 
@@ -86,7 +86,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
       arrange(desc(Value)) })
   if (istop)  { # choose top n_highligth
     df_top_new = reactive({df_top() %>%
-      top_n(n_highligth, wt = Value)})
+      top_n(n_highligth, wt = Value) %>% .[1:n_highligth,]})
   } else {
     df_top_new = reactive({df_top() %>%
         filter(Country.Region %in% countries)})
@@ -94,7 +94,10 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
 
   dfnew = reactive({addgrowth(df_top_new(),req(input$growth_factor))})
 
-  caption_growth_factor <- reactive({paste0("(y) growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
+  #caption_growth_factor <- reactive({paste0("(y) growth factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago.")})
+  #caption_growth_factor <- reactive({paste0("(y) Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", req(input$growth_factor)) ," days ago. / total confirmed cases in previous 30 days")})
+  caption_growth_factor <- reactive({paste("(y)" , caption_growth_factor_fun(req(input$growth_factor)))})
+
   caption_prevalence <- "(x) Prevalence: confirmed cases over 1 M people."
   caption_median <- paste("Dotted lines show median values",
           ifelse(confirmed1000, paste0("among countries with more than ", nmed," cases."), ""))

@@ -106,13 +106,6 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   orig_data_aggregate_cont <-
     orig_data_aggregate %>% filter(continent == cont)
 
-  if (F) {
-    # not used at the moment
-    data_filtered_cont <-
-      orig_data_aggregate_cont %>% # select sub-continents with longer outbreaks
-      rescale_df_contagion(n = n, w = w)
-  }
-
  # subcontinents = reactive({sort(unique(orig_data_aggregate_cont$subcontinent))})
   subcontinents = sort(unique(orig_data_aggregate_cont$subcontinent))
 
@@ -125,12 +118,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     aggr_to_cont(orig_data_aggregate_cont, "subcontinent", "date" )
 
   # define palette for subcontinent
-
   subcont_palette =
     subcont_palette_calc(col_cont = area_map_spec(cont, "col"),
          x = sort(unique(c(subcontinent_pop_data$subcontinent,
                            orig_data_aggregate_cont$subcontinent))))
- # })
 
   subcontinent_data_filtered <-
     subcontinent_data %>% # select sub-continents with longer outbreaks
