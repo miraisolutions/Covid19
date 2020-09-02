@@ -401,7 +401,7 @@ legend_fun <- function(x, var){
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x, var)
 
-    if (dg < 5){
+    if (dg < 6){
       bin = domain(x)
       bin = seq(bin[1],bin[2], length = 4)
       val = seq(min(bin),max(bin), length = 5000)
@@ -513,7 +513,7 @@ choose_domain <- function(x, var) {
     } else if (grepl("(growth)*fact",var)){
       # growth factors variables
       domain = domaingrowth
-    } else if (dg < 5) {
+    } else if (dg < 6) {
       if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
@@ -577,7 +577,7 @@ pal_fun_calc <- function(x, var){
     #if (dg == 1 && maxv<=1 && minxv>=0) {
     if (var %in% rate_vars) {
       y = x *100 # rate
-    } else if (dg < 5) {
+    } else if (dg < 6) {
       # linear scale
       y = x
     } else {
