@@ -17,18 +17,18 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
     tagList(
       radioButtons(inputId = ns("radio_log_linear"), label = "",
                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE),
-      withSpinner(plotlyOutput(ns("plot_log_linear"), height = 400))#,
+      withSpinner(plotlyOutput(ns("plot_log_linear"), height = 500))#,
     )
   } else if (!select && (area)){
     # global page
     tagList(
-      withSpinner(plotlyOutput(ns("plot_area"), height = 400))#,
+      withSpinner(plotlyOutput(ns("plot_area"), height = 500))#,
     )
   } else if (select && (area)) {
     # country page
     tagList(
       uiOutput(ns("select_area_ui")),
-      withSpinner(plotlyOutput(ns("plot_area_select"), height = 400))#,
+      withSpinner(plotlyOutput(ns("plot_area_select"), height = 450))#,
     )
   } else {
     stop("wrong selection in mod_plot_log_linear_ui")
