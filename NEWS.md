@@ -1,6 +1,7 @@
 ### Covid19Mirai 2.2.0-9000 (develop)
 - Added Switzerland tab with maps at Kanton level (#20)
 - Reviewed calculation and definition of Growth Factors (#122)
+- Added new graph to Global page, selected top 10 in barplots
 
 ### Covid19Mirai 2.1.1 (2020-08-04)
 - Added hospedalised area in area plot in country page where available (#114)
