@@ -1,4 +1,4 @@
-### Covid19Mirai 2.2.0-9000 (develop)
+### Covid19Mirai 2.2.0 (2020-09-04)
 - Added Switzerland tab with maps at Kanton level (#20)
 - Reviewed calculation and definition of Growth Factors (#122)
 - Added new graph to Global page, selected top 10 in barplots
