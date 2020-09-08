@@ -13,8 +13,10 @@
 #' @import shiny
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
-mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "new_confirmed", "new_deaths", "new_prevalence_rate_1M_pop",
-                                                       "new_active", "new_tests","growth_factor_3", "lethality_rate" ),
+mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "hosp", "new_confirmed", "new_deaths", "new_active",
+                                                       "new_prevalence_rate_1M_pop",
+                                                       "new_tests", "new_tests_rate_1M_pop","new_positive_tests_rate",
+                                                        "growth_factor_3", "lethality_rate" ),
                                           actives = TRUE, tests = FALSE, hosp = FALSE){
   ns <- NS(id)
 
@@ -23,9 +25,21 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
   if (!actives && any(grepl("Active", names(choices_plot)))) {
     choices_plot = choices_plot[!grepl("Active", names(choices_plot))]
   }
-  if (actives && (!any(grepl("Active", names(choices_plot))))) {
-    choices_plot = c(choices_plot, varsNames(grep("active", unlist(varsNames()), value = T)))
+  # if (actives && (!any(grepl("Active", names(choices_plot))))) {
+  #   choices_plot = c(choices_plot, varsNames(grep("active", unlist(varsNames()), value = T)))
+  # }
+  if (!tests && any(grepl("Test", names(choices_plot)))) {
+    choices_plot = choices_plot[!grepl("Test", names(choices_plot))]
   }
+  # if (tests && (!any(grepl("Test", names(choices_plot))))) {
+  #   choices_plot = c(choices_plot, varsNames(grep("test", unlist(varsNames()), value = T)))
+  # }
+  if (!hosp && any(grepl("Hosp", names(choices_plot)))) {
+    choices_plot = choices_plot[!grepl("Hosp", names(choices_plot))]
+  }
+  # if (hosp && (!any(grepl("Hosp", names(choices_plot))))) {
+  #   choices_plot = c(choices_plot, varsNames(grep("hosp", unlist(varsNames()), value = T)))
+  # }
   # UI ----
   tagList(
     uiOutput(ns("title")),

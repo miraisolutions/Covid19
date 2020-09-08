@@ -242,10 +242,10 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
 
-    # take yesterday, data are updated hourly and they are complete around mid day, 42h later
-    # regardless of the timezone, select the day 42h ago
+    # take yesterday, data are updated hourly and they are complete around mid day, 40h later
+    # regardless of the timezone, select the day 40h ago
     now = as.POSIXct(Sys.time()) # given time zone
-    maxdate =  as.character(as.Date(now - 42*60*60))
+    maxdate =  as.character(as.Date(now - 40*60*60))
 
     message("Maximum date set to: ", maxdate)
     #TODO: arrange should go descending, many rows could be filtered out for many countries#

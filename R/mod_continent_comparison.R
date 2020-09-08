@@ -75,7 +75,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   # Line with bullet plot
 
   output$lines_points_plots_cont <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"))
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data_filtered, n = n, w = w,

@@ -34,7 +34,7 @@ mod_country_ui <- function(id){
              )
       ),
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_tot")))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
       )
     ),
     hr(),
@@ -97,9 +97,7 @@ areaUI = function(id, tab = TRUE){
                     mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2")
                 )
              )
-          )#,
-          # hr(),
-          # mod_add_table_ui(ns("add_table_area2"))
+          )
        )
   )
   if(tab) {
@@ -323,7 +321,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # > comparison plot from day of nth contagion
 
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"))
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = FALSE)
   })
   callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data_2_filtered, n = n2, istop = TRUE)
 

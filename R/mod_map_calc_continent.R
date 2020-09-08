@@ -75,9 +75,11 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
       data = df %>%
         filter(population > max.pop)
     # TODO: it can be moved outside, in the data preparation
-    if (grepl("(growth)*prev",variable))
+    if ((grepl("growth",variable) && grepl("prev",variable)))
       data = data %>%
-        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_7",prevvar = "prevalence_rate_1M_pop"))
+        mutate(growth_vs_prev_3 = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"),
+               growth_vs_prev_7 = growth_v_prev_calc(data, growthvar = "growth_factor_7",prevvar = "prevalence_rate_1M_pop"),
+               growth_vs_prev_14 = growth_v_prev_calc(data, growthvar = "growth_factor_14",prevvar = "prevalence_rate_1M_pop"))
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
@@ -90,13 +92,14 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
   # update variable name
 
   new_var_calc = function(var, but) {
-     if (!is.null(but) && !is.na(but$radio)) {
+    if (grepl("growth",var) && grepl("prev",var)){
+      newvar =  paste("growth_vs_prev", tail(strsplit(but$radio,"_")[[1]], 1), sep = "_")
+    } else if (!is.null(but) && !is.na(but$radio)) {
       newvar = ifelse(var == but$radio, var, but$radio)
-    } else if (grepl("(growth)*prev",var)){
-      newvar =  "growth_vs_prev"
     } else
       newvar = var
     message("new var = ",newvar)
+
     newvar
   }
   new_var =  reactive({
@@ -216,19 +219,26 @@ varsNames = function(vars) {
               paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
-              "population", "growth_vs_prev",
+              "tests_rate_1M_pop","positive_tests_rate", "new_tests_rate_1M_pop","new_positive_tests_rate",
+              "lw_tests_rate_1M_pop","lw_positive_tests_rate",
+              "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
               "tests","new_tests")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
-  names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
+  names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
   names(allvars)  = gsub("Lw", "Last Week", names(allvars))
   names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
+  names(allvars)[grepl("tests_rate_1M_pop", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("tests_rate_1M_pop", allvars)])
+  names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
+  names(allvars)[grepl("prevalence_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("prevalence_rate", allvars)])
+
   allvars = as.list(allvars)
 
   if (!missing(vars)){
     varnames = unlist(allvars)
-    if (!all(vars %in% varnames))
+    if (!all(vars %in% varnames)) {
       stop(paste(setdiff(vars, varnames), "invalid variable"))
+    }
     res = allvars[match(vars, varnames)]
   }
   else
@@ -249,7 +259,7 @@ update_radio<- function(var, growthvar = 7){
 
   graph_title = var
   textvar = NULL
-  if (grepl("(growth)*fact",var)) { # growth factor
+  if ((grepl("growth",var) && grepl("fact",var))) { # growth factor
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
     #caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
@@ -271,11 +281,11 @@ update_radio<- function(var, growthvar = 7){
     graph_title = "Prevalence of contagion over 1M"
     textvar = c("new_confirmed","lw_confirmed","confirmed","population")
   } else if (grepl("death", var) || grepl("mortality", var)) {
-    mapvar = c("Lethality Rate", "Mortality Rate")
-    mapvar = varsNames()[mapvar]
-    names(mapvar) = c("Lethality Rate", "Mortality over 1M pop")
+    #mapvar = c("Lethality Rate", "Mortality Rate")
+    mapvar = varsNames()[grepl("Lethality|Mortality", names(varsNames()))]
+    #names(mapvar) = c("Lethality Rate", "Mortality over 1M pop")
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar[ "Mortality over 1M pop"])
+                       choices = mapvar, selected = mapvar[grepl("Mortality",names(mapvar))])
 
     caption_leth_rate <- "Lethality Rate: total deaths today / total confirmed cases today"
     caption_mrt_rate <- "Mortality Rate: total deaths today per 1 M population"
@@ -283,11 +293,15 @@ update_radio<- function(var, growthvar = 7){
     graph_title = "Death Rate"
     textvar = c("new_deaths", "lw_deaths", "deaths", "population")
 
-  } else if (grepl("(growth)*prev",var)) {
-    new_buttons = NULL
+  } else if ((grepl("growth",var) && grepl("prev",var))) {
+    #new_buttons = NULL
+    new_buttons = list(name = "radio",
+                       choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
+
     #caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
     #caption_growth_factor <- paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
-    caption_growth_factor <- caption_growth_factor_fun(growthvar)
+    #caption_growth_factor <- caption_growth_factor_fun(growthvar)
+    caption_growth_factor <- caption_growth_factor_fun("(3 7 14)")
 
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
@@ -510,7 +524,7 @@ choose_domain <- function(x, var) {
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
     if (var %in% rate_vars){ # if rate
       domain = domainrate
-    } else if (grepl("(growth)*fact",var)){
+    } else if ((grepl("growth",var) && grepl("fact",var))){
       # growth factors variables
       domain = domaingrowth
     } else if (dg < 6) {
@@ -554,9 +568,9 @@ pal_fun = function(var,x){
 
   }  else if (grepl("recovered", var)) {
     colorNumeric(palette = "Greens", domain = domain(x), na.color = "lightgray")
-  }  else if (grepl("(growth)*fact",var)) {
+  }  else if ((grepl("growth",var) && grepl("fact",var))) {
     colorNumeric(palette = "Oranges", domain = domain(x), na.color = "lightgray")
-  }  else if (grepl("(growth)*prev",var)) {
+  }  else if ((grepl("growth",var) && grepl("prev",var))) {
     colorFactor(palette = c("darkgreen", "#E69F00", "yellow3","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   }
   else
