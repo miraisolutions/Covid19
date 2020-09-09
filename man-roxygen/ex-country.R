@@ -10,8 +10,8 @@ if (interactive()) {
   library(grid)
   library(scales)
 
-  sapply(file.path("R",list.files("R")), source)
-
+  #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     mod_country_ui("country")

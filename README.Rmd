@@ -37,7 +37,7 @@ We are very thankful to [David Bumbeishvili](https://github.com/bumbeishvili) fo
 
 ## The dashboard
 
-It consists of 4 main pages:   
+It consists of 5 main pages:   
 
 * **Global**: Summarizing top 5 countries in the world in each variable.   
 * **Continents**: Summarizing world data per continent (defined according to UN), underneath sub-tabs with insight within continent:   
@@ -45,10 +45,16 @@ It consists of 4 main pages:
   + **Asia**: Asia data split by macro-areas with heatmaps per country.  
   + **Africa**: African data split by macro-areas with heatmaps per country.   
   + **Latin America & Carib.**: South and Central American with Caribbean Isles  by macro-areas with heatmaps per country.   
-  + **Northern America**: Northern America (USA and Canada) data split by macro-areas with heatmaps per country.   
+  + **Northern America**: Northern America (USA and Canada) data split by macro-areas with heatmaps per country.  
+* **Switzerland**: Single country report of Switzerland.   
+  + Maps and graphs of Cantonal data displayed.
 * **Country**: Single country report.   
   + If available regional graphs and data will be displayed.
-* **Country Comparison**: Comparison report between N countries from all over the world.  
+* **Country Comparison**: Comparison report between N countries from all over the world. 
+
+Macro areas of Continents are defined following United Nations indications.
+
+Data are updated with a delay of 40h, i.e. at 4pm the Last date is updated taking the yesterady date. This allows having data for about all countries when the date is chanded with new one.
 
 ## The Variables
 
@@ -65,7 +71,7 @@ The following variables are computed by the application:
 
 * _active_: number of active cases, usually tested positive. _confirmed_ - _recovered_ - _deaths_.   
 * _prevalence over 1M_: number of confirmed cases per 1 Million inhabitants.  
-* _growth factors (3 5 7)_: number of confirmed cases today divided by the number of confirmed cases 3 5 7 days ago.   
+* _growth factors (3 7 14)_: number of confirmed cases today divided by the number of confirmed cases 3 7 14 days ago over the previous 2 months.
 * _lethality rate_: number of _deaths_ divided by the number of _confirmed_ cases.   
 * _mortality rate_: number of _deaths_ divided by the _population_ size.   
 

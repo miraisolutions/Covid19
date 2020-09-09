@@ -74,9 +74,6 @@ app_ui <- function(request) {
         tabPanel("Global",
                  id = "tab_global",
                  mod_global_ui("global")),
-        # tabPanel("Continents",
-        #          id = "tab_global",
-        #          mod_continent_comparison_ui("continent_comparison")),
         tabPanel("Continents",
                  tabsetPanel(
                    tabPanel("Summary",
@@ -102,6 +99,9 @@ app_ui <- function(request) {
                             mod_continent_ui("Oceania_comparison","oceania"))
                  )
                 ),
+        tabPanel("Switzerland",
+                 id = "tab_global",
+                 mod_ind_country_ui("swiss")),
         tabPanel("Country",
                  id = "tab_global",
                  mod_country_ui("country")),

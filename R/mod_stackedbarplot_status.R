@@ -69,7 +69,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
            status = factor(status, levels = statuses)) %>%
     arrange(status)})
 
-  caption_explain <- "The Plot shows what countries have more to recover from their confirmed cases. Not all of them are providing Recovered numbers."
+  caption_explain <- "The plot shows what countries have more to recover from their Confirmed cases. Not all of them may have provided Recovered numbers."
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(
@@ -83,7 +83,9 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
         stackedbarplot_plot() %>% fix_colors()
     p <- p %>%
       ggplotly(tooltip = c("text", "fill"))   %>%
-      layout(legend = list(orientation = "v", y = 1, yanchor = "left"))
+      #layout(legend = list(orientation = "v", y = 1, yanchor = "left"))
+      layout(legend = list(orientation = "h", y = 1.1, yanchor = "top", xanchor = "middle", x = 0))
+
 
     p$x$data <-
       p$x$data %>%

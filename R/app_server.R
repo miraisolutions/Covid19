@@ -23,10 +23,9 @@ app_server <- function(input, output, session) {
   message("read map from RDS ", rds_map)
   countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-  orig_data <- #reactive({
+  orig_data <-
     get_datahub() %>%
       get_timeseries_by_contagion_day_data()
-  #})
 
   pop_data = get_pop_datahub()
 
@@ -76,7 +75,7 @@ app_server <- function(input, output, session) {
 
   # Modules ----
 
-  callModule(mod_global_server, "global", orig_data = orig_data, orig_data_aggregate = orig_data_aggregate,
+  callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
              data_filtered = data_filtered, countries_data_map)
 
   callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data = pop_data)
@@ -91,7 +90,15 @@ app_server <- function(input, output, session) {
                pop_data = pop_data, countries_data_map = countries_data_map,
                cont = continents[i.cont], uicont = uicontinents[i.cont])
   }
-  callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countries, n = 10, w = w, n.select = n)
+  # Switzerland page
+  callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, country = "Switzerland", n = 10, w = w)
+
+  # country choice, remove Switzerland
+  orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
+  countriesnoswiss = reactive({
+    countries()[countries()[,1] != "Switzerland",]
+  })
+  callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, n = 10, w = w, n.select = n)
 
   callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, n = 10, w = w, n.select = n)
 

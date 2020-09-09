@@ -39,6 +39,8 @@ Ardia](https://ardiad.github.io/). We are very thankful to [David
 Bumbeishvili](https://github.com/bumbeishvili) for his great
 [work](https://github.com/bumbeishvili/covid19-daily-data)
 
+Data are read with 40h delay to allow all countries to have them available.
+
 ## The dashboard
 
 It consists of 4 main pages:
@@ -79,7 +81,7 @@ The following variables are computed by the application:
 
   - *active*: number of active cases, usually tested positive.
     *confirmed* - *recovered* - *deaths*.  
-  - *prevalence over 1M*: number of confirmed cases per 1 Million
+  - *prevalence over 1M people*: number of confirmed cases per 1 Million
     inhabitants.  
   - *growth factors (3 5 7)*: number of confirmed cases today divided by
     the number of confirmed cases 3 5 7 days ago.  
@@ -87,7 +89,13 @@ The following variables are computed by the application:
     *confirmed* cases.  
   - *mortality rate*: number of *deaths* divided by the *population*
     size.
+  - *tests over 1M people*: number of tests done per 1 Million
+    inhabitants.  
+  - *positive tests rate*: ratio confirmed cases over number of tests. 
+     It could be all NAs for countries not providing tests figures.
 
+  - *new (variable)*: all variables labelled "new" are the delta of day X value - day X-1
+  
 The results are visualized as a shiny app.
 
 ## Installation

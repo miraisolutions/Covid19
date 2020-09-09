@@ -13,8 +13,10 @@
 #' @import shiny
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
-mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "new_confirmed",
-                                                       "new_active", "growth_factor_3", "lethality_rate"),
+mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "recovered", "active", "hosp", "new_confirmed", "new_deaths", "new_active",
+                                                       "new_prevalence_rate_1M_pop",
+                                                       "new_tests", "new_tests_rate_1M_pop","new_positive_tests_rate",
+                                                        "growth_factor_3", "lethality_rate" ),
                                           actives = TRUE, tests = FALSE, hosp = FALSE){
   ns <- NS(id)
 
@@ -23,9 +25,21 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
   if (!actives && any(grepl("Active", names(choices_plot)))) {
     choices_plot = choices_plot[!grepl("Active", names(choices_plot))]
   }
-  if (actives && (!any(grepl("Active", names(choices_plot))))) {
-    choices_plot = c(choices_plot, varsNames(grep("active", unlist(varsNames()), value = T)))
+  # if (actives && (!any(grepl("Active", names(choices_plot))))) {
+  #   choices_plot = c(choices_plot, varsNames(grep("active", unlist(varsNames()), value = T)))
+  # }
+  if (!tests && any(grepl("Test", names(choices_plot)))) {
+    choices_plot = choices_plot[!grepl("Test", names(choices_plot))]
   }
+  # if (tests && (!any(grepl("Test", names(choices_plot))))) {
+  #   choices_plot = c(choices_plot, varsNames(grep("test", unlist(varsNames()), value = T)))
+  # }
+  if (!hosp && any(grepl("Hosp", names(choices_plot)))) {
+    choices_plot = choices_plot[!grepl("Hosp", names(choices_plot))]
+  }
+  # if (hosp && (!any(grepl("Hosp", names(choices_plot))))) {
+  #   choices_plot = c(choices_plot, varsNames(grep("hosp", unlist(varsNames()), value = T)))
+  # }
   # UI ----
   tagList(
     uiOutput(ns("title")),
@@ -33,13 +47,11 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
       column(7,
              offset = 1,
              selectInput(inputId = ns("radio_indicator"), label = "",
-                          choices = choices_plot, selected ="active")
+                          choices = choices_plot, selected ="new_confirmed")
       ),
       column(4,
              selectInput(inputId = ns("radio_log_linear"), label = "",
                           choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
-              # radioButtons(inputId = ns("radio_log_linear"), label = "",
-              #            choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)
       )
     ),
     withSpinner(plotlyOutput(ns("plot"), height = 400)),
@@ -77,7 +89,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       countries_order =  df %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(req(input$radio_indicator)))) %>%
         #arrange(!!as.symbol(input$radio_indicator)) %>%
-        top_n(n_highligth, wt = !!as.symbol(req(input$radio_indicator))) %>% .[,"Country.Region"] %>% as.vector()
+        top_n(n_highligth, wt = !!as.symbol(req(input$radio_indicator))) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
       data = df %>% right_join(countries_order)  %>%  # reordering according to variable if istop
                 mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
     } else {

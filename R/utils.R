@@ -371,10 +371,16 @@ aggr_to_cont = function(data, group, time,
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           tests_rate_confirmed = round(tests/confirmed, digits = 3),
-           new_tests_rate_confirmed = round(new_tests/new_confirmed, digits = 3),
+           positive_tests_rate = round(confirmed/tests, digits = 3),
+           new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
            hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
            deaths_rate_hosp =  round(deaths/hosp, digits = 5)) %>%
+    # make NAs those inf
+    mutate(positive_tests_rate = ifelse(is.infinite(as.numeric(positive_tests_rate)),NA, as.numeric(positive_tests_rate)),
+           new_positive_tests_rate = ifelse(is.infinite(as.numeric(new_positive_tests_rate)),NA, new_positive_tests_rate),
+           hosp_rate_confirmed = ifelse(is.infinite(as.numeric(hosp_rate_confirmed)),NA, hosp_rate_confirmed),
+           deaths_rate_hosp = ifelse(is.infinite(as.numeric(deaths_rate_hosp)),NA, deaths_rate_hosp)) %>%
+
     rename(Country.Region = !!group) %>%
     get_timeseries_by_contagion_day_data()  %>%
     arrange(desc(date)) %>%   ungroup() %>%
@@ -506,7 +512,7 @@ gen_text = function(x, namvar) {
 }
 #' Variables defined as rate in map plot
 rate_vars <- c(
-  "lethality_rate"
+ c("lethality_rate", "new_positive_tests_rate","positive_tests_rate")
   )
 #' Variables where negative values are allowed in map plot
 neg_vars <- c(
@@ -538,11 +544,15 @@ build_data_aggr <- function(data, popdata) {
            new_prevalence_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           tests_rate_confirmed = round(tests/confirmed, digits = 3),
-           new_tests_rate_confirmed = round(new_tests/new_confirmed, digits = 3),
+           positive_tests_rate = round(confirmed/tests, digits = 3),
+           new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
            hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
            deaths_rate_hosp =  round(deaths/hosp, digits = 5)
-           )
+           ) %>%
+    mutate(positive_tests_rate = ifelse(is.infinite(as.numeric(positive_tests_rate)),NA, positive_tests_rate),
+         new_positive_tests_rate = ifelse(is.infinite(as.numeric(new_positive_tests_rate)),NA, new_positive_tests_rate),
+         hosp_rate_confirmed = ifelse(is.infinite(as.numeric(hosp_rate_confirmed)),NA, hosp_rate_confirmed),
+         deaths_rate_hosp = ifelse(is.infinite(as.numeric(deaths_rate_hosp)),NA, deaths_rate_hosp))
 
   orig_data_aggregate
 }
@@ -570,8 +580,9 @@ lw_vars_calc <- function(data) {
   data7vars = data7vars %>%
     mutate(lw_prevalence_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
-           lw_tests_rate_confirmed = round(lw_tests/lw_confirmed, digits = 3)
-    )
+           lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3)
+    ) %>%
+    mutate(lw_positive_tests_rate = ifelse(is.infinite(as.numeric(lw_positive_tests_rate)),NA, lw_positive_tests_rate))
   data7vars
 }
 

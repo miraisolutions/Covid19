@@ -3,8 +3,8 @@ if (interactive()) {
   library(dplyr)
   library(ggplot2)
   library(tidyr)
-  sapply(file.path("R",list.files("R")), source)
-
+  #sapply(file.path("R",list.files("R")), source)
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19Mirai:::mod_plot_log_linear_ui("test", select = FALSE, area = FALSE)
@@ -95,7 +95,7 @@ if (interactive()) {
   library(ggplot2)
   library(tidyr)
   #sapply(file.path("R",list.files("R")), source)
-
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19Mirai:::mod_plot_log_linear_ui("test", select = TRUE, area = TRUE)

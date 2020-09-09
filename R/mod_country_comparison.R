@@ -124,7 +124,7 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
     # Line with bullet plot
 
     output$lines_points_plots <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"))
+      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE)
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", data_filtered, n = n, w = w, n_highligth = length(input$select_countries), istop = FALSE)

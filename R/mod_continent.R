@@ -27,11 +27,11 @@ mod_continent_ui <- function(id, uicont){
     div(
       uiOutput(ns(paste("from_nth_case", uicont , sep = "_")))
     ),
-   hr(),
-   div(
-     uiOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
-   ),
-   hr(),
+    hr(),
+    div(
+      uiOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
+    ),
+    hr(),
     withSpinner(uiOutput(ns(paste("lineplots_cont", uicont , sep = "_")))),
     fluidRow(
       column(5,
@@ -106,13 +106,6 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   orig_data_aggregate_cont <-
     orig_data_aggregate %>% filter(continent == cont)
 
-  if (F) {
-    # not used at the moment
-    data_filtered_cont <-
-      orig_data_aggregate_cont %>% # select sub-continents with longer outbreaks
-      rescale_df_contagion(n = n, w = w)
-  }
-
  # subcontinents = reactive({sort(unique(orig_data_aggregate_cont$subcontinent))})
   subcontinents = sort(unique(orig_data_aggregate_cont$subcontinent))
 
@@ -125,12 +118,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     aggr_to_cont(orig_data_aggregate_cont, "subcontinent", "date" )
 
   # define palette for subcontinent
-
   subcont_palette =
-    subcont_palette_calc(col_cont = cont_map_spec(cont, "col"),
+    subcont_palette_calc(col_cont = area_map_spec(cont, "col"),
          x = sort(unique(c(subcontinent_pop_data$subcontinent,
                            orig_data_aggregate_cont$subcontinent))))
- # })
 
   subcontinent_data_filtered <-
     subcontinent_data %>% # select sub-continents with longer outbreaks
@@ -158,7 +149,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Map
   # Boxes ----
-  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map_cont, cont = cont, g_palette = subcont_palette)
+  callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map_cont, area = cont, g_palette = subcont_palette)
 
   # > area plot global
   levs <- sort_type_hardcoded()
@@ -238,44 +229,44 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   #maps confirmed
   output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
-    mod_map_cont_calc_ui(ns("map_countries_confirmed"))
+    mod_map_area_calc_ui(ns("map_countries_confirmed"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_confirmed", df = data_cont_maps,  countries_data_map_cont,
-             cont = cont, variable = "confirmed")
+  callModule(mod_map_area_calc_server, "map_countries_confirmed", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "confirmed")
 
   #maps active
   output[[paste("map_countries_active", uicont , sep = "_")]] <- renderUI({
-    mod_map_cont_calc_ui(ns("map_countries_active"))
+    mod_map_area_calc_ui(ns("map_countries_active"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_active", df = data_cont_maps,  countries_data_map_cont,
-             cont = cont, variable = "active")
+  callModule(mod_map_area_calc_server, "map_countries_active", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "active")
 
   #maps growth vs prev
   output[[paste("map_countries_growthvsprev", uicont , sep = "_")]] <- renderUI({
-    mod_map_cont_calc_ui(ns("map_countries_growthvsprev"))
+    mod_map_area_calc_ui(ns("map_countries_growthvsprev"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_growthvsprev", df = data_cont_maps,  countries_data_map_cont,
-             cont = cont, variable = "growth vs prev")
+  callModule(mod_map_area_calc_server, "map_countries_growthvsprev", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "growth vs prev")
 
   #maps prevalence
   output[[paste("map_countries_prev", uicont , sep = "_")]] <- renderUI({
-    mod_map_cont_calc_ui(ns("map_countries_prev"))
+    mod_map_area_calc_ui(ns("map_countries_prev"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_prev", df = data_cont_maps,  countries_data_map_cont,
-             cont = cont, variable = "prevalence rate")
+  callModule(mod_map_area_calc_server, "map_countries_prev", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "prevalence rate")
   #maps growth
   output[[paste("map_countries_growth", uicont , sep = "_")]] <- renderUI({
-    mod_map_cont_calc_ui(ns("map_countries_growth"))
+    mod_map_area_calc_ui(ns("map_countries_growth"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_growth", df = data_cont_maps,  countries_data_map_cont,
-             cont = cont, variable = "growth factor")
+  callModule(mod_map_area_calc_server, "map_countries_growth", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "growth factor")
 
   #maps death
   output[[paste("map_countries_death", uicont , sep = "_")]] <- renderUI({
-    mod_map_cont_calc_ui(ns("map_countries_death"))
+    mod_map_area_calc_ui(ns("map_countries_death"))
   })
-  callModule(mod_map_cont_cal_server, "map_countries_death", df = data_cont_maps,  countries_data_map_cont,
-             cont = cont, variable = "death")
+  callModule(mod_map_area_calc_server, "map_countries_death", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "death")
 
   # tables ----
   callModule(mod_add_table_server, paste("add_table_cont", uicont , sep = "_"),
@@ -290,12 +281,12 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
 }
 
-#' Derives palette for continent maps and graphs based on cont_map_spec
+#' Derives palette for continent maps and graphs based on area_map_spec
 #'
-#' @param col_cont named character vector cont_map_spec(cont, 'col')
+#' @param col_cont named character vector area_map_spec(cont, 'col')
 #' @param x named character vector of areas
 #' @return named character vector of colors for the areas
-subcont_palette_calc = function(col_cont = cont_map_spec(cont, "col"),  x ) {
+subcont_palette_calc = function(col_cont = area_map_spec(cont, "col"),  x ) {
   if (length(setdiff(names(col_cont), c("col","rev","skip"))) >0)
     stop("col_cont arg does not contain all names")
 

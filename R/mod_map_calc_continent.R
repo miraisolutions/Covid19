@@ -10,18 +10,15 @@
 #' @import shiny
 #' @importFrom leaflet leafletOutput
 #' @importFrom shinycssloaders withSpinner
-mod_map_cont_calc_ui <- function(id){
+mod_map_area_calc_ui <- function(id){
   ns <- NS(id)
   tagList(
-    #div(tags$style(HTML(".leaflet ,legend {font-size: 10px; line-height: 15px;}")),
-    #tags$style(type = "text/css", " .leaflet ,legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
     tags$style(type = "text/css", " .leaflet .legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
-    #tags$style(type = "text/css", " .leaflet .legend {background-color: 'white';font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
 
     uiOutput(ns("title_map")),
     uiOutput(ns("controls")), # radio buttons to be updated in server
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    withSpinner(leafletOutput(ns("map_cont_calc"), width = "100%", height = "500")),
+    withSpinner(leafletOutput(ns("map_area_calc"), width = "100%", height = "500")),
     div(uiOutput(ns("caption")), align = "center")
 )
  # )
@@ -31,9 +28,11 @@ mod_map_cont_calc_ui <- function(id){
 #'
 #' @param df data.frame as of today
 #' @param countries_data_map data.frame sp for mapping
-#' @param cont character continent or subcontinent name
+#' @param area character continent or subcontinent or area name
 #' @param variable character variable name
-#' @example man-roxygen/ex-mod_map_cont_calc.R
+#' @param max.pop integer cut off Country.Region with lower population
+#'
+#' @example man-roxygen/ex-mod_map_area_calc.R
 #'
 #' @import dplyr
 #' @import tidyr
@@ -41,11 +40,10 @@ mod_map_cont_calc_ui <- function(id){
 #' @import leaflet.extras
 #'
 #' @noRd
-mod_map_cont_cal_server <- function(input, output, session, df, countries_data_map, cont, variable = "confirmed"){
+mod_map_area_calc_server <- function(input, output, session, df, countries_data_map, area, variable = "confirmed", max.pop = 100000, countrymap = FALSE){
   ns <- session$ns
 
   update_ui <- update_radio(variable)
-
   if (!is.null(update_ui$new_buttons)){
     observe({
 
@@ -69,35 +67,20 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
   } else
     button = NULL
 
-  # Data ----
-  # if radio_time present  then evaluate, else take last day by default
-  # day = reactive({
-  #   if (!is.null(req(new_var()))) {
-  #     if(req(new_var()) == "last week")  7  else if (req(new_var())  == "today") 1 else 1
-  #   }else
-  #     1
-  #   })
-
-
   data_clean <- reactive({
     # data <- orig_data_aggregate %>%
     #   filter(date %in% head(date,day()))  #%>%# select data last 7 days or 1
      # remove for all variables, otherwise some countries appear in a map and not in another one
       message("remove very small countries not to mess up map")
       data = df %>%
-        filter(population > 100000)
+        filter(population > max.pop)
     # TODO: it can be moved outside, in the data preparation
-    if (grepl("(growth)*prev",variable))
+    if ((grepl("growth",variable) && grepl("prev",variable)))
       data = data %>%
-        mutate(growth_vs_prev = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"))
+        mutate(growth_vs_prev_3 = growth_v_prev_calc(data, growthvar = "growth_factor_3",prevvar = "prevalence_rate_1M_pop"),
+               growth_vs_prev_7 = growth_v_prev_calc(data, growthvar = "growth_factor_7",prevvar = "prevalence_rate_1M_pop"),
+               growth_vs_prev_14 = growth_v_prev_calc(data, growthvar = "growth_factor_14",prevvar = "prevalence_rate_1M_pop"))
 
-    # if (!is.null(button$radio) && req(button$radio) == "last week") {
-    #   numvars = names(numvars)[numvars]
-    #   data = data %>%
-    #     group_by(Country.Region) %>%
-    #       summarize_if(
-    #         is.numeric , sum) # average over the week
-    # }
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
     data_clean <- data %>%
@@ -109,13 +92,14 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
   # update variable name
 
   new_var_calc = function(var, but) {
-     if (!is.null(but) && !is.na(but$radio)) {
+    if (grepl("growth",var) && grepl("prev",var)){
+      newvar =  paste("growth_vs_prev", tail(strsplit(but$radio,"_")[[1]], 1), sep = "_")
+    } else if (!is.null(but) && !is.na(but$radio)) {
       newvar = ifelse(var == but$radio, var, but$radio)
-    } else if (grepl("(growth)*prev",var)){
-      newvar =  "growth_vs_prev"
     } else
       newvar = var
     message("new var = ",newvar)
+
     newvar
   }
   new_var =  reactive({
@@ -156,27 +140,48 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
     )
   }
 
-  output[["map_cont_calc"]] <- renderLeaflet({
-    map = leaflet(
-      data = data_plot(),
-      options = leafletOptions(zoomControl = FALSE,
-                               minZoom = cont_map_spec(cont, "zoom")*0.95, maxZoom = cont_map_spec(cont, "zoom")*1.05,
-                               dragging = TRUE,
-                               centerFixed = TRUE,
-                               maxBounds = list(
-                                 c(cont_map_spec(cont, "lat")[1], cont_map_spec(cont, "lat")[2]),
-                                 c(cont_map_spec(cont, "lat")[3], cont_map_spec(cont, "lat")[4])
-                               ),
-                               #sizingPolicy =leafletSizingPolicy(
+  output[["map_area_calc"]] <- renderLeaflet({
+    if (!countrymap) {
+      map = leaflet(
+        data = data_plot(),
+        options = leafletOptions(zoomControl = FALSE,
+                                 minZoom = area_map_spec(area, "zoom")*0.95, maxZoom = area_map_spec(area, "zoom")*1.05,
+                                 dragging = TRUE,
+                                 centerFixed = TRUE,
+                                 maxBounds = list(
+                                   c(area_map_spec(area, "lat")[1], area_map_spec(area, "lat")[2]),
+                                   c(area_map_spec(area, "lat")[3], area_map_spec(area, "lat")[4])
+                                 ),
+                                 #sizingPolicy =leafletSizingPolicy(
+                                   browser.defaultWidth = "80%",
+                                   browser.fill = F
+                                   # browser.padding = 100,
+                                   # viewer.suppress = TRUE, knitr.figure = FALSE,
+                                   # knitr.defaultWidth = "100%"
+                                   #)
+        )) %>%
+        setView(
+          lng = mean(area_map_spec(area, "lat")[c(1,3)]), lat = mean(area_map_spec(area, "lat")[c(2,4)]),
+                zoom = area_map_spec(area, "zoom"))
+    } else {
+      map = leaflet(
+        data = data_plot(),
+        options = leafletOptions(zoomControl = FALSE,
+                                 minZoom = area_map_spec(area, "zoom")*0.975, maxZoom = area_map_spec(area, "zoom")*1.025,
+                                 maxBounds = list(
+                                   c(data_plot()@bbox["y","min"], data_plot()@bbox["x","min"]),
+                                   c(data_plot()@bbox["y","max"], data_plot()@bbox["x","max"])
+                                 ),
+                                 dragging = TRUE,
+                                 centerFixed = TRUE,
+                                 #sizingPolicy =leafletSizingPolicy(
                                  browser.defaultWidth = "80%",
-                                 browser.fill = F,
-                                 #browser.padding = 100,
-                                 # viewer.suppress = TRUE, knitr.figure = FALSE,
-                                 # knitr.defaultWidth = "100%"
-                                 #)
-      )) %>%
-      setView(lng = mean(cont_map_spec(cont, "lat")[c(1,3)]), lat = mean(cont_map_spec(cont, "lat")[c(2,4)]),
-              zoom = cont_map_spec(cont, "zoom"))
+                                 browser.fill = F
+        ))  %>% clearBounds() %>%
+        setView(
+          lng = mean(data_plot()@bbox["y",]), lat = mean(data_plot()@bbox["x",]),
+          zoom = area_map_spec(area, "zoom"))
+    }
     leg_par <- legend_fun(data_plot()$indicator, new_var())
     map = map %>%
       addPolygons(layerId = ~NAME,
@@ -198,7 +203,7 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
                                                      hideMarkerOnCollapse = T,
                                                      moveToLocation = FALSE)
                       )
-      do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = cont_map_spec(cont, "legend"))))
+      do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = area_map_spec(area, "legend"))))
 
   })
 
@@ -211,22 +216,29 @@ mod_map_cont_cal_server <- function(input, output, session, df, countries_data_m
 varsNames = function(vars) {
   allvars = c(names(case_colors), names(prefix_case_colors(prefix = "lw")),
               names(prefix_case_colors(prefix = "new")),
-              paste("growth_factor", c(3,5,7), sep = "_"),
+              paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
-              "population", "growth_vs_prev",
+              "tests_rate_1M_pop","positive_tests_rate", "new_tests_rate_1M_pop","new_positive_tests_rate",
+              "lw_tests_rate_1M_pop","lw_positive_tests_rate",
+              "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
               "tests","new_tests")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
-  names(allvars)  = sapply(gsub("1M pop", "", names(allvars)), capitalize_first_letter)
+  names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
   names(allvars)  = gsub("Lw", "Last Week", names(allvars))
   names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
+  names(allvars)[grepl("tests_rate_1M_pop", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("tests_rate_1M_pop", allvars)])
+  names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
+  names(allvars)[grepl("prevalence_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("prevalence_rate", allvars)])
+
   allvars = as.list(allvars)
 
   if (!missing(vars)){
     varnames = unlist(allvars)
-    if (!all(vars %in% varnames))
+    if (!all(vars %in% varnames)) {
       stop(paste(setdiff(vars, varnames), "invalid variable"))
+    }
     res = allvars[match(vars, varnames)]
   }
   else
@@ -243,17 +255,18 @@ varsNames = function(vars) {
 #' graph_title: graph title
 #' caption: vaption
 #' textvar: variables to add in popup
-update_radio<- function(var, growthvar = 3){
+update_radio<- function(var, growthvar = 7){
 
   graph_title = var
   textvar = NULL
-  if (grepl("(growth)*fact",var)) { # growth factor
+  if ((grepl("growth",var) && grepl("fact",var))) { # growth factor
     new_buttons = list(name = "radio",
                        choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
-    caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    #caption <- paste0("Growth Factor: total confirmed cases today / total confirmed cases (3 5 7) days ago.")
+    caption <- caption_growth_factor_fun("(3 7 14)")
 
-    graph_title = "Growth factor"
-    textvar = c("new_confirmed","confirmed","new_active")
+    graph_title = "Growth Factor"
+    textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
@@ -266,27 +279,34 @@ update_radio<- function(var, growthvar = 3){
                        choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Prevalence: confirmed cases over 1 M people"
     graph_title = "Prevalence of contagion over 1M"
-    textvar = c("confirmed","new_confirmed","population")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","population")
   } else if (grepl("death", var) || grepl("mortality", var)) {
-    mapvar = c("Lethality Rate", "Mortality Rate")
-    mapvar = varsNames()[mapvar]
-    names(mapvar) = c("Lethality Rate", "Mortality over 1M pop")
+    #mapvar = c("Lethality Rate", "Mortality Rate")
+    mapvar = varsNames()[grepl("Lethality|Mortality", names(varsNames()))]
+    #names(mapvar) = c("Lethality Rate", "Mortality over 1M pop")
     new_buttons = list(name = "radio",
-                       choices = mapvar, selected = mapvar[ "Mortality over 1M pop"])
+                       choices = mapvar, selected = mapvar[grepl("Mortality",names(mapvar))])
 
     caption_leth_rate <- "Lethality Rate: total deaths today / total confirmed cases today"
     caption_mrt_rate <- "Mortality Rate: total deaths today per 1 M population"
     caption =HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
-    textvar = c("deaths", "new_deaths")
+    textvar = c("new_deaths", "lw_deaths", "deaths", "population")
 
-  } else if (grepl("(growth)*prev",var)) {
-    new_buttons = NULL
-    caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+  } else if ((grepl("growth",var) && grepl("prev",var))) {
+    #new_buttons = NULL
+    new_buttons = list(name = "radio",
+                       choices = varsNames()[grep("(growth)*fact", varsNames())], selected = varsNames(paste0("growth_factor_", growthvar)))
+
+    #caption_growth_factor <- paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago.")
+    #caption_growth_factor <- paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
+    #caption_growth_factor <- caption_growth_factor_fun(growthvar)
+    caption_growth_factor <- caption_growth_factor_fun("(3 7 14)")
+
     caption_prevalence <- "Prevalence: confirmed cases over 1 M people."
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
-    textvar = c("growth_factor_3", "prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop")
+    textvar = c("growth_factor_3", "new_prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
   } else if (grepl("active", var)) {
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
@@ -299,7 +319,7 @@ update_radio<- function(var, growthvar = 3){
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
     graph_title = "Active cases"
-    textvar = c("confirmed", "new_confirmed", "recovered","new_recovered")
+    textvar = c("new_confirmed", "confirmed","new_recovered","recovered")
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
     names(mapvar) = c("Total", "Last Week",
@@ -318,21 +338,6 @@ update_radio<- function(var, growthvar = 3){
 
 }
 
-
-# update_var <- function(var, data, input){
-#   if (grepl("(growth)*fact",var)) { # growth factor
-#     new_var = input$radio
-#   } else if (grepl("death", var) || grepl("mortality", var)){ # growth factor
-#     new_var = ifelse(input$radio == "lethality rate", "lethality_rate", "mortality_rate_1M_pop")
-#   }else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
-#     new_var = ifelse(input$radio == "New", "new_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
-#   }else if (grepl("(growth)*prev",var)) {
-#     new_var = "growth_vs_prev"
-#   } else
-#     new_var = var
-#
-#   list(new_var = new_var)
-# }
 #' Utility for popup message in map
 #' @param data map data
 #' @param nam character: component of country names from data, NAME
@@ -373,6 +378,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar){
       " </strong>",
       .pastecol(ptxt = coltext ),txt, ifelse(is.null(col), "", "</style>"),
       "<br>")
+
   }
 
   name_text = .paste_text("Country", NAME, case_colors["confirmed"])
@@ -409,7 +415,7 @@ legend_fun <- function(x, var){
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x, var)
 
-    if (dg < 4){
+    if (dg < 6){
       bin = domain(x)
       bin = seq(bin[1],bin[2], length = 4)
       val = seq(min(bin),max(bin), length = 5000)
@@ -492,8 +498,7 @@ domainlog_neg <- function(x) {
 }
 
 domainlin <- function(x) {
-  #negative values incorrect
-  c(max(0,floor(min(x, na.rm = TRUE))),round_up(max(x, na.rm = TRUE)))
+  c(max(0,round_up(min(x, na.rm = TRUE), down = TRUE)),round_up(max(x, na.rm = TRUE)))
 }
 domainlin_neg <- function(x) {
   maxlimit = max(abs(x), na.rm = TRUE)
@@ -519,10 +524,10 @@ choose_domain <- function(x, var) {
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
     if (var %in% rate_vars){ # if rate
       domain = domainrate
-    } else if (grepl("(growth)*fact",var)){
+    } else if ((grepl("growth",var) && grepl("fact",var))){
       # growth factors variables
       domain = domaingrowth
-    } else if (dg <4) {
+    } else if (dg < 6) {
       if (var %in% neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
@@ -563,9 +568,9 @@ pal_fun = function(var,x){
 
   }  else if (grepl("recovered", var)) {
     colorNumeric(palette = "Greens", domain = domain(x), na.color = "lightgray")
-  }  else if (grepl("(growth)*fact",var)) {
+  }  else if ((grepl("growth",var) && grepl("fact",var))) {
     colorNumeric(palette = "Oranges", domain = domain(x), na.color = "lightgray")
-  }  else if (grepl("(growth)*prev",var)) {
+  }  else if ((grepl("growth",var) && grepl("prev",var))) {
     colorFactor(palette = c("darkgreen", "#E69F00", "yellow3","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   }
   else
@@ -586,7 +591,7 @@ pal_fun_calc <- function(x, var){
     #if (dg == 1 && maxv<=1 && minxv>=0) {
     if (var %in% rate_vars) {
       y = x *100 # rate
-    } else if (dg <4) {
+    } else if (dg < 6) {
       # linear scale
       y = x
     } else {
