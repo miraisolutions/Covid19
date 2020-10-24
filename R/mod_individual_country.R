@@ -98,7 +98,7 @@ areamapUI = function(id, country){
 #'
 #' @param data data.frame
 #' @param countries reactive character vector
-#' @param n min number of cases for used to filter country data
+#' @param nn min number of cases for used to filter country data
 #' @param w number of days of outbreak. Default 7
 #'
 #' @import dplyr
@@ -106,14 +106,14 @@ areamapUI = function(id, country){
 #' @import shiny
 #'
 #' @noRd
-mod_ind_country_server <- function(input, output, session, data, country , n = 1, w = 7){
+mod_ind_country_server <- function(input, output, session, data, country , nn = 1, w = 7){
   ns <- session$ns
 
   message("mod_ind_country_server")
   output$ind_from_nth_case<- renderUI({
     HTML(paste(
          paste0("Some Cantons are not providing Recovered data."),
-         paste0("Contagion day 0 is the day when ", n ," confirmed cases are reached."), sep = "<br/>"))
+         paste0("1st day is the day when ", nn ," confirmed cases are reached."), sep = "<br/>"))
   })
 
   message("process individual country ", country)
@@ -139,17 +139,17 @@ mod_ind_country_server <- function(input, output, session, data, country , n = 1
     levs = c(levs, "hosp")
     country_data_area$active = country_data_area$active - country_data_area$hosp
   }
-  message("n for ", country, " = ", n)
+  message("n for ", country, " = ", nn)
 
 
-  callModule(mod_bar_plot_day_contagion_server, "ind_bar_plot_day_contagion", country_data)
+  callModule(mod_bar_plot_day_contagion_server, "ind_bar_plot_day_contagion", country_data, nn = nn)
 
   # for country plot start from the beginning
-  df_tot = tsdata_areplot(country_data_area,levs, n) # start from day with >n
+  df_tot = tsdata_areplot(country_data_area,levs, nn = nn) # start from day with >nn
 
   callModule(mod_plot_log_linear_server, "ind_plot_area_tot", df = df_tot, type = "area")
 
-  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , n = n, w = w, istop = FALSE)
+  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE)
 
 
 # # ##### country split within areas #############################################
@@ -167,7 +167,7 @@ mod_ind_country_server <- function(input, output, session, data, country , n = 1
     areaUI(ns("ind_country_subarea"), tab = FALSE)
     #areaUI("ind_country_subarea")
   })
-  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = max(1,n/10), tab = FALSE)
+  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE)
 
   output$maps_ind_subarea <- renderUI({
     areamapUI(ns("maps_subarea"), country)

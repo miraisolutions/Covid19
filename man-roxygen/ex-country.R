@@ -10,11 +10,11 @@ if (interactive()) {
   library(grid)
   library(scales)
 
-  #sapply(file.path("R",list.files("R")), source)
+  sapply(file.path("R",list.files("R")), source)
   #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    mod_country_ui("country")
+    Covid19Mirai:::mod_country_ui("country")
   )
   server <- function(input, output) {
 
@@ -36,8 +36,8 @@ if (interactive()) {
         distinct()
     })
 
-    callModule(mod_country_server, "country",
-               data = data_filtered, countries = countries, n = n,  w = w)
+    callModule(Covid19Mirai:::mod_country_server, "country",
+               data = data_filtered, countries = countries, nn = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

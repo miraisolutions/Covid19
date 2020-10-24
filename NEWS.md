@@ -1,4 +1,6 @@
 ### Covid19Mirai 2.2.1-9000 (develop)
+- Removed contagion day in x axis, replaced with dates (#126)
+
 
 ### Covid19Mirai 2.2.0 (2020-09-04)
 - Added Switzerland tab with maps at Kanton level (#20)

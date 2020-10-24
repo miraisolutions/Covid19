@@ -48,7 +48,7 @@ if (interactive()) {
     # })
 
     callModule(mod_continent_server, "cont_comparison", orig_data_aggregate = orig_data_aggregate,
-               countries_data_map, n = n, w = w, pop_data, cont = cont, uicont = uicont)
+               countries_data_map, nn = n, w = w, pop_data, cont = cont, uicont = uicont)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

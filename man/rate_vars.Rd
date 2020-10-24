@@ -5,7 +5,7 @@
 \alias{rate_vars}
 \title{Variables defined as rate in map plot}
 \format{
-An object of class \code{character} of length 1.
+An object of class \code{character} of length 3.
 }
 \usage{
 rate_vars

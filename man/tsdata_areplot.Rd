@@ -4,14 +4,14 @@
 \alias{tsdata_areplot}
 \title{creates time series for the area plot}
 \usage{
-tsdata_areplot(data, levs, n = 1000)
+tsdata_areplot(data, levs, nn = 1000)
 }
 \arguments{
 \item{data}{data.frame aggregated data per region}
 
 \item{levs}{order of statuses}
 
-\item{n}{minimum number of cases for the start date}
+\item{nn}{minimum number of cases for the start date}
 }
 \value{
 data.frame reshaped
@@ -20,5 +20,5 @@ data.frame reshaped
 creates time series for the area plot
 }
 \note{
-starting date based on n, first day with so many confirmed
+starting date based on nn, first day with so many confirmed cases
 }
