@@ -121,7 +121,7 @@ if (interactive()) {
 
     df_area = purrr::map(unique(country_data$Country.Region),
                            function(un) {
-                             dat = tsdata_areplot(country_data[country_data$Country.Region == un, ], levs, 10) #n = 0 for area plot
+                             dat = tsdata_areplot(country_data[country_data$Country.Region == un, ], levs, nn = 10) #n = 0 for area plot
                              dat$Country.Region = rep(un, nrow(dat))
                              dat
                            })

@@ -17,13 +17,14 @@ mod_bar_plot_day_contagion_ui <- function(id){
 #' bar_plot_day_contagion Server Function
 #'
 #' @param country_data data.frame for one country
-#'
+#' @param datevar character variable used for X axis, date or contagion_day
+#' @param nn minimum date derived from first day with more than nn cases. Default 1000
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
 #'
 #' @noRd
-mod_bar_plot_day_contagion_server <- function(input, output, session, country_data){
+mod_bar_plot_day_contagion_server <- function(input, output, session, country_data, datevar = "date", nn = 1000){
   ns <- session$ns
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
@@ -31,11 +32,16 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
   allstatuses = c(statuses, paste0("new_", statuses))
 
   output$bar_plot_day_contagion <- renderPlot({
+
+    mindate = min(country_data$date[country_data$confirmed>nn])
+    country_data = country_data %>% filter(date > mindate)
+
     df <- country_data %>%
       ungroup() %>%
       #select(-Country.Region, -date) %>%
-      select(contagion_day, !!allstatuses) %>%
-      arrange(contagion_day)
+      select(!!datevar, !!allstatuses) %>%
+      arrange(!!as.symbol(datevar)) #%>%
+      #filter(confirmed > nn)
 
     tmp <- sapply(statuses, function(s){
       df[,s] - df[, paste0("new_", s)]
@@ -47,7 +53,7 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
 
     df <- df %>%
       bind_cols(tmp) %>%
-      pivot_longer(cols = -contagion_day, names_to = "status_all", values_to = "value") %>%
+      pivot_longer(cols = -all_of(datevar), names_to = "status_all", values_to = "value") %>%
       mutate(bool_new = case_when(
         grepl("new_", .$status_all) ~ "new",
         grepl("diff_", .$status_all) ~ "total",

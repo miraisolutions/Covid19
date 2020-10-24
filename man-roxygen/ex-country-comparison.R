@@ -10,7 +10,8 @@ if (interactive()) {
   library(scales)
 
   #sapply(file.path("R",list.files("R")), source)
-  #devtools::load_all()
+  pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19Mirai:::mod_country_comparison_ui("country_comparison")
@@ -31,13 +32,13 @@ if (interactive()) {
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
     countries <- reactive({
-      data_filtered() %>%
+      data_filtered %>%
         select(Country.Region) %>%
         distinct()
     })
 
     callModule(mod_country_comparison_server, "country_comparison",
-               data_filtered = data_filtered, countries = countries)
+               data = orig_data_aggregate, countries = countries, nn = n, n.select = n)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

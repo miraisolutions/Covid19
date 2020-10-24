@@ -41,7 +41,7 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #' @param df data.frame
 #' @param type character string. Either area or line. Used to select plot type.
 #' @param g_palette character vector of colors for the graph and legend
-#'
+#' @param countries character vector of countries considered, NULL if only one
 #' @example man-roxygen/ex-plot_log_linear.R
 #'
 #' @import dplyr

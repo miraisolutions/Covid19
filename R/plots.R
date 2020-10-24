@@ -27,7 +27,7 @@ stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
-      axis.text.x = element_text(angle = labangle, size = labsize)
+      axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )
   if (percent) {
     p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
@@ -106,10 +106,9 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
                  limits = x.d.lim,
                  date_labels = "%d-%m") +
     scale_y_continuous(labels = label_number(big.mark = "'")) +
-    # scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 week", limits = range(df$Date),
-    #              date_labels = "%d-%m") +
+
     theme(
-      axis.text.x = element_text(angle = 45),
+      axis.text.x = element_text(angle = 45, hjust = 1)
     )
 
   if (log) {
@@ -230,7 +229,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     scale_y_continuous(labels = label_number(big.mark = "'")) + # add label
 
     theme(
-      axis.text.x = element_text(angle = 45)
+      axis.text.x = element_text(angle = 45, hjust = 1)
     )
 
   p <- p %>%
@@ -281,7 +280,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
                  date_labels = "%d-%m") +
 
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
+      axis.text.x = element_text(angle = 45, hjust = 1)
     )
 
   p <- p %>%
@@ -379,6 +378,7 @@ from_contagion_day_bar_plot <- function(df){
 #' Evolution from contagion day facet
 #'
 #' @param df data.frame to plot
+#' @param xdate character variable for x axis
 #'
 #' @return barplot facet
 #'
@@ -386,13 +386,27 @@ from_contagion_day_bar_plot <- function(df){
 #' @importFrom grid grid.draw
 #'
 #' @export
-from_contagion_day_bar_facet_plot <- function(df){
-  p <- ggplot(df, aes(x = contagion_day, y = value, fill = bool_new)) +
+from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
+  df$Date = df[[xdate]]
+  p <- ggplot(df, aes(x = Date, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
     scale_fill_manual(values = new_total_colors) + #c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
     theme(strip.text = element_text(colour = 'white'))
+
+  if (xdate == "date") {
+    # date x axis
+    x.d.lim = range(df$Date)
+    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+    p <- p + scale_x_date(breaks = x.d.breaks,
+                          date_minor_breaks = "1 week", limits = x.d.lim,
+                          date_labels = "%d-%m") +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+      )
+  }
+
 
   p <- p %>%
     fix_legend_position()
@@ -504,7 +518,7 @@ fix_legend_position <- function(p){
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, percent =  F, date_x = F, g_palette = graph_palette) {
+plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, percent =  FALSE, date_x = FALSE, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
@@ -521,7 +535,6 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
   }
   # df_highlight <- df %>%
   #   filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
-
   # rolling weekly average (#80), changed alignment to right
   df_highlight <- df %>% group_by(Status) %>%
     arrange(Date)  %>%
@@ -539,7 +552,6 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
   #
   # df$Value = gen_text(df$Variable)
   # df_highlight$Value = gen_text(df_highlight$Variable)
-
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
     geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
     basic_plot_theme() +
@@ -565,7 +577,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
                    limits = x.d.lim,
                    date_minor_breaks = "1 week", date_labels = "%d-%m") +
       theme(
-        axis.text.x = element_text(angle = 45)
+        axis.text.x = element_text(angle = 45, hjust = 1)
       )
   }
 
@@ -607,7 +619,7 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     coord_cartesian(ylim = c(y_min, max(df$Value))) +
     theme(
-      axis.text.x = element_text(angle = labangle, size = labsize)
+      axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )
 
   if (percent) {
@@ -655,20 +667,6 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +
     basic_plot_theme() +
-    scale_x_continuous(labels = label_number(
-                                             big.mark = "'"
-                                             #suffix = "K"
-                                             )) +
-    scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
-                       labels = label_number(accuracy = accy),
-                       n.break = 5
-                       #labels = function(x) paste0(x, "%")
-                       ) +
-
-    # theme(
-    #   axis.text.x = element_text()
-    # ) +
-    #labs(x="prevalence over 1M", y = "growth factor") +
     geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
                    text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
                color = color_cntry, size = 1.3) +
@@ -677,7 +675,17 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
     geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
               check_overlap = TRUE, color = color_cntry, size = 3.3) +
     coord_cartesian(ylim = ylim,
-                    xlim = xlim)
+                    xlim = xlim) +
+    scale_x_continuous(labels = label_number(
+      big.mark = "'",
+      #suffix = "K"
+      n.break = 5
+    )) +
+    scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
+      labels = label_number(accuracy = accy),
+      n.break = 5
+      #labels = function(x) paste0(x, "%")
+    )
 
   p
 }

@@ -116,7 +116,7 @@ areaUI = function(id, tab = TRUE){
 #'
 #' @param data data.frame
 #' @param countries reactive character vector
-#' @param n min number of cases for used to filter country data
+#' @param nn min number of cases for used to filter country data
 #' @param w number of days of outbreak. Default 7
 #' @param n.select min number of cases for a country to be considered in selectInput.
 #'
@@ -125,7 +125,7 @@ areaUI = function(id, tab = TRUE){
 #' @import shiny
 #'
 #' @noRd
-mod_country_server <- function(input, output, session, data, countries, n = 1, w = 7, n.select = 1000){
+mod_country_server <- function(input, output, session, data, countries, nn = 100, w = 7, n.select = 1000){
   ns <- session$ns
   message("mod_country_server")
   observe(
@@ -137,7 +137,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
   output$from_nth_case<- renderUI({
     HTML(paste(paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
                paste0("Some countries are not providing Recovered data."),
-         paste0("Contagion day 0 is the day when ", n ," confirmed cases are reached."), sep = "<br/>"))
+         paste0("1st day is the day when ", nn ," confirmed cases are reached."), sep = "<br/>"))
   })
 
   observeEvent(input$select_country, {
@@ -166,9 +166,9 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
       country_data_area$active = country_data_area$active - country_data_area$hosp
     }
     #n_country = select_n(country_data_area$confirmed,n)
-    message("n for ", req(input$select_country), " = ", n)
+    message("n for ", req(input$select_country), " = ", nn)
     # for country plot start from the beginning
-    df_tot = tsdata_areplot(country_data_area,levs, n) # start from day with >n
+    df_tot = tsdata_areplot(country_data_area,levs, nn) # start from day with >nn
 
     callModule(mod_plot_log_linear_server, "plot_area_tot", df = df_tot, type = "area")
 
@@ -176,9 +176,9 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_tot", country_data , n = n, w = w, istop = FALSE)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE)
 
-    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data)
+    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
   #  })
   # # ##### country split within areas #############################################
@@ -213,7 +213,7 @@ mod_country_server <- function(input, output, session, data, countries, n = 1, w
         build_data_aggr(area_data_2)
       # works in example
       message("id lev2 = ", id)
-      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,n/10))
+      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,nn/10))
 
     } else{
       message("remove level 2 UI for ", req(input$select_country))
@@ -282,14 +282,14 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     HTML(paste(
       "Some countries have unreliable or inconsistent data at regional level. They may not match those at Country Level or they may miss information.",
       paste0("Some countries or some regions within countries are not providing Recovered data."),
-      paste0("Contagion day 0 is the day when ", n2 ," confirmed cases are reached."), sep = "<br/>"))
+      paste0("1st day is the day when ", n2 ," confirmed cases are reached."), sep = "<br/>"))
   })
 
   # plots ----
   levs <- sort_type_hardcoded()
   df_area_2 = purrr::map(unique(data$Country.Region),
     function(un) {
-      dat = tsdata_areplot(data[data$Country.Region == un, ], levs, 0) #n = 0 for area plot
+      dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
       dat$Country.Region = rep(un, nrow(dat))
       dat
       })
@@ -321,15 +321,15 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # > comparison plot from day of nth contagion
 
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = FALSE)
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = FALSE, selectvar = "new_prevalence_rate_1M_pop")
   })
-  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data_2_filtered, n = n2, istop = TRUE)
+  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE)
 
   # > growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_growth_death_rate_ui(ns("rate_plots_area2"))
   })
-  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data, n = n2, istop = FALSE, n_highligth = length(unique(data$Country.Region)))
+  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data, nn = n2, istop = FALSE, n_highligth = length(unique(data$Country.Region)))
 
   # > scatterplot prevalence vs growth
   output[["plot_scatterplot_area_2"]] <- renderUI({
@@ -342,7 +342,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_2_filtered_today, istop = FALSE, nmed = n2, countries = areasC())
 
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, n = n2, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)))
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)))
 
   if(tab) {
     # prepare data for table with country data
@@ -356,13 +356,3 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   }
 
 }
-
-# select_n <- function(var, n = 100) {
-#   ifelse(max(var) > 10000,
-#                      n,
-#                      ifelse(max(var) > 1000,
-#                             n/10,
-#                             ifelse(max(var) > 100,
-#                                    n/100,
-#                                    1)))
-# }

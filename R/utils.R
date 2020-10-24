@@ -392,17 +392,20 @@ aggr_to_cont = function(data, group, time,
 #' creates time series for the area plot
 #' @param data data.frame aggregated data per region
 #' @param levs order of statuses
-#' @param n minimum number of cases for the start date
+#' @param nn minimum number of cases for the start date
 #'
-#' @note starting date based on n, first day with so many confirmed
+#' @note starting date based on nn, first day with so many confirmed cases
 #'
 #' @return data.frame reshaped
 #'
 #' @import tidyr
-tsdata_areplot <- function(data, levs, n = 1000) {
+tsdata_areplot <- function(data, levs, nn = 1000) {
+
+  mindate = min(data$date[data$confirmed>nn])
+  data = data %>% filter(date > mindate)
 
   data %>%
-    filter(confirmed > n) %>% #remove initial dates
+    #filter(confirmed > nn) %>% #remove initial dates
     select( date, !!levs) %>% #rename vars with labels
     #select(Country.Region, date, levs) %>%
     #renamevars() %>%

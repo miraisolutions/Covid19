@@ -20,13 +20,14 @@ mod_lineplots_day_contagion_ui <- function(id){
 #'
 #' @param countries_data data.frame for multiple countries
 #' @param g_palette character vector of colors for the graph and legend
+#' @param nn minimum date derived from first day with more than nn cases
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
 #'
 #' @noRd
-mod_lineplots_day_contagion_server <- function(input, output, session, countries_data, g_palette = graph_palette){
+mod_lineplots_day_contagion_server <- function(input, output, session, countries_data, g_palette = graph_palette, nn){
   ns <- session$ns
   # countries_ordered <- reactive({
   #   countries_data() %>%
@@ -38,6 +39,8 @@ mod_lineplots_day_contagion_server <- function(input, output, session, countries
   #     select(Country.Region) %>%
   #     pull()
   # })
+  mindate = min(countries_data$date[countries_data$confirmed>nn])
+  countries_data = countries_data %>% filter(date > mindate)
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
   output$line_plot_day_contagion <- renderPlot({
