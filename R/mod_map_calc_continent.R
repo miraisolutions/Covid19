@@ -219,10 +219,9 @@ varsNames = function(vars) {
               paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
-              "tests_rate_1M_pop","positive_tests_rate", "new_tests_rate_1M_pop","new_positive_tests_rate",
-              "lw_tests_rate_1M_pop","lw_positive_tests_rate",
+              "tests_rate_1M_pop","positive_tests_rate","lw_tests_rate_1M_pop", "new_tests_rate_1M_pop","lw_positive_tests_rate","new_positive_tests_rate",
               "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
-              "tests","new_tests")
+              "tests","lw_tests", "new_tests")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
   names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
@@ -329,7 +328,31 @@ update_radio<- function(var, growthvar = 7){
     caption <- "Total, Last Week and New Confirmed cases"
     graph_title = "Confirmed cases"
     textvar = c("growth_factor_3", "active", "tests")
-  } else {
+  } else if (grepl("tests", var) && grepl("1M", var)) {
+    mapvar = grep("tests_rate_1M_pop", varsNames(), value = T)
+    names(mapvar) = c("Total", "Last Week",
+                      "Last Day")
+    new_buttons = list(name = "radio",
+                       choices = mapvar, selected = mapvar["Last Week"])
+    caption <- "Total, Last Week and New Tests per 1 Million people"
+    caption_tests <- "Updated Tests figures are unavailable for some countries"
+    caption =HTML(paste(c(caption,caption_tests), collapse = '<br/>'))
+
+    graph_title = "Tests per population"
+    textvar = c("tests","lw_tests", "population", "positive_tests_rate", "lw_positive_tests_rate")
+  } else if (grepl("positive", var)) {
+    mapvar = grep("positive_tests_rate", varsNames(), value = T)
+    names(mapvar) = c("Total", "Last Week",
+                      "Last Day")
+    new_buttons = list(name = "radio",
+                       choices = mapvar, selected = mapvar["Last Week"])
+    caption <- "Total, Last Week and New % of positive tests."
+    caption_tests <- "Updated Tests figures are unavailable for some countries"
+    caption =HTML(paste(c(caption,caption_tests), collapse = '<br/>'))
+
+    graph_title = "Positive Tests rate"
+    textvar = c("tests","lw_tests", "confirmed", "lw_confirmed", "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop")
+  } else    {
     new_buttons = NULL
     caption = NULL
   }
@@ -568,9 +591,13 @@ pal_fun = function(var,x){
 
   }  else if (grepl("recovered", var)) {
     colorNumeric(palette = "Greens", domain = domain(x), na.color = "lightgray")
-  }  else if ((grepl("growth",var) && grepl("fact",var))) {
+  }  else if (grepl("growth",var) && grepl("fact",var)) {
     colorNumeric(palette = "Oranges", domain = domain(x), na.color = "lightgray")
-  }  else if ((grepl("growth",var) && grepl("prev",var))) {
+  }  else if (grepl("tests", var) && grepl("1M", var)) {
+    colorNumeric(palette = "Purples", domain = domain(x), na.color = "lightgray")
+  }  else if (grepl("positive", var)) {
+    colorNumeric(palette = "GnBu", domain = domain(x), na.color = "lightgray")
+  } else if ((grepl("growth",var) && grepl("prev",var))) {
     colorFactor(palette = c("darkgreen", "#E69F00", "yellow3","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   }
   else
