@@ -381,7 +381,9 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 #' @param nam character: component of country names from data, NAME
 #' @param ind character: component of values from data, indicator
 #' @param namvar character: vector, additional variable names
-#' @param textvar character: vector, textt for the additional variables
+#' @param textvar character: vector, text for the additional variables
+#' @param namvarsfx character: vector, text suffix for namevar. Default NULL: no suffix.
+#'
 #' @return vector pop up messages, html
 map_popup_data <- function(data, nam, ind, namvar, textvar, namvarsfx = NULL){
   x = data[[ind]]

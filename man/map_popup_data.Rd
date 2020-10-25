@@ -15,7 +15,9 @@ map_popup_data(data, nam, ind, namvar, textvar, namvarsfx = NULL)
 
 \item{namvar}{character: vector, additional variable names}
 
-\item{textvar}{character: vector, textt for the additional variables}
+\item{textvar}{character: vector, text for the additional variables}
+
+\item{namvarsfx}{character: vector, text suffix for namevar. Default NULL: no suffix.}
 }
 \value{
 vector pop up messages, html
