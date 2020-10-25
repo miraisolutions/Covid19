@@ -16,11 +16,14 @@ if (interactive()) {
   variable = "growth vs prevalence" # set variable
   #variable = "death rate" # set variable
   #variable = "prevalence rate" # set variable
-  variable = "active" # set variable
+  #variable = "tests_rate_1M_pop" # set variable
+  variable = "tests over 1M" # set variable
+  variable = "positive tests rate" # set variable
+
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable
 
-  #sapply(file.path("R",list.files("R")), source)
+  sapply(file.path("R",list.files("R")), source)
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
@@ -63,7 +66,7 @@ if (interactive()) {
     countries_data_map_cont = .subsetmap(countries_data_map, cc = cont)
 
     callModule(mod_map_area_calc_server, "map_cont_calc_ui", df = data_cont_maps,
-               countries_data_map_cont, cont = cont, variable = variable)
+               countries_data_map_cont, variable = variable, area = cont)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

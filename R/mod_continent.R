@@ -76,6 +76,14 @@ mod_continent_ui <- function(id, uicont){
             withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
      )
    ),
+   fluidRow(
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_tests_1M", uicont , sep = "_"))))
+     ),
+     column(6,
+            withSpinner(uiOutput(ns(paste("map_countries_positive_rate", uicont , sep = "_"))))
+     )
+   ),
     mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_"))),
     hr(),
     mod_add_table_ui(ns(paste("add_table_countries", uicont , sep = "_")))
@@ -268,6 +276,20 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
   callModule(mod_map_area_calc_server, "map_countries_death", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "death")
+
+  #maps tests
+  output[[paste("map_countries_tests_1M", uicont , sep = "_")]] <- renderUI({
+    mod_map_area_calc_ui(ns("map_countries_tests_1M"))
+  })
+  callModule(mod_map_area_calc_server, "map_countries_tests_1M", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "tests over 1M")
+
+  #maps positive test rates
+  output[[paste("map_countries_positive_rate", uicont , sep = "_")]] <- renderUI({
+    mod_map_area_calc_ui(ns("map_countries_positive_rate"))
+  })
+  callModule(mod_map_area_calc_server, "map_countries_positive_rate", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "positive tests rate")
 
   # tables ----
   callModule(mod_add_table_server, paste("add_table_cont", uicont , sep = "_"),

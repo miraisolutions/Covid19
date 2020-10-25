@@ -515,7 +515,7 @@ gen_text = function(x, namvar) {
 }
 #' Variables defined as rate in map plot
 rate_vars <- c(
- c("lethality_rate", "new_positive_tests_rate","positive_tests_rate")
+ c("lethality_rate", "lw_positive_tests_rate", "new_positive_tests_rate","positive_tests_rate")
   )
 #' Variables where negative values are allowed in map plot
 neg_vars <- c(
