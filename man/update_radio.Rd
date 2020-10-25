@@ -4,12 +4,14 @@
 \alias{update_radio}
 \title{Updates UI radiobuttons depending to variable va}
 \usage{
-update_radio(var, growthvar = 7)
+update_radio(var, growthvar = 7, global = FALSE)
 }
 \arguments{
 \item{var}{variable name}
 
 \item{growthvar}{integer, 3 5 7 depending on choice}
+
+\item{global}{logical, TRUE when used in global map}
 }
 \value{
 list list(new_buttons = new_buttons, graph_title = graph_title, caption = caption, textvar= textvar)

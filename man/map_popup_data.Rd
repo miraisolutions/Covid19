@@ -4,7 +4,7 @@
 \alias{map_popup_data}
 \title{Utility for popup message in map}
 \usage{
-map_popup_data(data, nam, ind, namvar, textvar)
+map_popup_data(data, nam, ind, namvar, textvar, namvarsfx = NULL)
 }
 \arguments{
 \item{data}{map data}

@@ -118,7 +118,13 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", total_today)
 
-  # map ----
+  # # map ----
+  # data7_orig_data_aggregate = lw_vars_calc(orig_data_aggregate)
+  #
+  # # create datasets for maps merging today with data7
+  # orig_data_aggregate_maps = orig_data_aggregate %>% filter(date == max(date)) %>%
+  #   left_join(data7_orig_data_aggregate %>% select(-population))
+
 
   callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
 

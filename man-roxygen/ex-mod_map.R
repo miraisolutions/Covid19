@@ -1,14 +1,14 @@
 if (interactive()) {
   library(shiny)
   library(dplyr)
-  #devtools::load_all()
-  #sapply(file.path("R",list.files("R")), source)
+  devtools::load_all()
+  sapply(file.path("R",list.files("R")), source)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_map_ui("map_ui")
+      mod_map_ui("map_ui")
     )
   )
 
@@ -25,6 +25,14 @@ if (interactive()) {
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+
+    # map ----
+    # data7_orig_data_aggregate = lw_vars_calc(orig_data_aggregate)
+    #
+    # # create datasets for maps merging today with data7
+    # orig_data_aggregate_maps = orig_data_aggregate %>%
+    #   left_join(data7_orig_data_aggregate %>% select(-population))
+
 
     callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
   }
