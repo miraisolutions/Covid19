@@ -647,10 +647,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   )
   # mean.x = mean(df$prevalence_rate_1M_pop)
   # mean.y = mean(df$growthfactor)
-  color_cntry = rep("#E69F00", nrow(df))
+  color_cntry = rep("yellow3", nrow(df))
   color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor < med$y ] = "darkgreen"
   color_cntry[df$prevalence_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
-  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor > med$y ] = "yellow3"
+  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor > med$y ] = "#E69F00"
 
   xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
             max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
