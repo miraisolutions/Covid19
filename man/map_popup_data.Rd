@@ -4,7 +4,7 @@
 \alias{map_popup_data}
 \title{Utility for popup message in map}
 \usage{
-map_popup_data(data, nam, ind, namvar, textvar)
+map_popup_data(data, nam, ind, namvar, textvar, namvarsfx = NULL)
 }
 \arguments{
 \item{data}{map data}
@@ -15,7 +15,9 @@ map_popup_data(data, nam, ind, namvar, textvar)
 
 \item{namvar}{character: vector, additional variable names}
 
-\item{textvar}{character: vector, textt for the additional variables}
+\item{textvar}{character: vector, text for the additional variables}
+
+\item{namvarsfx}{character: vector, text suffix for namevar. Default NULL: no suffix.}
 }
 \value{
 vector pop up messages, html
