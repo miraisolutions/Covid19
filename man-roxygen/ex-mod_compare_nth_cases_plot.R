@@ -10,7 +10,7 @@ if (interactive()) {
 
   library(scales)
   #sapply(file.path("R",list.files("R")), source)
-  #devtools::load_all()
+  devtools::load_all()
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
@@ -26,12 +26,12 @@ if (interactive()) {
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-    n = 1000; w = 7
-    data_filtered <- #reactive({
-      orig_data_aggregate %>%
-        rescale_df_contagion(n = n, w = w)
-   # })
-    callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", data_filtered)
+    nn = 1000; w = 7
+   #  data_filtered <- #reactive({
+   #    orig_data_aggregate %>%
+   #      rescale_df_contagion(n = n, w = w)
+   # # })
+    callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = nn)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -67,7 +67,7 @@ if (interactive()) {
         filter(Country.Region %in% countries)
     #})
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               n = n, n_highligth = length(countries), istop = F)
+               nn = n, n_highligth = length(countries), istop = FALSE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -102,7 +102,7 @@ if (interactive()) {
         filter(Country.Region %in% countries)
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               n = n, n_highligth = length(countries), istop = F)
+               nn = n, n_highligth = length(countries), istop = FALSE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

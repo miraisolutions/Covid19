@@ -33,7 +33,7 @@ if (interactive()) {
         arrange(desc(date))
 
 
-    callModule(Covid19Mirai:::mod_bar_plot_day_contagion_server,"bar_plot_day_contagion", country_data = country_data)
+    callModule(Covid19Mirai:::mod_bar_plot_day_contagion_server,"bar_plot_day_contagion", country_data = country_data, nn = n)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

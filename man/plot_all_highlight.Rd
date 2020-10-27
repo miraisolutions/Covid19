@@ -9,8 +9,8 @@ plot_all_highlight(
   log = FALSE,
   text = "",
   n_highligth = 10,
-  percent = F,
-  date_x = F,
+  percent = FALSE,
+  date_x = FALSE,
   g_palette = graph_palette
 )
 }

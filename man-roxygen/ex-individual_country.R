@@ -42,7 +42,7 @@ if (interactive()) {
     })
 
     callModule(Covid19Mirai:::mod_ind_country_server, "ind_country",
-               data = data_filtered, country = country, n = n,  w = w)
+               data = data_filtered, country = country, nn = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

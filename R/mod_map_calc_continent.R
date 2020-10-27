@@ -219,10 +219,9 @@ varsNames = function(vars) {
               paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate", "mortality_rate_1M_pop",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
-              "tests_rate_1M_pop","positive_tests_rate", "new_tests_rate_1M_pop","new_positive_tests_rate",
-              "lw_tests_rate_1M_pop","lw_positive_tests_rate",
+              "tests_rate_1M_pop","positive_tests_rate","lw_tests_rate_1M_pop", "new_tests_rate_1M_pop","lw_positive_tests_rate","new_positive_tests_rate",
               "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
-              "tests","new_tests")
+              "tests","lw_tests", "new_tests", "date")
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
   names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
@@ -249,13 +248,14 @@ varsNames = function(vars) {
 #' Updates UI radiobuttons depending to variable va
 #' @param var variable name
 #' @param growthvar integer, 3 5 7 depending on choice
-
+#' @param global logical, TRUE when used in global map
+#'
 #' @return list list(new_buttons = new_buttons, graph_title = graph_title, caption = caption, textvar= textvar)
 #' new_buttons: UI radiobuttons
 #' graph_title: graph title
 #' caption: vaption
 #' textvar: variables to add in popup
-update_radio<- function(var, growthvar = 7){
+update_radio<- function(var, growthvar = 7, global = FALSE){
 
   graph_title = var
   textvar = NULL
@@ -266,7 +266,7 @@ update_radio<- function(var, growthvar = 7){
     caption <- caption_growth_factor_fun("(3 7 14)")
 
     graph_title = "Growth Factor"
-    textvar = c("new_confirmed","lw_confirmed","confirmed","new_active")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","lw_active")
 
   } else if (grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
     mapvar = grep("(prevalence|rate)(?:.+)(prevalence|rate)", varsNames(), value = T)
@@ -279,7 +279,8 @@ update_radio<- function(var, growthvar = 7){
                        choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Prevalence: confirmed cases over 1 M people"
     graph_title = "Prevalence of contagion over 1M"
-    textvar = c("new_confirmed","lw_confirmed","confirmed","population")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","population", "new_prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
+
   } else if (grepl("death", var) || grepl("mortality", var)) {
     #mapvar = c("Lethality Rate", "Mortality Rate")
     mapvar = varsNames()[grepl("Lethality|Mortality", names(varsNames()))]
@@ -292,7 +293,10 @@ update_radio<- function(var, growthvar = 7){
     caption =HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
     textvar = c("new_deaths", "lw_deaths", "deaths", "population")
-
+    if(global) {
+      textvar = c(textvar, c("lethality_rate","mortality_rate_1M_pop"))
+      #textvar = textvar[!grepl("deaths",textvar)]
+    }
   } else if ((grepl("growth",var) && grepl("prev",var))) {
     #new_buttons = NULL
     new_buttons = list(name = "radio",
@@ -307,6 +311,7 @@ update_radio<- function(var, growthvar = 7){
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
     textvar = c("growth_factor_3", "new_prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
+
   } else if (grepl("active", var)) {
     mapvar = grep("active", varsNames(), value = T)
     #mapvar = varsNames()[mapvar]
@@ -319,19 +324,53 @@ update_radio<- function(var, growthvar = 7){
     caption =HTML(paste(c(caption,caption_color), collapse = '<br/>'))
 
     graph_title = "Active cases"
-    textvar = c("new_confirmed", "confirmed","new_recovered","recovered")
+    textvar = c("new_active","lw_active","active", "new_confirmed", "confirmed","new_recovered","recovered")
+
   } else if (grepl("confirmed", var)) {
     mapvar = grep("confirmed", varsNames(), value = T)
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
     new_buttons = list(name = "radio",
                        choices = mapvar, selected = mapvar["Last Week"])
-    caption <- "Total, Last Week and New Confirmed cases"
-    graph_title = "Confirmed cases"
-    textvar = c("growth_factor_3", "active", "tests")
-  } else {
+    caption <- "Total, Last Week and New Confirmed Positive cases"
+    graph_title = "Confirmed positive cases"
+    textvar = c("new_confirmed","lw_confirmed","confirmed","growth_factor_3", "active", "tests")
+    if (global) {
+      caption <- "Confirmed positive cases"
+    }
+  } else if (grepl("tests", var) && grepl("1M", var)) {
+    mapvar = grep("tests_rate_1M_pop", varsNames(), value = T)
+    names(mapvar) = c("Total", "Last Week",
+                      "Last Day")
+    new_buttons = list(name = "radio",
+                       choices = mapvar, selected = mapvar["Last Week"])
+    caption <- "Total, Last Week and New Tests per 1 Million people"
+    caption_tests <- "Updated Tests figures are unavailable for some countries"
+    caption =HTML(paste(c(caption,caption_tests), collapse = '<br/>'))
+
+    graph_title = "Tests per population"
+    textvar = c("new_tests","lw_tests","tests", "population", "lw_positive_tests_rate", "positive_tests_rate")
+
+  } else if (grepl("positive", var)) {
+    mapvar = grep("positive_tests_rate", varsNames(), value = T)
+    names(mapvar) = c("Total", "Last Week",
+                      "Last Day")
+    new_buttons = list(name = "radio",
+                       choices = mapvar, selected = mapvar["Last Week"])
+    caption <- "Total, Last Week and New % of positive tests."
+    caption_tests <- "Updated Tests figures are unavailable for some countries"
+    caption =HTML(paste(c(caption,caption_tests), collapse = '<br/>'))
+
+    graph_title = "Positive Tests rate"
+    textvar = c("lw_tests","tests", "lw_confirmed","confirmed", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
+  } else    {
     new_buttons = NULL
     caption = NULL
+  }
+  if (global) {
+    textvar = textvar[!grepl("^lw",textvar )]
+    textvar = c("date",textvar, "population")
+    textvar = unique(textvar)
   }
 
   list(new_buttons = new_buttons, graph_title = graph_title, caption = caption, textvar= textvar)
@@ -343,17 +382,27 @@ update_radio<- function(var, growthvar = 7){
 #' @param nam character: component of country names from data, NAME
 #' @param ind character: component of values from data, indicator
 #' @param namvar character: vector, additional variable names
-#' @param textvar character: vector, textt for the additional variables
+#' @param textvar character: vector, text for the additional variables
+#' @param namvarsfx character: vector, text suffix for namevar. Default NULL: no suffix.
+#'
 #' @return vector pop up messages, html
-map_popup_data <- function(data, nam, ind, namvar, textvar){
+map_popup_data <- function(data, nam, ind, namvar, textvar, namvarsfx = NULL){
   x = data[[ind]]
   NAME = data[[nam]]
   textvars = NULL
   varName = names(varsNames(namvar))
+  if (!is.null(namvarsfx)) {
+    varName = paste(varName, namvarsfx)
+  }
   if (!is.null(textvar)) {
-    textvars = list(data = as.list(data@data[c(textvar)]),
-                    NAME = names(varsNames(textvar)))
-    names(textvars$data) = textvar
+    textvar = setdiff(textvar, namvar) # remove namvar if textvar is present
+    #TODO: we could taje all lw variables if namvar is lw, same with new
+    if (length(namvar)>0) {
+      textvars = list(data = as.list(data@data[c(textvar)]),
+                      NAME = names(varsNames(textvar)))
+      names(textvars$data) = textvar
+    } else
+      textvars = NULL
   }
 
   text.pop.x = gen_text(x, namvar)
@@ -562,16 +611,22 @@ pal_fun = function(var,x){
       # colorRampPalette to customize and mix 2 palettes
        colorNumeric(palette = colorRampPalette(c("yellow", "#3c8dbc"), interpolate = "linear" )(length(x)),
                    domain = domain(x), na.color = "lightgray")
+        # colorNumeric(palette = "GnBu",
+        #            domain = domain(x), na.color = "lightgray")
 
       } else
       colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")
 
   }  else if (grepl("recovered", var)) {
     colorNumeric(palette = "Greens", domain = domain(x), na.color = "lightgray")
-  }  else if ((grepl("growth",var) && grepl("fact",var))) {
+  }  else if (grepl("growth",var) && grepl("fact",var)) {
     colorNumeric(palette = "Oranges", domain = domain(x), na.color = "lightgray")
-  }  else if ((grepl("growth",var) && grepl("prev",var))) {
-    colorFactor(palette = c("darkgreen", "#E69F00", "yellow3","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
+  }  else if (grepl("tests", var) && grepl("1M", var)) {
+    colorNumeric(palette = "BuGn", domain = domain(x), na.color = "lightgray")
+  }  else if (grepl("positive", var)) {
+    colorNumeric(palette = "YlOrRd", domain = domain(x), na.color = "lightgray")
+  } else if ((grepl("growth",var) && grepl("prev",var))) {
+    colorFactor(palette = c("darkgreen", "yellow3", "#E69F00","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   }
   else
     stop("non existing color palette for ", var)

@@ -11,21 +11,37 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
-  vars = setdiff(names(case_colors), "hosp") # remove hosp for now
-  choices_map <- c(vars, "new_confirmed", "new_active","new_deaths") %>%
-    setNames(gsub("_", " ",c(vars, "new_confirmed", "new_active", "new_deaths"))) %>% as.list()
+  vars = setdiff(names(case_colors), c("hosp","recovered")) # remove hosp for now
+  choices_map <- c(vars, "new_confirmed","new_deaths", "new_active") %>%
+    setNames(gsub("_", " ",c(vars, "new_confirmed", "new_deaths", "new_active"))) %>% as.list()
   div(
+  #fluidPage(
+
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     withSpinner(leafletOutput(ns("map"), width = "100%", height = "800")),
+    tags$head(tags$style(
+      HTML('
+             #input_date_control {background-color: rgba(192,192,192,0.6);;}
+             #sel_date {background-color: rgba(0,0,255,1);}
+             #help-block a {color: #ff0000 !important;}'
+           )
+    )),
     absolutePanel(
-      id = ns("input_date_control"), class = "panel panel-default",
-      top = 10, left = 10, draggable = F,
+      #id = ns("input_date_control"), class = "panel panel-default",
+      id = "input_date_control", class = "panel panel-default",
+      width = "27.5vw",
+      #height = "20vh",
+      top = 10, left = 10, draggable = FALSE,
+      #fixed = TRUE,
       div(style = "margin:10px;",
+          uiOutput(ns("title_map")),
           radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
           radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
           uiOutput(ns("slider_ui")),
-          helpText("Click on the country to obtain its details.")
+          helpText("Click on the country to obtain its details."),
+          div(uiOutput(ns("caption")), align = "center")
+
       )
     )
 
@@ -48,20 +64,16 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # Data ----
   #load data
-  #countries_data <- load_countries_data(destpath = system.file("./countries_data", package = "Covid19"))
 
-  #data_clean <- reactive({
-    data <- orig_data_aggregate #%>% align_country_names()
+  #data <- orig_data_aggregate #%>% align_country_names()
 
-    orig_data_aggregate$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(orig_data_aggregate$Country.Region, unique(as.character(countries_data_map$NAME)))])
+  orig_data_aggregate$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(orig_data_aggregate$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
-    data_clean <- orig_data_aggregate %>%
+  data_clean <- orig_data_aggregate %>%
       filter(!is.na(country_name))
-    keepcols = c("country_name","Country.Region","date",
+  keepcols = c("country_name","Country.Region","date",
                  names(data_clean)[sapply(data_clean, is.numeric)])
-    data_clean = data_clean[, keepcols] # remove, not used
-    data_clean
-  #})
+  data_clean = data_clean[, keepcols] # remove, not used
 
   # UI controls ----
   output$slider_ui <- renderUI({
@@ -72,13 +84,15 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # Data for a given date
   data_date <- reactive({
+    maxdate = req(input$slider_day)
     data_date <- data_clean %>%
-      filter(date == req(input$slider_day)) %>%
-      #filter(date == max(date)) %>%
+      filter(date == maxdate) %>%
+      filter(date == max(date)) %>%
       select(-c(Country.Region, date, contagion_day)) %>%
       group_by(country_name) %>%
       summarise_each(sum) %>%
-      ungroup()
+      ungroup() %>%
+      mutate(date = maxdate)
     data_date
   })
 
@@ -92,51 +106,29 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
         # percentage of indicator per 1M population
         mutate(indicator = round(1000000 * .$indicator / .$population))
     }
-
     data_selected <- data_selected %>%
-      select(country_name, indicator)
+      select(country_name, indicator, update_ui()$textvar)
 
     data_plot <-  sp::merge(countries_data_map,
                             data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
-
-    data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
-    #data_plot[["indicator"]] <- data_plot[["indicator"]] # could be removed but the code would have to be adjusted to handle NAs
+    # removed NAs can be shown
+    #data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
     data_plot
   })
+  update_ui <- reactive(update_radio(input$radio_choices, global = TRUE))
 
-  country_popup <- reactive({
-    paste0("<strong>Country: </strong>",
-           data_plot()$NAME,
-           "<br><strong>",
-           "Value :",
-           " </strong>",
-           data_plot()[["indicator"]]
+  if (isolate(!is.null(update_ui()$caption))) {
+    output$caption <- renderUI(
+      div(p(update_ui()$caption), align = "left",
+          style = "margin-top:5px; margin-bottom:5px;")
     )
-  })
-
-  max_value <- reactive({
-    max(data_plot()[["indicator"]])
-  })
-
-  domain <- reactive({
-    c(0,log(roundUp(max_value())))
-  })
-
-  pal2 <- reactive({
-    # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
-    if (input$radio_choices == "confirmed" | input$radio_choices == "new_confirmed") {
-      colorNumeric(palette = "Reds", domain = domain(), na.color = "white")
-    } else if (input$radio_choices == "deaths" | input$radio_choices == "new_deaths") {
-      colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
-    } else if (input$radio_choices == "active" | input$radio_choices == "new_active") {
-      colorNumeric(palette = "Blues", domain = domain(), na.color = "grey")
-    }  else if (input$radio_choices == "recovered" | input$radio_choices == "new_recovered") {
-      colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
-    }
-  })
+  }
+  # add Title to output
+  output$title_map <- renderUI(div(h4(update_ui()$graph_title), align = "center",
+                                   style = "margin-top:10px; margin-bottom:0px;"))
 
   output$map <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
@@ -149,36 +141,61 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # # update map with reactive part
   observeEvent(data_plot(),{
+    #browser()
+
+  if(req(input$radio_pop) == "per 1M pop")
+    var1M =   "per 1M pop"
+  else {
+    var1M = NULL
+
+  }
+
     mapdata = leafletProxy("map", data = data_plot())  %>%
       addPolygons(layerId = ~NAME,
-                  fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
+                  #fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
+                  fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   group = "mapdata",
                   label = ~NAME,
                   weight = 1,
-                  popup = country_popup())
+                  popup = map_popup_data(data_plot(), "NAME", "indicator", input$radio_choices, update_ui()$textvar, namvarsfx = var1M),
+                  popupOptions = popupOptions(keepInView = T, autoPan = F
+                                              #autoPanPadding = c(100, 100)
+                                              #offset = c(100,0)
+                  )
+                  #popup = country_popup()
+                  )
     mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
                              options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                              position = "topright",hideMarkerOnCollapse = T,
                                                              moveToLocation = FALSE))
-    mapdata
+    #mapdata
+    #proxy <- leafletProxy("map", data = countries_data_map)
+
+    leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+    mapdata = mapdata %>% clearControls()
+    do.call(what = "addLegend", args = c(list(map = mapdata), leg_par, list(position = "bottomright")))
 
   })
 
-  observeEvent(data_plot(),{
-    proxy <- leafletProxy("map", data = countries_data_map)
-    proxy %>% clearControls() %>%
-      addLegend(position = "bottomright",
-                pal = pal2(),
-                opacity = 1,
-                # values = data_plot()$indicator
-                bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
-                values = log(1:roundUp(max_value())),
-                data = log(1:roundUp(max_value())),
-                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
-      )
-  })
+
+  # observeEvent(data_plot(),{
+  #   leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+  #   do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = "bottomright")))
+  #
+  #   proxy <- leafletProxy("map", data = countries_data_map)
+  #   proxy %>% clearControls() %>%
+  #     addLegend(position = "bottomright",
+  #               pal = pal2(),
+  #               opacity = 1,
+  #               # values = data_plot()$indicator
+  #               bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
+  #               values = log(1:roundUp(max_value())),
+  #               data = log(1:roundUp(max_value())),
+  #               labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
+  #     )
+  # })
 
 }
 

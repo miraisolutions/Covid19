@@ -39,7 +39,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"))
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_prevalence_rate_1M_pop")
       )
     ),
     hr(),
@@ -118,7 +118,13 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", total_today)
 
-  # map ----
+  # # map ----
+  # data7_orig_data_aggregate = lw_vars_calc(orig_data_aggregate)
+  #
+  # # create datasets for maps merging today with data7
+  # orig_data_aggregate_maps = orig_data_aggregate %>% filter(date == max(date)) %>%
+  #   left_join(data7_orig_data_aggregate %>% select(-population))
+
 
   callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
 
@@ -127,11 +133,11 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
 
   n = 1000 # define areaplot start
   df_global =
-    tsdata_areplot(total,levs, n) # start from day with >1000
+    tsdata_areplot(total,levs, nn = n) # start from day with >1000
 
   callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, n = n, istop = FALSE)
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, nn = n, istop = FALSE)
 
   # > line plot top 5
   #df_top_n <-
@@ -152,7 +158,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
 
   # > comparison plot from day of nth contagion
 
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", data_filtered)
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n)
 
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate, n_highligth = 10)

@@ -38,7 +38,7 @@ mod_growth_death_rate_ui <- function(id){
 #' growth_death_rate Server Function
 #'
 #' @param df reactive data.frame
-#' @param n min number of cases for a country to be considered. Default 1000
+#' @param nn min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
 #' @param istop logical to choose title
@@ -50,7 +50,7 @@ mod_growth_death_rate_ui <- function(id){
 #' @example ex-mod_growth_death_rate.R
 #'
 #' @noRd
-mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w = 7,
+mod_growth_death_rate_server <- function(input, output, session, df, nn = 1000, w = 7,
                                          n_highligth = 5, istop = TRUE,
                                          g_palette = list("growth_factor" = rate_colors["growth_factor"],
                                                         "death_rate" = rate_colors["death_rate"])){
@@ -60,7 +60,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, n = 1000, w
 
   scale_mortality_rate <- function(dat){
     df1 <- dat %>%
-      select_countries_n_cases_w_days(n = n, w = w) %>%
+      select_countries_n_cases_w_days(n = nn, w = w) %>%
       filter( date == max(date))
     df1
   }

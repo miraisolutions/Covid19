@@ -62,8 +62,9 @@ app_server <- function(input, output, session) {
 
   # align contagion day for comparisons
   data_filtered <-
-    orig_data_aggregate %>%
+      orig_data_aggregate %>%
       rescale_df_contagion(n = n, w = w)
+
 
   # determine vector of countries to be used in Global and Comparison pages
   # reactive
@@ -78,7 +79,7 @@ app_server <- function(input, output, session) {
   callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
              data_filtered = data_filtered, countries_data_map)
 
-  callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, n = n, w = w, pop_data = pop_data)
+  callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
 
   # select continents in tabs
   continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
@@ -86,21 +87,21 @@ app_server <- function(input, output, session) {
   uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
   for (i.cont in 1:length(continents)) {
     callModule(mod_continent_server, paste(mainuicontinents[i.cont], "comparison", sep = "_"),
-               orig_data_aggregate = orig_data_aggregate, n = n, w = w,
+               orig_data_aggregate = orig_data_aggregate, nn = n, w = w,
                pop_data = pop_data, countries_data_map = countries_data_map,
                cont = continents[i.cont], uicont = uicontinents[i.cont])
   }
   # Switzerland page
-  callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, country = "Switzerland", n = 10, w = w)
+  callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, country = "Switzerland", nn = n, w = w)
 
   # country choice, remove Switzerland
   orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
   countriesnoswiss = reactive({
     countries()[countries()[,1] != "Switzerland",]
   })
-  callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, n = 10, w = w, n.select = n)
+  callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, nn = n, w = w, n.select = n)
 
-  callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, n = 10, w = w, n.select = n)
+  callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, nn = 100, w = w, n.select = n)
 
   # Modal ----
   # what is new pop-up

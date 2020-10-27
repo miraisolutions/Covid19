@@ -4,10 +4,12 @@
 \alias{from_contagion_day_bar_facet_plot}
 \title{Evolution from contagion day facet}
 \usage{
-from_contagion_day_bar_facet_plot(df)
+from_contagion_day_bar_facet_plot(df, xdate = "date")
 }
 \arguments{
 \item{df}{data.frame to plot}
+
+\item{xdate}{character variable for x axis}
 }
 \value{
 barplot facet

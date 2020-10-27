@@ -18,6 +18,9 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 #' stackedbarplot_status Server Function
 #'
 #' @param df data.frame for multiple countries
+#' @param w number of days of outbreak. Default 7
+#' @param n_highligth number of countries considered.
+#' @param istop logical to choose title, if top n_highligth countries are selected
 #'
 #' @import dplyr
 #' @import tidyr
@@ -25,7 +28,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 #' @import purrr
 #' @importFrom plotly ggplotly layout
 #' @noRd
-mod_stackedbarplot_status_server <- function(input, output, session, df, n = 1000, w = 7, n_highligth = 5, istop = T){
+mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, n_highligth = 5, istop = TRUE){
   ns <- session$ns
   # titles
   if (istop) {
@@ -34,13 +37,13 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
     output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
-  prep_data <- function(data, n, w){
+  prep_data <- function(data, w){
     df1 <- data %>%
       #select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date))
     df1
   }
-  df_pop <- reactive({prep_data(df, n,w)})
+  df_pop <- reactive({prep_data(df,w)})
 
   statuses <- c("deaths", "active", "recovered")
 
@@ -69,7 +72,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, n = 100
            status = factor(status, levels = statuses)) %>%
     arrange(status)})
 
-  caption_explain <- "The plot shows what countries have more to recover from their Confirmed cases. Not all of them may have provided Recovered numbers."
+  caption_explain <- "The plot shows what countries have more to recover from their Confirmed cases. Not all of them may have provided Recovered cases"
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(
