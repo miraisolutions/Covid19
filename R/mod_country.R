@@ -287,9 +287,16 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   # plots ----
   levs <- sort_type_hardcoded()
-  df_area_2 = purrr::map(unique(data$Country.Region),
+  data_area = data
+  if (sum(data$hosp)>0) {
+    message("Adding hospitalised data")
+    levs = c(levs, "hosp")
+    data_area$active = data_area$active - data_area$hosp
+  }
+
+  df_area_2 = purrr::map(unique(data_area$Country.Region),
     function(un) {
-      dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
+      dat = tsdata_areplot(data_area[data_area$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
       dat$Country.Region = rep(un, nrow(dat))
       dat
       })

@@ -33,14 +33,13 @@ mod_ind_country_ui <- function(id){
              )
       ),
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = FALSE))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
       )
     ),
     # hr(),
     # mod_add_table_ui(ns("ind_add_table_country")), # table at country level
     hr(),
     withSpinner(uiOutput(ns("ind_subarea"))),
-    #withSpinner(areaUI(ns("ind_country_subarea"))),
     hr(),
     withSpinner(uiOutput(ns("maps_ind_subarea"))),
     hr(),
