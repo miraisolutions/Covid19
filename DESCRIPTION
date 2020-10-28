@@ -1,6 +1,6 @@
 Package: Covid19Mirai
 Title: Covid-19 Data Analysis
-Version: 2.2.1-9000
+Version: 2.2.2
 Authors@R: 
     c(person("Francesca", "Vitalini", role = c("cre", "aut"),
              email = 'francesca.vitalini@mirai-solutions.com'),

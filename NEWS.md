@@ -1,4 +1,4 @@
-### Covid19Mirai 2.2.1-9000 (develop)
+### Covid19Mirai 2.2.2 (2020-10-28)
 - Fixed legend reactivity in global map (#135)
 
 ### Covid19Mirai 2.2.1 (2020-10-26)
