@@ -148,7 +148,6 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       var1M =   "per 1M pop"
     else {
       var1M = NULL
-
     }
 
     mapdata = leafletProxy("map", data = data_plot())  %>%
@@ -171,10 +170,15 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                  options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                  position = "topright",hideMarkerOnCollapse = T,
                                                                  moveToLocation = FALSE))
-
+    mapdata
   })
+
+  toListen <- reactive({
+    list(req(input$radio_choices),req(input$radio_pop), data_plot())
+  })
+
   # Add legend with new observe event
-  observeEvent(data_plot(),{
+  observeEvent(toListen(),{
     #mapdata
     leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
     proxy <- leafletProxy("map", data = countries_data_map)
