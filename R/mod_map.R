@@ -15,7 +15,7 @@ mod_map_ui <- function(id){
   choices_map <- c(vars, "new_confirmed","new_deaths", "new_active") %>%
     setNames(gsub("_", " ",c(vars, "new_confirmed", "new_deaths", "new_active"))) %>% as.list()
   div(
-  #fluidPage(
+    #fluidPage(
 
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
@@ -25,7 +25,7 @@ mod_map_ui <- function(id){
              #input_date_control {background-color: rgba(192,192,192,0.6);;}
              #sel_date {background-color: rgba(0,0,255,1);}
              #help-block a {color: #ff0000 !important;}'
-           )
+      )
     )),
     absolutePanel(
       #id = ns("input_date_control"), class = "panel panel-default",
@@ -70,9 +70,9 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   orig_data_aggregate$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(orig_data_aggregate$Country.Region, unique(as.character(countries_data_map$NAME)))])
 
   data_clean <- orig_data_aggregate %>%
-      filter(!is.na(country_name))
+    filter(!is.na(country_name))
   keepcols = c("country_name","Country.Region","date",
-                 names(data_clean)[sapply(data_clean, is.numeric)])
+               names(data_clean)[sapply(data_clean, is.numeric)])
   data_clean = data_clean[, keepcols] # remove, not used
 
   # UI controls ----
@@ -102,7 +102,9 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                   setNames("indicator"))
 
     if (req(input$radio_pop) == "per 1M pop") {
+      max.pop = 100000
       data_selected <- data_selected %>%
+        filter(population > max.pop) %>% # filter out very small countries
         # percentage of indicator per 1M population
         mutate(indicator = round(1000000 * .$indicator / .$population))
     }
@@ -141,14 +143,13 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # # update map with reactive part
   observeEvent(data_plot(),{
-    #browser()
 
-  if(req(input$radio_pop) == "per 1M pop")
-    var1M =   "per 1M pop"
-  else {
-    var1M = NULL
+    if(req(input$radio_pop) == "per 1M pop")
+      var1M =   "per 1M pop"
+    else {
+      var1M = NULL
 
-  }
+    }
 
     mapdata = leafletProxy("map", data = data_plot())  %>%
       addPolygons(layerId = ~NAME,
@@ -165,94 +166,80 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                               #offset = c(100,0)
                   )
                   #popup = country_popup()
-                  )
+      )
     mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
-                             options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
-                                                             position = "topright",hideMarkerOnCollapse = T,
-                                                             moveToLocation = FALSE))
-    #mapdata
-    #proxy <- leafletProxy("map", data = countries_data_map)
+                                 options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
+                                                                 position = "topright",hideMarkerOnCollapse = T,
+                                                                 moveToLocation = FALSE))
 
+  })
+  # Add legend with new observe event
+  observeEvent(data_plot(),{
+    #mapdata
     leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
-    mapdata = mapdata %>% clearControls()
-    do.call(what = "addLegend", args = c(list(map = mapdata), leg_par, list(position = "bottomright")))
+    proxy <- leafletProxy("map", data = countries_data_map)
+
+    proxy = proxy %>% clearControls()
+    do.call(what = "addLegend", args = c(list(map = proxy), leg_par, list(position = "bottomright")))
 
   })
 
-
-  # observeEvent(data_plot(),{
-  #   leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
-  #   do.call(what = "addLegend", args = c(list(map = map), leg_par, list(position = "bottomright")))
-  #
-  #   proxy <- leafletProxy("map", data = countries_data_map)
-  #   proxy %>% clearControls() %>%
-  #     addLegend(position = "bottomright",
-  #               pal = pal2(),
-  #               opacity = 1,
-  #               # values = data_plot()$indicator
-  #               bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
-  #               values = log(1:roundUp(max_value())),
-  #               data = log(1:roundUp(max_value())),
-  #               labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
-  #     )
-  # })
-
 }
 
-align_country_names <- function(data) {
-  # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
-  # Note Cruise Ship and Mayonette not present in countries_data_map$NAME
-
-  data$Country.Region <- data$Country.Region %>%
-    recode(
-
-      "Macau" = "Macao",
-      "Mainland China" = "China",
-      "South Korea" = "South Korea",
-      "North Macedonia" = "Macedonia",
-      "Czech Republic" = "Czechia",
-      "Dominican Republic" = "Dominican Rep.",
-      "UK" = "United Kingdom",
-      "Gibraltar" = "United Kingdom",
-      # "US" = "United States",
-      "USA" = "United States",
-      "UAE" = "United Arab Emirates",
-      "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
-
-      "Faroe Islands" = "Faeroe Is.",
-      "Bosnia and Herzegovina" = "Bosnia and Herz.",
-      "Vatican City" = "Vatican",
-      "Korea, South" = "South Korea",
-      "Republic of Ireland" = "Ireland",
-      "Taiwan*" = "Taiwan",
-      "St. Vincent Grenadines" = "St. Vin. and Gren.",
-      "Republic of the Congo" = "Dem. Rep. Congo", # corrected
-      "CAR" = "Central African Rep.",
-
-      "Congo (Kinshasa)" = "Congo",
-      "Cote d'Ivoire" = "C\\u00f4te d'Ivoire", # stringi::stri_escape_unicode("ô")
-      "Reunion" = "France",
-      "Martinique" = "France",
-      "French Guiana" = "France",
-      "Holy See" = "Vatican",
-      "Cayman Islands" = "Cayman Is.",
-      "Guadeloupe" = "France",
-      "Antigua and Barbuda" = "Antigua and Barb.",
-
-      "Curacao" = "Cura\\u00e7ao", # stringi::stri_escape_unicode("ç")
-      "Guadeloupe" = "France",
-      "occupied Palestinian territory" = "Palestine",
-      "Congo (Brazzaville)" = "Congo",
-      "Equatorial Guinea" = "Eq. Guinea", # corrected
-      "Central African Republic" = "Central African Rep.",
-      "Eswatini" = "eSwatini",
-
-      "Bahamas, The" = "Bahamas",
-      "Cape Verde" = "Cabo Verde",
-      "East Timor" = "Timor-Leste",
-      "Gambia, The" = "Gambia"
-
-
-    )
-  data
-}
+# align_country_names <- function(data) {
+#   # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
+#   # Note Cruise Ship and Mayonette not present in countries_data_map$NAME
+#
+#   data$Country.Region <- data$Country.Region %>%
+#     recode(
+#
+#       "Macau" = "Macao",
+#       "Mainland China" = "China",
+#       "South Korea" = "South Korea",
+#       "North Macedonia" = "Macedonia",
+#       "Czech Republic" = "Czechia",
+#       "Dominican Republic" = "Dominican Rep.",
+#       "UK" = "United Kingdom",
+#       "Gibraltar" = "United Kingdom",
+#       # "US" = "United States",
+#       "USA" = "United States",
+#       "UAE" = "United Arab Emirates",
+#       "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
+#
+#       "Faroe Islands" = "Faeroe Is.",
+#       "Bosnia and Herzegovina" = "Bosnia and Herz.",
+#       "Vatican City" = "Vatican",
+#       "Korea, South" = "South Korea",
+#       "Republic of Ireland" = "Ireland",
+#       "Taiwan*" = "Taiwan",
+#       "St. Vincent Grenadines" = "St. Vin. and Gren.",
+#       "Republic of the Congo" = "Dem. Rep. Congo", # corrected
+#       "CAR" = "Central African Rep.",
+#
+#       "Congo (Kinshasa)" = "Congo",
+#       "Cote d'Ivoire" = "C\\u00f4te d'Ivoire", # stringi::stri_escape_unicode("ô")
+#       "Reunion" = "France",
+#       "Martinique" = "France",
+#       "French Guiana" = "France",
+#       "Holy See" = "Vatican",
+#       "Cayman Islands" = "Cayman Is.",
+#       "Guadeloupe" = "France",
+#       "Antigua and Barbuda" = "Antigua and Barb.",
+#
+#       "Curacao" = "Cura\\u00e7ao", # stringi::stri_escape_unicode("ç")
+#       "Guadeloupe" = "France",
+#       "occupied Palestinian territory" = "Palestine",
+#       "Congo (Brazzaville)" = "Congo",
+#       "Equatorial Guinea" = "Eq. Guinea", # corrected
+#       "Central African Republic" = "Central African Rep.",
+#       "Eswatini" = "eSwatini",
+#
+#       "Bahamas, The" = "Bahamas",
+#       "Cape Verde" = "Cabo Verde",
+#       "East Timor" = "Timor-Leste",
+#       "Gambia, The" = "Gambia"
+#
+#
+#     )
+#   data
+# }
