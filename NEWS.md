@@ -1,4 +1,5 @@
 ### Covid19Mirai 2.2.1-9000 (develop)
+- Fixed legend reactivity in global map (#135)
 
 ### Covid19Mirai 2.2.1 (2020-10-26)
 - Removed contagion day in x axis, replaced with dates (#126)
