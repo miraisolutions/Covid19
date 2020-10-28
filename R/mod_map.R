@@ -177,14 +177,15 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
     list(req(input$radio_choices),req(input$radio_pop), data_plot())
   })
 
+  leg_par <- reactive(legend_fun(data_plot()$indicator, input$radio_choices))
   # Add legend with new observe event
   observeEvent(toListen(),{
     #mapdata
-    leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+    #leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
     proxy <- leafletProxy("map", data = countries_data_map)
 
     proxy = proxy %>% clearControls()
-    do.call(what = "addLegend", args = c(list(map = proxy), leg_par, list(position = "bottomright")))
+    do.call(what = "addLegend", args = c(list(map = proxy), leg_par(), list(position = "bottomright")))
 
   })
 
