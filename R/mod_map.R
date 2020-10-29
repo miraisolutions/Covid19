@@ -111,14 +111,14 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
     data_selected <- data_selected %>%
       select(country_name, indicator, update_ui()$textvar)
 
-    data_plot <-  sp::merge(countries_data_map,
+    data <-  sp::merge(countries_data_map,
                             data_selected,
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
     # removed NAs can be shown
     #data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
-    data_plot
+    data
   })
   update_ui <- reactive(update_radio(input$radio_choices, global = TRUE))
 
@@ -169,9 +169,23 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                  options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                  position = "topright",hideMarkerOnCollapse = T,
                                                                  moveToLocation = FALSE))
-    mapdata
+    leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+
+    message("leg_par$bins:", paste(leg_par$bins, collapse = ","))
+    mapdata %>% clearControls() %>%
+      addLegend(position = "bottomright",
+                pal = leg_par$pal,
+                opacity = leg_par$opacity,
+                bins = leg_par$bins,
+                values = leg_par$values,
+                data = leg_par$data,
+                labFormat = leg_par$labFormat
+      )
+
+
   })
 
+if (F) {
   toListen <- reactive({
     list(req(input$radio_choices),req(input$radio_pop), data_plot())
   })
@@ -183,8 +197,9 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
     #leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
     proxy <- leafletProxy("map", data = countries_data_map)
     message("update legend")
-    proxy %>% clearControls() %>%
     #do.call(what = "addLegend", args = c(list(map = proxy), leg_par(), list(position = "bottomright")))
+
+    proxy %>% clearControls() %>%
       addLegend(position = "bottomright",
                 pal = leg_par()$pal,
                 opacity = leg_par()$opacity,
@@ -194,6 +209,9 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                 labFormat = leg_par()$labFormat
       )
   })
+
+}
+
 
 }
 
