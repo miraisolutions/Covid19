@@ -164,7 +164,6 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                               #autoPanPadding = c(100, 100)
                                               #offset = c(100,0)
                   )
-                  #popup = country_popup()
       )
     mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
                                  options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
@@ -183,10 +182,17 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
     #mapdata
     #leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
     proxy <- leafletProxy("map", data = countries_data_map)
-
-    proxy = proxy %>% clearControls()
-    do.call(what = "addLegend", args = c(list(map = proxy), leg_par(), list(position = "bottomright")))
-
+    message("update legend")
+    proxy %>% clearControls() %>%
+    #do.call(what = "addLegend", args = c(list(map = proxy), leg_par(), list(position = "bottomright")))
+      addLegend(position = "bottomright",
+                pal = leg_par()$pal,
+                opacity = leg_par()$opacity,
+                bins = leg_par()$bins,
+                values = leg_par()$values,
+                data = leg_par()$data,
+                labFormat = leg_par()$labFormat
+      )
   })
 
 }
