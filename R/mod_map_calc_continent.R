@@ -483,7 +483,7 @@ legend_fun <- function(x, var){
       }
 
       form = labelFormat(transform = function(x) x,
-                         suffix = suf, digits = getdg_lab(dg, maxv, minxv))
+                         suffix = suf, digits = getdg_lab(dg, maxv, minxv), big.mark = "'")
     }  else { # high values, like total
 
       bin = domain(x)
@@ -510,7 +510,7 @@ legend_fun <- function(x, var){
            y = round_up(exp(x))
          y
       }
-      form = labelFormat(transform = function(x) .round_val(x), suffix = suf)
+      form = labelFormat(transform = function(x) .round_val(x), suffix = suf, big.mark = "'")
     }
     res =     list(
       bins = bin,
