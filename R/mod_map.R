@@ -116,8 +116,8 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                             by.x = "NAME",
                             by.y = "country_name",
                             sort = FALSE)
-    # removed NAs can be shown
-    #data_plot[["indicator"]] <- replace_na(data_plot[["indicator"]], 0)
+    # GM: To be removed with new legend NAs can be shown
+    data[["indicator"]] <- replace_na(data[["indicator"]], 0)
     data
   })
   update_ui <- reactive(update_radio(input$radio_choices, global = TRUE))
@@ -131,6 +131,27 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   # add Title to output
   output$title_map <- renderUI(div(h4(update_ui()$graph_title), align = "center",
                                    style = "margin-top:10px; margin-bottom:0px;"))
+
+  max_value <- reactive({
+    max(data_plot()[["indicator"]])
+  })
+
+  domain <- reactive({
+    c(0,log(roundUp(max_value())))
+  })
+
+  pal2 <- reactive({
+    # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
+    if (input$radio_choices == "confirmed" | input$radio_choices == "new_confirmed") {
+      colorNumeric(palette = "Reds", domain = domain(), na.color = "white")
+    } else if (input$radio_choices == "deaths" | input$radio_choices == "new_deaths") {
+      colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
+    } else if (input$radio_choices == "active" | input$radio_choices == "new_active") {
+      colorNumeric(palette = "Blues", domain = domain(), na.color = "grey")
+    }  else if (input$radio_choices == "recovered" | input$radio_choices == "new_recovered") {
+      colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
+    }
+  })
 
   output$map <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
@@ -152,8 +173,9 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
     mapdata = leafletProxy("map", data = data_plot())  %>%
       addPolygons(layerId = ~NAME,
-                  #fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
-                  fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
+                  # GM line for new colors
+                  #fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
+                  fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   group = "mapdata",
@@ -169,8 +191,11 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                  options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                  position = "topright",hideMarkerOnCollapse = T,
                                                                  moveToLocation = FALSE))
-    mapdata
-    if(F) {
+    #mapdata
+    #GM new legend line
+    #leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+
+    if(FALSE) { # GM for new legend
       leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
 
       message("leg_par$bins:", paste(leg_par$bins, collapse = ","))
@@ -184,44 +209,22 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                   labFormat = leg_par$labFormat
         )
     }
-
-
-
-  })
-
-if (T) {
-  # toListen <- reactive({
-  #   list(req(input$radio_choices),req(input$radio_pop), data_plot())
-  # })
-
-  #leg_par <- reactive(legend_fun(data_plot()$indicator, input$radio_choices))
-  # Add legend with new observe event
-  #observeEvent(toListen(),{
-  observe({
-    #mapdata
-    leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
-    message("leg_par$bins:", paste(leg_par$bins, collapse = ","))
-
-    #proxy <- leafletProxy("map", data = countries_data_map)
-    proxy <- leafletProxy("map", data = data_plot())
-
-    #do.call(what = "addLegend", args = c(list(map = proxy), leg_par(), list(position = "bottomright")))
-
-    proxy %>% clearControls() %>%
+    if (TRUE) { # old legend restored
+      mapdata %>% removeControl("colorLegend") %>%
       addLegend(position = "bottomright",
-                pal = leg_par$pal,
-                opacity = leg_par$opacity,
-                bins = leg_par$bins,
-                values = leg_par$values,
-                data = leg_par$data,
-                labFormat = leg_par$labFormat
+                layerId="colorLegend",
+                group = "mapdata",
+                pal = pal2(),
+                opacity = 1,
+                # values = data_plot()$indicator
+                bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
+                values = log(1:roundUp(max_value())),
+                data = log(1:roundUp(max_value())),
+                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
       )
+    }
   })
 }
-
-
-}
-
 # align_country_names <- function(data) {
 #   # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
 #   # Note Cruise Ship and Mayonette not present in countries_data_map$NAME
