@@ -191,7 +191,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                  options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                  position = "topright",hideMarkerOnCollapse = T,
                                                                  moveToLocation = FALSE))
-    #mapdata
+    mapdata
     #GM new legend line
     #leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
 
@@ -209,7 +209,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                   labFormat = leg_par$labFormat
         )
     }
-    if (TRUE) { # old legend restored
+    if (FALSE) { # old legend restored
       mapdata %>% removeControl("colorLegend") %>%
       addLegend(position = "bottomright",
                 layerId="colorLegend",
@@ -223,6 +223,20 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                 labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
       )
     }
+  })
+
+  observeEvent(data_plot(),{
+    proxy <- leafletProxy("map", data = countries_data_map)
+    proxy %>% clearControls() %>%
+      addLegend(position = "bottomright",
+                pal = pal2(),
+                opacity = 1,
+                # values = data_plot()$indicator
+                bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
+                values = log(1:roundUp(max_value())),
+                data = log(1:roundUp(max_value())),
+                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
+      )
   })
 }
 # align_country_names <- function(data) {
