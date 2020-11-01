@@ -112,12 +112,12 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       select(country_name, indicator, update_ui()$textvar)
 
     data <-  sp::merge(countries_data_map,
-                            data_selected,
-                            by.x = "NAME",
-                            by.y = "country_name",
-                            sort = FALSE)
+                       data_selected,
+                       by.x = "NAME",
+                       by.y = "country_name",
+                       sort = FALSE)
     # GM: To be removed with new legend NAs can be shown
-    data[["indicator"]] <- replace_na(data[["indicator"]], 0)
+    #data[["indicator"]] <- replace_na(data[["indicator"]], 0)
     data
   })
   update_ui <- reactive(update_radio(input$radio_choices, global = TRUE))
@@ -163,19 +163,22 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   })
 
   # # update map with reactive part
-  observeEvent(data_plot(),{
+  observe({
 
     if(req(input$radio_pop) == "per 1M pop")
       var1M =   "per 1M pop"
     else {
       var1M = NULL
     }
+    leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+    message("leg_par$bins 1:", paste(leg_par$bins, collapse = ","))
 
     mapdata = leafletProxy("map", data = data_plot())  %>%
+      clearShapes() %>% clearControls() %>%
       addPolygons(layerId = ~NAME,
                   # GM line for new colors
-                  #fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
-                  fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
+                  fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
+                  #fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
                   fillOpacity = 1,
                   color = "#BDBDC3",
                   group = "mapdata",
@@ -186,113 +189,23 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                               #autoPanPadding = c(100, 100)
                                               #offset = c(100,0)
                   )
+      ) %>%  addLegend(position = "bottomright",
+                       #layerId="colorLegend",
+                       pal = leg_par$pal,
+                       opacity = leg_par$opacity,
+                       bins = leg_par$bins,
+                       values = leg_par$values,
+                       data = leg_par$data,
+                       labFormat = leg_par$labFormat
       )
+
     mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
                                  options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
                                                                  position = "topright",hideMarkerOnCollapse = T,
                                                                  moveToLocation = FALSE))
+
     mapdata
-    #GM new legend line
-    #leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
 
-    if(FALSE) { # GM for new legend
-      leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
-
-      message("leg_par$bins:", paste(leg_par$bins, collapse = ","))
-      mapdata %>% clearControls() %>%
-        addLegend(position = "bottomright",
-                  pal = leg_par$pal,
-                  opacity = leg_par$opacity,
-                  bins = leg_par$bins,
-                  values = leg_par$values,
-                  data = leg_par$data,
-                  labFormat = leg_par$labFormat
-        )
-    }
-    if (FALSE) { # old legend restored
-      mapdata %>% removeControl("colorLegend") %>%
-      addLegend(position = "bottomright",
-                layerId="colorLegend",
-                group = "mapdata",
-                pal = pal2(),
-                opacity = 1,
-                # values = data_plot()$indicator
-                bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
-                values = log(1:roundUp(max_value())),
-                data = log(1:roundUp(max_value())),
-                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
-      )
-    }
   })
 
-  observeEvent(data_plot(),{
-    proxy <- leafletProxy("map", data = countries_data_map)
-    proxy %>% clearControls() %>%
-      addLegend(position = "bottomright",
-                pal = pal2(),
-                opacity = 1,
-                # values = data_plot()$indicator
-                bins = log(10^(seq(0,log10(roundUp(max_value())),1))),
-                values = log(1:roundUp(max_value())),
-                data = log(1:roundUp(max_value())),
-                labFormat = labelFormat(transform = function(x) roundUp(exp(x)), suffix = paste0(" cases ", input$radio_pop))
-      )
-  })
 }
-# align_country_names <- function(data) {
-#   # thanks to https://github.com/DrFabach/Corona/blob/master/shiny.r for data wrangling
-#   # Note Cruise Ship and Mayonette not present in countries_data_map$NAME
-#
-#   data$Country.Region <- data$Country.Region %>%
-#     recode(
-#
-#       "Macau" = "Macao",
-#       "Mainland China" = "China",
-#       "South Korea" = "South Korea",
-#       "North Macedonia" = "Macedonia",
-#       "Czech Republic" = "Czechia",
-#       "Dominican Republic" = "Dominican Rep.",
-#       "UK" = "United Kingdom",
-#       "Gibraltar" = "United Kingdom",
-#       # "US" = "United States",
-#       "USA" = "United States",
-#       "UAE" = "United Arab Emirates",
-#       "Saint Barthelemy" = "St-Barth\\u00e9lemy", # stringi::stri_escape_unicode("é")
-#
-#       "Faroe Islands" = "Faeroe Is.",
-#       "Bosnia and Herzegovina" = "Bosnia and Herz.",
-#       "Vatican City" = "Vatican",
-#       "Korea, South" = "South Korea",
-#       "Republic of Ireland" = "Ireland",
-#       "Taiwan*" = "Taiwan",
-#       "St. Vincent Grenadines" = "St. Vin. and Gren.",
-#       "Republic of the Congo" = "Dem. Rep. Congo", # corrected
-#       "CAR" = "Central African Rep.",
-#
-#       "Congo (Kinshasa)" = "Congo",
-#       "Cote d'Ivoire" = "C\\u00f4te d'Ivoire", # stringi::stri_escape_unicode("ô")
-#       "Reunion" = "France",
-#       "Martinique" = "France",
-#       "French Guiana" = "France",
-#       "Holy See" = "Vatican",
-#       "Cayman Islands" = "Cayman Is.",
-#       "Guadeloupe" = "France",
-#       "Antigua and Barbuda" = "Antigua and Barb.",
-#
-#       "Curacao" = "Cura\\u00e7ao", # stringi::stri_escape_unicode("ç")
-#       "Guadeloupe" = "France",
-#       "occupied Palestinian territory" = "Palestine",
-#       "Congo (Brazzaville)" = "Congo",
-#       "Equatorial Guinea" = "Eq. Guinea", # corrected
-#       "Central African Republic" = "Central African Rep.",
-#       "Eswatini" = "eSwatini",
-#
-#       "Bahamas, The" = "Bahamas",
-#       "Cape Verde" = "Cabo Verde",
-#       "East Timor" = "Timor-Leste",
-#       "Gambia, The" = "Gambia"
-#
-#
-#     )
-#   data
-# }
