@@ -1,6 +1,7 @@
+### Covid19Mirai 2.2.3-9000 (develop)
+
 ### Covid19Mirai 2.2.2 (2020-10-28)
 - Fixed legend reactivity in global map (#135)
-- Restored old colors and legend due to issue with Shinyapps.io
 
 ### Covid19Mirai 2.2.1 (2020-10-26)
 - Removed contagion day in x axis, replaced with dates (#126)
