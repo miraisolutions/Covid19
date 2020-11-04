@@ -97,6 +97,7 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
   }
   x.d.lim = range(df$Date)
   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line() +
     basic_plot_theme() +
@@ -128,6 +129,7 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' @param stack logical for producing a stacked plot
 #' @param log logical for applying log scale
 #' @param text element for tooltip
+#' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
 #'
 #' @return area plot of given variable by date
 #'
@@ -174,9 +176,16 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
+time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE, active_hosp) {
 
   if (stack) {
+    if (hosp) {
+      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "vent"] -  df$Value[df$Status == "icu"], 0)
+    }
+    if (active_hosp) {
+      df$active[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0)
+    }
+
     df <- df %>%
       arrange(desc(Status)) %>%
       group_by(Date) %>%
@@ -213,9 +222,15 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 
   x.d.lim = range(df$Date)
   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-
   p <- ggplot(df, aes(x = Date, y = Value,
                       text = paste0(text, ": ", statuslabel)
+
+                      # text = paste0(
+                      #   "<b> Date: </b>", Date,"<br>",
+                      #   "<b> Value: </b>", scales::comma(Value, 1, big.mark = "'"), "<br>",
+                      #   "<b> Status: </b>", statuslabel,"<br>"
+                      # )
+
               )) +
     geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
@@ -231,15 +246,24 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1)
     )
-
   p <- p %>%
-    fix_colors(labs = TRUE)
+    fix_colors(labs = TRUE, hosp = hosp)
 
   if (log) {
     p <- p %>%
       add_log_scale()
   }
-
+  if (stack) {
+    if (hosp) {
+      # adjust hosp data here
+      p$data$Value[p$data$Status == "hosp"] =
+        p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "vent"] +  p$data$Value[p$data$Status == "icu"]
+    }
+    if (active_hosp) {
+      p$data$Value[p$data$Status == "active"] =
+        p$data$Value[p$data$Status == "active"] +  p$data$Value[p$data$Status == "hosp"]
+    }
+  }
   p
 }
 
@@ -299,7 +323,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors
+  fills <- .case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -415,7 +439,7 @@ from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors
+  fills <- .case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -469,12 +493,21 @@ date_bar_plot <- function(df){
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p, labs = FALSE) {
-  if (labs) {
-    cc_vect = c(case_colors_labs(), case_colors_labs(prefix_case_colors(prefix = "lw")),
-                case_colors_labs(prefix_case_colors(prefix = "new")))
+fix_colors <- function(p, labs = FALSE, hosp = FALSE) {
+  if (!hosp) {
+    if (labs) {
+      cc_vect = c(case_colors_labs(), case_colors_labs(prefix_colors(prefix = "lw")),
+                  case_colors_labs(prefix_colors(prefix = "new")))
+    } else {
+      cc_vect = c(.case_colors, prefix_colors(prefix = "lw"), prefix_colors(prefix = "new"))
+    }
   } else {
-    cc_vect = c(case_colors, prefix_case_colors(prefix = "lw"), prefix_case_colors(prefix = "new"))
+    if (labs) {
+      cc_vect = c(case_colors_labs(.hosp_colors), case_colors_labs(prefix_colors(.hosp_colors, prefix = "lw")),
+                  case_colors_labs(prefix_colors(.hosp_colors, prefix = "new")))
+    } else {
+      cc_vect = c(hosp_colors, prefix_colors(hosp_colors, prefix = "lw"), prefix_colors(.hosp_colors, prefix = "new"))
+    }
   }
 
   p <- p +
@@ -508,7 +541,6 @@ fix_legend_position <- function(p){
 #' @param df data.frame with column called Date and Value column to plot
 #' @param log logical for applying log scale
 #' @param text element for tooltip
-#' @param n_highligth number of elements to highlight
 #' @param percent logical to make the y axis in percent
 #' @param date_x logical to convert x-axis labels to dates
 #' @param g_palette character vector of colors for the graph and legend
@@ -518,7 +550,7 @@ fix_legend_position <- function(p){
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, percent =  FALSE, date_x = FALSE, g_palette = graph_palette) {
+plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
@@ -569,9 +601,8 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
   }
 
   if (date_x) { # mutate x axis to a date format
-    x.d.lim = range(df$Date)
+    x.d.lim = range(df$Date, na.rm = TRUE)
     x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-
     p <- p +
       scale_x_date(breaks = x.d.breaks,
                    limits = x.d.lim,

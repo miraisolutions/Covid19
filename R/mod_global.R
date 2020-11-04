@@ -129,7 +129,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
   callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
 
   # plots ----
-  levs <- sort_type_hardcoded()
+  levs <- areaplot_vars()
 
   n = 1000 # define areaplot start
   df_global =
@@ -147,7 +147,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
      .[,"Country.Region"] %>% as.vector()
 
   # start lineplot from a later date
-  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>n])
+  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>n], na.rm = TRUE)
 
   df_top_n = world_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than 1000
     mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%

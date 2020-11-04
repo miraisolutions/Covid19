@@ -4,7 +4,7 @@
 \alias{fix_colors}
 \title{Fix colors}
 \usage{
-fix_colors(p, labs = FALSE)
+fix_colors(p, labs = FALSE, hosp = FALSE)
 }
 \arguments{
 \item{p}{ggplot object}

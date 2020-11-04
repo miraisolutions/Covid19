@@ -28,14 +28,28 @@ mod_country_ui <- function(id){
     fluidRow(
       column(6,
              br(),
-             div( h4("Total cases"), align = "center",
+             div( h4("Covid-19 time evolution"), align = "center",
              div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
              withSpinner(mod_plot_log_linear_ui(ns("plot_area_tot"), area = TRUE))
              )
       ),
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
+             div( h4("Time evolution of Hospitalised cases"), align = "center",
+                  div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
+                  withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp_tot"), area = TRUE))
+             )
       )
+    ),
+    hr(),
+    fluidRow(
+      column(6,
+            #withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
+            withSpinner(uiOutput(ns("lines_points_plots_tot")))
+
+      )#,
+      # column(6,
+      #        withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
+      # )
     ),
     hr(),
     tags$div(id = "subarea"),
@@ -69,10 +83,14 @@ areaUI = function(id, tab = TRUE){
                     div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
                     withSpinner(uiOutput(ns("plot_area_area2")))
              ),
+             # column(6,
+             #        div(h4("Confirmed cases for top 5 Areas"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             #        withSpinner(uiOutput(ns("plot_log_linear_top_n_area2")))
+             #     )
              column(6,
-                    div(h4("Confirmed cases for top 5 Areas"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                    withSpinner(uiOutput(ns("plot_log_linear_top_n_area2")))
-                 )
+                    div(h4("Time evolution of Hospitalised cases"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                    withSpinner(uiOutput(ns("plot_areahosp_area2")))
+             )
            ),
            hr(),
            fluidRow(
@@ -149,6 +167,29 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         filter(contagion_day > 0) %>%
         arrange(desc(date))
 
+    #   # Data ----
+    area_data_2 = get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
+
+    if (!is.null(area_data_2) && nrow(area_data_2) >0) {
+     # adjust hospitalised data if we have better in lev 2
+      if (sum(area_data_2$hosp, na.rm = TRUE) > sum(country_data$hosp, na.rm = TRUE)*1.5) {
+        message("Update Lev 1 hospitalised data based on lev2 fo country ", req(input$select_country))
+        # aggregate hosp data at country level
+        area_data_1 = area_data_2 %>%
+          filter(date >= min(country_data$date)) %>% # filter to align dates with country data
+          group_by(date) %>%
+          summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
+          ungroup() %>%
+          mutate(Country.Region = req(input$select_country)) %>%
+          arrange(desc(date))
+        area_data_1 = area_data_1[, c("Country.Region", setdiff(names(area_data_1),"Country.Region"))]
+        if (!identical(area_data_1$date, country_data$date))
+          stop("wrong dates in lev1 and lev2 ")
+        country_data[, .hosp_vars] <- area_data_1[, .hosp_vars]
+      }
+    }
+    hospflag = sum(country_data$hosp, na.rm = TRUE) > 0
+
     country_data_today <- country_data %>%
         filter(date == max(date))
 
@@ -158,33 +199,45 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     # tables ----
     callModule(mod_add_table_server, "add_table_country", country_data,  maxrowsperpage = 10)
     # plots ----
-    levs <- sort_type_hardcoded()
+    levs <- areaplot_vars()
     country_data_area = country_data
-    if (sum(country_data$hosp)>0) {
-      message("Adding hospitalised data for ", req(input$select_country))
+    active_hosp = FALSE
+    if (sum(country_data$hosp, na.rm = TRUE)>0) {
+      message("Adding hospitalised data in areaplot for ", req(input$select_country))
       levs = c(levs, "hosp")
-      country_data_area$active = country_data_area$active - country_data_area$hosp
+      active_hosp = TRUE
     }
     #n_country = select_n(country_data_area$confirmed,n)
     message("n for ", req(input$select_country), " = ", nn)
     # for country plot start from the beginning
     df_tot = tsdata_areplot(country_data_area,levs, nn) # start from day with >nn
 
-    callModule(mod_plot_log_linear_server, "plot_area_tot", df = df_tot, type = "area")
+    callModule(mod_plot_log_linear_server, "plot_area_tot", df = df_tot, type = "area", active_hosp = active_hosp)
+
+    # plots ----
+    levs <- areaplot_hospvars()
+    # for country plot start from the beginning
+
+    df_hosp = tsdata_areplot(country_data,levs, nn) # start from day with >nn
+
+    callModule(mod_plot_log_linear_server, "plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
     output$barplots <- renderUI({
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE)
+    output[["lines_points_plots_tot"]] <- renderUI({
+      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = FALSE, hosp = hospflag, selectvar = "new_prevalence_rate_1M_pop")
+    })
+
+    callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , nn = nn, w = w, istop = FALSE)
 
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
   #  })
   # # ##### country split within areas #############################################
 
-  #   # Data ----
-    area_data_2 = get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
+
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # insert UI components
       if (lev2id() == 0) {
@@ -286,12 +339,14 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   })
 
   # plots ----
-  levs <- sort_type_hardcoded()
+  # Area plot
+  levs <- areaplot_vars()
   data_area = data
-  if (sum(data$hosp)>0) {
-    message("Adding hospitalised data")
+  active_hosp = FALSE
+  if (sum(data$hosp, na.rm = TRUE)>0) {
+    message("Adding hospitalised data for areaplot")
     levs = c(levs, "hosp")
-    data_area$active = data_area$active - data_area$hosp
+    active_hosp = TRUE
   }
 
   df_area_2 = purrr::map(unique(data_area$Country.Region),
@@ -301,36 +356,56 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       dat
       })
   df_area_2 = Reduce("rbind",df_area_2)
-  # create factors with first top confirmed
-  countries_order =  area_2_top_5_confirmed %>% filter(date == max(date)) %>%
-    arrange(desc(confirmed)) %>%
-    .[,"Country.Region"] %>% as.vector()
+
 
   output[["plot_area_area2"]] <- renderUI({
     mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE)
   })
-  callModule(mod_plot_log_linear_server, "plot_area2_area2", df = df_area_2, type = "area" , countries = areas)
+  callModule(mod_plot_log_linear_server, "plot_area2_area2", df = df_area_2, type = "area" , countries = areas, active_hosp = active_hosp)
+
+  # Area plot hospitalised ----
+  levs <- areaplot_hospvars()
+
+  df_area_2 = purrr::map(unique(data$Country.Region),
+                         function(un) {
+                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
+                           dat$Country.Region = rep(un, nrow(dat))
+                           dat
+                         })
+  df_area_2 = Reduce("rbind",df_area_2)
+
+  output[["plot_areahosp_area2"]] <- renderUI({
+    mod_plot_log_linear_ui(ns("plot_areahosp2_area2"), select = TRUE, area = TRUE)
+  })
+  callModule(mod_plot_log_linear_server, "plot_areahosp2_area2", df = df_area_2, type = "area" , countries = areas, hosp = TRUE)
+
 
   # > line plot top 5
 
-  mindate = min(area_2_top_5_confirmed$date[area_2_top_5_confirmed$confirmed>n2])
+  if (FALSE) {
+    mindate = min(area_2_top_5_confirmed$date[area_2_top_5_confirmed$confirmed>n2], na.rm = TRUE)
 
-  df_top_n = area_2_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than n
-    mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
-    mutate(value = confirmed) %>%
-    capitalize_names_df()
+    # create factors with first top confirmed
+    countries_order =  area_2_top_5_confirmed %>% filter(date == max(date)) %>%
+      arrange(desc(confirmed)) %>%
+      .[,"Country.Region"] %>% as.vector()
+    df_top_n = area_2_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than n
+      mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
+      mutate(value = confirmed) %>%
+      capitalize_names_df()
+    output[["plot_log_linear_top_n_area2"]] <- renderUI({
+      mod_plot_log_linear_ui(ns("log_linear_top_n_area2"), area = FALSE)
+    })
+    callModule(mod_plot_log_linear_server, "log_linear_top_n_area2", df = df_top_n, type = "line")
 
-  output[["plot_log_linear_top_n_area2"]] <- renderUI({
-    mod_plot_log_linear_ui(ns("log_linear_top_n_area2"), area = FALSE)
-  })
-  callModule(mod_plot_log_linear_server, "log_linear_top_n_area2", df = df_top_n, type = "line")
+  }
 
   # > comparison plot from day of nth contagion
-
+  hospflag = sum(data$hosp, na.rm = TRUE) > 0
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = FALSE, selectvar = "new_prevalence_rate_1M_pop")
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_prevalence_rate_1M_pop")
   })
-  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE)
+  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE, n_highligth = min(5,length(unique(data$Country.Region))))
 
   # > growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({

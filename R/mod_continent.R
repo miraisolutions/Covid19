@@ -160,7 +160,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map_cont, area = cont, g_palette = subcont_palette)
 
   # > area plot global
-  levs <- sort_type_hardcoded()
+  levs <- areaplot_vars()
 
   df_continent =
     tsdata_areplot(continent_data,levs, nn = nn)

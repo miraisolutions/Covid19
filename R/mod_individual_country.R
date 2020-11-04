@@ -27,11 +27,21 @@ mod_ind_country_ui <- function(id){
     fluidRow(
       column(6,
              br(),
-             div( h4("Total cases"), align = "center",
+             div( h4("Covid-19 time evolution"), align = "center",
              div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
              withSpinner(mod_plot_log_linear_ui(ns("ind_plot_area_tot"), area = TRUE))
              )
       ),
+      column(6,
+             br(),
+             div( h4("Time evolution of Hospitalised cases"), align = "center",
+                  div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
+                  withSpinner(mod_plot_log_linear_ui(ns("ind_plot_areahosp_tot"), area = TRUE))
+             )
+      )
+    ),
+    fluidRow(
+
       column(6,
              withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
       )
@@ -95,7 +105,8 @@ areamapUI = function(id, country){
 }
 #' ind_country Server Function
 #'
-#' @param data data.frame
+#' @param data data.frame with Country Level data
+#' @param data2 data.frame with Country Level 2 data
 #' @param countries reactive character vector
 #' @param nn min number of cases for used to filter country data
 #' @param w number of days of outbreak. Default 7
@@ -105,7 +116,7 @@ areamapUI = function(id, country){
 #' @import shiny
 #'
 #' @noRd
-mod_ind_country_server <- function(input, output, session, data, country , nn = 1, w = 7){
+mod_ind_country_server <- function(input, output, session, data, data2, country , nn = 1, w = 7){
   ns <- session$ns
 
   message("mod_ind_country_server")
@@ -128,25 +139,32 @@ mod_ind_country_server <- function(input, output, session, data, country , nn = 
   # Boxes ----
   callModule(mod_caseBoxes_server, "ind_count-boxes", country_data_today)
 
+  callModule(mod_bar_plot_day_contagion_server, "ind_bar_plot_day_contagion", country_data, nn = nn)
+
   # tables ----
   callModule(mod_add_table_server, "ind_add_table_country", country_data,  maxrowsperpage = 10)
   # plots ----
-  levs <- sort_type_hardcoded()
+  levs <- areaplot_vars()
   country_data_area = country_data
+  active_hosp = FALSE
   if (sum(country_data$hosp)>0) {
-    message("Adding hospitalised data for ", country)
+    message("Adding hospitalised data for areaplot for ", country)
     levs = c(levs, "hosp")
-    country_data_area$active = country_data_area$active - country_data_area$hosp
+    active_hosp = TRUE
   }
   message("n for ", country, " = ", nn)
 
+  # for country plot start from the beginning
+  df_tot = tsdata_areplot(country_data_area, levs, nn = nn) # start from day with >nn
 
-  callModule(mod_bar_plot_day_contagion_server, "ind_bar_plot_day_contagion", country_data, nn = nn)
+  callModule(mod_plot_log_linear_server, "ind_plot_area_tot", df = df_tot, type = "area", active_hosp = active_hosp)
 
   # for country plot start from the beginning
-  df_tot = tsdata_areplot(country_data_area,levs, nn = nn) # start from day with >nn
+  levs <- areaplot_hospvars()
 
-  callModule(mod_plot_log_linear_server, "ind_plot_area_tot", df = df_tot, type = "area")
+  df_hosp = tsdata_areplot(country_data_area, levs, nn = nn) # start from day with >nn
+
+  callModule(mod_plot_log_linear_server, "ind_plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
   callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE)
 
@@ -154,10 +172,15 @@ mod_ind_country_server <- function(input, output, session, data, country , nn = 
 # # ##### country split within areas #############################################
 
 #   # Data ----
-  area_data_2 = get_datahub(country = country, lev = 2, verbose = FALSE)
+  if (missing(data2)) {
+    area_data_2 = get_datahub(country = country, lev = 2, verbose = FALSE)
 
-  area_data_2 = area_data_2 %>%
-    get_timeseries_by_contagion_day_data()
+    area_data_2 = area_data_2 %>%
+      get_timeseries_by_contagion_day_data()
+
+  } else
+    area_data_2 = data2
+
 
   area_data_2_aggregate <-
     build_data_aggr(area_data_2)

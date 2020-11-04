@@ -209,41 +209,6 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 
 
 }
-#' List of variable names to be used for map
-#' @param vars variable name to be selected, if empty tehn all are returned
-#' @details The name of the list component correspond to the variable label
-#' @return list All variables, if vars is missing, or one variable.
-varsNames = function(vars) {
-  allvars = c(names(case_colors), names(prefix_case_colors(prefix = "lw")),
-              names(prefix_case_colors(prefix = "new")),
-              paste("growth_factor", c(3,7,14), sep = "_"),
-              "lethality_rate", "mortality_rate_1M_pop",
-              "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
-              "tests_rate_1M_pop","positive_tests_rate","lw_tests_rate_1M_pop", "new_tests_rate_1M_pop","lw_positive_tests_rate","new_positive_tests_rate",
-              "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
-              "tests","lw_tests", "new_tests", "date")
-  allvars = allvars %>%
-    setNames(gsub("_", " ", allvars))
-  names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
-  names(allvars)  = gsub("Lw", "Last Week", names(allvars))
-  names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
-  names(allvars)[grepl("tests_rate_1M_pop", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("tests_rate_1M_pop", allvars)])
-  names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
-  names(allvars)[grepl("prevalence_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("prevalence_rate", allvars)])
-
-  allvars = as.list(allvars)
-
-  if (!missing(vars)){
-    varnames = unlist(allvars)
-    if (!all(vars %in% varnames)) {
-      stop(paste(setdiff(vars, varnames), "invalid variable"))
-    }
-    res = allvars[match(vars, varnames)]
-  }
-  else
-    res = allvars
-  res
-}
 
 #' Updates UI radiobuttons depending to variable va
 #' @param var variable name
@@ -430,7 +395,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar, namvarsfx = NULL){
 
   }
 
-  name_text = .paste_text("Country", NAME, case_colors["confirmed"])
+  name_text = .paste_text("Country", NAME, .case_colors["confirmed"])
   val_text = .paste_text(varName, text.pop.x, "darkblue")
 
   text = paste0(name_text, val_text)
@@ -473,11 +438,11 @@ legend_fun <- function(x, var){
       if (grepl("1M", var))
         suf = " over 1M"
       #if (dg==1 && maxv<=1 && minxv >= 0)
-      if (var %in% rate_vars)
+      if (var %in% .rate_vars)
         suf = " %"
       transf = function(x,dg){
         #if (dg==1 && maxv<=1 && minxv >= 0)
-        if (var %in% rate_vars)
+        if (var %in% .rate_vars)
           x = x * 100
         x
       }
@@ -571,18 +536,18 @@ choose_domain <- function(x, var) {
     maxy = max(x, na.rm = T)
     minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
-    if (var %in% rate_vars){ # if rate
+    if (var %in% .rate_vars){ # if rate
       domain = domainrate
     } else if ((grepl("growth",var) && grepl("fact",var))){
       # growth factors variables
       domain = domaingrowth
     } else if (dg < 6) {
-      if (var %in% neg_vars && any(x<0, na.rm = TRUE))
+      if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
         domain = domainlin
     } else {
-      if (var %in% neg_vars && any(x<0, na.rm = TRUE))
+      if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlog_neg
       else
         domain = domainlog
@@ -644,7 +609,7 @@ pal_fun_calc <- function(x, var){
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
 
     #if (dg == 1 && maxv<=1 && minxv>=0) {
-    if (var %in% rate_vars) {
+    if (var %in% .rate_vars) {
       y = x *100 # rate
     } else if (dg < 6) {
       # linear scale

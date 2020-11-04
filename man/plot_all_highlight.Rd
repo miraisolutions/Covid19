@@ -8,7 +8,6 @@ plot_all_highlight(
   df,
   log = FALSE,
   text = "",
-  n_highligth = 10,
   percent = FALSE,
   date_x = FALSE,
   g_palette = graph_palette
@@ -20,8 +19,6 @@ plot_all_highlight(
 \item{log}{logical for applying log scale}
 
 \item{text}{element for tooltip}
-
-\item{n_highligth}{number of elements to highlight}
 
 \item{percent}{logical to make the y axis in percent}
 

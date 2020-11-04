@@ -33,9 +33,10 @@ mod_caseBoxes_ui <- function(id) {
 #' caseBoxes Server Function
 #'
 #' @param counts Reactive expression yielding the named vector of cases by type.
+#' @param hosp logical, if TRUE hospitalised box is added.
 #'
 #' @rdname mod_caseBoxes
-mod_caseBoxes_server <- function(input, output, session, counts) {
+mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE) {
 
   output$confirmed <- renderUI({
     countBox(title1 = "Confirmed: ",
@@ -43,7 +44,7 @@ mod_caseBoxes_server <- function(input, output, session, counts) {
              title2 = "New: ",
              subtitle2 =  counts[["new_confirmed"]],
              color = "white",
-             background = case_colors[["confirmed"]])
+             background = .case_colors[["confirmed"]])
   })
   output$death <- renderUI({
     countBox(title1 = "Deaths: ",
@@ -51,7 +52,7 @@ mod_caseBoxes_server <- function(input, output, session, counts) {
              title2 = "New: ",
              subtitle2 =  counts[["new_deaths"]],
              color = "white",
-             background = case_colors[["deaths"]])
+             background = .case_colors[["deaths"]])
   })
   output$recovered <- renderUI({
     countBox(title1 = "Recovered: ",
@@ -59,7 +60,7 @@ mod_caseBoxes_server <- function(input, output, session, counts) {
              title2 = "New: ",
              subtitle2 =  counts[["new_recovered"]],
              color = "white",
-             background = case_colors[["recovered"]])
+             background = .case_colors[["recovered"]])
   })
   output$active <- renderUI({
     countBox(title1 = "Active: ",
@@ -67,8 +68,18 @@ mod_caseBoxes_server <- function(input, output, session, counts) {
              title2 = "New: ",
              subtitle2 =  counts[["new_active"]],
              color = "white",
-             background = case_colors[["active"]])
+             background = .case_colors[["active"]])
   })
+  if (hosp) {
+    output$hosp <- renderUI({
+      countBox(title1 = "Hospitalised: ",
+               subtitle1 = counts[["hosp"]],
+               title2 = "New: ",
+               subtitle2 =  counts[["new_hosp"]],
+               color = "white",
+               background = .case_colors[["hosp"]])
+    })
+  }
 }
 
 countBox <- function(title1, subtitle1, title2, subtitle2, color, background, width = "100%") {

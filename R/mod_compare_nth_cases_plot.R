@@ -81,13 +81,12 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
 #' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               nn = 1000, w = 7,
-                                              n_highligth = 5, istop = TRUE, g_palette = graph_palette, datevar = "date"){
+                                              n_highligth = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date"){
   ns <- session$ns
   df$Date = df[[datevar]]
 
   # Give DF standard structure; reacts to input$radio_indicator
   df_data <- reactive({
-
     if(istop) {
       countries_order =  df %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(req(input$radio_indicator)))) %>%
@@ -100,7 +99,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     }
 
     # filter off x before nn
-    date_first_contagion = min(data$date[data$confirmed >= nn])
+    date_first_contagion = min(data$date[data$confirmed >= nn], na.rm = TRUE)
     data = data[data$date >= date_first_contagion, ]
 
     df_tmp <- data %>% .[,c("Country.Region", req(input$radio_indicator), "Date")] %>%
@@ -134,7 +133,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
   # Plot -----
   output$plot <- renderPlotly({
-    p <- plot_all_highlight(df_data(), log = log(), text = "Area", n_highligth = n_highligth, percent = ifelse(req(input$radio_indicator) %in% rate_vars, TRUE, FALSE),
+    p <- plot_all_highlight(df_data(), log = log(), text = "Area", percent = ifelse(req(input$radio_indicator) %in% .rate_vars, TRUE, FALSE),
                             date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette)
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%

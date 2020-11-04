@@ -134,6 +134,33 @@ get_timeseries_full_data <- function() {
   data
 }
 
+get_datahub_fix_ch <- function(country = NULL, stardate = "2020-01-22", lev = 1, verbose = FALSE) {
+
+  orig_data <-
+    get_datahub(country = country, stardate = stardate, lev = lev, verbose = verbose)
+
+  orig_data_ch_2 <-
+    get_datahub(country = "Switzerland", stardate = stardate, lev = 2, verbose = verbose)
+
+  message("replace hosp data (",paste(.hosp_vars, collapse = ","), ") in lev1 dataset with lev2 swiss data")
+
+  # aggregate hosp data at country level
+  orig_data_ch_1 = orig_data_ch_2 %>%
+    group_by(date) %>%
+    summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
+    ungroup() %>%
+    mutate(Country.Region = "Switzerland")
+  orig_data_ch_1 = orig_data_ch_1[, c("Country.Region", setdiff(names(orig_data_ch_1),"Country.Region"))]
+
+  if (!identical(orig_data_ch_1$date, orig_data$date[orig_data$Country.Region == "Switzerland"]))
+    stop("wrong dates in lev1 and lev2 ")
+
+  orig_data[orig_data$Country.Region == "Switzerland", .hosp_vars] <- orig_data_ch_1[, .hosp_vars]
+
+  list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
+}
+
+
 #' Get timeseries full data from datahub
 #' @rdname get_datahub
 #'
@@ -141,6 +168,7 @@ get_timeseries_full_data <- function() {
 #' @param stardate character staring date
 #' @param lev integer 1 for country level, 2 for reagions
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
+#' @param hosp logical. If TRUE hospitalised detailed data are retrieved. Default TRUE since release 2.3.1
 #'
 #' @details data sourced from https://github.com/covid19datahub/COVID19/
 #'
@@ -150,7 +178,7 @@ get_timeseries_full_data <- function() {
 #' @import dplyr
 #'
 #' @export
-get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose = FALSE) {
+get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose = FALSE, hosp = TRUE) {
   message("get_datahub: country = ", country, "/ startdate = ", stardate, "/ level = ", lev)
   if (!is.null(country)) {
     # remap country )
@@ -167,20 +195,22 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
   }
   dataHub <- covid19(country = country, start = stardate, level = lev, verbose = verbose) # select level2 to add states
 
+  vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "population")
+  if (hosp) {
+    vars = append(vars, c("vent","icu"), which(vars == "hosp"))
+  }
   # if Hong Kong was chosen in country
   if ((is.null(dataHub) || nrow(dataHub) == 0) && lev == 1 && country == "Hong Kong") {
     message("Taking Hong Kong from chinese data from level 2")
     dataHub <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
-      select( administrative_area_level_2, date, tests,
-             confirmed, recovered, deaths, hosp, population) %>%
+      select( administrative_area_level_2, !!vars) %>%
       rename(Country.Region = administrative_area_level_2) %>%
       filter(Country.Region == "Hong Kong")
   } else if (!is.null(dataHub) && nrow(dataHub) > 0) {
     adminvar = paste("administrative_area_level", lev, sep = "_")
     # select varaibles for backwards compatibility + some additional variables
     dataHub = dataHub %>% ungroup() %>% select(!!adminvar, #id, # at the moment removing ID
-                                               date, tests,
-                                               confirmed, recovered, deaths, hosp, population) %>%
+                                               !!vars) %>%
       rename(Country.Region = !!adminvar) # rename country variable
 
     if (lev == 1) {
@@ -205,8 +235,7 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
       if (lev == 1) {
         message("Taking chinese data from level 2")
         dataMiss <- covid19("China",2, start = stardate, verbose = verbose) %>% ungroup() %>%
-          select(administrative_area_level_1, administrative_area_level_2, date, tests,
-                 confirmed, recovered, deaths, hosp, population) %>%
+          select(administrative_area_level_1, administrative_area_level_2, !!vars) %>%
           rename(Country.Region = administrative_area_level_1)
         # separate Hong Kong
         if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
@@ -251,6 +280,12 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
     dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
 
+    if (hosp) {
+      message("Edit hosp data")
+      # hospitalised must be
+      dataHub$hosp = pmax(dataHub$hosp, dataHub$vent+dataHub$icu)
+    }
+
   }  else {
     warning("Data not found for country = ", country, " startdate = ", stardate, " level = ", lev)
   }
@@ -263,6 +298,7 @@ get_datahub = function(country = NULL, stardate = "2020-01-22", lev = 1, verbose
 #' @rdname get_timeseries_by_contagion_day_data
 #'
 #' @param data data.frame
+#' @param hosp logical. If TRUE hospitalised detailed data are processed. Default TRUE since release 2.3.1
 #'
 #' @return data tibble of confirmed, deaths, active and recovered, each for Province.State, Country.Region, Lat, Long, contagion_day and day
 #'
@@ -296,7 +332,10 @@ get_timeseries_by_contagion_day_data <- function(data) {
         new_active = active - replace_na(lag(active),0),
         new_recovered = recovered - replace_na(lag(recovered),0),
         new_tests = tests - replace_na(lag(tests),0),
-        new_hosp = hosp - replace_na(lag(hosp),0)) %>%
+        new_hosp = hosp - replace_na(lag(hosp),0),
+        new_vent = vent - replace_na(lag(vent),0),
+        new_icu = icu - replace_na(lag(icu),0)
+        ) %>%
     # mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
     # mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
     # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%

@@ -42,6 +42,9 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #' @param type character string. Either area or line. Used to select plot type.
 #' @param g_palette character vector of colors for the graph and legend
 #' @param countries character vector of countries considered, NULL if only one
+#' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
+#' @param active_hosp logical, if TRUEhosp and active are instatus, active to be adjusted. Default FALSE
+#'
 #' @example man-roxygen/ex-plot_log_linear.R
 #'
 #' @import dplyr
@@ -51,7 +54,7 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #' @importFrom scales label_number
 #'
 #' @noRd
-mod_plot_log_linear_server <- function(input, output, session, df, type, g_palette = graph_palette, countries = NULL){
+mod_plot_log_linear_server <- function(input, output, session, df, type, g_palette = graph_palette, countries = NULL, hosp = FALSE, active_hosp = FALSE){
   ns <- session$ns
   legend.y = 1.1
 
@@ -77,14 +80,16 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
       area_data <-  df %>%
         filter(Country.Region %in% req(input$select_area)) %>%
         select(-Country.Region)
+
       output$plot_area_select <- renderPlotly({
 
         p <- area_data %>%
-          time_evol_area_plot(stack = TRUE, log = log(), text = "Status")
+          time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp,active_hosp = active_hosp)
         #p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
         p <- p %>%
           ggplotly(tooltip = c("x", "y", "text")) %>%
+          #ggplotly(tooltip = c("text")) %>%
           layout(legend = list(orientation = "h", y = legend.y, yanchor = "bottom", itemsizing = "constant"))
 
         p
@@ -104,6 +109,8 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
 
         p <- p %>%
           ggplotly(tooltip = c("x", "y", "text")) %>%
+          #ggplotly(tooltip = c("text")) %>%
+
           layout(legend = list(orientation = "h", y = legend.y, yanchor = "bottom", itemsizing = "constant"))
 
         p
@@ -117,12 +124,13 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
 
     output$plot_area <- renderPlotly({
       p <- df %>%
-          time_evol_area_plot(stack = TRUE, log = log(), text = "Status") #%>%
+          time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp, active_hosp = active_hosp) #%>%
 
      # p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
-
       p <- p %>%
         ggplotly(tooltip = c("x", "y", "text")) %>%
+        #ggplotly(tooltip = c("text")) %>%
+
         layout(legend = list(orientation = "h", y = legend.y, yanchor = "bottom", itemsizing = "constant"))
       p
     })

@@ -8,12 +8,14 @@
 \usage{
 mod_caseBoxes_ui(id)
 
-mod_caseBoxes_server(input, output, session, counts)
+mod_caseBoxes_server(input, output, session, counts, hosp = FALSE)
 }
 \arguments{
 \item{id, input, output, session}{Internal parameters for {shiny}.}
 
 \item{counts}{Reactive expression yielding the named vector of cases by type.}
+
+\item{hosp}{logical, if TRUE hospitalised box is added.}
 }
 \description{
 A shiny Module for displaying the number of cases by type as
