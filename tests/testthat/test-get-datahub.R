@@ -1,9 +1,10 @@
 context("get datahub tests")
 
-data_full <- get_datahub()
+data_full_ch <- get_datahub_fix_ch()
+data_full = data_full_ch$orig_data
 
 test_that("get_datahub returns expected headers and variables", {
-  expect_true(length(setdiff(names(data_full), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","hosp"))) == 0)
+  expect_true(length(setdiff(names(data_full), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population",.hosp_vars))) == 0)
   expect_false(any(sapply(data_full, class) == "integer"))
   expect_true(all(data_full$confirmed >= data_full$recovered))
   expect_true(all(data_full$confirmed >= data_full$deaths))
@@ -15,14 +16,14 @@ test_that("get_datahub contains Hong Kong", {
   expect_true("Hong Kong" %in% unique(data_full$Country.Region))
 })
 
-data_CH <- get_datahub("China", lev = 2)
+data_CHINA <- get_datahub("China", lev = 2)
 
 test_that("get_datahub lev = 2 China does not contain Hong Kong", {
-  expect_false("Hong Kong" %in% unique(data_CH$Country.Region))
-  expect_true(length(setdiff(names(data_CH), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","hosp"))) == 0)
-  expect_false(any(sapply(data_CH, class) == "integer"))
-  expect_true(all(data_CH$confirmed >= data_CH$recovered))
-  expect_true(all(data_CH$confirmed >= data_CH$deaths))
+  expect_false("Hong Kong" %in% unique(data_CHINA$Country.Region))
+  expect_true(length(setdiff(names(data_CHINA), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population",.hosp_vars))) == 0)
+  expect_false(any(sapply(data_CHINA, class) == "integer"))
+  expect_true(all(data_CHINA$confirmed >= data_CHINA$recovered))
+  expect_true(all(data_CHINA$confirmed >= data_CHINA$deaths))
 
 })
 
@@ -30,7 +31,7 @@ data_HK <- get_datahub("Hong Kong", lev = 1)
 
 test_that("get_datahub lev = 1 Hong Kong works", {
   expect_true("Hong Kong" %in% unique(data_HK$Country.Region))
-  expect_true(length(setdiff(names(data_HK), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","hosp"))) == 0)
+  expect_true(length(setdiff(names(data_HK), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population",.hosp_vars))) == 0)
   expect_false(any(sapply(data_HK, class) == "integer"))
 })
 
@@ -38,9 +39,9 @@ test_that("get_datahub lev = 1 Hong Kong works", {
 data <- get_timeseries_by_contagion_day_data(data_full)
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
-  varnames = c("confirmed", "deaths", "recovered", "active","tests","hosp")
-  expect_equal(sort(names(data)), sort(c("Country.Region", "date",varnames ,"population",
-                                         paste0("new_",varnames), "contagion_day")))
+  varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests", .hosp_vars))
+  expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date",varnames ,"population",
+                                         paste0("new_",varnames), "contagion_day"))))
   expect_equal(class(data$contagion_day),"numeric")
   expect_false(any(sapply(data, class) == "integer"))
 

@@ -33,7 +33,7 @@ mod_bar_plot_day_contagion_server <- function(input, output, session, country_da
 
   output$bar_plot_day_contagion <- renderPlot({
 
-    mindate = min(country_data$date[country_data$confirmed>nn])
+    mindate = min(country_data$date[country_data$confirmed>nn], na.rm = TRUE)
     country_data = country_data %>% filter(date > mindate)
 
     df <- country_data %>%

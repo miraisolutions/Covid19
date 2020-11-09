@@ -1,10 +1,3 @@
-# Note that the documentation link is not going to work because the pipe
-# operator ultimately resides in `magrittr` and is only re-exported in `dplyr`.
-#' @importFrom dplyr %>%
-#' @export
-dplyr::`%>%`
-
-
 #' Capitalize first letter of all words in a string
 #'
 #' @rdname capitalize_first_letter
@@ -17,6 +10,116 @@ capitalize_first_letter <- function(x) {
   paste(toupper(substring(s, 1,1)), substring(s, 2),
         sep = "", collapse = " ")
 }
+#' Color Palette for Areaplot variables
+#'
+#' @export
+.case_colors <- c(
+  "confirmed" = "#dd4b39",
+  "deaths" = "black",
+  "recovered" = "#00a65a",
+  "active" = "#3c8dbc",
+  "hosp" = "#08306B"
+)
+#' Color Palette
+#'
+#' @export
+.hosp_colors <- c(
+  "hosp" = "#08306B",
+  "vent" = "midnightblue",#"darkblue",
+  "icu" = "dimgrey", #"darkslategray"
+  "icuvent" = "midnightblue"#"darkslategray"
+)
+#' Variables where negative values are allowed in map plot
+.neg_vars <- c(
+  c("new_active","lw_active")
+)
+#' Variables related to hospitalisation
+.hosp_vars <- c(
+  #c("hosp","vent","icu")
+  c("Hospitalised" = "hosp", "Ventilated/Int.Care" = "icuvent")
+)
+#' Variables related to hospitalisation in covid19datahub
+.hosp_vars_datahub <- c(
+  c("hosp","vent","icu")
+)
+#' Color Palette for Variable labels
+#' @param cc vector \code{.case_colors}
+#' @export
+case_colors_labs <- function(cc = .case_colors) {
+  x = cc
+  names(x) = names(varsNames(names(cc)))
+  x
+}
+
+#' Color Palette for new and last week variables
+#' @param cc vector \code{.case_colors}
+#' @param prefix character, new or lw
+#' @export
+prefix_colors <- function(cc = .case_colors, prefix = "new") {
+  x = cc
+  names(x) = paste(prefix, names(cc), sep = "_")
+  x
+}
+#' List of variable names to be used for map
+#' @param vars variable name to be selected, if empty tehn all are returned
+#' @details The name of the list component correspond to the variable label
+#' @return list All variables, if vars is missing, or one variable.
+varsNames = function(vars) {
+  newhosp = setdiff(.hosp_vars,names(.case_colors)) # review
+  hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
+  names(hospvars_1M_pop) = paste(names(.hosp_vars), "Rate 1M pop")
+  allvars = c(names(.case_colors), names(prefix_colors(prefix = "lw")),
+              names(prefix_colors(prefix = "new")),
+              newhosp, paste("lw", newhosp, sep = "_" ), paste("new", newhosp, sep = "_" ),
+              hospvars_1M_pop, paste("lw", hospvars_1M_pop, sep = "_" ), paste("new", hospvars_1M_pop, sep = "_" ),
+              paste("growth_factor", c(3,7,14), sep = "_"),
+              "lethality_rate", "mortality_rate_1M_pop",
+              "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
+              "tests_rate_1M_pop","positive_tests_rate","lw_tests_rate_1M_pop", "new_tests_rate_1M_pop","lw_positive_tests_rate","new_positive_tests_rate",
+              "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
+              "tests","lw_tests", "new_tests", "date")
+
+
+  allvars = allvars %>%
+    setNames(gsub("_", " ", allvars))
+
+  for(hospvar in .hosp_vars) {
+    names(allvars)[grepl(paste0(hospvar, "$"), unlist(allvars))] = gsub(hospvar, names(.hosp_vars)[.hosp_vars == hospvar], names(allvars)[grepl(paste0(hospvar, "$"), unlist(allvars))] )
+  }
+  names(allvars)[ allvars %in% hospvars_1M_pop] = names(hospvars_1M_pop)
+
+  names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
+  names(allvars)  = gsub("Lw", "Last Week", names(allvars))
+
+
+  names(allvars)[grepl("rate_1M_pop$", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("rate_1M_pop$", allvars)])
+  names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
+  names(allvars)[grepl("prevalence_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("prevalence_rate", allvars)])
+
+  allvars = as.list(allvars)
+
+  if (!missing(vars)){
+    varnames = unlist(allvars)
+    if (!all(vars %in% varnames)) {
+      stop(paste(setdiff(vars, varnames), "invalid variable"))
+    }
+    res = allvars[match(vars, varnames)]
+  }
+  else
+    res = allvars
+  res
+}
+#' Variables defined as rate in map plot
+.rate_vars <- c(
+  grep("lethality", unlist(varsNames()), value = TRUE),
+  grep("positive_tests_rate", unlist(varsNames()), value = TRUE),
+  grep("hosp_rate_active", unlist(varsNames()), value = TRUE)
+)
+# Note that the documentation link is not going to work because the pipe
+# operator ultimately resides in `magrittr` and is only re-exported in `dplyr`.
+#' @importFrom dplyr %>%
+#' @export
+dplyr::`%>%`
 
 #' Capitalize names of a dataframe
 #' @rdname capitalize_names_df
@@ -71,43 +174,6 @@ getTableOptions <- function(scrollX = TRUE,
     scrollX = scrollX,
     pageLength = maxrowsperpage
   )
-}
-
-#' Color Palette for Areaplot variables
-#'
-#' @export
-.case_colors <- c(
-  "confirmed" = "#dd4b39",
-  "deaths" = "black",
-  "recovered" = "#00a65a",
-  "active" = "#3c8dbc",
-  "hosp" = "#08306B"
-)
-#' Color Palette
-#'
-#' @export
-.hosp_colors <- c(
-  "hosp" = "#08306B",
-  "vent" = "midnightblue",#"darkblue",
-  "icu" = "dimgrey"#"darkslategray"
-)
-#' Color Palette for Variable labels
-#' @param cc vector \code{.case_colors}
-#' @export
-case_colors_labs <- function(cc = .case_colors) {
-  x = cc
-  names(x) = names(varsNames(names(cc)))
-  x
-}
-
-#' Color Palette for new and last week variables
-#' @param cc vector \code{.case_colors}
-#' @param prefix character, new or lw
-#' @export
-prefix_colors <- function(cc = .case_colors, prefix = "new") {
-  x = cc
-  names(x) = paste(prefix, names(cc), sep = "_")
-  x
 }
 
 #' Color Palette
@@ -283,7 +349,8 @@ areaplot_vars <- function() {
 #' Sort hosp type harcoded
 #'
 areaplot_hospvars <- function() {
-  c("hosp", "vent", "icu")
+  #c("hosp", "vent", "icu")
+  as.vector(.hosp_vars) # order is the same
 }
 #' Round up to the next decine
 #' Ref: https://stackoverflow.com/questions/6461209/how-to-round-up-to-the-nearest-10-or-100-or-x
@@ -366,7 +433,7 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
 #' @importFrom rlang sym
 #' @export
 aggr_to_cont = function(data, group, time,
-                        allstatuses = get_aggrvars()) {
+                        allstatuses = intersect(get_aggrvars(), names(data))) {
 
   # popdata_cont = popdata %>% filter(!is.na(!!rlang::sym(group))) %>%
   #   group_by(.dots = group) %>%
@@ -385,14 +452,21 @@ aggr_to_cont = function(data, group, time,
            new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = round(confirmed/tests, digits = 3),
            new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
-           hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
-           deaths_rate_hosp =  round(deaths/hosp, digits = 5)) %>%
-    # make NAs those inf
-    mutate(positive_tests_rate = ifelse(is.infinite(as.numeric(positive_tests_rate)),NA, as.numeric(positive_tests_rate)),
-           new_positive_tests_rate = ifelse(is.infinite(as.numeric(new_positive_tests_rate)),NA, new_positive_tests_rate),
-           hosp_rate_confirmed = ifelse(is.infinite(as.numeric(hosp_rate_confirmed)),NA, hosp_rate_confirmed),
-           deaths_rate_hosp = ifelse(is.infinite(as.numeric(deaths_rate_hosp)),NA, deaths_rate_hosp)) %>%
-
+           hosp_rate_active =  pmax(round(hosp/active, digits = 5), 1),
+           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
+           #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
+           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
+           #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
+    )  %>%   mutate(
+      across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
+    )   %>%
+    mutate_if(is.numeric, list(function(x) {
+      ifelse(is.infinite(x),NA, x)
+    })) %>%
+    # mutate(positive_tests_rate = ifelse(is.infinite(as.numeric(positive_tests_rate)),NA, as.numeric(positive_tests_rate)),
+    #        new_positive_tests_rate = ifelse(is.infinite(as.numeric(new_positive_tests_rate)),NA, new_positive_tests_rate),
+    #        hosp_rate_active = ifelse(is.infinite(as.numeric(hosp_rate_active)),NA, hosp_rate_active),
+    #        deaths_rate_hosp = ifelse(is.infinite(as.numeric(deaths_rate_hosp)),NA, deaths_rate_hosp)) %>%
     rename(Country.Region = !!group) %>%
     get_timeseries_by_contagion_day_data()  %>%
     arrange(desc(date)) %>%   ungroup() %>%
@@ -525,58 +599,19 @@ gen_text = function(x, namvar) {
   text.pop
 }
 
-#' List of variable names to be used for map
-#' @param vars variable name to be selected, if empty tehn all are returned
-#' @details The name of the list component correspond to the variable label
-#' @return list All variables, if vars is missing, or one variable.
-varsNames = function(vars) {
-  newhosp = setdiff(.hosp_vars,names(.case_colors)) # review
-  allvars = c(names(.case_colors), names(prefix_colors(prefix = "lw")),
-              names(prefix_colors(prefix = "new")),
-              newhosp, paste("lw", newhosp, sep = "_" ), paste("new", newhosp, sep = "_" ),
-              paste("growth_factor", c(3,7,14), sep = "_"),
-              "lethality_rate", "mortality_rate_1M_pop",
-              "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
-              "tests_rate_1M_pop","positive_tests_rate","lw_tests_rate_1M_pop", "new_tests_rate_1M_pop","lw_positive_tests_rate","new_positive_tests_rate",
-              "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
-              "tests","lw_tests", "new_tests", "date")
-  allvars = allvars %>%
-    setNames(gsub("_", " ", allvars))
-  names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
-  names(allvars)  = gsub("Lw", "Last Week", names(allvars))
-  names(allvars)[grepl("hosp", allvars)] = gsub("Hosp", "Hospitalised", names(allvars)[grepl("hosp", allvars)])
-  names(allvars)[grepl("vent", allvars)] = gsub("Vent", "Ventilated", names(allvars)[grepl("vent", allvars)])
-  names(allvars)[grepl("icu", allvars)] = gsub("Icu", "Intensive Care", names(allvars)[grepl("icu", allvars)])
-
-  names(allvars)[grepl("tests_rate_1M_pop", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("tests_rate_1M_pop", allvars)])
-  names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
-  names(allvars)[grepl("prevalence_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("prevalence_rate", allvars)])
-
-  allvars = as.list(allvars)
-
-  if (!missing(vars)){
-    varnames = unlist(allvars)
-    if (!all(vars %in% varnames)) {
-      stop(paste(setdiff(vars, varnames), "invalid variable"))
-    }
-    res = allvars[match(vars, varnames)]
-  }
-  else
-    res = allvars
-  res
+#' Calculates ratio over 1M pop
+#' @param x numeric data
+#' @param pop numeric vector population size
+#'
+#' @return x numeric x rescaled by pop size
+#'
+oneM_pop_calc = function(x, pop) {
+  # if (length(x) != length(pop))
+  #   stop("different length x and pop")
+  round(10^6*x/pop, digits = 3)
 }
-#' Variables defined as rate in map plot
-.rate_vars <- c(
- c("lethality_rate", "lw_positive_tests_rate", "new_positive_tests_rate","positive_tests_rate")
-  )
-#' Variables where negative values are allowed in map plot
-.neg_vars <- c(
-  c("new_active","lw_active")
-)
-#' Variables related to hospitalisation
-.hosp_vars <- c(
-  c("hosp","vent","icu")
-)
+
+
 #' Builds dataset to be used in modules merging pop_data with data
 #' @param data data
 #' @param popdata population data with continent info
@@ -605,13 +640,22 @@ build_data_aggr <- function(data, popdata) {
            new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = round(confirmed/tests, digits = 3),
            new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
-           hosp_rate_confirmed =  round(hosp/confirmed, digits = 5),
-           deaths_rate_hosp =  round(deaths/hosp, digits = 5)
+           hosp_rate_active =  pmax(round(hosp/active, digits = 5), 1),
+           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
+           #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
+           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
+           #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
+           )  %>%   mutate(
+             across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
            ) %>%
-    mutate(positive_tests_rate = ifelse(is.infinite(as.numeric(positive_tests_rate)),NA, positive_tests_rate),
-         new_positive_tests_rate = ifelse(is.infinite(as.numeric(new_positive_tests_rate)),NA, new_positive_tests_rate),
-         hosp_rate_confirmed = ifelse(is.infinite(as.numeric(hosp_rate_confirmed)),NA, hosp_rate_confirmed),
-         deaths_rate_hosp = ifelse(is.infinite(as.numeric(deaths_rate_hosp)),NA, deaths_rate_hosp))
+    mutate_if(is.numeric, list(function(x) {
+      ifelse(is.infinite(x),NA, x)
+    }))
+    # mutate(positive_tests_rate = ifelse(is.infinite(as.numeric(positive_tests_rate)),NA, positive_tests_rate),
+    #      new_positive_tests_rate = ifelse(is.infinite(as.numeric(new_positive_tests_rate)),NA, new_positive_tests_rate),
+    #      hosp_rate_active = ifelse(is.infinite(as.numeric(hosp_rate_active)),NA, hosp_rate_active),
+    #      #deaths_rate_hosp = ifelse(is.infinite(as.numeric(deaths_rate_hosp)),NA, deaths_rate_hosp)
+    #      ) # TODO: for all those without population
 
   orig_data_aggregate
 }
@@ -639,9 +683,15 @@ lw_vars_calc <- function(data) {
   data7vars = data7vars %>%
     mutate(lw_prevalence_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
-           lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3)
+           lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3),
+           lw_hosp_rate_active =  pmax(round(lw_hosp/lw_active, digits = 5), 1),
+           lw_hosp_rate_1M_pop = round(10^6*lw_hosp/population, digits = 3)
     ) %>%
-    mutate(lw_positive_tests_rate = ifelse(is.infinite(as.numeric(lw_positive_tests_rate)),NA, lw_positive_tests_rate))
+    mutate_if(is.numeric, list(function(x) {
+      ifelse(is.infinite(x),NA, x)
+    }))
+
+    #mutate(lw_positive_tests_rate = ifelse(is.infinite(as.numeric(lw_positive_tests_rate)),NA, lw_positive_tests_rate))
   data7vars
 }
 
@@ -653,6 +703,7 @@ get_aggrvars = function() {
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
-  allstatuses = c(statuses, paste0("new_", statuses), "tests", .hosp_vars, paste0("new_",c("tests", .hosp_vars)), "population")
+  allstatuses = c(statuses, "tests", .hosp_vars)
+  allstatuses = c(allstatuses, paste0("new_",allstatuses), paste0("lw_",allstatuses), "population")
   allstatuses
 }

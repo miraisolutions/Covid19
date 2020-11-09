@@ -130,6 +130,7 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' @param log logical for applying log scale
 #' @param text element for tooltip
 #' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
+#' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
 #'
 #' @return area plot of given variable by date
 #'
@@ -180,7 +181,10 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
 
   if (stack) {
     if (hosp) {
-      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "vent"] -  df$Value[df$Status == "icu"], 0)
+      #df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "vent"] -  df$Value[df$Status == "icu"], 0)
+      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0)
+
+      split(df, df$Status)
     }
     if (active_hosp) {
       df$active[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0)
@@ -257,7 +261,9 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
     if (hosp) {
       # adjust hosp data here
       p$data$Value[p$data$Status == "hosp"] =
-        p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "vent"] +  p$data$Value[p$data$Status == "icu"]
+        #p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "vent"] +  p$data$Value[p$data$Status == "icu"]
+        p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "icuvent"]
+
     }
     if (active_hosp) {
       p$data$Value[p$data$Status == "active"] =
@@ -503,10 +509,10 @@ fix_colors <- function(p, labs = FALSE, hosp = FALSE) {
     }
   } else {
     if (labs) {
-      cc_vect = c(case_colors_labs(.hosp_colors), case_colors_labs(prefix_colors(.hosp_colors, prefix = "lw")),
-                  case_colors_labs(prefix_colors(.hosp_colors, prefix = "new")))
+      cc_vect = c(case_colors_labs(.hosp_colors[.hosp_vars]), case_colors_labs(prefix_colors(.hosp_colors[.hosp_vars], prefix = "lw")),
+                  case_colors_labs(prefix_colors(.hosp_colors[.hosp_vars], prefix = "new")))
     } else {
-      cc_vect = c(hosp_colors, prefix_colors(hosp_colors, prefix = "lw"), prefix_colors(.hosp_colors, prefix = "new"))
+      cc_vect = c(hosp_colors, prefix_colors(.hosp_colors[.hosp_vars], prefix = "lw"), prefix_colors(.hosp_colors[.hosp_vars], prefix = "new"))
     }
   }
 
@@ -683,17 +689,14 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   color_cntry[df$prevalence_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
   color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor > med$y ] = "#E69F00"
 
-  xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
-            max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
-  ylimtop = max(df$growthfactor, med$y)
+  xlim =  c(min(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE)- diff(range(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE))*(1-x.min[1]),
+            max(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE)*x.min[2])
+  ylimtop = max(df$growthfactor, med$y, na.rm = TRUE)
 
  # ylimbot = min(1, df$growthfactor,med$y)
-  ylimbot = min(df$growthfactor,med$y)- diff(range(df$growthfactor,med$y))*(1-y.min[1])
+  ylimbot = min(df$growthfactor,med$y, na.rm = TRUE)- diff(range(df$growthfactor,med$y, na.rm = TRUE))*(1-y.min[1])
 
   ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
-
-  # ylim =  c(min(df$growthfactor,med$y)- diff(range(df$growthfactor,med$y))*(1-y.min[1]),
-  #           max(df$growthfactor,med$y)*y.min[2])
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +

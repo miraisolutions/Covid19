@@ -328,10 +328,31 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     graph_title = "Positive Tests rate"
     textvar = c("lw_tests","tests", "lw_confirmed","confirmed", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
-  } else    {
-    new_buttons = NULL
-    caption = NULL
-  }
+  }  else if (grepl("hospitalised", var) && grepl("1M", var)) {
+    hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
+    mapvar = unlist(varsNames(hospvars_1M_pop))
+    new_buttons = list(name = "radio",
+                       choices = mapvar, selected = mapvar[mapvar == "hosp_rate_1M_pop" ])
+    caption <- "Current status of Hospitalisation over 1 M people."
+    caption_hosp <- paste("Data may not be available for all areas and", length(mapvar), "statuses")
+    caption =HTML(paste(c(caption,caption_hosp), collapse = '<br/>'))
+
+    graph_title = "Hospitalisation"
+    textvar = c("active",as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))))
+  } else if (grepl("hospitalised", var)) {
+      mapvar = unlist(varsNames(.hosp_vars))
+      new_buttons = list(name = "radio",
+                         choices = mapvar, selected = mapvar["Hospitalised"])
+      caption <- "Current status of Hospitalisation."
+      caption_hosp <- paste("Data may not be available for all areas and", length(mapvar), "statuses")
+      caption =HTML(paste(c(caption,caption_hosp), collapse = '<br/>'))
+
+      graph_title = "Hospitalisation"
+      textvar = c("active",as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))))
+    } else    {
+      new_buttons = NULL
+      caption = NULL
+    }
   if (global) {
     textvar = textvar[!grepl("^lw",textvar )]
     textvar = c("date",textvar, "population")
@@ -565,6 +586,7 @@ choose_domain <- function(x, var) {
 #' @return palette
 pal_fun = function(var,x){
   domain = choose_domain(x, var)
+  hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
 
   if (grepl("confirmed", var)  || grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
     colorNumeric(palette = "Reds", domain = domain(x), na.color = "lightgray")
@@ -590,10 +612,19 @@ pal_fun = function(var,x){
     colorNumeric(palette = "BuGn", domain = domain(x), na.color = "lightgray")
   }  else if (grepl("positive", var)) {
     colorNumeric(palette = "YlOrRd", domain = domain(x), na.color = "lightgray")
-  } else if ((grepl("growth",var) && grepl("prev",var))) {
+  }  else if ((grepl("growth",var) && grepl("prev",var))) {
     colorFactor(palette = c("darkgreen", "yellow3", "#E69F00","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
-  }
-  else
+  }  else if (var %in% c(.hosp_vars, paste("new",.hosp_vars, sep = "_"), paste("lw",.hosp_vars, sep = "_"))) {
+    if (grepl("hosp", var)) {
+      colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")
+    } else
+      colorNumeric(palette = "Purples", domain = domain(x), na.color = "lightgray")
+  }  else if (var %in% c(hospvars_1M_pop, paste("new",hospvars_1M_pop, sep = "_"), paste("lw",hospvars_1M_pop, sep = "_"))) {
+    if (grepl("hosp", var)) {
+      colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")
+    } else
+      colorNumeric(palette = "Purples", domain = domain(x), na.color = "lightgray")
+  } else
     stop("non existing color palette for ", var)
 }
 #' Utility calculate colors given palette

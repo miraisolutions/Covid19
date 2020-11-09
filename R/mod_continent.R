@@ -206,7 +206,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Line with bullet plot
 
   output[[paste("lines_points_plots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_prevalence_rate_1M_pop")
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_prevalence_rate_1M_pop", hosp = FALSE, tests = FALSE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn, w = w,
@@ -229,7 +229,6 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              subcontinent_data_filtered, n_highligth = length(subcontinents), istop = FALSE)
 
   # Compute Last week variables
-
   data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
 
   # create datasets for maps merging today with data7

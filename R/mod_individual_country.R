@@ -43,7 +43,7 @@ mod_ind_country_ui <- function(id){
     fluidRow(
 
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE, oneMpop = FALSE))
       )
     ),
     # hr(),
@@ -99,6 +99,14 @@ areamapUI = function(id, country){
           column(6,
                  withSpinner(uiOutput(ns("map_countries_death")))
           )
+        ),
+        fluidRow(
+          column(6,
+                 withSpinner(uiOutput(ns("map_countries_hosp")))
+          ),
+          column(6,
+                 withSpinner(uiOutput(ns("map_countries_hosp_1M_pop")))
+          )
         )
     )
   )
@@ -147,7 +155,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   levs <- areaplot_vars()
   country_data_area = country_data
   active_hosp = FALSE
-  if (sum(country_data$hosp)>0) {
+  if (sum(country_data$hosp, na.rm = TRUE)>0) {
     message("Adding hospitalised data for areaplot for ", country)
     levs = c(levs, "hosp")
     active_hosp = TRUE
@@ -300,6 +308,19 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
   callModule(mod_map_area_calc_server, "map_ind_death", df = data_maps,  area2_map,
              area = country, variable = "death", max.pop = 0, countrymap = TRUE)
 
+  #maps hosp
+  output[["map_countries_hosp"]] <- renderUI({
+    mod_map_area_calc_ui(ns("map_ind_hosp"))
+  })
+  callModule(mod_map_area_calc_server, "map_ind_hosp", df = data_maps,  area2_map,
+             area = country, variable = "hospitalised", max.pop = 0, countrymap = TRUE)
+
+  #maps hosp per population
+  output[["map_countries_hosp_1M_pop"]] <- renderUI({
+    mod_map_area_calc_ui(ns("map_ind_hosp_1M_pop"))
+  })
+  callModule(mod_map_area_calc_server, "map_ind_hosp_1M_pop", df = data_maps,  area2_map,
+             area = country, variable = "hospitalised over 1M", max.pop = 0, countrymap = TRUE)
 }
 
 

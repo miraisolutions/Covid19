@@ -43,7 +43,7 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #' @param g_palette character vector of colors for the graph and legend
 #' @param countries character vector of countries considered, NULL if only one
 #' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
-#' @param active_hosp logical, if TRUEhosp and active are instatus, active to be adjusted. Default FALSE
+#' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
 #'
 #' @example man-roxygen/ex-plot_log_linear.R
 #'
@@ -62,7 +62,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
     message("mod_plot_log_linear_server area with select country")
     # select the one with more confirmed cases today
     selectedcountry = df %>% filter(Date == max(Date)) %>%
-      group_by(Country.Region)%>% summarise(conf = sum(Value)) %>%
+      group_by(Country.Region)%>% summarise(conf = sum(Value, na.rm = TRUE)) %>%
       arrange(desc(conf)) %>% .$Country.Region %>% .[1]
     log = reactive(FALSE)
     message("selected first country: ", selectedcountry)

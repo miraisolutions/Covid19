@@ -7,6 +7,7 @@
 #' @param actives if TRUE then add new_active and active variables to vars.
 #' @param tests if TRUE then add new_test and test variables to vars.
 #' @param hosp if TRUE then add new_hosp and hosp variables to vars.
+#' @param oneMpop if TRUE then rescaled vars over 1M pop are available.
 #' @param selectvar character variable selected in ui.
 #'
 #' @noRd
@@ -18,29 +19,38 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
                                                        "new_prevalence_rate_1M_pop",
                                                        "new_tests", "new_tests_rate_1M_pop","new_positive_tests_rate",
                                                         "growth_factor_3", "lethality_rate" ),
-                                          actives = TRUE, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed"){
+                                          actives = TRUE, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE){
   ns <- NS(id)
+  if(!oneMpop && grepl("1M_pop$", selectvar))
+    stop("oneMpop is F but selectvar is ", selectvar)
+  if (!oneMpop) {
+    message("remove 1M pop for ", id)
+    vars = vars[!grepl("1M_pop$", vars)]
+  }
+  if (!actives && any(grepl("active",vars))) {
+    message("remove active var for ", id)
+    vars = vars[!grepl("active", vars)]
+  }
+  if (!tests && any(grepl("test",vars))) {
+    message("remove tests vars for ", id)
+    vars = vars[!grepl("test", vars)]
+  }
+  if (!hosp && any(vars %in% .hosp_vars)) {
+    message("remove hosp vars for ", id)
+    for(hospvar in .hosp_vars) {
+      vars = vars[!grepl(hospvar, vars)]
+    }
+  }
+  if (hosp) {
+    message("add hosp vars for ", id)
+    # TODO not yet adding other hosp vars and 1M pop
+    vars = vars[vars != "hosp"]
+    vars = append(vars, .hosp_vars, after = min(grep("^new", vars))-1)
 
+  }
   choices_plot = varsNames(vars)
 
-  if (!actives && any(grepl("Active", names(choices_plot)))) {
-    choices_plot = choices_plot[!grepl("Active", names(choices_plot))]
-  }
-  # if (actives && (!any(grepl("Active", names(choices_plot))))) {
-  #   choices_plot = c(choices_plot, varsNames(grep("active", unlist(varsNames()), value = T)))
-  # }
-  if (!tests && any(grepl("Test", names(choices_plot)))) {
-    choices_plot = choices_plot[!grepl("Test", names(choices_plot))]
-  }
-  # if (tests && (!any(grepl("Test", names(choices_plot))))) {
-  #   choices_plot = c(choices_plot, varsNames(grep("test", unlist(varsNames()), value = T)))
-  # }
-  if (!hosp && any(grepl("Hosp", names(choices_plot)))) {
-    choices_plot = choices_plot[!grepl("Hosp", names(choices_plot))]
-  }
-  # if (hosp && (!any(grepl("Hosp", names(choices_plot))))) {
-  #   choices_plot = c(choices_plot, varsNames(grep("hosp", unlist(varsNames()), value = T)))
-  # }
+
   # UI ----
   tagList(
     uiOutput(ns("title")),

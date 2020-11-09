@@ -175,17 +175,17 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       if (sum(area_data_2$hosp, na.rm = TRUE) > sum(country_data$hosp, na.rm = TRUE)*1.5) {
         message("Update Lev 1 hospitalised data based on lev2 fo country ", req(input$select_country))
         # aggregate hosp data at country level
-        area_data_1 = area_data_2 %>%
+        area_data_1 = area_data_2 %>% select(date, all_of(as.vector(.hosp_vars))) %>%
           filter(date >= min(country_data$date)) %>% # filter to align dates with country data
           group_by(date) %>%
-          summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
+          summarise_if(is.numeric, sum, na.rm = TRUE) %>% #
           ungroup() %>%
           mutate(Country.Region = req(input$select_country)) %>%
           arrange(desc(date))
         area_data_1 = area_data_1[, c("Country.Region", setdiff(names(area_data_1),"Country.Region"))]
         if (!identical(area_data_1$date, country_data$date))
-          stop("wrong dates in lev1 and lev2 ")
-        country_data[, .hosp_vars] <- area_data_1[, .hosp_vars]
+          warning("wrong dates in lev1 and lev2 for ", req(input$select_country))
+        country_data[country_data$date %in% area_data_1$date, .hosp_vars] <- area_data_1[area_data_1$date %in% country_data$date, .hosp_vars]
       }
     }
     hospflag = sum(country_data$hosp, na.rm = TRUE) > 0
@@ -217,7 +217,6 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     # plots ----
     levs <- areaplot_hospvars()
     # for country plot start from the beginning
-
     df_hosp = tsdata_areplot(country_data,levs, nn) # start from day with >nn
 
     callModule(mod_plot_log_linear_server, "plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
@@ -227,7 +226,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     })
 
     output[["lines_points_plots_tot"]] <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = FALSE, hosp = hospflag, selectvar = "new_prevalence_rate_1M_pop")
+      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed", oneMpop = FALSE)
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , nn = nn, w = w, istop = FALSE)
@@ -403,7 +402,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # > comparison plot from day of nth contagion
   hospflag = sum(data$hosp, na.rm = TRUE) > 0
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_prevalence_rate_1M_pop")
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed")
   })
   callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE, n_highligth = min(5,length(unique(data$Country.Region))))
 

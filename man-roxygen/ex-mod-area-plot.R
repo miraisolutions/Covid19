@@ -38,7 +38,7 @@ if (interactive()) {
         filter(contagion_day > 0) %>%
         arrange(desc(date))
 
-    levs <- Covid19Mirai:::sort_type_hardcoded()
+    levs <- areaplot_vars()
 
     df_tot <- reactive({
       country_data %>%
