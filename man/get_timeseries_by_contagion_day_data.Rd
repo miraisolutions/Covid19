@@ -8,8 +8,6 @@ get_timeseries_by_contagion_day_data(data)
 }
 \arguments{
 \item{data}{data.frame}
-
-\item{hosp}{logical. If TRUE hospitalised detailed data are processed. Default TRUE since release 2.3.1}
 }
 \value{
 data tibble of confirmed, deaths, active and recovered, each for Province.State, Country.Region, Lat, Long, contagion_day and day

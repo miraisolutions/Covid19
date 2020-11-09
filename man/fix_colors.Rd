@@ -9,7 +9,9 @@ fix_colors(p, labs = FALSE, hosp = FALSE)
 \arguments{
 \item{p}{ggplot object}
 
-\item{labs}{logical, if TRUE then variables labels arte used}
+\item{labs}{logical, if TRUE then variables labels are used}
+
+\item{hosp}{logical, if TRUE then hosp colors are used}
 }
 \value{
 p ggplot object

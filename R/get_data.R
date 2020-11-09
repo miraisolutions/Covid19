@@ -310,7 +310,6 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 #' @rdname get_timeseries_by_contagion_day_data
 #'
 #' @param data data.frame
-#' @param hosp logical. If TRUE hospitalised detailed data are processed. Default TRUE since release 2.3.1
 #'
 #' @return data tibble of confirmed, deaths, active and recovered, each for Province.State, Country.Region, Lat, Long, contagion_day and day
 #'

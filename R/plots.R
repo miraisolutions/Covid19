@@ -492,7 +492,8 @@ date_bar_plot <- function(df){
 #' @rdname fix_colors
 #'
 #' @param p ggplot object
-#' @param labs logical, if TRUE then variables labels arte used
+#' @param labs logical, if TRUE then variables labels are used
+#' @param hosp logical, if TRUE then hosp colors are used
 #'
 #' @import ggplot2
 #'
