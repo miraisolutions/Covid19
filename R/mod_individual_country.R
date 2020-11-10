@@ -14,6 +14,7 @@ mod_ind_country_ui <- function(id){
     hr(),
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("ind_count-boxes")),
+    mod_caseBoxes_ui(ns("ind_count-boxes_hosp"), hosp = TRUE),
     hr(),
     div(
       uiOutput(ns("ind_from_nth_case"))
@@ -141,11 +142,21 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
       filter(contagion_day > 0) %>%
       arrange(desc(date))
 
+  lw_country_data = lw_vars_calc(country_data)
+
+  # create datasets for box merging today with data7
+  lw_country_data_today = country_data %>% filter(date == max(date)) %>%
+    left_join(lw_country_data %>% select(-population))
+
   country_data_today <- country_data %>%
       filter(date == max(date))
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "ind_count-boxes", country_data_today)
+
+  # Boxes ----
+  callModule(mod_caseBoxes_server, "ind_count-boxes_hosp", lw_country_data_today, hosp = TRUE)
+
 
   callModule(mod_bar_plot_day_contagion_server, "ind_bar_plot_day_contagion", country_data, nn = nn)
 
@@ -170,7 +181,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   # for country plot start from the beginning
   levs <- areaplot_hospvars()
 
-  df_hosp = tsdata_areplot(country_data_area, levs, nn = nn) # start from day with >nn
+  df_hosp = tsdata_areplot(country_data_area, levs, nn = 1) # start from day with >nn
 
   callModule(mod_plot_log_linear_server, "ind_plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 

@@ -20,7 +20,8 @@ mod_country_ui <- function(id){
 
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("count-boxes")),
-
+    mod_caseBoxes_ui(ns("count-boxes_hosp"), hosp = TRUE),
+    hr(),
     fluidRow(
       withSpinner(uiOutput(ns("barplots")))
     ),
@@ -186,15 +187,27 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         if (!identical(area_data_1$date, country_data$date))
           warning("wrong dates in lev1 and lev2 for ", req(input$select_country))
         country_data[country_data$date %in% area_data_1$date, .hosp_vars] <- area_data_1[area_data_1$date %in% country_data$date, .hosp_vars]
-      }
+        country_data = country_data %>%
+          get_timeseries_by_contagion_day_data() %>%  # recompute new variables
+          build_data_aggr() # recompute other variables
+        }
     }
     hospflag = sum(country_data$hosp, na.rm = TRUE) > 0
 
     country_data_today <- country_data %>%
         filter(date == max(date))
 
+    lw_country_data = lw_vars_calc(country_data)
+
+    # create datasets for box merging today with data7
+    lw_country_data_today = country_data %>% filter(date == max(date)) %>%
+      left_join(lw_country_data %>% select(-population))
+
     # Boxes ----
     callModule(mod_caseBoxes_server, "count-boxes", country_data_today)
+
+    # Boxes ----
+    callModule(mod_caseBoxes_server, "count-boxes_hosp", lw_country_data_today, hosp = TRUE)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_country", country_data,  maxrowsperpage = 10)
@@ -217,7 +230,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     # plots ----
     levs <- areaplot_hospvars()
     # for country plot start from the beginning
-    df_hosp = tsdata_areplot(country_data,levs, nn) # start from day with >nn
+    df_hosp = tsdata_areplot(country_data,levs, 1) # start from day with >nn
 
     callModule(mod_plot_log_linear_server, "plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
@@ -367,7 +380,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   df_area_2 = purrr::map(unique(data$Country.Region),
                          function(un) {
-                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
+                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot
                            dat$Country.Region = rep(un, nrow(dat))
                            dat
                          })
@@ -402,7 +415,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # > comparison plot from day of nth contagion
   hospflag = sum(data$hosp, na.rm = TRUE) > 0
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed")
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_prevalence_rate_1M_pop")
   })
   callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE, n_highligth = min(5,length(unique(data$Country.Region))))
 
@@ -423,7 +436,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_2_filtered_today, istop = FALSE, nmed = n2, countries = areasC())
 
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)), active_hosp = TRUE)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)), active_hosp = active_hosp)
 
   if(tab) {
     # prepare data for table with country data

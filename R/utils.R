@@ -20,14 +20,21 @@ capitalize_first_letter <- function(x) {
   "active" = "#3c8dbc",
   "hosp" = "#08306B"
 )
-#' Color Palette
+#' Color Palette Hospitalised vars
 #'
 #' @export
 .hosp_colors <- c(
   "hosp" = "#08306B",
   "vent" = "midnightblue",#"darkblue",
   "icu" = "dimgrey", #"darkslategray"
-  "icuvent" = "midnightblue"#"darkslategray"
+  "icuvent" = "dimgrey"#"darkslategray"
+)
+#' Color Palette Tests vars
+#'
+#' @export
+.tests_colors <- c(
+  "tests" = "cadetblue",
+  "positive_tests_rate" = "brown"#"darkblue",
 )
 #' Variables where negative values are allowed in map plot
 .neg_vars <- c(
