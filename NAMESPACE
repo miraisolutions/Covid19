@@ -3,6 +3,7 @@
 export("%>%")
 export(.case_colors)
 export(.hosp_colors)
+export(.tests_colors)
 export(add_growth_death_rate)
 export(add_log_scale)
 export(aggr_to_cont)
