@@ -167,7 +167,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
   callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)
 
   # > stacked barplot with status split
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate, n_highligth = 10)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate, n_highligth = 10, istop = TRUE)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)
