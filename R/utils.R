@@ -762,7 +762,7 @@ message_firstday = function(ncases, var = "confirmed") {
 #' @return character vector
 #'
 message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
-  paste0(what, "data can be partially/completely unavailable in our data source for",where, ".")
+  paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
 }
 #'Message text, missing data
 #' @param where character string, where text happens
