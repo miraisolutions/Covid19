@@ -11,9 +11,9 @@ mod_caseBoxes_ui(id, hosp = FALSE)
 mod_caseBoxes_server(input, output, session, counts, hosp = FALSE)
 }
 \arguments{
-\item{id, input, output, session}{Internal parameters for {shiny}.}
+\item{id, }{Internal parameters for {shiny}.}
 
-\item{hosp}{logical, if TRUE hospitalised box is added.}
+\item{hosp}{logical, if TRUE hospitalised box variables is added.}
 
 \item{counts}{Reactive expression yielding the named vector of cases by type.}
 }
