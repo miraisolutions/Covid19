@@ -170,7 +170,8 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     HTML(paste(
       paste0(cont, " countries are grouped in Macro Areas as defined by United Nations."),
       paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
-      paste0("Only Areas with more than ", nn, " confirmed cases, and outbreaks longer than ", w, " days considered."),
+      message_conf_case("Areas", nn, "are included"),
+     # paste0("Only Areas with more than ", nn, " confirmed cases, and outbreaks longer than ", w, " days considered."),
       #paste0("Contagion day 0 is the first day with more than ", nn ," cases."),
       sep = "<br/>"))
   })

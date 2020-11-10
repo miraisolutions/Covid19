@@ -735,3 +735,42 @@ get_aggrvars = function() {
   allstatuses = c(allstatuses, paste0("new_",allstatuses), paste0("lw_",allstatuses), "population")
   allstatuses
 }
+
+#'Message text, selection of confirmed cases
+#' @param where character string, where text happens
+#' @param ncases numeric string, minimum number of confirmed cases
+#' @param suffix character string, end of text
+#'
+#' @return character vector
+#'
+message_conf_case = function(where = "Countries", ncases = 1000, suffix = "can be chosen") {
+  paste("Only",where, "with more than", ncases, "confirmed cases", suffix,".")
+}
+#'Message text, selection of confirmed cases
+#' @param ncases numeric string, minimum number of confirmed cases
+#' @param var character string, variable used
+#'
+#' @return character vector
+#'
+message_firstday = function(ncases, var = "confirmed") {
+  paste("1st day is the day when", ncases ,var, "cases are reached.")
+}
+#'Message text, missing data
+#' @param where character string, where text happens
+#' @param what character string, text for missing variables
+#'
+#' @return character vector
+#'
+message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
+  paste0(what, "data can be partially/completely unavailable in our data source for",where, ".")
+}
+#'Message text, missing data
+#' @param where character string, where text happens
+#' @param what character string, text for missing variables
+#' @param suffix character string, end of text
+#'
+#' @return character vector
+#'
+message_hosp_data = function(what = "Hospitalised and Test", where = "some countries and areas", suffix = "where available") {
+  paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
+}

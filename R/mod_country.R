@@ -154,9 +154,15 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 
 
   output$from_nth_case<- renderUI({
-    HTML(paste(paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
-               paste0("Some countries are not providing Recovered data."),
-         paste0("1st day is the day when ", nn ," confirmed cases are reached."), sep = "<br/>"))
+    HTML(paste(message_conf_case("Countries",n.select),
+               #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
+               message_firstday(nn),
+               #paste0("1st day is the day when ", nn ," confirmed cases are reached."),
+               message_missing_data(),
+               #paste0("Recovered, Hospitalised and Tests data can be partially/completely unavailable in our data source for some countries and areas."),
+         #paste0("Hospitalised and test data are updated with delay for some countries and areas in our data source where available."),
+         message_hosp_data(),
+         sep = "<br/>"))
   })
 
   observeEvent(input$select_country, {
@@ -345,9 +351,14 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   output$from_nth_case_area2<- renderUI({
     HTML(paste(
-      "Some countries have unreliable or inconsistent data at regional level. They may not match those at Country Level or they may miss information.",
-      paste0("Some countries or some regions within countries are not providing Recovered data."),
-      paste0("1st day is the day when ", n2 ," confirmed cases are reached."), sep = "<br/>"))
+      "Some countries have unreliable or inconsistent data at regional level in our data source.",
+      "They may not match those at Country Level or they may miss information.",
+      #paste0("Some countries or some regions within countries are not providing Recovered data."),
+      message_missing_data(),
+      message_firstday(n2),
+      #paste0("1st day is the day when ", n2 ," confirmed cases are reached."),
+      message_hosp_data(where = "some areas"),
+      sep = "<br/>"))
   })
 
   # plots ----

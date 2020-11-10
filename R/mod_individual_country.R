@@ -19,6 +19,7 @@ mod_ind_country_ui <- function(id){
     div(
       uiOutput(ns("ind_from_nth_case"))
     ),
+    hr(),
     fluidRow(
      # withSpinner(uiOutput(ns("ind_barplots")))
       withSpinner(mod_bar_plot_day_contagion_ui(ns("ind_bar_plot_day_contagion")))
@@ -131,8 +132,11 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   message("mod_ind_country_server")
   output$ind_from_nth_case<- renderUI({
     HTML(paste(
-         paste0("Some Cantons are not providing Recovered data."),
-         paste0("1st day is the day when ", nn ," confirmed cases are reached."), sep = "<br/>"))
+         #paste0("Some Cantons are not providing Recovered data. Test "),
+         message_missing_data("Recovered and Tests",where = "most of Cantons"),
+         #paste0("1st day is the day when ", nn ," confirmed cases are reached."),
+         message_firstday(nn),
+         message_hosp_data(where = "Cantons"), sep = "<br/>"))
   })
 
   message("process individual country ", country)

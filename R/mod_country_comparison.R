@@ -60,9 +60,14 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
     updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
   )
   output$from_nth_case<- renderUI({
-    HTML(paste(paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
-               paste0("Some countries are not providing Recovered data."),
-               paste0("1st day is the day when ", nn ," confirmed cases are reached."), sep = "<br/>"))
+    HTML(paste(
+               message_conf_case("Areas", nn),
+      #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
+               #paste0("Some countries are not providing Recovered data."),
+               message_missing_data("Recovered and Tests", "some countries"),
+               #paste0("1st day is the day when ", nn ," confirmed cases are reached.")
+                message_firstday(nn),
+      sep = "<br/>"))
   })
 
   all_countries_data <- data %>%

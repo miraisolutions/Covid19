@@ -96,8 +96,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   ns <- session$ns
   df$Date = df[[datevar]]
 
+
   # Give DF standard structure; reacts to input$radio_indicator
   df_data <- reactive({
+    if (grepl("1M_pop$", req(input$radio_indicator)) && all(is.na(df$population)))
+      stop("Missing population data")
+
     if(istop) {
       countries_order =  df %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(req(input$radio_indicator)))) %>%
