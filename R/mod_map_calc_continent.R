@@ -338,7 +338,9 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption =HTML(paste(c(caption,caption_hosp), collapse = '<br/>'))
 
     graph_title = "Hospitalisation"
-    textvar = c("active",as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))))
+    #textvar = c("active",c(as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))), "icuvent_rate_hosp", "population"))
+    textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), as.vector(.hosp_vars), "icuvent_rate_hosp", "population"))
+
   } else if (grepl("hospitalised", var)) {
       mapvar = unlist(varsNames(.hosp_vars))
       new_buttons = list(name = "radio",
@@ -348,8 +350,10 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
       caption =HTML(paste(c(caption,caption_hosp), collapse = '<br/>'))
 
       graph_title = "Hospitalisation"
-      textvar = c("active",as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))))
-    } else    {
+      #textvar = c("active",c(as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))), "icuvent_rate_hosp"))
+      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "icuvent_rate_hosp"))
+
+  } else    {
       new_buttons = NULL
       caption = NULL
     }
@@ -392,6 +396,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar, namvarsfx = NULL){
   }
 
   text.pop.x = gen_text(x, namvar)
+
   .paste_text = function(nam, txt, col = NULL) {
 
     if (!is.null(col)){
@@ -416,7 +421,7 @@ map_popup_data <- function(data, nam, ind, namvar, textvar, namvarsfx = NULL){
 
   }
 
-  name_text = .paste_text("Country", NAME, .case_colors["confirmed"])
+  name_text = .paste_text("Country", NAME, .case_colors["confirmed"]) # to get a blue
   val_text = .paste_text(varName, text.pop.x, "darkblue")
 
   text = paste0(name_text, val_text)
