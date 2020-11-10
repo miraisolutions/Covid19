@@ -42,6 +42,11 @@ capitalize_first_letter <- function(x) {
 .hosp_vars_datahub <- c(
   c("hosp","vent","icu")
 )
+#' Variables defining current state
+.current_vars <- c(
+  unique(c(.hosp_vars_datahub, .hosp_vars, "active",
+    paste0("new_", c(.hosp_vars_datahub, .hosp_vars, "active"))))
+)
 #' Color Palette for Variable labels
 #' @param cc vector \code{.case_colors}
 #' @export
@@ -73,7 +78,7 @@ varsNames = function(vars) {
               newhosp, paste("lw", newhosp, sep = "_" ), paste("new", newhosp, sep = "_" ),
               hospvars_1M_pop, paste("lw", hospvars_1M_pop, sep = "_" ), paste("new", hospvars_1M_pop, sep = "_" ),
               paste("growth_factor", c(3,7,14), sep = "_"),
-              "lethality_rate", "mortality_rate_1M_pop",
+              "lethality_rate", "mortality_rate_1M_pop", "icuvent_rate_hosp", "hosp_rate_active",
               "prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "new_prevalence_rate_1M_pop",
               "tests_rate_1M_pop","positive_tests_rate","lw_tests_rate_1M_pop", "new_tests_rate_1M_pop","lw_positive_tests_rate","new_positive_tests_rate",
               "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
@@ -84,17 +89,17 @@ varsNames = function(vars) {
     setNames(gsub("_", " ", allvars))
 
   for(hospvar in .hosp_vars) {
-    names(allvars)[grepl(paste0(hospvar, "$"), unlist(allvars))] = gsub(hospvar, names(.hosp_vars)[.hosp_vars == hospvar], names(allvars)[grepl(paste0(hospvar, "$"), unlist(allvars))] )
+    names(allvars)[grepl(paste0(hospvar), unlist(allvars))] = gsub(hospvar, names(.hosp_vars)[.hosp_vars == hospvar], names(allvars)[grepl(paste0(hospvar), unlist(allvars))] )
   }
   names(allvars)[ allvars %in% hospvars_1M_pop] = names(hospvars_1M_pop)
 
   names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
-  names(allvars)  = gsub("Lw", "Last Week", names(allvars))
-
+  names(allvars)  = gsub("^Lw", "Last Week", names(allvars))
 
   names(allvars)[grepl("rate_1M_pop$", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("rate_1M_pop$", allvars)])
   names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
-  names(allvars)[grepl("prevalence_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("prevalence_rate", allvars)])
+  names(allvars)[grepl("hosp_rate_active", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("hosp_rate_active", allvars)])
+  names(allvars)[grepl("icuvent_rate_hosp", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("icuvent_rate_hosp", allvars)])
 
   allvars = as.list(allvars)
 
@@ -113,7 +118,8 @@ varsNames = function(vars) {
 .rate_vars <- c(
   grep("lethality", unlist(varsNames()), value = TRUE),
   grep("positive_tests_rate", unlist(varsNames()), value = TRUE),
-  grep("hosp_rate_active", unlist(varsNames()), value = TRUE)
+  grep("hosp_rate_active", unlist(varsNames()), value = TRUE),
+  grep("icuvent_rate_hosp", unlist(varsNames()), value = TRUE)
 )
 # Note that the documentation link is not going to work because the pipe
 # operator ultimately resides in `magrittr` and is only re-exported in `dplyr`.
@@ -452,7 +458,8 @@ aggr_to_cont = function(data, group, time,
            new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = round(confirmed/tests, digits = 3),
            new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
-           hosp_rate_active =  pmax(round(hosp/active, digits = 5), 1),
+           hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
+           icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
            #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
@@ -594,6 +601,13 @@ gen_text = function(x, namvar) {
       text.pop = formatC(x, format = "f", big.mark = "'", digits  = getdg_lab(dg, maxy, minxy))
     }
     #x = replace("NA")
+    if (any(text.pop != "NA")) {
+      text.pop.num = text.pop[text.pop != "NA"]
+      text.pop.num = gsub("\\.000$","", text.pop.num)
+      text.pop.num = gsub("\\.00$","", text.pop.num)
+      text.pop.num = gsub("\\.0$","", text.pop.num)
+      text.pop[text.pop != "NA"] = text.pop.num
+    }
   } else
     text.pop = x
   text.pop
@@ -640,7 +654,8 @@ build_data_aggr <- function(data, popdata) {
            new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = round(confirmed/tests, digits = 3),
            new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
-           hosp_rate_active =  pmax(round(hosp/active, digits = 5), 1),
+           hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
+           icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
            #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
@@ -671,8 +686,12 @@ build_data_aggr <- function(data, popdata) {
 #' @export
 lw_vars_calc <- function(data) {
   data7 = filter(data, date > (max(date)-7))# last week
-  aggr_vars = intersect(colnames(data7),get_aggrvars())
+  aggr_vars = setdiff(get_aggrvars(),.current_vars) # remove variables that cannot be aggregated over a week
+  aggr_vars = intersect(colnames(data7),aggr_vars)
   aggr_vars = grep("new", aggr_vars, value = TRUE) # select new ones
+  if (length(aggr_vars) == 0)
+    stop("new_ vars not available")
+
   data7vars = data7 %>% group_by(Country.Region) %>%
     summarise_at(aggr_vars, sum, na.rm = TRUE) %>% ungroup()
   # rename columns
@@ -684,8 +703,10 @@ lw_vars_calc <- function(data) {
     mutate(lw_prevalence_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
            lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3),
-           lw_hosp_rate_active =  pmax(round(lw_hosp/lw_active, digits = 5), 1),
-           lw_hosp_rate_1M_pop = round(10^6*lw_hosp/population, digits = 3)
+           lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
+           #lw_hosp_rate_active =  pmin(round(lw_hosp/lw_active, digits = 5), 1),
+           #lw_icuvent_rate_hosp =  pmin(round(lw_icuvent/lw_hosp, digits = 4), 1),
+           #lw_hosp_rate_1M_pop = round(10^6*lw_hosp/population, digits = 3)
     ) %>%
     mutate_if(is.numeric, list(function(x) {
       ifelse(is.infinite(x),NA, x)
