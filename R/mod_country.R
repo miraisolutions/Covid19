@@ -423,7 +423,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_2_filtered_today, istop = FALSE, nmed = n2, countries = areasC())
 
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)))
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)), active_hosp = TRUE)
 
   if(tab) {
     # prepare data for table with country data

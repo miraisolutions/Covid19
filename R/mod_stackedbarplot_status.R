@@ -21,6 +21,8 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 #' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries considered.
 #' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param statuses character vector of statuses in stacked barplot
+#' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
 #'
 #' @import dplyr
 #' @import tidyr
@@ -28,7 +30,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 #' @import purrr
 #' @importFrom plotly ggplotly layout
 #' @noRd
-mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, n_highligth = 5, istop = TRUE){
+mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, n_highligth = 5, istop = TRUE, statuses = c("deaths", "active", "recovered"), active_hosp = FALSE){
   ns <- session$ns
   # titles
   if (istop) {
@@ -37,42 +39,58 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
   }
 
-  prep_data <- function(data, w){
-    df1 <- data %>%
-      #select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == max(date))
-    df1
+  #active_hosp = FALSE
+  if (active_hosp) {
+    if (sum(df$hosp, na.rm = TRUE)>0) {
+      message("Using hospitalised data for stackedbarplot")
+      statuses = append(statuses, "hosp", after = which(statuses == "deaths"))
+      #active_hosp = TRUE
+    }
   }
-  df_pop <- reactive({prep_data(df,w)})
+  statuses_lab = names(varsNames(statuses))
 
-  statuses <- c("deaths", "active", "recovered")
+  keepvars = c("Country.Region",statuses)
+  if (istop)
+    keepvars = c(keepvars, "confirmed")
 
-  pick_status <- function(df, stat){
-    df <-  df  %>%
-      bind_cols(df[, stat] %>% setNames("Value"))
-    df
+  df_status = df %>%
+    filter(date == max(date)) %>%
+    select(Country.Region, !!keepvars)
+
+  if (istop) {
+    pick_status <- function(df, stat){
+      df <-  df  %>%
+        bind_cols(df[, stat] %>% setNames("Value"))
+      df
+    }
+
+    df_status = pick_status(df_status, "confirmed") %>%
+      arrange(desc(Value)) %>%
+      top_n(n_highligth, wt = Value)  %>%
+      select(Country.Region,!!statuses)
   }
-  df_status = reactive({pick_status(df_pop(), "confirmed") %>%
-    arrange(desc(Value)) %>%
-    top_n(n_highligth, wt = Value)  %>%
-    select(Country.Region,!!statuses)})
-
+  if (active_hosp) {
+    df_status$active = pmax(replace_na(df_status$active) -  replace_na(df_status$hosp, 0), 0)
+  }
+  # add labels
+  names(df_status)[names(df_status) %in% statuses] = statuses_lab # order is the same
 
   # gather status and compute ratios
-  df_status_stack = reactive({df_status() %>%
+  df_status_stack = df_status %>%
       gather("status", "countstatus", -Country.Region) %>%
     group_by(Country.Region) %>%
-    mutate(n.pop = sum(countstatus),
+    mutate(n.pop = sum(countstatus, na.rm = TRUE),
            ratio.over.cases  = countstatus/n.pop) %>%
-    group_by(status) %>%
-    mutate(tot.status = sum(countstatus),
-           ratio.status  = countstatus/tot.status) %>%
     ungroup() %>%
+    # group_by(status) %>% # unused but could be useful
+    # mutate(tot.status = sum(countstatus),
+    #        ratio.status  = countstatus/tot.status) %>%
+    # ungroup() %>%
     mutate(Country.Region = as.factor(Country.Region),
-           status = factor(status, levels = statuses)) %>%
-    arrange(status)})
+           status = factor(status, levels = statuses_lab)) %>%
+    arrange(status)
 
-  caption_explain <- "The plot shows what countries have more to recover from their Confirmed cases. Not all of them may have provided Recovered cases"
+  caption_explain <- "The plot shows what countries have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
 
   output$plot_stackedbarplot_status <- renderUI({
     tagList(
@@ -82,8 +100,17 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
   })
 
   output$plot_stackedbarplot_status_draw <- renderPlotly({
-    p = df_status_stack() %>%
-        stackedbarplot_plot() %>% fix_colors()
+    p = df_status_stack %>%
+        stackedbarplot_plot() %>% fix_colors(labs = TRUE)
+    if (active_hosp) {
+      # ad back hospotalised and recompute
+      p$data$countstatus[p$data$status == names(varsNames("active"))] =
+        p$data$countstatus[p$data$status == names(varsNames("active"))] +  p$data$countstatus[p$data$status == names(varsNames("hosp"))]
+      p$data = p$data %>% group_by(Country.Region) %>%
+        mutate(n.pop = sum(countstatus, na.rm = TRUE),
+               ratio.over.cases  = countstatus/n.pop) %>%
+        ungroup()
+    }
     p <- p %>%
       ggplotly(tooltip = c("text", "fill"))   %>%
       #layout(legend = list(orientation = "v", y = 1, yanchor = "left"))
