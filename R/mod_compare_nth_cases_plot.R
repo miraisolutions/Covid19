@@ -24,29 +24,30 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = c("confirmed", "deaths", "r
   if(!oneMpop && grepl("1M_pop$", selectvar))
     stop("oneMpop is F but selectvar is ", selectvar)
   if (!oneMpop) {
-    message("remove 1M pop for ", id)
+    #message("remove 1M pop for ", id)
     vars = vars[!grepl("1M_pop$", vars)]
   }
   if (!actives && any(grepl("active",vars))) {
-    message("remove active var for ", id)
+    #message("remove active var for ", id)
     vars = vars[!grepl("active", vars)]
   }
   if (!tests && any(grepl("test",vars))) {
-    message("remove tests vars for ", id)
+    #message("remove tests vars for ", id)
     vars = vars[!grepl("test", vars)]
   }
   if (!hosp && any(vars %in% .hosp_vars)) {
-    message("remove hosp vars for ", id)
+    #message("remove hosp vars for ", id)
     for(hospvar in .hosp_vars) {
       vars = vars[!grepl(hospvar, vars)]
     }
   }
   if (hosp) {
-    message("add hosp vars for ", id)
+    #message("add hosp vars for ", id)
     # TODO not yet adding other hosp vars and 1M pop
     vars = vars[vars != "hosp"]
     vars = append(vars, .hosp_vars, after = min(grep("^new", vars))-1)
-
+    #TODO review
+    vars = append(vars, paste0("new_",.hosp_vars), after = min(grep("hosp", vars)))
   }
   choices_plot = varsNames(vars)
 
