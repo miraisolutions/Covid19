@@ -21,8 +21,8 @@ stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30
   }
   p <- df %>%
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
-               text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
-               label = paste("count: ",
+               text = paste0("Percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
+               label = paste("Count: ",
                              formatC(countstatus, format = "f", big.mark = "'", digits  = 0)))))+
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
@@ -187,7 +187,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
       split(df, df$Status)
     }
     if (active_hosp) {
-      df$active[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0)
+      df$Value[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0)
     }
 
     df <- df %>%
