@@ -4,6 +4,8 @@ if (interactive()) {
   library(tidyr)
   library(ggplot2)
   library(plotly)
+  #devtools::load_all()
+  sapply(file.path("R",list.files("R")), source)
 
   ui <- fluidPage(
     tagList(
@@ -21,7 +23,7 @@ if (interactive()) {
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-    callModule(Covid19Mirai:::mod_stackedbarplot_status_server, "plot", orig_data_aggregate)
+    callModule(mod_stackedbarplot_status_server, "plot", orig_data_aggregate, active_hosp = TRUE, istop = TRUE)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
