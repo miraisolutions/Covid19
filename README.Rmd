@@ -41,11 +41,11 @@ It consists of 5 main pages:
 
 * **Global**: Summarizing top 5 countries in the world in each variable.   
 * **Continents**: Summarizing world data per continent (defined according to UN), underneath sub-tabs with insight within continent:   
-  + **Europe**: European data split by macro-areas with heatmaps per country.   
-  + **Asia**: Asia data split by macro-areas with heatmaps per country.  
-  + **Africa**: African data split by macro-areas with heatmaps per country.   
-  + **Latin America & Carib.**: South and Central American with Caribbean Isles  by macro-areas with heatmaps per country.   
-  + **Northern America**: Northern America (USA and Canada) data split by macro-areas with heatmaps per country.  
+  + **Europe**: European data split by macro-areas with heat-maps per country.   
+  + **Asia**: Asia data split by macro-areas with heat-maps per country.  
+  + **Africa**: African data split by macro-areas with heat-maps per country.   
+  + **Latin America & Carib.**: South and Central American with Caribbean Isles  by macro-areas with heat-maps per country.   
+  + **Northern America**: Northern America (USA and Canada) data split by macro-areas with heat-maps per country.  
 * **Switzerland**: Single country report of Switzerland.   
   + Maps and graphs of Cantonal data displayed.
 * **Country**: Single country report.   
@@ -54,7 +54,7 @@ It consists of 5 main pages:
 
 Macro areas of Continents are defined following United Nations indications.
 
-Data are updated with a delay of 40h, i.e. at 4pm the Last date is updated taking the yesterady date. This allows having data for about all countries when the date is chanded with new one.
+Data are updated with a delay of 40h, i.e. at 4pm the Last date is updated taking the yesterday date. This allows having data for about all countries when the date is updated with the new one.
 
 ## The Variables
 
@@ -64,7 +64,8 @@ The Covid19datahub project can allow us to use the following variables:
 * _recovered_: number of healed or tested negative cases. Some countries have stopped reporting recovered cases.   
 * _deaths_: number of dead confirmed cases.   
 * _tests_: number of tests. Not available for all countries.    
-* _hosp_: number of hospitalised confirmed cases. Not available for all countries.  
+* _hosp_: number of currently hospitalised confirmed cases. Not available for all countries.  
+* _icuvent_: number of currently hospitalised Ventilated or in Intensive Care. Not available for all countries. Categorization differed from countries to country therefore Ventilated and Intensive Care variables have been aggregated.
 * _population_: population size.  
 
 The following variables are computed by the application:   
@@ -74,6 +75,8 @@ The following variables are computed by the application:
 * _growth factors (3 7 14)_: number of confirmed cases today divided by the number of confirmed cases 3 7 14 days ago over the previous 2 months.
 * _lethality rate_: number of _deaths_ divided by the number of _confirmed_ cases.   
 * _mortality rate_: number of _deaths_ divided by the _population_ size.   
+* _positive test rate_: number of positive tests, i.e. _confirmed_ divided by the _tests_ carried in the day.   
+* _int care hospitalised rate_: number of patients currently in Intensive Care / Ventilated status, divided by the number of currently _hospitalised_ patients.   
 
 The results are visualized as a shiny app.
 
