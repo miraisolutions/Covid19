@@ -39,7 +39,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", hosp = FALSE, oneMpop = TRUE)
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_prevalence_rate_1M_pop", hosp = FALSE, oneMpop = TRUE)
       )
     ),
     hr(),

@@ -70,7 +70,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
       select(Country.Region,!!statuses)
   }
   if (active_hosp) {
-    df_status$active = pmax(replace_na(df_status$active) -  replace_na(df_status$hosp, 0), 0)
+    df_status$active = pmax(replace_na(df_status$active,0) -  replace_na(df_status$hosp, 0), 0)
   }
   # add labels
   names(df_status)[names(df_status) %in% statuses] = statuses_lab # order is the same

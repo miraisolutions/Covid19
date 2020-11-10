@@ -61,6 +61,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
   if (!is.null(countries) && type == "area") {
     message("mod_plot_log_linear_server area with select country")
     # select the one with more confirmed cases today
+
     selectedcountry = df %>% filter(Date == max(Date)) %>%
       group_by(Country.Region)%>% summarise(conf = sum(Value, na.rm = TRUE)) %>%
       arrange(desc(conf)) %>% .$Country.Region %>% .[1]

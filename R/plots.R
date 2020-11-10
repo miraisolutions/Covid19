@@ -182,12 +182,10 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
   if (stack) {
     if (hosp) {
       #df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "vent"] -  df$Value[df$Status == "icu"], 0)
-      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0)
-
-      split(df, df$Status)
+      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0, na.rm = TRUE)
     }
     if (active_hosp) {
-      df$Value[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0)
+      df$Value[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0, na.rm = TRUE)
     }
 
     df <- df %>%
