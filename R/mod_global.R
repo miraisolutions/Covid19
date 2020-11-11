@@ -24,7 +24,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_area_global"))
       ),
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global")))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global"), hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE))
       )
     ),
     hr(),
@@ -39,7 +39,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_prevalence_rate_1M_pop")
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", hosp = FALSE, oneMpop = TRUE)
       )
     ),
     hr(),
@@ -129,7 +129,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
   callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
 
   # plots ----
-  levs <- sort_type_hardcoded()
+  levs <- areaplot_vars()
 
   n = 1000 # define areaplot start
   df_global =
@@ -147,7 +147,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
      .[,"Country.Region"] %>% as.vector()
 
   # start lineplot from a later date
-  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>n])
+  mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>n], na.rm = TRUE)
 
   df_top_n = world_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than 1000
     mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
@@ -167,7 +167,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
   callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)
 
   # > stacked barplot with status split
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate, n_highligth = 10)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate, n_highligth = 10, istop = TRUE)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)

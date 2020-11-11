@@ -21,8 +21,8 @@ stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30
   }
   p <- df %>%
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
-               text = paste0("percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
-               label = paste("count: ",
+               text = paste0("Percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
+               label = paste("Count: ",
                              formatC(countstatus, format = "f", big.mark = "'", digits  = 0)))))+
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
@@ -97,6 +97,7 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
   }
   x.d.lim = range(df$Date)
   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
   p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
     geom_line() +
     basic_plot_theme() +
@@ -128,6 +129,8 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' @param stack logical for producing a stacked plot
 #' @param log logical for applying log scale
 #' @param text element for tooltip
+#' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
+#' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
 #'
 #' @return area plot of given variable by date
 #'
@@ -174,9 +177,17 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
+time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE, active_hosp) {
 
   if (stack) {
+    if (hosp) {
+      #df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "vent"] -  df$Value[df$Status == "icu"], 0)
+      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0, na.rm = TRUE)
+    }
+    if (active_hosp) {
+      df$Value[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0, na.rm = TRUE)
+    }
+
     df <- df %>%
       arrange(desc(Status)) %>%
       group_by(Date) %>%
@@ -213,9 +224,15 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
 
   x.d.lim = range(df$Date)
   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-
   p <- ggplot(df, aes(x = Date, y = Value,
                       text = paste0(text, ": ", statuslabel)
+
+                      # text = paste0(
+                      #   "<b> Date: </b>", Date,"<br>",
+                      #   "<b> Value: </b>", scales::comma(Value, 1, big.mark = "'"), "<br>",
+                      #   "<b> Status: </b>", statuslabel,"<br>"
+                      # )
+
               )) +
     geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
@@ -231,15 +248,26 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "") {
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1)
     )
-
   p <- p %>%
-    fix_colors(labs = TRUE)
+    fix_colors(labs = TRUE, hosp = hosp)
 
   if (log) {
     p <- p %>%
       add_log_scale()
   }
+  if (stack) {
+    if (hosp) {
+      # adjust hosp data here
+      p$data$Value[p$data$Status == "hosp"] =
+        #p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "vent"] +  p$data$Value[p$data$Status == "icu"]
+        p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "icuvent"]
 
+    }
+    if (active_hosp) {
+      p$data$Value[p$data$Status == "active"] =
+        p$data$Value[p$data$Status == "active"] +  p$data$Value[p$data$Status == "hosp"]
+    }
+  }
   p
 }
 
@@ -299,7 +327,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors
+  fills <- .case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -415,7 +443,7 @@ from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- case_colors
+  fills <- .case_colors
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -462,19 +490,29 @@ date_bar_plot <- function(df){
 #' @rdname fix_colors
 #'
 #' @param p ggplot object
-#' @param labs logical, if TRUE then variables labels arte used
+#' @param labs logical, if TRUE then variables labels are used
+#' @param hosp logical, if TRUE then hosp colors are used
 #'
 #' @import ggplot2
 #'
 #' @return p ggplot object
 #'
 #' @export
-fix_colors <- function(p, labs = FALSE) {
-  if (labs) {
-    cc_vect = c(case_colors_labs(), case_colors_labs(prefix_case_colors(prefix = "lw")),
-                case_colors_labs(prefix_case_colors(prefix = "new")))
+fix_colors <- function(p, labs = FALSE, hosp = FALSE) {
+  if (!hosp) {
+    if (labs) {
+      cc_vect = c(case_colors_labs(), case_colors_labs(prefix_colors(prefix = "lw")),
+                  case_colors_labs(prefix_colors(prefix = "new")))
+    } else {
+      cc_vect = c(.case_colors, prefix_colors(prefix = "lw"), prefix_colors(prefix = "new"))
+    }
   } else {
-    cc_vect = c(case_colors, prefix_case_colors(prefix = "lw"), prefix_case_colors(prefix = "new"))
+    if (labs) {
+      cc_vect = c(case_colors_labs(.hosp_colors[.hosp_vars]), case_colors_labs(prefix_colors(.hosp_colors[.hosp_vars], prefix = "lw")),
+                  case_colors_labs(prefix_colors(.hosp_colors[.hosp_vars], prefix = "new")))
+    } else {
+      cc_vect = c(hosp_colors, prefix_colors(.hosp_colors[.hosp_vars], prefix = "lw"), prefix_colors(.hosp_colors[.hosp_vars], prefix = "new"))
+    }
   }
 
   p <- p +
@@ -508,7 +546,6 @@ fix_legend_position <- function(p){
 #' @param df data.frame with column called Date and Value column to plot
 #' @param log logical for applying log scale
 #' @param text element for tooltip
-#' @param n_highligth number of elements to highlight
 #' @param percent logical to make the y axis in percent
 #' @param date_x logical to convert x-axis labels to dates
 #' @param g_palette character vector of colors for the graph and legend
@@ -518,7 +555,7 @@ fix_legend_position <- function(p){
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, percent =  FALSE, date_x = FALSE, g_palette = graph_palette) {
+plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette) {
 
   #clean df for log case
   if (log) {
@@ -569,9 +606,8 @@ plot_all_highlight <- function(df, log = FALSE, text = "", n_highligth = 10, per
   }
 
   if (date_x) { # mutate x axis to a date format
-    x.d.lim = range(df$Date)
+    x.d.lim = range(df$Date, na.rm = TRUE)
     x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-
     p <- p +
       scale_x_date(breaks = x.d.breaks,
                    limits = x.d.lim,
@@ -652,17 +688,14 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   color_cntry[df$prevalence_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
   color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor > med$y ] = "#E69F00"
 
-  xlim =  c(min(df$prevalence_rate_1M_pop,med$x)- diff(range(df$prevalence_rate_1M_pop,med$x))*(1-x.min[1]),
-            max(df$prevalence_rate_1M_pop,med$x)*x.min[2])
-  ylimtop = max(df$growthfactor, med$y)
+  xlim =  c(min(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE)- diff(range(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE))*(1-x.min[1]),
+            max(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE)*x.min[2])
+  ylimtop = max(df$growthfactor, med$y, na.rm = TRUE)
 
  # ylimbot = min(1, df$growthfactor,med$y)
-  ylimbot = min(df$growthfactor,med$y)- diff(range(df$growthfactor,med$y))*(1-y.min[1])
+  ylimbot = min(df$growthfactor,med$y, na.rm = TRUE)- diff(range(df$growthfactor,med$y, na.rm = TRUE))*(1-y.min[1])
 
   ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
-
-  # ylim =  c(min(df$growthfactor,med$y)- diff(range(df$growthfactor,med$y))*(1-y.min[1]),
-  #           max(df$growthfactor,med$y)*y.min[2])
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +

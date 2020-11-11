@@ -4,7 +4,14 @@
 \alias{time_evol_area_plot}
 \title{Time evolution as area plot}
 \usage{
-time_evol_area_plot(df, stack = F, log = F, text = "")
+time_evol_area_plot(
+  df,
+  stack = F,
+  log = F,
+  text = "",
+  hosp = FALSE,
+  active_hosp
+)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
@@ -14,6 +21,10 @@ time_evol_area_plot(df, stack = F, log = F, text = "")
 \item{log}{logical for applying log scale}
 
 \item{text}{element for tooltip}
+
+\item{hosp}{logical, if TRUE hosp variables are in status. Default FALSE}
+
+\item{active_hosp}{logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE}
 }
 \value{
 area plot of given variable by date

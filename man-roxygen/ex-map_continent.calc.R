@@ -19,6 +19,8 @@ if (interactive()) {
   #variable = "tests_rate_1M_pop" # set variable
   variable = "tests over 1M" # set variable
   variable = "positive tests rate" # set variable
+  variable = "hospitalised" # set variable
+  variable = "hospitalised over 1M" # set variable
 
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable

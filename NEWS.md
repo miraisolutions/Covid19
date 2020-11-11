@@ -1,4 +1,5 @@
 ### Covid19Mirai 2.2.3-9000 (develop)
+- Review Hospitalised data (#133)
 
 ### Covid19Mirai 2.2.2 (2020-10-28)
 - Fixed legend reactivity in global map (#135)

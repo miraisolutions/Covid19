@@ -11,7 +11,7 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
-  vars = setdiff(names(case_colors), c("hosp","recovered")) # remove hosp for now
+  vars = setdiff(names(.case_colors), c("hosp","recovered")) # remove hosp for now
   choices_map <- c(vars, "new_confirmed","new_deaths", "new_active") %>%
     setNames(gsub("_", " ",c(vars, "new_confirmed", "new_deaths", "new_active"))) %>% as.list()
   div(
@@ -77,22 +77,24 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   # UI controls ----
   output$slider_ui <- renderUI({
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate$date), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date), dragRange = FALSE, animate = TRUE, step = 7)
+    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate$date, na.rm = TRUE), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date), dragRange = FALSE, animate = TRUE, step = 7)
   })
 
   # Map ----
 
   # Data for a given date
   data_date <- reactive({
+    #vars_aggr = intersect(get_aggrvars(), names(data_clean))
     maxdate = req(input$slider_day)
     data_date <- data_clean %>%
       filter(date == maxdate) %>%
-      filter(date == max(date)) %>%
-      select(-c(Country.Region, date, contagion_day)) %>%
-      group_by(country_name) %>%
-      summarise_each(sum) %>%
-      ungroup() %>%
-      mutate(date = maxdate)
+      #filter(date == max(date)) %>%
+      #select(-c(Country.Region, date, contagion_day)) #%>%
+      select(-c(Country.Region, contagion_day)) #%>%
+      # group_by(country_name) %>%
+      # summarise_each(sum, na.rm = TRUE) %>% # no need to sum after selecting 1 date
+      # ungroup() %>%
+      #mutate(date = maxdate)
     data_date
   })
 

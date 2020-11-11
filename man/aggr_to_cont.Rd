@@ -4,7 +4,12 @@
 \alias{aggr_to_cont}
 \title{Aggregates data to continent or subcontinent (group)}
 \usage{
-aggr_to_cont(data, group, time, allstatuses = get_aggrvars())
+aggr_to_cont(
+  data,
+  group,
+  time,
+  allstatuses = intersect(get_aggrvars(), names(data))
+)
 }
 \arguments{
 \item{data}{data.frame aggregated data per Country.Region}

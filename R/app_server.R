@@ -23,8 +23,14 @@ app_server <- function(input, output, session) {
   message("read map from RDS ", rds_map)
   countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-  orig_data <-
-    get_datahub() %>%
+  orig_data_with_ch <- get_datahub_fix_ch()
+  orig_data       = orig_data_with_ch$orig_data
+  orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
+
+  orig_data = orig_data %>%
+    get_timeseries_by_contagion_day_data()
+
+  orig_data_ch_2 = orig_data_ch_2 %>%
       get_timeseries_by_contagion_day_data()
 
   pop_data = get_pop_datahub()
@@ -92,7 +98,7 @@ app_server <- function(input, output, session) {
                cont = continents[i.cont], uicont = uicontinents[i.cont])
   }
   # Switzerland page
-  callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, country = "Switzerland", nn = n, w = w)
+  callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, data2 = orig_data_ch_2, country = "Switzerland", nn = n, w = w)
 
   # country choice, remove Switzerland
   orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
