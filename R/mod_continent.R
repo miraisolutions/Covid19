@@ -160,7 +160,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   callModule(mod_map_cont_server, paste("map_cont_ui", uicont , sep = "_"), orig_data_aggregate_cont, countries_data_map_cont, area = cont, g_palette = subcont_palette)
 
   # > area plot global
-  levs <- sort_type_hardcoded()
+  levs <- areaplot_vars()
 
   df_continent =
     tsdata_areplot(continent_data,levs, nn = nn)
@@ -170,7 +170,8 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     HTML(paste(
       paste0(cont, " countries are grouped in Macro Areas as defined by United Nations."),
       paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
-      paste0("Only Areas with more than ", nn, " confirmed cases, and outbreaks longer than ", w, " days considered."),
+      message_conf_case("Areas", nn, "are included"),
+     # paste0("Only Areas with more than ", nn, " confirmed cases, and outbreaks longer than ", w, " days considered."),
       #paste0("Contagion day 0 is the first day with more than ", nn ," cases."),
       sep = "<br/>"))
   })
@@ -206,7 +207,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Line with bullet plot
 
   output[[paste("lines_points_plots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_prevalence_rate_1M_pop")
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_prevalence_rate_1M_pop", hosp = FALSE, tests = FALSE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn, w = w,
@@ -229,7 +230,6 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              subcontinent_data_filtered, n_highligth = length(subcontinents), istop = FALSE)
 
   # Compute Last week variables
-
   data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
 
   # create datasets for maps merging today with data7

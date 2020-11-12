@@ -14,7 +14,7 @@ if (interactive()) {
   #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_country_ui("country")
+    mod_country_ui("country")
   )
   server <- function(input, output) {
 
@@ -36,7 +36,7 @@ if (interactive()) {
         distinct()
     })
 
-    callModule(Covid19Mirai:::mod_country_server, "country",
+    callModule(mod_country_server, "country",
                data = data_filtered, countries = countries, nn = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

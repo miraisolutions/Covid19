@@ -4,10 +4,10 @@
 \alias{case_colors_labs}
 \title{Color Palette for Variable labels}
 \usage{
-case_colors_labs(cc = case_colors)
+case_colors_labs(cc = .case_colors)
 }
 \arguments{
-\item{cc}{vector \code{case_colors}}
+\item{cc}{vector \code{.case_colors}}
 }
 \description{
 Color Palette for Variable labels

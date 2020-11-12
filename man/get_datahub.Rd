@@ -4,16 +4,24 @@
 \alias{get_datahub}
 \title{Get timeseries full data from datahub}
 \usage{
-get_datahub(country = NULL, stardate = "2020-01-22", lev = 1, verbose = FALSE)
+get_datahub(
+  country = NULL,
+  startdate = "2020-01-22",
+  lev = 1,
+  verbose = FALSE,
+  hosp = TRUE
+)
 }
 \arguments{
 \item{country}{character country, to chose with lev = 2}
 
-\item{stardate}{character staring date}
+\item{startdate}{character staring date}
 
 \item{lev}{integer 1 for country level, 2 for reagions}
 
 \item{verbose}{logical. Print data sources? Default FALSE (opposite from \code{covid19})}
+
+\item{hosp}{logical. If TRUE hospitalised detailed data are retrieved. Default TRUE since release 2.3.1}
 }
 \value{
 data tibble of confirmed, deaths, active and recovered Country.Region

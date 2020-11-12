@@ -12,17 +12,17 @@ if (interactive()) {
   library(leaflet)
   library(leaflet.extras)
 
-  #sapply(file.path("R",list.files("R")), source)
+  sapply(file.path("R",list.files("R")), source)
   #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_ind_country_ui("ind_country")
+    mod_ind_country_ui("ind_country")
   )
   server <- function(input, output) {
 
     country = "Switzerland"
 
-    orig_data <- get_datahub() %>%
+    orig_data <- get_datahub(country = country) %>%
       get_timeseries_by_contagion_day_data()
 
     pop_data = get_pop_datahub()
@@ -41,7 +41,7 @@ if (interactive()) {
         distinct()
     })
 
-    callModule(Covid19Mirai:::mod_ind_country_server, "ind_country",
+    callModule(mod_ind_country_server, "ind_country",
                data = data_filtered, country = country, nn = n,  w = w)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
