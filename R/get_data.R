@@ -253,28 +253,31 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # "Virgin Islands, U.S." belongs to USA
 
     # if either china or hong kong missing
-    if (length(setdiff(c("Hong Kong","China"), dataHub$Country.Region))==1) {
-      if (lev == 1) {
-        message("Taking chinese data from level 2")
-        dataMiss <- covid19("China",2, start = startdate, verbose = verbose) %>% ungroup() %>%
-          select(administrative_area_level_1, administrative_area_level_2, !!vars) %>%
-          rename(Country.Region = administrative_area_level_1)
-        # separate Hong Kong
-        if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
-          dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
-            mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
-          dataHub = rbind(dataHub, dataHG)
+    if (FALSE) { # switch off handling of Hong Kong, too time consuming
+      if (length(setdiff(c("Hong Kong","China"), dataHub$Country.Region))==1) {
+        if (lev == 1) {
+          message("Taking chinese data from level 2")
+          dataMiss <- covid19("China",2, start = startdate, verbose = verbose) %>% ungroup() %>%
+            select(administrative_area_level_1, administrative_area_level_2, !!vars) %>%
+            rename(Country.Region = administrative_area_level_1)
+          # separate Hong Kong
+          if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
+            dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
+              mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
+            dataHub = rbind(dataHub, dataHG)
+          }
+          dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
+            group_by(Country.Region,date) %>%
+            summarise_if(is.numeric, sum, na.rm = TRUE) %>%
+            ungroup()
+
+          dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
+
+          dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
+          #dataHub
         }
-        dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
-          group_by(Country.Region,date) %>%
-          summarise_if(is.numeric, sum, na.rm = TRUE) %>%
-          ungroup()
+    }
 
-        dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
-
-        dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
-        #dataHub
-      }
     }
     if (lev == 2 && country == "China") {
         message("remove Hong Kong from China")
