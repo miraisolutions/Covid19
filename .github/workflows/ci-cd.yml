@@ -52,6 +52,7 @@ jobs:
         run: |
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran(c("rcmdcheck", "rsconnect"))
+          remotes::install_cran(c("COVID19"))
         shell: Rscript {0}
 
       - name: Check package
