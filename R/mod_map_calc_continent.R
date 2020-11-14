@@ -278,7 +278,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     textvar = c("growth_factor_3", "new_prevalence_rate_1M_pop", "lw_prevalence_rate_1M_pop", "prevalence_rate_1M_pop")
 
   } else if (grepl("active", var)) {
-    mapvar = grep("active", varsNames(), value = T)
+    mapvar = paste0(c("", "lw_","new_"),"active")
     #mapvar = varsNames()[mapvar]
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
