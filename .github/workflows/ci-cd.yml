@@ -15,8 +15,8 @@ jobs:
         uses: r-lib/actions/setup-r@v1
         with:
           r-version: 3.6.3
-        env:
-          CRAN: https://mran.microsoft.com/snapshot/2020-08-03
+        # env:
+        #   CRAN: https://mran.microsoft.com/snapshot/2020-08-03
 
 # Query and cache R package dependencies
       - name: Query dependencies
