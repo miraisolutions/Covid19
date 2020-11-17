@@ -47,7 +47,7 @@ jobs:
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
 
       - name: Deploy to shinyapps.io
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/wip-test-renv-deploy'
         env:
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
