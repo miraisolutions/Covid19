@@ -1,12 +1,16 @@
-# Check on push and pull requests to master
+# Triggered on push and pull request events
 on: [push, pull_request]
 
-# Name of the workflow
 name: CI-CD
+
+# renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions
 
 jobs:
   CI-CD:
     runs-on: ubuntu-latest
+    env:
+      RENV_PATHS_ROOT: ~/.local/share/renv
+
     steps:
 
       - uses: actions/checkout@v2
@@ -15,49 +19,32 @@ jobs:
         uses: r-lib/actions/setup-r@v1
         with:
           r-version: 3.6.3
-        # env:
-        #   CRAN: https://mran.microsoft.com/snapshot/2020-08-03
 
-# Query and cache R package dependencies
-      - name: Query dependencies
-        run: |
-          install.packages("remotes")
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
-        shell: Rscript {0}
-      - name: Cache R packages
-        uses: actions/cache@v1
+      - name: Cache packages
+        uses: actions/cache@v2
         with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-${{ hashFiles('depends.Rds') }}
-          restore-keys: ${{ runner.os }}-r-
+          path: ${{ env.RENV_PATHS_ROOT }}
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
 
       - name: Install system dependencies
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
         run: |
-          Rscript -e "remotes::install_github('r-hub/sysreqs')"
+          Rscript -e "renv::install('r-hub/sysreqs')"
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-          echo $sysreqs
-          # Add cran/libgit2 PPA to fix libgit / libcurl incompatibilities
-          # see https://github.com/r-hub/sysreqsdb/issues/77#issuecomment-620116906
-          # NOTE that this will not be needed on Ubuntu 20.04
-          sudo add-apt-repository ppa:cran/libgit2
           sudo -s eval "$sysreqs"
-          # rsconnect dependencies
-          sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-            libxml2-dev libcurl4-openssl-dev
 
-# Install rsconnect necessary for deployment
-      - name: Install dependencies
-        run: |
-          remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran(c("rcmdcheck", "rsconnect"))
-          remotes::install_cran(c("COVID19"), force = TRUE)
+      - name: Restore packages
         shell: Rscript {0}
+        run: renv::restore()
 
       - name: Check package
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = "check")
         shell: Rscript {0}
+        run: |
+          install.packages("rcmdcheck")
+          rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
 
       - name: Deploy to shinyapps.io
         if: github.ref == 'refs/heads/master'
@@ -65,8 +52,4 @@ jobs:
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
-        run: |
-          account_info <- lapply(paste0("SHINYAPPS_", c("ACCOUNT", "TOKEN", "SECRET")), Sys.getenv)
-          do.call(rsconnect::setAccountInfo, account_info)
-          rsconnect::deployApp(appName = "Covid19")
-        shell: Rscript {0}
+        run: Rscript deploy/deploy-shinyapps.R
