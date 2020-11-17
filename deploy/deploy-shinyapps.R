@@ -6,7 +6,7 @@ rsconnect::setAccountInfo(
   Sys.getenv("SHINYAPPS_SECRET")
 )
 rsconnect::deployApp(
-  appName = "ShinyCICD-test",
+  appName = "Covid19-test",
   # exclude hidden files and renv directory (if present)
   appFiles = setdiff(list.files(), "renv")
 )
