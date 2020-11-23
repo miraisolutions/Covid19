@@ -486,7 +486,7 @@ date_bar_plot <- function(df){
   p
 }
 
-#' Fix colors
+#' Fix colors in plot
 #' @rdname fix_colors
 #'
 #' @param p ggplot object
@@ -499,20 +499,17 @@ date_bar_plot <- function(df){
 #'
 #' @export
 fix_colors <- function(p, labs = FALSE, hosp = FALSE) {
-  if (!hosp) {
-    if (labs) {
-      cc_vect = c(case_colors_labs(), case_colors_labs(prefix_colors(prefix = "lw")),
-                  case_colors_labs(prefix_colors(prefix = "new")))
-    } else {
-      cc_vect = c(.case_colors, prefix_colors(prefix = "lw"), prefix_colors(prefix = "new"))
-    }
+
+  if (hosp) {
+    varrcolors = .hosp_colors[.hosp_vars]
   } else {
-    if (labs) {
-      cc_vect = c(case_colors_labs(.hosp_colors[.hosp_vars]), case_colors_labs(prefix_colors(.hosp_colors[.hosp_vars], prefix = "lw")),
-                  case_colors_labs(prefix_colors(.hosp_colors[.hosp_vars], prefix = "new")))
-    } else {
-      cc_vect = c(hosp_colors, prefix_colors(.hosp_colors[.hosp_vars], prefix = "lw"), prefix_colors(.hosp_colors[.hosp_vars], prefix = "new"))
-    }
+    varrcolors = .case_colors
+  }
+  varlabs = c(names(varrcolors),prefix_var(names(varrcolors)))
+  cc_vect  = rep(varrcolors, times = 3)
+  names(cc_vect) = varlabs
+  if (labs) {
+    names(cc_vect) = names(varsNames(names(cc_vect)))
   }
 
   p <- p +
@@ -681,15 +678,15 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   df = df %>% rename(
     growthfactor = starts_with("growth")
   )
-  # mean.x = mean(df$prevalence_rate_1M_pop)
+  # mean.x = mean(df$confirmed_rate_1M_pop)
   # mean.y = mean(df$growthfactor)
   color_cntry = rep("yellow3", nrow(df))
-  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor < med$y ] = "darkgreen"
-  color_cntry[df$prevalence_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
-  color_cntry[df$prevalence_rate_1M_pop < med$x & df$growthfactor > med$y ] = "#E69F00"
+  color_cntry[df$confirmed_rate_1M_pop < med$x & df$growthfactor < med$y ] = "darkgreen"
+  color_cntry[df$confirmed_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
+  color_cntry[df$confirmed_rate_1M_pop < med$x & df$growthfactor > med$y ] = "#E69F00"
 
-  xlim =  c(min(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE)- diff(range(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE))*(1-x.min[1]),
-            max(df$prevalence_rate_1M_pop,med$x, na.rm = TRUE)*x.min[2])
+  xlim =  c(min(df$confirmed_rate_1M_pop,med$x, na.rm = TRUE)- diff(range(df$confirmed_rate_1M_pop,med$x, na.rm = TRUE))*(1-x.min[1]),
+            max(df$confirmed_rate_1M_pop,med$x, na.rm = TRUE)*x.min[2])
   ylimtop = max(df$growthfactor, med$y, na.rm = TRUE)
 
  # ylimbot = min(1, df$growthfactor,med$y)
@@ -700,12 +697,12 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
   p <- ggplot(df) +
     basic_plot_theme() +
-    geom_point(aes(x = prevalence_rate_1M_pop, y = growthfactor,
-                   text = paste("prevalence 1M: ", formatC(prevalence_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
+    geom_point(aes(x = confirmed_rate_1M_pop, y = growthfactor,
+                   text = paste("prevalence 1M: ", formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
                color = color_cntry, size = 1.3) +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
-    geom_text(aes(x = prevalence_rate_1M_pop, y = growthfactor, label= Country.Region),
+    geom_text(aes(x = confirmed_rate_1M_pop, y = growthfactor, label= Country.Region),
               check_overlap = TRUE, color = color_cntry, size = 3.3) +
     coord_cartesian(ylim = ylim,
                     xlim = xlim) +

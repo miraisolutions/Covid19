@@ -10,6 +10,7 @@
 #' @importFrom shinycssloaders withSpinner
 mod_growth_death_rate_ui <- function(id){
   ns <- NS(id)
+
   tagList(
     fluidRow(
       column(6,
@@ -26,8 +27,7 @@ mod_growth_death_rate_ui <- function(id){
       column(6,
              uiOutput(ns("title_death_toll")),
              selectInput(inputId = ns("radio_pop"), label = "",
-                          choices = list("lethality rate" = "lethality_rate",
-                                         "mortality rate 1M pop" = "mortality_rate_1M_pop"),
+                          choices = varsNames(c("lethality_rate","deaths_rate_1M_pop")),
                           selected = "lethality_rate"),
              withSpinner(uiOutput(ns("plot_death_rate")))
       )

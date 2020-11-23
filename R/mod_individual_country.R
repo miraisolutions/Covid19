@@ -189,7 +189,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   callModule(mod_plot_log_linear_server, "ind_plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
-  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE)
+  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE, tests = TRUE, hosp = TRUE, oneMpop = FALSE)
 
 
 # # ##### country split within areas #############################################
