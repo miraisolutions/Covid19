@@ -243,6 +243,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     output$barplots <- renderUI({
       mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
     })
+    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
     output[["lines_points_plots_tot"]] <- renderUI({
       mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed", oneMpop = FALSE)
@@ -250,7 +251,6 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 
     callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , nn = nn, w = w, istop = FALSE, oneMpop = FALSE)
 
-    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
   #  })
   # # ##### country split within areas #############################################

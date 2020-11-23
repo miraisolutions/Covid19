@@ -94,16 +94,16 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
     tagList(
       uiOutput(ns("title")),
       fluidRow(
-        column(4,
-               offset = 0,
+        column(3,
+               offset = 1,
                selectInput(inputId = ns("radio_indicator"), label = "",
                            choices = choices_plot, selected = selectvar)
         ),
-        column(2, offset = 1,
+        column(3, offset = 1,
                selectInput(inputId = ns("radio_1Mpop"), label = "",
-                           choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "tot")
+                           choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop")
         ),
-        column(4, offset = 1,
+        column(3, offset = 1,
                selectInput(inputId = ns("radio_log_linear"), label = "",
                            choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
         )

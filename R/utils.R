@@ -657,6 +657,24 @@ oneM_pop_calc = function(x, pop) {
   round(10^6*x/pop, digits = 3)
 }
 
+#' Calculates positive test rate
+#' @param conf numeric confirmed data last week
+#' @param tests numeric tests data last week
+#'
+#' @return x numeric positive tests rate
+#'
+lw_positive_test_rate_calc = function(conf, tests) {
+  # if (length(x) != length(pop))
+  #   stop("different length x and pop")
+  # remove latest NAs
+  latesttests = cumsum(tests) != 0
+  if (any(latesttests))
+    ptr = round(sum(conf[latesttests])/sum(tests[latesttests]), digits = 3)
+  else {
+    ptr = Inf
+  }
+  ptr
+}
 
 #' Builds dataset to be used in modules merging pop_data with data
 #' @param data data
@@ -691,7 +709,10 @@ build_data_aggr <- function(data, popdata) {
            # tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            # new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = round(confirmed/tests, digits = 3),
+           #positive_tests_rate = positive_test_rate_calc(confirmed, tests),
            new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
+           #new_positive_tests_rate = positive_test_rate_calc(confirmed, tests),
+
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
@@ -729,8 +750,11 @@ lw_vars_calc <- function(data) {
     summarise_at(aggr_vars, sum, na.rm = TRUE) %>% ungroup()
   # rename columns
   colnames(data7vars) = gsub("new","lw",colnames(data7vars))
+  data7ptr = data7 %>% group_by(Country.Region) %>%
+    summarize(lw_positive_tests_rate = lw_positive_test_rate_calc(new_confirmed, new_tests))
   # add back population
-  data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population")]))
+  data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population")])) %>%
+    right_join(data7ptr)
 
   aggrvars = setdiff(intersect(get_aggrvars(), names(data7vars)), "population")
   # compute rates
@@ -738,7 +762,7 @@ lw_vars_calc <- function(data) {
     mutate(
            #lw_confirmed_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            # lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
-           lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3),
+           lw_positive_tests_rate2 = round(lw_confirmed/lw_tests, digits = 3),
            lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
            #lw_hosp_rate_active =  pmin(round(lw_hosp/lw_active, digits = 5), 1),
            #lw_icuvent_rate_hosp =  pmin(round(lw_icuvent/lw_hosp, digits = 4), 1),
