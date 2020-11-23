@@ -19,7 +19,7 @@ mod_country_comparison_ui <- function(id){
       hr(),
       selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
     ),
-    withSpinner(uiOutput(ns("barplots"))),
+    #withSpinner(uiOutput(ns("barplots"))),
     withSpinner(uiOutput(ns("lineplots"))),
     fluidRow(
       column(5,
@@ -91,22 +91,22 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       # })
 
       # Bar plots ----
-
-      output$barplots <- renderUI({
-        lapply(input$select_countries, function(country){
-          tagList(
-            h2(country),
-            mod_bar_plot_day_contagion_ui(ns(paste0(country,"_bar_plot_day_contagion")))
-          )
+      if (FALSE) {
+        output$barplots <- renderUI({
+          lapply(input$select_countries, function(country){
+            tagList(
+              h2(country),
+              mod_bar_plot_day_contagion_ui(ns(paste0(country,"_bar_plot_day_contagion")))
+            )
+          })
         })
-      })
 
-      lapply(input$select_countries, function(country){
-        country_data <- countries_data %>%
+        lapply(input$select_countries, function(country){
+          country_data <- countries_data %>%
             filter(Country.Region %in% country)
-        callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data, nn = nn)
-      })
-    }
+          callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data, nn = nn)
+        })
+      }
 
     # Line plots ----
     output$lineplots <- renderUI({
@@ -123,15 +123,15 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       mod_growth_death_rate_ui(ns("rate_plots"))
     })
 
-    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, nn = nn, n_highligth = length(input$select_countries), istop = F)
+    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, nn = nn, n_highligth = length(input$select_countries), istop = FALSE)
 
     # Line with bullet plot
 
     output$lines_points_plots <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE, selectvar = "new_prevalence_rate_1M_pop")
+      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE, selectvar = "new_confirmed_rate_1M_pop", oneMpop = TRUE)
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries), istop = FALSE)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries), istop = FALSE, oneMpop = TRUE)
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
@@ -147,6 +147,7 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
+    }
   })
 
 }

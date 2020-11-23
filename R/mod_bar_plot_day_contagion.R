@@ -10,6 +10,7 @@
 mod_bar_plot_day_contagion_ui <- function(id){
   ns <- NS(id)
   tagList(
+    radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
     plotOutput(ns("bar_plot_day_contagion"))
   )
 }

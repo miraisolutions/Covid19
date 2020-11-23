@@ -248,7 +248,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed", oneMpop = FALSE)
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , nn = nn, w = w, istop = FALSE)
+    callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , nn = nn, w = w, istop = FALSE, oneMpop = FALSE)
 
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
@@ -426,9 +426,9 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # > comparison plot from day of nth contagion
   hospflag = sum(data$hosp, na.rm = TRUE) > 0
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_prevalence_rate_1M_pop")
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed", oneMpop = TRUE)
   })
-  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE, n_highligth = min(5,length(unique(data$Country.Region))))
+  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2, istop = TRUE, n_highligth = min(5,length(unique(data$Country.Region))), oneMpop = TRUE)
 
   # > growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
