@@ -119,7 +119,9 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
         scatter_plot(list(x = med_prevalence(),
                           y = medgr()))
     p <- p %>%
-      ggplotly(tooltip = c("text", "y"))# %>%
+      #ggplotly(tooltip = c("text", "y"))# %>%
+      ggplotly(tooltip = c("text"))# %>%
+
       # layout(legend = list(orientation = "h",
       #                      #y = 1.1,
       #                      yanchor = "bottom"))

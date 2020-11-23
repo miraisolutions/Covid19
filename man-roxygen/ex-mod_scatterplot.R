@@ -23,7 +23,7 @@ if (interactive()) {
 
     inputcountries = reactive(c("Australia","New Zealand")) # example with countries
 
-    callModule(Covid19Mirai:::mod_scatterplot_server, "plot", orig_data_aggregate, istop = F, countries = inputcountries)
+    callModule(mod_scatterplot_server, "plot", orig_data_aggregate, countries = inputcountries, nmed = 10000, wmed = 7, n_highligth = 5)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
@@ -66,7 +66,7 @@ if (interactive()) {
     subcontinents = reactive({unique(orig_data_aggregate_cont()$subcontinent)})
 
 
-    callModule(Covid19Mirai:::mod_scatterplot_server, "plot_oceania", subcontinent_data, istop = F, countries = subcontinents)
+    callModule(mod_scatterplot_server, "plot_oceania", subcontinent_data, istop = F, countries = subcontinents)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

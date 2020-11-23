@@ -146,14 +146,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   ns <- session$ns
   df$Date = df[[datevar]]
 
-  reactSelectVar = reactive({
-    if (grepl("rate_1M_pop$", input$radio_indicator) && (!(input$radio_indicator %in% names(df)))) {
-      varname = gsub("_rate_1M_pop$","",input$radio_indicator)
-    } else
-      varname = input$radio_indicator
-    varname
-  })
-
   if (oneMpop) {
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
@@ -180,6 +172,13 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     })
   }
 
+  reactSelectVar = reactive({
+    if (grepl("rate_1M_pop$", input$radio_indicator) && (!(input$radio_indicator %in% names(df)))) {
+      varname = gsub("_rate_1M_pop$","",input$radio_indicator)
+    } else
+      varname = input$radio_indicator
+    varname
+  })
   # Give DF standard structure; reacts to input$radio_indicator
   df_data <- reactive({
     if (FALSE){ # old without indicator oneMpop

@@ -695,10 +695,25 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01))
   ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
+
+  popuptext = function(area, gf, cfr1Mpop){
+    paste(
+      paste("Area: ",area,"<br>"),
+      paste("Growth Factor: ",gf,"<br>"),
+      paste(names(varsNames("confirmed_rate_1M_pop")), formatC(cfr1Mpop, format = "f", big.mark = "'", digits  = 1), "<br>"),
+      sep = ""
+    )
+  }
+
+  #df$popuptext = popuptext(df$Country.Region,df$growthfactor,df$confirmed_rate_1M_pop)
+
   p <- ggplot(df) +
     basic_plot_theme() +
     geom_point(aes(x = confirmed_rate_1M_pop, y = growthfactor,
-                   text = paste("prevalence 1M: ", formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")),
+                   text = popuptext(Country.Region, growthfactor, confirmed_rate_1M_pop),
+                   #text = popuptext,
+                   #text = paste(names(varsNames("confirmed_rate_1M_pop")), formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")
+                   ),
                color = color_cntry, size = 1.3) +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
     geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
