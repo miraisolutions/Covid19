@@ -1,4 +1,4 @@
-### Covid19Mirai 2.2.4 (2020-11-11)
+### Covid19Mirai 2.2.4 (2020-11-24)
 - Updated COVID19 package from Covid19datahub to 2.3.1 (#146)
 https://covid19datahub.io/news/index.html
 - Reviewed and used more consistently 1M pop rescaled vars in comparison (#134)
