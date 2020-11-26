@@ -134,6 +134,22 @@ get_timeseries_full_data <- function() {
   data
 }
 
+#' Get timeseries full data from datahub adding CH hospitalised data from level 2
+#' @rdname get_datahub
+#'
+#' @param country character country, to chose with lev = 2
+#' @param startdate character staring date
+#' @param lev integer 1 for country level, 2 for reagions
+#' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
+#'
+#' @details data sourced from https://github.com/covid19datahub/COVID19/
+#'
+#' @return data tibble of confirmed, deaths, active and recovered etc Country.Region
+#'
+#' @importFrom COVID19 covid19
+#' @import dplyr
+#'
+#' @export
 get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE) {
 
   orig_data <-
@@ -184,6 +200,7 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 #' @export
 get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE, hosp = TRUE) {
   message("get_datahub: country = ", country, "/ startdate = ", startdate, "/ level = ", lev)
+  rawarg = FALSE
   if (!is.null(country)) {
     # remap country )
     country = recode(country,
@@ -197,7 +214,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
                      "U.S. Virgin Islands" = "U.S. Virgin Islands",
                      )
   }
-  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose) # select level2 to add states
+  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg) # select level2 to add states
+  # raw = FALSE then NAs replaced with 0s
 
   vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "population")
   if (hosp) {
@@ -206,7 +224,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
   # if Hong Kong was chosen in country
   if ((is.null(dataHub) || nrow(dataHub) == 0) && lev == 1 && country == "Hong Kong") {
     message("Taking Hong Kong from chinese data from level 2")
-    dataHub <- covid19("China",2, start = startdate, verbose = verbose) %>% ungroup() %>%
+    dataHub <- covid19("China",2, start = startdate, verbose = verbose, raw = rawarg) %>% ungroup() %>%
       select( administrative_area_level_2, !!vars) %>%
       rename(Country.Region = administrative_area_level_2) %>%
       filter(Country.Region == "Hong Kong")
@@ -235,28 +253,31 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # "Virgin Islands, U.S." belongs to USA
 
     # if either china or hong kong missing
-    if (length(setdiff(c("Hong Kong","China"), dataHub$Country.Region))==1) {
-      if (lev == 1) {
-        message("Taking chinese data from level 2")
-        dataMiss <- covid19("China",2, start = startdate, verbose = verbose) %>% ungroup() %>%
-          select(administrative_area_level_1, administrative_area_level_2, !!vars) %>%
-          rename(Country.Region = administrative_area_level_1)
-        # separate Hong Kong
-        if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
-          dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
-            mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
-          dataHub = rbind(dataHub, dataHG)
+    if (FALSE) { # switch off handling of Hong Kong, too time consuming
+      if (length(setdiff(c("Hong Kong","China"), dataHub$Country.Region))==1) {
+        if (lev == 1) {
+          message("Taking chinese data from level 2")
+          dataMiss <- covid19("China",2, start = startdate, verbose = verbose) %>% ungroup() %>%
+            select(administrative_area_level_1, administrative_area_level_2, !!vars) %>%
+            rename(Country.Region = administrative_area_level_1)
+          # separate Hong Kong
+          if (is.null(country) && (!("Hong Kong" %in% dataHub$Country.Region))) {
+            dataHG = dataMiss %>% filter(administrative_area_level_2 == "Hong Kong") %>%
+              mutate(Country.Region = "Hong Kong") %>% select(-administrative_area_level_2)
+            dataHub = rbind(dataHub, dataHG)
+          }
+          dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
+            group_by(Country.Region,date) %>%
+            summarise_if(is.numeric, sum, na.rm = TRUE) %>%
+            ungroup()
+
+          dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
+
+          dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
+          #dataHub
         }
-        dataMiss = dataMiss %>% filter(administrative_area_level_2 != "Hong Kong") %>% # exclude hong kong
-          group_by(Country.Region,date) %>%
-          summarise_if(is.numeric, sum, na.rm = TRUE) %>%
-          ungroup()
+    }
 
-        dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
-
-        dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
-        dataHub
-      }
     }
     if (lev == 2 && country == "China") {
         message("remove Hong Kong from China")
@@ -265,14 +286,15 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
   }
   if (!is.null(dataHub) && nrow(dataHub) > 0) {
     # adjust recovered where they do not make sense, e.g. France lev 2
-    dataHub$recovered[is.na(dataHub$recovered)] = 0 #TODO: review, required only with COVID19 2.3.1
+    #dataHub$recovered[is.na(dataHub$recovered)] = 0 #TODO: review, required only with COVID19 2.3.1
     dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed, na.rm = TRUE)
     dataHub$deaths    = pmin(dataHub$deaths, dataHub$confirmed, na.rm = TRUE)
 
     # compute active
     dataHub = dataHub %>%
-      mutate(active = confirmed - deaths - recovered) %>%
-      mutate(active = replace_na(active, 0)) # TODO review
+      #mutate(active = confirmed - deaths - recovered) %>%
+      mutate(active = confirmed - replace_na(deaths,0) - replace_na(recovered,0)) #%>%
+      #mutate(active = replace_na(active, 0)) # TODO review
 
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
@@ -291,10 +313,20 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
       # hospitalised must be
       dataHub$icuvent = replace_na(dataHub$vent,0)+replace_na(dataHub$icu,0) # check NAs
       dataHub$icuvent[is.na(dataHub$vent) & is.na(dataHub$icu) ] = NA # NA if both were Na
-      dataHub$hosp = pmax(dataHub$hosp, dataHub$icuvent) # generally it can be lower
+      dataHub$hosp = pmax(dataHub$hosp, dataHub$icuvent, na.rm = TRUE) # generally it can be lower
       dataHub = dataHub %>% select(-icu,-vent) # remove icu and vent
       if (any(dataHub$active < dataHub$hosp)) {
-        warning(sum(dataHub$active < dataHub$hosp), " cases with active < hosp")
+        warning(sum(dataHub$active < dataHub$hosp, na.rm = TRUE), " cases with active < hosp")
+      }
+      # fill NAs with 0 for hosp data
+
+      # remove rows countries without data to reduce dataset
+      #dataHub = dataHub[!is.na(dataHub$confirmed), , drop = FALSE]
+      # remove countries without data
+      if (F) {
+        country_nodata = dataHub %>% group_by(Country.Region) %>% summarize(allnas = all(is.na(confirmed))) %>% ungroup() %>% filter(allnas == TRUE) %>% .[,1] %>% as.character()
+        dataHub = dataHub[!(dataHub$Country.Region %in% country_nodata), , drop = FALSE]
+
       }
     }
 

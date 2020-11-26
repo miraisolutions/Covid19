@@ -207,11 +207,11 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Line with bullet plot
 
   output[[paste("lines_points_plots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_prevalence_rate_1M_pop", hosp = FALSE, tests = FALSE)
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", hosp = FALSE, tests = FALSE, oneMpop = TRUE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn, w = w,
-             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette)
+             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette, hosp = FALSE, tests = FALSE, oneMpop = TRUE)
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({

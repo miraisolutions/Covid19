@@ -57,7 +57,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
     dat %>% #TODO select_countries_n_cases_w_days can be removed if data_filtered is the input
       #select_countries_n_cases_w_days(n = n, w = w) %>%
       filter( date == max(date)) %>%
-      select(Country.Region,date,confirmed,starts_with("growth"),prevalence_rate_1M_pop)
+      select(Country.Region,date,confirmed,starts_with("growth"),confirmed_rate_1M_pop)
   }
   pick_rate <- function(df, rate){
     df <-  df  %>%
@@ -78,7 +78,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
 
   # compute stats for all growth factors
   med_growth = reactive({apply(world_10000[, grepl("growth", names(world_10000)), drop = FALSE],2, median, na.rm = TRUE)})
-  med_prevalence = reactive({median(world_10000$prevalence_rate_1M_pop, na.rm = TRUE)})
+  med_prevalence = reactive({median(world_10000$confirmed_rate_1M_pop, na.rm = TRUE)})
 
   medgr = reactive({med_growth()[req(input$growth_factor)]})
 
@@ -119,7 +119,9 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
         scatter_plot(list(x = med_prevalence(),
                           y = medgr()))
     p <- p %>%
-      ggplotly(tooltip = c("text", "y"))# %>%
+      #ggplotly(tooltip = c("text", "y"))# %>%
+      ggplotly(tooltip = c("text"))# %>%
+
       # layout(legend = list(orientation = "h",
       #                      #y = 1.1,
       #                      yanchor = "bottom"))

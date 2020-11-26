@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{fix_colors}
 \alias{fix_colors}
-\title{Fix colors}
+\title{Fix colors in plot}
 \usage{
 fix_colors(p, labs = FALSE, hosp = FALSE)
 }
@@ -17,5 +17,5 @@ fix_colors(p, labs = FALSE, hosp = FALSE)
 p ggplot object
 }
 \description{
-Fix colors
+Fix colors in plot
 }

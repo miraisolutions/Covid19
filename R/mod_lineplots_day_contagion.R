@@ -10,8 +10,13 @@
 mod_lineplots_day_contagion_ui <- function(id){
   ns <- NS(id)
   tagList(
-    radioButtons(inputId = ns("radio_log_linear"), label = "",
-                 choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE),
+    splitLayout(
+      cellWidths = c("50%", "50%"),
+      radioButtons(inputId = ns("radio_log_linear"), label = "",
+                   choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE),
+      radioButtons(inputId = ns("radio_1Mpop"), label = "",
+                 choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop", inline = TRUE)
+    ),
     plotOutput(ns("line_plot_day_contagion"))
   )
 }
@@ -43,8 +48,17 @@ mod_lineplots_day_contagion_server <- function(input, output, session, countries
   countries_data = countries_data %>% filter(date > mindate)
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
+  data = reactive({
+    if (input$radio_1Mpop == "oneMpop"){
+      countries_data %>%   mutate( # add aggregated vars
+        across(all_of(as.vector(statuses)), ~oneM_pop_calc(.x,pop = population)) # use all_of
+      )
+    } else
+      countries_data
+  })
+
   output$line_plot_day_contagion <- renderPlot({
-    df <- countries_data %>%
+    df <- data() %>%
       select(statuses, date, Country.Region) %>%
       arrange(date) %>%
       pivot_longer(cols = -c(date, Country.Region), names_to = "status", values_to = "value") %>%

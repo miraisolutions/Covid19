@@ -59,7 +59,6 @@ mod_global_ui <- function(id){
 #' global Server Function
 #'
 #' @param orig_data_aggregate data.frame
-#' @param data_filtered data.frame from contagion day n
 #' @param countries_data data.frame sp for mapping
 #'
 #' @import dplyr
@@ -70,7 +69,7 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data_aggregate, data_filtered, countries_data_map){
+mod_global_server <- function(input, output, session, orig_data_aggregate, countries_data_map){
   ns <- session$ns
 
   # Datasets ----
@@ -137,7 +136,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
 
   callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, nn = n, istop = FALSE)
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, nn = n, istop = FALSE,  hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE)
 
   # > line plot top 5
   #df_top_n <-
@@ -158,7 +157,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, data_
 
   # > comparison plot from day of nth contagion
 
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n)
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n, hosp = FALSE, oneMpop = TRUE)
 
   # > growth_death_rate
   callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate, n_highligth = 10)

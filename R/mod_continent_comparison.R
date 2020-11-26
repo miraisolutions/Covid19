@@ -75,11 +75,11 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   # Line with bullet plot
 
   output$lines_points_plots_cont <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_prevalence_rate_1M_pop")
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn, w = w,
-             n_highligth = length(continents), istop = FALSE)
+             n_highligth = length(continents), istop = FALSE, oneMpop = TRUE)
 
   # scatterplot
   output$scatterplot_plots_cont <- renderUI({
