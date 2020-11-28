@@ -82,6 +82,8 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
           filter(Country.Region %in% input$select_countries) %>%
           arrange(desc(date))
 
+      countries_data_today = countries_data %>%
+        add_growth_death_rate()
       # align contagion day for comparisons
       # data_filtered <-
       #   countries_data %>%
@@ -123,7 +125,7 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       mod_growth_death_rate_ui(ns("rate_plots"))
     })
 
-    callModule(mod_growth_death_rate_server, "rate_plots", countries_data, nn = nn, n_highligth = length(input$select_countries), istop = FALSE)
+    callModule(mod_growth_death_rate_server, "rate_plots", countries_data_today, nn = nn, n_highligth = length(input$select_countries), istop = FALSE)
 
     # Line with bullet plot
 
@@ -131,19 +133,19 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE, selectvar = "new_confirmed", oneMpop = TRUE)
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries), istop = FALSE, oneMpop = TRUE)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries), istop = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE)
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
     # set nmed to 10000 like in global page, istop == FALSE
-    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
+    callModule(mod_scatterplot_server, "scatterplot_plots", countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
 
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
     })
-    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data, n_highligth = length(input$select_countries), istop = FALSE)
+    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)

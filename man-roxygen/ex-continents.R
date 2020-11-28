@@ -34,9 +34,9 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     n = 1000; w = 7
-    data_filtered <-
-      orig_data_aggregate %>%
-        Covid19Mirai:::rescale_df_contagion(n = n, w = w)
+    # data_filtered <-
+    #   orig_data_aggregate %>%
+    #     Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
 
     # countries <- reactive({

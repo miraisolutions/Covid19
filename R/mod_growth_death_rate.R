@@ -60,7 +60,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, nn = 1000, 
 
   scale_mortality_rate <- function(dat){
     df1 <- dat %>%
-      select_countries_n_cases_w_days(n = nn, w = w) %>%
+      select_countries_n_cases_w_days(n = nn, w = 0) %>% # changed to w = 0 since we have only last day
       filter( date == max(date))
     df1
   }
@@ -85,11 +85,10 @@ mod_growth_death_rate_server <- function(input, output, session, df, nn = 1000, 
   # Dataset ----
   df_pop <- reactive(scale_mortality_rate(df))
 
-  df_base_plot1 <- reactive({pick_rate_hist( req(df_pop()), req(input$growth_factor))})
-  df_base_plot2 <- reactive({pick_rate_hist( req(df_pop()), req(input$radio_pop))})
+  df_base_plot1 <- reactive({pick_rate_hist( df_pop(), req(input$growth_factor))})
+  df_base_plot2 <- reactive({pick_rate_hist( df_pop(), req(input$radio_pop))})
 
   # Plots ----
-
   # titles
   if (istop) {
     output$title_growth_factor <- renderUI(div(h4(paste0("Current top ", n_highligth, " countries growth factor")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
@@ -144,7 +143,7 @@ mod_growth_death_rate_server <- function(input, output, session, df, nn = 1000, 
     p
   })
 
-  is_percent <- reactive({ifelse(req(input$radio_pop) == "lethality_rate", T, F)})
+  is_percent <- reactive({ifelse(req(input$radio_pop) == "lethality_rate", TRUE, FALSE)})
   output$plot_death_rate_hist <- renderPlotly({
     message("is_percent = ", is_percent())
 

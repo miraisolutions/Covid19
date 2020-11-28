@@ -24,6 +24,10 @@ mod_add_table_ui <- function(id){
 #' @noRd
 mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5){
   ns <- session$ns
+  # Add Labels
+  vars = intersect(names(df), unlist(varsNames()))
+  names(df)[names(df) %in% vars] = names(varsNames(vars))
+
   output$table <- renderDT(
     datatable(df %>% capitalize_names_df(),
               rownames = FALSE,

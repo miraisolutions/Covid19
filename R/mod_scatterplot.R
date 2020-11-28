@@ -84,6 +84,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
 
   df_top = reactive({pick_rate(world_data, "confirmed") %>%
       arrange(desc(Value)) })
+
   if (istop)  { # choose top n_highligth
     df_top_new = reactive({df_top() %>%
       top_n(n_highligth, wt = Value) %>% .[1:n_highligth,]})

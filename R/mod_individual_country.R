@@ -149,17 +149,17 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   lw_country_data = lw_vars_calc(country_data)
 
   # create datasets for box merging today with data7
-  lw_country_data_today = country_data %>% filter(date == max(date)) %>%
+  country_data_today = country_data %>% add_growth_death_rate() %>%
     left_join(lw_country_data %>% select(-population))
 
-  country_data_today <- country_data %>%
-      filter(date == max(date))
+  # country_data_today <- country_data %>%
+  #     filter(date == max(date))
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "ind_count-boxes", country_data_today)
 
   # Boxes ----
-  callModule(mod_caseBoxes_server, "ind_count-boxes_hosp", lw_country_data_today, hosp = TRUE)
+  callModule(mod_caseBoxes_server, "ind_count-boxes_hosp", country_data_today, hosp = TRUE)
 
 
   callModule(mod_bar_plot_day_contagion_server, "ind_bar_plot_day_contagion", country_data, nn = nn)
@@ -266,20 +266,20 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
   }
   area2_map = getmap(country)
 
-  message("process individual country ", country)
-
+  message("process at level 2 individual country ", country)
   # Data ----
-  country_data <-  data %>%
+  country_data_today <-  data %>%
+    add_growth_death_rate()
     #filter(Country.Region %in% country) %>%
-    filter(contagion_day > 0) %>%
-    arrange(desc(date))
+    # filter(contagion_day > 0) %>%
+    # arrange(desc(date))
 
   # Compute Last week variables
 
-  data7_aggregate_cont = lw_vars_calc(country_data)
+  data7_aggregate_cont = lw_vars_calc(data)
 
   # create datasets for maps merging today with data7
-  data_maps = country_data %>% filter(date == max(date)) %>%
+  data_maps = country_data_today %>% #filter(date == max(date)) %>%
     left_join(data7_aggregate_cont %>% select(-population))
   #maps confirmed
   output[["map_countries_confirmed"]] <- renderUI({
