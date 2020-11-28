@@ -203,8 +203,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         df[, reactSelectVar()] = round(10^6*df[, reactSelectVar()] / df$population, 3)
       #}
     }
-
-
     if(istop) {
       countries_order =  df %>% filter(date == max(date)) %>%
         arrange(desc(!!as.symbol(reactSelectVar()))) %>%

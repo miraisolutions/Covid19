@@ -650,7 +650,7 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    coord_cartesian(ylim = c(y_min, max(df$Value))) +
+    coord_cartesian(ylim = c(y_min, max(df$Value, na.rm = TRUE))) +
     theme(
       axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )

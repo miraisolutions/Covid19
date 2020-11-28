@@ -135,6 +135,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     subcontinent_data %>% # select sub-continents with longer outbreaks
       rescale_df_contagion(n = nn, w = w)
 
+  subcontinent_data_filtered_today = subcontinent_data_filtered %>%
+    add_growth_death_rate()
+
+
   continent_data_today <-
     continent_data %>%
       filter(date == max(date))
@@ -199,7 +203,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     mod_growth_death_rate_ui(ns("rate_plots_cont"))
   })
 
-  callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered,
+  callModule(mod_growth_death_rate_server, "rate_plots_cont", subcontinent_data_filtered_today,
              nn = nn, n_highligth = length(subcontinents), istop = FALSE,
              g_palette = list("growth_factor" = subcont_palette,
                                        "death_rate" = subcont_palette))
@@ -219,7 +223,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont",
-             subcontinent_data_filtered, nmed = nn, n_highligth = length(subcontinents),
+             subcontinent_data_filtered_today, nmed = nn, n_highligth = length(subcontinents),
              istop = FALSE, countries = subcontinents)
 
 
@@ -227,13 +231,16 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
   })
   callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
-             subcontinent_data_filtered, n_highligth = length(subcontinents), istop = FALSE)
+             subcontinent_data_filtered_today, n_highligth = length(subcontinents), istop = FALSE)
 
   # Compute Last week variables
   data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
 
+  orig_data_aggregate_cont_today = orig_data_aggregate_cont %>%
+    add_growth_death_rate()
+
   # create datasets for maps merging today with data7
-  data_cont_maps = orig_data_aggregate_cont %>% filter(date == max(date)) %>%
+  data_cont_maps = orig_data_aggregate_cont_today %>% filter(date == max(date)) %>%
     left_join(data7_aggregate_cont %>% select(-population))
 
   #maps confirmed

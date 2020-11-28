@@ -152,7 +152,6 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
   )
   lev2id <- reactiveVal(0) # for removeUI
 
-
   output$from_nth_case<- renderUI({
     HTML(paste(message_conf_case("Countries",n.select),
                #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
@@ -201,16 +200,16 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     hospflag = sum(country_data$hosp, na.rm = TRUE) > 0
 
     country_data_today <- country_data %>%
-        filter(date == max(date))
+      add_growth_death_rate()
 
     lw_country_data = lw_vars_calc(country_data)
 
     # create datasets for box merging today with data7
-    lw_country_data_today = country_data %>% filter(date == max(date)) %>%
+    lw_country_data_today = country_data_today %>%
       left_join(lw_country_data %>% select(-population))
 
     # Boxes ----
-    callModule(mod_caseBoxes_server, "count-boxes", country_data_today)
+    callModule(mod_caseBoxes_server, "count-boxes", lw_country_data_today)
 
     # Boxes ----
     callModule(mod_caseBoxes_server, "count-boxes_hosp", lw_country_data_today, hosp = TRUE)
@@ -246,7 +245,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
     output[["lines_points_plots_tot"]] <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = FALSE, hosp = hospflag, selectvar = "new_confirmed", oneMpop = FALSE)
+      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = TRUE, hosp = hospflag, selectvar = "new_confirmed", oneMpop = FALSE)
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , nn = nn, w = w, istop = FALSE, oneMpop = FALSE)
@@ -326,7 +325,11 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     data %>%
     rescale_df_contagion(n = n2, w = w) # take where 100 confirmed
 
-  data_2_filtered_today = data_2_filtered %>% filter(date == max(date))
+  data_2_filtered_today = data_2_filtered %>%
+      filter(date == max(date))
+
+  data_today = data %>%
+    add_growth_death_rate()
 
   # list of ares to be used in the UI
   areas <- reactive({
@@ -434,7 +437,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_growth_death_rate_ui(ns("rate_plots_area2"))
   })
-  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data, nn = n2, istop = FALSE, n_highligth = length(unique(data$Country.Region)))
+  callModule(mod_growth_death_rate_server, "rate_plots_area2", df = data_today, nn = n2, istop = FALSE, n_highligth = length(unique(data_2_filtered_today$Country.Region)))
 
   # > scatterplot prevalence vs growth
   output[["plot_scatterplot_area_2"]] <- renderUI({
@@ -444,10 +447,10 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     areas() %>% .$Country.Region
   })
   # use data_2_filtered to filter out areas with few cases
-  callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_2_filtered_today, istop = FALSE, nmed = n2, countries = areasC())
+  callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_today, istop = FALSE, nmed = n2, countries = areasC())
 
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_2_filtered, istop = FALSE, n_highligth = length(unique(data_2_filtered$Country.Region)), active_hosp = active_hosp)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_today, istop = FALSE, n_highligth = length(unique(data_today$Country.Region)), active_hosp = active_hosp)
 
   if(tab) {
     # prepare data for table with country data

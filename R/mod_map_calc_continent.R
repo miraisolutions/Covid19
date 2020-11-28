@@ -258,7 +258,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption_mrt_rate <- "Mortality Rate: total deaths today per 1 M population"
     caption =HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
-    textvar = c("new_deaths", "lw_deaths", "deaths", "population")
+    textvar = c("new_deaths", "lw_deaths", "deaths", "lw_lethality_rate","population")
     if(global) {
       textvar = c(textvar, c("lethality_rate","deaths_rate_1M_pop"))
       #textvar = textvar[!grepl("deaths",textvar)]
@@ -300,9 +300,11 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
                        choices = mapvar, selected = mapvar["Last Week"])
     caption <- "Total, Last Week and New Confirmed Positive cases"
     graph_title = "Confirmed positive cases"
-    textvar = c("new_confirmed","lw_confirmed","confirmed","growth_factor_3", "active", "tests")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","growth_factor_3",
+                "active", "tests")
     if (global) {
       caption <- "Confirmed positive cases"
+      textvar = setdiff(textvar, "growth_factor_3")
     }
   } else if (grepl("tests", var) && grepl("1M", var)) {
     mapvar = grep("tests_rate_1M_pop", varsNames(), value = T)

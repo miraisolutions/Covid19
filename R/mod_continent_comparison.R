@@ -56,6 +56,9 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   continent_data_filtered <- continent_data %>%
       rescale_df_contagion(n = nn, w = w)
 
+  continent_data_filtered_today = continent_data_filtered %>%
+    add_growth_death_rate()
+
   output$lineplots_cont <- renderUI({
     tagList(
       h2("Continents Comparison"),
@@ -70,7 +73,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     mod_growth_death_rate_ui(ns("rate_plots_cont"))
   })
 
-  callModule(mod_growth_death_rate_server, "rate_plots_cont", continent_data_filtered, nn = nn, n_highligth = length(continents), istop = FALSE)
+  callModule(mod_growth_death_rate_server, "rate_plots_cont", continent_data_filtered_today, nn = nn, n_highligth = length(continents), istop = FALSE)
 
   # Line with bullet plot
 
@@ -86,12 +89,12 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     mod_scatterplot_ui(ns("scatterplot_plots_cont"))
   })
 
-  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered, nmed = nn, n_highligth = length(continents), istop = FALSE, countries = continents)
+  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highligth = length(continents), istop = FALSE, countries = continents)
 
   output$status_stackedbarplot_cont <- renderUI({
     mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
   })
-  callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered, n_highligth = length(continents), istop = FALSE)
+  callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_cont", continent_data_filtered, maxrowsperpage = 10)

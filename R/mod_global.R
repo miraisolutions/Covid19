@@ -79,9 +79,6 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   #     filter(date == max(date))
 
   # world time series
-   # total <-
-   #   orig_data %>%
-   #    get_timeseries_global_data()
   # data at World level with get_timeseries_global_data
    total <-
      orig_data_aggregate %>%
@@ -99,7 +96,8 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # countries today
   orig_data_aggregate_today <-
     orig_data_aggregate %>%
-      filter( date == max(date))
+    add_growth_death_rate()
+
 
   world <-
     orig_data_aggregate_today %>%
@@ -136,7 +134,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, nn = n, istop = FALSE,  hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE)
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_global", total_aggregate, nn = n, istop = FALSE,  hosp = FALSE, oneMpop = TRUE)
 
   # > line plot top 5
   #df_top_n <-
@@ -152,24 +150,28 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
     mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
     mutate(value = confirmed) %>%
     capitalize_names_df()
+
+
   # lineplot of top 5 countries confirmed cases with date x axis
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
 
   # > comparison plot from day of nth contagion
 
+
   callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n, hosp = FALSE, oneMpop = TRUE)
 
   # > growth_death_rate
-  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate, n_highligth = 10)
+  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highligth = 10)
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
   callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)
 
   # > stacked barplot with status split
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate, n_highligth = 10, istop = TRUE)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highligth = 10, istop = TRUE)
 
   # tables ----
   callModule(mod_add_table_server, "add_table_world", world)
+
 
 }
 
