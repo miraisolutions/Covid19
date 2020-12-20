@@ -10,7 +10,7 @@ caption_growth_factor_fun(growthvar)
 \item{growthvar}{character growth factor variable}
 }
 \value{
-character gtext for caption
+character text for caption
 }
 \description{
 caption growth factor

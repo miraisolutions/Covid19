@@ -8,7 +8,8 @@ choice_nthcases_plot(
   vars = vars_nthcases_plot,
   actives = TRUE,
   tests = FALSE,
-  hosp = FALSE
+  hosp = FALSE,
+  strindx = FALSE
 )
 }
 \arguments{
