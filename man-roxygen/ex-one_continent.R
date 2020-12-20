@@ -14,7 +14,7 @@ if (interactive()) {
   require(COVID19)
 
   #sapply(file.path("R",list.files("R")), source)
-  #devtools::load_all()
+  devtools::load_all()
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   cont = "Europe"

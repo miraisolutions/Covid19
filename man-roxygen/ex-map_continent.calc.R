@@ -13,7 +13,6 @@ if (interactive()) {
   cont = "LatAm & Carib."
   cont = "Europe"
 
-  variable = "growth vs prevalence" # set variable
   #variable = "death rate" # set variable
   #variable = "prevalence rate" # set variable
   #variable = "tests_rate_1M_pop" # set variable
@@ -21,6 +20,9 @@ if (interactive()) {
   variable = "positive tests rate" # set variable
   variable = "hospitalised" # set variable
   variable = "hospitalised over 1M" # set variable
+  variable = "stringency_index" # set variable
+  variable = "growth vs stringency" # set variable
+  #variable = "growth vs prevalence" # set variable
 
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable
@@ -54,7 +56,7 @@ if (interactive()) {
     data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
 
     # create datasets for maps merging today with data7
-    data_cont_maps = orig_data_aggregate_cont %>% filter(date == max(date)) %>%
+    data_cont_maps = orig_data_aggregate_cont %>% add_growth_death_rate() %>%
       left_join(data7_aggregate_cont %>% select(-population))
 
     .subsetmap = function(map,cc) {
