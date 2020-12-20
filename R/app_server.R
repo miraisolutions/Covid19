@@ -66,26 +66,17 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # align contagion day for comparisons
-  data_filtered <-
-      orig_data_aggregate %>%
-      rescale_df_contagion(n = n, w = w)
-
-
-  # determine vector of countries to be used in Global and Comparison pages
-  # reactive
-  countries <- reactive({
-    data_filtered %>%
-      select(Country.Region) %>%
-      distinct()
-  })
 
   # Modules ----
 
   callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
              countries_data_map)
 
+  orig_data_aggregate = orig_data_aggregate %>%
+              filter(!is.na(continent))
+
   callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
+
 
   # select continents in tabs
   continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
@@ -100,11 +91,25 @@ app_server <- function(input, output, session) {
   # Switzerland page
   callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, data2 = orig_data_ch_2, country = "Switzerland", nn = n, w = w)
 
+  # align contagion day for comparisons
+  data_filtered <-
+    orig_data_aggregate %>%
+    rescale_df_contagion(n = n, w = w)
+
+  # determine vector of countries to be used in Global and Comparison pages
+  # reactive
+  countries <- reactive({
+    data_filtered %>%
+      select(Country.Region) %>%
+      distinct()
+  })
+
   # country choice, remove Switzerland
   orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
   countriesnoswiss = reactive({
     countries()[countries()[,1] != "Switzerland",]
   })
+
   callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, nn = n, w = w, n.select = n)
 
   callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, nn = 100, w = w, n.select = n)
