@@ -217,7 +217,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
   dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg) # select level2 to add states
   # raw = FALSE then NAs replaced with 0s
 
-  vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "population")
+  vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "stringency_index","population")
   if (hosp) {
     vars = append(vars, setdiff(.hosp_vars_datahub, vars), which(vars == "hosp"))
   }
@@ -512,17 +512,18 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     #        daily_growth_factor_14 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 74, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,14), 60, sum, partial=TRUE, align = "right"),1)),
     #        daily_lethality_rate = pmax(0, replace_na(deaths / confirmed, 0)),
     # ) %>%
-    mutate(growth_factor_3 = round(pmax(1, sum(head(new_confirmed, 33)) / sum(head(lag(new_confirmed,3), 30), na.rm = TRUE),1), digits = 3),
-           growth_factor_7 = round(pmax(1, sum(head(new_confirmed, 37)) / sum(head(lag(new_confirmed,7), 37), na.rm = TRUE),1), digits = 3),
-           growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 44)) / sum(head(lag(new_confirmed,14), 44), na.rm = TRUE),1), digits = 3)
+    mutate(growth_factor_3 = round(pmax(1, sum(head(new_confirmed, 63)) / sum(head(lead(new_confirmed,3), 60), na.rm = TRUE),1), digits = 3),
+           growth_factor_7 = round(pmax(1, sum(head(new_confirmed, 67)) / sum(head(lead(new_confirmed,7), 60), na.rm = TRUE),1), digits = 3),
+           growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 74)) / sum(head(lead(new_confirmed,14), 60), na.rm = TRUE),1), digits = 3),
+           lm_confirmed_rate_1M_pop = round(10^6*sum(head(new_confirmed, 30))/population, digits = 3)
     ) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
     filter(date == max(date)) %>%
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
     growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
-    growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) #%>%
-    #mutate_if(is.numeric, ~function(x){dplyr::na_if(x, Inf)} )
+    growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
+    mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} )
 
 
   # df2 <- df1 %>%
