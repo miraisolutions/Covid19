@@ -12,6 +12,10 @@ y_vs_x_calc(data, yvar, xvar, yLab = "Growth", xLab = "Prevalence")
 \item{yvar}{y variable, growth factors}
 
 \item{xvar}{x variable, prevalence over 1 M or stringency index}
+
+\item{yLab}{y variable label}
+
+\item{xLab}{x variable label}
 }
 \value{
 factor vector

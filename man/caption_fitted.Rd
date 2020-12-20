@@ -6,6 +6,11 @@
 \usage{
 caption_fitted(col = "Grey", type = "dashed")
 }
+\arguments{
+\item{col}{character color name}
+
+\item{type}{character linetype}
+}
 \value{
 character text for caption
 }

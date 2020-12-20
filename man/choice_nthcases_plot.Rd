@@ -20,6 +20,8 @@ choice_nthcases_plot(
 \item{tests}{if TRUE then add new_test and test variables to vars.}
 
 \item{hosp}{if TRUE then add new_hosp and hosp variables to vars.}
+
+\item{strindx}{if TRUE then add stringency_index variable to vars.}
 }
 \description{
 given arguments select choices for nth plot

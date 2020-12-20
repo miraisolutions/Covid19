@@ -593,6 +593,8 @@ message_subcountries <- function(data, area, region) {
 #' @param data data.frame aggregated data per region
 #' @param yvar y variable, growth factors
 #' @param xvar x variable, prevalence over 1 M or stringency index
+#' @param yLab y variable label
+#' @param xLab x variable label
 #'
 #' @note factors created:
 #' c('Low Growth and Prevalence', 'Low Growth - High Prevalence', 'High Growth - Low Prevalence', 'High Growth and Prevalence')

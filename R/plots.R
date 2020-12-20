@@ -844,6 +844,8 @@ caption_active <- function() {
 }
 
 #' caption fitted values
+#' @param col character color name
+#' @param type character linetype
 #' @return character text for caption
 caption_fitted <- function(col = "Grey", type = "dashed")
   paste(col, type, "line: predicted values from Linear Model (y vs x)")

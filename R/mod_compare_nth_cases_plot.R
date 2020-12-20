@@ -3,6 +3,7 @@
 #' @param actives if TRUE then add new_active and active variables to vars.
 #' @param tests if TRUE then add new_test and test variables to vars.
 #' @param hosp if TRUE then add new_hosp and hosp variables to vars.
+#' @param strindx if TRUE then add stringency_index variable to vars.
 #'
 choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE){
   if (!actives && any(grepl("active",vars))) {
