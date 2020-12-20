@@ -30,7 +30,7 @@ mod_global_ui <- function(id){
     hr(),
     fluidRow(
       column(12,
-             mod_growth_death_rate_ui(ns("plot_growth_death_rate"))
+             mod_barplot_ui(ns("plot_growth_death_rate"))
       )
     ),
     fluidRow(
@@ -49,6 +49,14 @@ mod_global_ui <- function(id){
              ),
       column(6,
              mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
+      )
+    ),
+    fluidRow(
+      column(6,
+             mod_scatterplot_ui(ns("plot_scatterplot_stringency_glob"), growth = FALSE)
+      ),
+      column(6,
+             mod_barplot_ui(ns("plot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
       )
     ),
     hr(),
@@ -93,12 +101,18 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
      total %>%
         filter(date == max(date))
 
+   orig_data_aggregate = orig_data_aggregate %>%
+     filter(population > 100000) # remove very small countries
   # countries today
   orig_data_aggregate_today <-
     orig_data_aggregate %>%
     add_growth_death_rate()
 
+  lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
 
+  orig_data_aggregate_today = orig_data_aggregate_today  %>%
+    left_join(lw_orig_data_aggregate %>% select(-population))
+  # TODO: REVIEW!
   world <-
     orig_data_aggregate_today %>%
       arrange(desc(confirmed) )
@@ -157,14 +171,22 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   # > comparison plot from day of nth contagion
 
-
   callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n, hosp = FALSE, oneMpop = TRUE)
 
   # > growth_death_rate
-  callModule(mod_growth_death_rate_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highligth = 10)
+  callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highligth = 10)
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
   callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)
+  # > scatterplot prevalence vs growth, nmed = 10000 by default
+  callModule(mod_scatterplot_server, "plot_scatterplot_stringency_glob", orig_data_aggregate_today, n_highligth = 10, growth = FALSE, xvar = "stringency_index", istop = TRUE, fitted = FALSE)
+
+  # > barplot stringency
+  callModule(mod_barplot_server, "plot_stringency_index", orig_data_aggregate_today, n_highligth = 10, plottitle = c("Stringency Index"),
+             g_palette = list("plot_1" = barplots_colors$stringency,
+                              calc = TRUE),
+             pickvariable = list("plot_1" = "confirmed")) # pick top 10 confirmed countries
+
 
   # > stacked barplot with status split
   callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highligth = 10, istop = TRUE)

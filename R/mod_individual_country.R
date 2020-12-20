@@ -45,7 +45,7 @@ mod_ind_country_ui <- function(id){
     fluidRow(
 
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE, oneMpop = FALSE))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE))
       )
     ),
     # hr(),
@@ -189,7 +189,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   callModule(mod_plot_log_linear_server, "ind_plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
-  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE, tests = TRUE, hosp = TRUE, oneMpop = FALSE)
+  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE)#, secondline = "stringency_index")
 
 
 # # ##### country split within areas #############################################
