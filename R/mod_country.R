@@ -65,11 +65,12 @@ mod_country_ui <- function(id){
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param tab logical, if TRUE then also the data table ui is called
+#' @param stringency logical, if TRUE then also the barplot stringency ui is called
 #' @noRd
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
-areaUI = function(id, tab = TRUE){
+areaUI = function(id, tab = TRUE, stringency = TRUE){
   ns = shiny::NS(id)
    tg = tagList(
       div(id = id,
@@ -118,15 +119,24 @@ areaUI = function(id, tab = TRUE){
                     mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2"))
              )
            ),
-           hr(),
+           #hr(),
            # fluidRow(
            #  column(12,
            #         mod_barplot_ui(ns("plot_barplot_stringency_area2"), plot1 = "ui_stringency", plot2 = NULL)
            #  )
            # )
-          tags$div(id = "plot_barplot_stringency_area2"),
+          #tags$div(id = "plot_barplot_stringency_area2"),
        )
   )
+  if(stringency) {
+    tg = tagList(
+      div(id = id,
+          tg,
+          hr(),
+          tags$div(id = "plot_barplot_stringency_area2"),
+      )
+    )
+  }
   if(tab) {
     tg = tagList(
       div(id = id,
@@ -319,13 +329,14 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 #' @param n2 min number of cases for a country to be considered. Default n
 #' @param w number of days of outbreak. Default 7
 #' @param tab logical, if TRUE then also the data table module is called
+#' @param stringency logical, if TRUE then also stringency barplot module is called
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import shiny
 #'
 #' @noRd
-mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, stridx = FALSE) {
+mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, stringency = TRUE) {
   ns <- session$ns
 
   message("mod_country_area_server n2 = ", n2)
@@ -456,6 +467,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # do not use stringency v is the same for all areas
   if (all(is.na(data_today$stringency_index)) || all(data_today$stringency_index == 0) || length(table(data_today$stringency_index)) == 1)
     strFlag = FALSE
+
   testsflag = TRUE
   if (all(is.na(data_today$tests)) || all(data_today$tests == 0) || length(table(data_today$tests)) == 1)
     testsflag = FALSE
@@ -492,7 +504,6 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   output[["plot_scatterplot_area_2"]] <- renderUI({
     mod_scatterplot_ui(ns("scatterplot_plots_area2"), varsx = varsSelextX )
   })
-
   callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_today, istop = FALSE, nmed = n2, countries = areasC, xvar = xvar)
 
   # > stacked barplot with status split, use data_2_filtered_today
@@ -508,7 +519,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   ######################
   # Barplot stringency is conditional on having stringency data
-  if (TRUE) {
+  if (stringency) {
     strid  <- reactiveVal(0) # for removeUI
     #stridx2id = "plot_barplot_stringency_area2"
     if (strFlag) {
