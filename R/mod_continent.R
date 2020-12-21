@@ -165,6 +165,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   subcontinent_data_filtered_today = subcontinent_data_filtered_today  %>%
     left_join(lw_subcontinent_data_filtered %>% select(-population))
 
+
   continent_data_today <-
     continent_data %>%
       filter(date == max(date))

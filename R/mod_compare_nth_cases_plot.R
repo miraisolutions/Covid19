@@ -197,9 +197,8 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       #   arrange(desc(!!as.symbol(reactSelectVar()))) %>%
       #   #arrange(!!as.symbol(input$radio_indicator)) %>%
       #   top_n(n_highligth, wt = !!as.symbol(reactSelectVar())) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
-        countries_order = df %>% filter(date == max(date)) %>%
+      countries_order = df %>% filter(date == max(date)) %>%
               slice_max(!!as.symbol(reactSelectVar()), n = n_highligth, with_ties = FALSE) %>% .[,"Country.Region"] %>% as.vector()
-
 
       data = df %>% right_join(countries_order)  %>%  # reordering according to variable if istop
                 mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
