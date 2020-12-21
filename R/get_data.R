@@ -525,26 +525,6 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
     mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} )
 
-
-  # df2 <- df1 %>%
-  #   #group_by(.dots = group)  %>%
-  #   # mutate(growth_factor = round(zoo::rollmeanr(daily_growth_factor, 7, align = "right", fill = 0), digits = 3)) %>%
-  #   # mutate(death_rate = round(zoo::rollmeanr(daily_death_rate, 7, align = "right", fill = 0), digits = 3))  %>%
-  #   mutate(growth_factor_3 = round(daily_growth_factor_3, digits = 3),
-  #          growth_factor_14 = round(daily_growth_factor_14, digits = 3),
-  #          growth_factor_7 = round(daily_growth_factor_7, digits = 3),
-  #          lethality_rate = round(daily_lethality_rate, digits = 3)) %>%
-  #   mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
-  #          growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
-  #          growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
-  #   #ungroup() %>%
-  #   #mutate_if(is.numeric, function(x){replace_na(x,0)} ) %>%
-  #   #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>%
-  #   mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} ) %>%
-  #
-  #   arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
-  #   select(-starts_with("daily_"))
-  #df2
 }
 
 
