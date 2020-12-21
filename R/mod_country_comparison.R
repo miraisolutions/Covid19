@@ -104,7 +104,6 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       countries_data_today = countries_data %>%
         add_growth_death_rate()
 
-
       # align contagion day for comparisons
       # data_filtered <-
       #   countries_data %>%
@@ -148,6 +147,7 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
 
     callModule(mod_barplot_server, "rate_plots", countries_data_today, nn = nn, n_highligth = length(input$select_countries), istop = FALSE)
 
+
     # Line with bullet plot
 
     output$lines_points_plots <- renderUI({
@@ -156,12 +156,14 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries), istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE,  oneMpop = TRUE)
 
+
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
     output$scatterplot_plots <- renderUI({
       mod_scatterplot_ui(ns("scatterplot_plots"))
     })
     # set nmed to 10000 like in global page, istop == FALSE
     callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
+
 
     output$status_stackedbarplot <- renderUI({
       mod_stackedbarplot_ui(ns("status_stackedbarplot"))
@@ -180,8 +182,6 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
                g_palette = list("plot_1" = barplots_colors$stringency,
                                 calc = TRUE),
                pickvariable = list("plot_1" = "confirmed_rate_1M_pop")) # pick top 10 confirmed countries
-
-
 
 
     # tables ----
