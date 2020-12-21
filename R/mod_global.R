@@ -171,10 +171,12 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   # > comparison plot from day of nth contagion
 
+
   callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n, hosp = FALSE, oneMpop = TRUE)
 
   # > growth_death_rate
   callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highligth = 10)
+
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
   callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)

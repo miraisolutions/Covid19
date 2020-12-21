@@ -121,7 +121,6 @@ mod_barplot_server <- function(input, output, session, df, nn = 1000, w = 7,
   ns <- session$ns
 
   # Help funcs ----
-
   pick_rate_hist <- function(df1, rate, pickvar) {
     if (length(pickvar) == 0)
       pickvar = rate
@@ -215,7 +214,6 @@ mod_barplot_server <- function(input, output, session, df, nn = 1000, w = 7,
                      )
     p
   })
-
   if (isPlot2) {
     is_percent_2 <- reactive({ifelse(req(input$plot_2) %in% .rate_vars, TRUE, FALSE)})
     output$plot_plot_2_hist <- renderPlotly({
