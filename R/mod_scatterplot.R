@@ -70,7 +70,7 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
     tagList(
       uiOutput(ns("title_scatterplot")),
       fluidRow(
-        column(6, offset = 6,
+        column(6, #offset = 6,
                selectInput(inputId = ns("yvar"), label = varsy$label,
                            choices = varsy$choices,
                            selected = varsy$selected))

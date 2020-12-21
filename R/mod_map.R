@@ -178,7 +178,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       var1M = NULL
     }
     leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
-    message("leg_par$bins 1:", paste(leg_par$bins, collapse = ","))
+    #message("leg_par$bins 1:", paste(leg_par$bins, collapse = ","))
     #mapdata = leafletProxy("map", data = data_plot())  %>%
     mapdata = leafletProxy("map", data = countries_data_map)  %>%
       clearMarkers() %>%
