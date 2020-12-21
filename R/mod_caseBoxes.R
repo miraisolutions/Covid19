@@ -120,7 +120,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE) {
                background = .tests_colors[["tests"]])
     })
     output$testratepositive <- renderUI({
-      countBox(title1 = "Positive tests: ",
+      countBox(title1 = "Positive Tests: ",
                subtitle1 = counts[["positive_tests_rate"]],
                title2 = "Last Week: ",
                subtitle2 =  counts[["lw_positive_tests_rate"]],
