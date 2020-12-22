@@ -2,9 +2,10 @@ context("get datahub tests")
 
 data_full_ch <- get_datahub_fix_ch()
 data_full = data_full_ch$orig_data
+vars = c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","stringency_index",.hosp_vars)
 
 test_that("get_datahub returns expected headers and variables", {
-  expect_true(length(setdiff(names(data_full), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population",.hosp_vars))) == 0)
+  expect_true(length(setdiff(names(data_full), vars)) == 0)
   expect_false(any(sapply(data_full, class) == "integer"))
   expect_true(all(data_full$confirmed >= data_full$recovered, na.rm = TRUE))
   expect_true(all(data_full$confirmed >= data_full$deaths, na.rm = TRUE))
@@ -23,7 +24,7 @@ data_CHINA <- get_datahub("China", lev = 2)
 
 test_that("get_datahub lev = 2 China does not contain Hong Kong", {
   expect_false("Hong Kong" %in% unique(data_CHINA$Country.Region))
-  expect_true(length(setdiff(names(data_CHINA), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population",.hosp_vars))) == 0)
+  expect_true(length(setdiff(names(data_CHINA), vars)) == 0)
   expect_false(any(sapply(data_CHINA, class) == "integer"))
   expect_true(all(data_CHINA$confirmed >= data_CHINA$recovered))
   expect_true(all(data_CHINA$confirmed >= data_CHINA$deaths))
@@ -34,7 +35,7 @@ data_HK <- get_datahub("Hong Kong", lev = 1)
 
 test_that("get_datahub lev = 1 Hong Kong works", {
   expect_true("Hong Kong" %in% unique(data_HK$Country.Region))
-  expect_true(length(setdiff(names(data_HK), c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population",.hosp_vars))) == 0)
+  expect_true(length(setdiff(names(data_HK), c(vars))) == 0)
   expect_false(any(sapply(data_HK, class) == "integer"))
 })
 
@@ -43,7 +44,7 @@ data <- get_timeseries_by_contagion_day_data(data_full)
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
   varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests", .hosp_vars))
-  expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date",varnames ,"population",
+  expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date",varnames ,"population","stringency_index",
                                          paste0("new_",varnames), "contagion_day"))))
   expect_equal(class(data$contagion_day),"numeric")
   expect_false(any(sapply(data, class) == "integer"))
