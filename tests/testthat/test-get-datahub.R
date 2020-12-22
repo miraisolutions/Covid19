@@ -86,7 +86,7 @@ na.pop.data = sum(is.na(pop_data$continent))
 # test pop map data
 mapdata = load_countries_datahub_map()
 
-test_that("test pop_data and that build_data_aggr returns expected format", {
+test_that("test pop_data and build_data_aggr returns expected format", {
 
   dups = duplicated(pop_data[, c("Country.Region")])
 
