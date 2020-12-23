@@ -260,7 +260,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
   if (istop) {
     output$title <- renderUI({
-      div(h4(paste0("Top ",n_highligth," countries from day of ", nn ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
     })
   } else {
     output$title <- renderUI({
