@@ -4,7 +4,15 @@
 \alias{scatter_plot}
 \title{scatterplot between prevalence and growth rate}
 \usage{
-scatter_plot(df, med, x.min = c(0.875, 1.125), y.min = c(0.99, 1.01))
+scatter_plot(
+  df,
+  med,
+  x.min = c(0.875, 1.125),
+  y.min = c(0.99, 1.01),
+  xvar = "confirmed_rate_1M_pop",
+  yvar = "growth_factor_3",
+  coefflm = NULL
+)
 }
 \arguments{
 \item{df}{data.frame}
@@ -14,6 +22,12 @@ scatter_plot(df, med, x.min = c(0.875, 1.125), y.min = c(0.99, 1.01))
 \item{x.min}{numeric adjustment for cartesian x axis}
 
 \item{y.min}{numeric adjustment for cartesian y axis}
+
+\item{xvar}{character variable name for x axis}
+
+\item{yvar}{character variable name for y axis}
+
+\item{coefflm}{numeric, intercept and slop of simple lm model}
 }
 \value{
 ggplot plot

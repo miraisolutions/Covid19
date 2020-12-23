@@ -9,12 +9,12 @@ if (interactive()) {
   library(grid)
   library(scales)
 
-  sapply(file.path("R",list.files("R")), source)
+  #sapply(file.path("R",list.files("R")), source)
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_country_comparison_ui("country_comparison")
+    mod_country_comparison_ui("country_comparison")
   )
   server <- function(input, output) {
 
@@ -24,6 +24,9 @@ if (interactive()) {
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+
+    orig_data_aggregate = orig_data_aggregate %>%
+      filter(!is.na(continent))
 
     n = 1000; w = 7
 

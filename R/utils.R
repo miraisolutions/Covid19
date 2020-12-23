@@ -73,12 +73,17 @@ prefix_var <- function(cc = .case_colors,  prefix = c("lw","new")) {
 #' Variables used in nthcase_plot
 vars_nthcases_plot <-
   c(#"confirmed", "deaths", "recovered", "active", "hosp",
-    names(.case_colors),
+    names(.case_colors), setdiff(.hosp_vars, names(.case_colors)),
     prefix_var(names(.case_colors), "new"),
+    prefix_var(setdiff(.hosp_vars, names(.case_colors)), "new"),
     #"new_confirmed", "new_deaths", "new_active",
     #"new_prevalence_rate_1M_pop",
-    #"new_tests", #"new_tests_rate_1M_pop","new_positive_tests_rate",
-    "growth_factor_3", "lethality_rate" )
+    "tests","new_tests", #"new_tests_rate_1M_pop",
+    "positive_tests_rate", "new_positive_tests_rate",
+    #"growth_factor_3",
+    "lethality_rate",
+    "stringency_index"
+    )
 
 #' List of variable names to be used for map
 #' @param vars variable name to be selected, if empty tehn all are returned
@@ -97,6 +102,7 @@ varsNames = function(vars) {
               prefix_var(hospvars_1M_pop),
               cases_1M_pop,
               prefix_var(cases_1M_pop),
+              "lm_confirmed_rate_1M_pop",
               paste("growth_factor", c(3,7,14), sep = "_"),
               "lethality_rate",
               prefix_var("lethality_rate"),
@@ -104,6 +110,7 @@ varsNames = function(vars) {
               #prefix_var("mortality_rate_1M_pop"),
               "icuvent_rate_hosp",
               "hosp_rate_active",
+              "stringency_index",
               "tests",
               prefix_var("tests"),
               paste("tests", "rate_1M_pop", sep = "_"),
@@ -111,6 +118,7 @@ varsNames = function(vars) {
               "positive_tests_rate",
               prefix_var("positive_tests_rate"),
               "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
+              paste("growth_vs_stringency", c(3,7,14), sep = "_"),
               "date")
 
   allvars = allvars %>%
@@ -126,6 +134,7 @@ varsNames = function(vars) {
 
   names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
   names(allvars)  = gsub("^Lw", "Last Week", names(allvars))
+  names(allvars)  = gsub("^Lm", "Last Month", names(allvars))
   names(allvars)  = gsub("Rate ", "Over ", names(allvars))
 
   # names(allvars)[grepl("rate_1M_pop$", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("rate_1M_pop$", allvars)])
@@ -152,6 +161,10 @@ varsNames = function(vars) {
   grep("positive_tests_rate", unlist(varsNames()), value = TRUE),
   grep("hosp_rate_active", unlist(varsNames()), value = TRUE),
   grep("icuvent_rate_hosp", unlist(varsNames()), value = TRUE)
+)
+#' Variables defined as 0-100 index in map plot
+.index_vars <- c(
+  grep("index", unlist(varsNames()), value = TRUE)
 )
 # Note that the documentation link is not going to work because the pipe
 # operator ultimately resides in `magrittr` and is only re-exported in `dplyr`.
@@ -195,7 +208,26 @@ basic_plot_theme <- function() {
     legend.key = element_rect(fill = alpha("white", 0.0))
   )
 }
-
+#' Additional Theme for second line in plot
+#' @rdname secondline_theme
+#' @import ggplot2
+#' @export
+secondline_theme <- function() {
+  theme(
+    axis.line.y.right = element_line(color = "grey45", size = 0.5, linetype = "dashed")
+    #axis.line.x.top = element_line(color = "grey45", size = 0.5, linetzpe = "dashed"),
+  )
+}
+#' Remove axis labels
+#' @rdname secondline_theme
+#' @import ggplot2
+#' @export
+noaxislab_theme <- function() {
+  theme(
+    axis.title.x.bottom = element_blank(),
+    axis.title.y.left = element_blank()
+  )
+}
 #' Get table options.
 #'@rdname getTableOptions
 #' @description Returns option list for datatable.
@@ -214,13 +246,14 @@ getTableOptions <- function(scrollX = TRUE,
   )
 }
 
-#' Color Palette
+#' Color Palette for simple barplots
 #'
 #' @export
-rate_colors <- c(
+barplots_colors <- list(
   #"growth_factor" = "#dd4b39",
   "growth_factor" = "chocolate3",
-  "death_rate" = "grey30"
+  "death_rate" = "grey30",
+  "stringency" = c(col = "Greys", rev = TRUE, skip = 2)
 )
 
 #' Color Palette
@@ -480,7 +513,7 @@ aggr_to_cont = function(data, group, time,
     mutate(population = as.numeric(population)) %>%
     group_by(.dots = c(time,group)) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
-    add_growth_death_rate(group, time) %>%
+    #add_growth_death_rate(group, time) %>%
     #left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
     mutate(
            ##mortality_rate_1M_pop = round(10^6*deaths/population, digits = 3),
@@ -488,8 +521,10 @@ aggr_to_cont = function(data, group, time,
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            ##tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            ##new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = round(confirmed/tests, digits = 3),
-           new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
+           positive_tests_rate = pmin(round(confirmed/tests, digits = 3),1),
+           new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 3),1),
+           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 3),
+           #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3), # not making much sense
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
@@ -554,30 +589,38 @@ message_subcountries <- function(data, area, region) {
            paste(x[[region]], collapse = ",")))
   c("Continent Area composition: ", list.message)
 }
-#' Calculates growth vs prevalence factors
+#' Calculates growth vs prevalence, growth vs stringency factors
 #' @param data data.frame aggregated data per region
-#' @param growthvar growth factors
-#' @param prevvar prevalence over 1 M
+#' @param yvar y variable, growth factors
+#' @param xvar x variable, prevalence over 1 M or stringency index
+#' @param yLab y variable label
+#' @param xLab x variable label
 #'
 #' @note factors created:
 #' c('Low Growth and Prevalence', 'Low Growth - High Prevalence', 'High Growth - Low Prevalence', 'High Growth and Prevalence')
 #'
 #' @return factor vector
 #'
-growth_v_prev_calc <- function(data, growthvar,prevvar) {
+y_vs_x_calc <- function(data, yvar,xvar, yLab = "Growth", xLab = "Prevalence") {
   # compute stats for all growth factors
-  med_growth = median(data[[growthvar]])
-  med_prevalence = median(data[[prevvar]])
+  xmed = data[[xvar]][data[[xvar]]!= 0]
+  ymed = data[[yvar]][data[[yvar]]!= 0]
 
-  labs = c("Low Growth and Prevalence",
-           "Low Growth - High Prevalence",
-           "High Growth - Low Prevalence",
-           "High Growth and Prevalence" )
+  med_y = median(ymed, na.rm = TRUE)
+  med_x = median(xmed, na.rm = TRUE)
 
-  val_cntry = rep(labs[2], nrow(data))
-  val_cntry[data[[prevvar]] <= med_prevalence & data[[growthvar]]  <= med_growth ] = labs[1]
-  val_cntry[data[[prevvar]] > med_prevalence & data[[growthvar]] > med_growth ] = labs[4]
-  val_cntry[data[[prevvar]] <= med_prevalence & data[[growthvar]] > med_growth ] = labs[3]
+  labs = c(paste("Low", yLab,"and", xLab, collapse = " "),
+           paste("Low", yLab," - High",xLab, collapse = " "),
+           paste("High", yLab," - Low",xLab, collapse = " "),
+           paste("High", yLab," and",xLab, collapse = " ") )
+
+  val_cntry = "NA"
+  val_cntry = rep(val_cntry, nrow(data))
+  no_data = data[[xvar]]== 0 | data[[yvar]]== 0
+  val_cntry[!(no_data) & data[[xvar]] > med_x & data[[yvar]] <= med_y ] = labs[2]
+  val_cntry[!(no_data) & data[[xvar]] <= med_x & data[[yvar]]  <= med_y ] = labs[1]
+  val_cntry[!(no_data) & data[[xvar]] > med_x & data[[yvar]] > med_y ] = labs[4]
+  val_cntry[!(no_data) & data[[xvar]] <= med_x & data[[yvar]] > med_y ] = labs[3]
   factor(val_cntry, levels = labs)
 }
 
@@ -669,7 +712,7 @@ lw_positive_test_rate_calc = function(conf, tests) {
   # remove latest NAs
   latesttests = cumsum(tests) != 0
   if (any(latesttests))
-    ptr = round(sum(conf[latesttests])/sum(tests[latesttests]), digits = 3)
+    ptr = pmin(1, round(sum(conf[latesttests])/sum(tests[latesttests]), digits = 3))
   else {
     ptr = Inf
   }
@@ -687,7 +730,7 @@ lw_positive_test_rate_calc = function(conf, tests) {
 build_data_aggr <- function(data, popdata) {
   orig_data_aggregate <- data %>%
     #aggregate_province_timeseries_data() %>% # not required anymore
-    add_growth_death_rate() %>%
+    #add_growth_death_rate() %>%
     arrange(Country.Region)
 
   if (!missing(popdata)) {
@@ -708,11 +751,12 @@ build_data_aggr <- function(data, popdata) {
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            # tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            # new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = round(confirmed/tests, digits = 3),
+           positive_tests_rate = pmin(round(confirmed/tests, digits = 3),1),
            #positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-           new_positive_tests_rate = round(new_confirmed/new_tests, digits = 3),
+           new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 3),1),
            #new_positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-
+           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 3),
+           #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3),
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
@@ -726,8 +770,14 @@ build_data_aggr <- function(data, popdata) {
       ifelse(is.infinite(x),NA, x)
     }))
 
+  classd = sapply(orig_data_aggregate, class)
+  whichc = which(classd == "character")
+  whichn = which(classd == "numeric")
+  whichd = which(classd == "Date")
+  if (sum(sort(c(whichd, whichc, whichn))) != sum(1:ncol(orig_data_aggregate)))
+    stop("Some columns are not character numeric and Date")
 
-  orig_data_aggregate
+  orig_data_aggregate[, c(whichd, whichc, whichn)]
 }
 
 #' Computes last week variables from \code{build_data_aggr}
@@ -762,8 +812,10 @@ lw_vars_calc <- function(data) {
     mutate(
            #lw_confirmed_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            # lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
-           lw_positive_tests_rate2 = round(lw_confirmed/lw_tests, digits = 3),
+           #lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3),
            lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
+           lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 3),
+           lw_mortality_rate = round(pmax(0, replace_na(lw_deaths / population, 0)), digits = 3),
            #lw_hosp_rate_active =  pmin(round(lw_hosp/lw_active, digits = 5), 1),
            #lw_icuvent_rate_hosp =  pmin(round(lw_icuvent/lw_hosp, digits = 4), 1),
            #lw_hosp_rate_1M_pop = round(10^6*lw_hosp/population, digits = 3)

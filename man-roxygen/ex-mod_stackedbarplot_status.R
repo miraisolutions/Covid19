@@ -5,12 +5,12 @@ if (interactive()) {
   library(ggplot2)
   library(plotly)
   #devtools::load_all()
-  sapply(file.path("R",list.files("R")), source)
+  #sapply(file.path("R",list.files("R")), source)
 
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_stackedbarplot_ui("plot", 5)
+      mod_stackedbarplot_ui("plot", 5)
     )
   )
   server <- function(input, output, session) {
