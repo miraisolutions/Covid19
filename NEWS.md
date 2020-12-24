@@ -1,4 +1,5 @@
-### Covid19Mirai 2.2.4-9000 (develop)
+### Covid19Mirai 2.3.1 (2020-12-24)
+- Add restriction policy index maps and graphs (#149)
 
 ### Covid19Mirai 2.2.4 (2020-11-24)
 - Updated COVID19 package from Covid19datahub to 2.3.1 (#146)
