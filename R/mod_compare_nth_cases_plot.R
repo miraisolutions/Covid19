@@ -3,37 +3,30 @@
 #' @param actives if TRUE then add new_active and active variables to vars.
 #' @param tests if TRUE then add new_test and test variables to vars.
 #' @param hosp if TRUE then add new_hosp and hosp variables to vars.
+#' @param strindx if TRUE then add stringency_index variable to vars.
 #'
-choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests = FALSE, hosp = FALSE){
+choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE){
   if (!actives && any(grepl("active",vars))) {
-    #message("remove active var for ", id)
     vars = vars[!grepl("active", vars)]
   }
   if (!tests && any(grepl("test",vars))) {
-    #message("remove tests vars for ", id)
     vars = vars[!grepl("test", vars)]
   }
   if (!hosp && any(vars %in% .hosp_vars)) {
-    #message("remove hosp vars for ", id)
-    for(hospvar in .hosp_vars) {
-      vars = vars[!grepl(hospvar, vars)]
-    }
+    vars =setdiff(vars, .hosp_vars)
+    vars =setdiff(vars, prefix_var(.hosp_vars, "new"))
   }
   if (hosp) {
-    #message("add hosp vars for ", id)
     # TODO not yet adding other hosp vars and 1M pop
     vars = vars[!grepl("hosp", vars)]
     vars = append(vars, as.vector(.hosp_vars), after = min(grep("^new", vars))-1)
     #TODO review
     vars = append(vars, paste0("new_",as.vector(.hosp_vars)), after = min(grep("hosp", vars)))
   }
-  # if (oneMpop) {
-  #   #message("remove 1M pop for ", id)
-  #   #vars = vars[!grepl("1M_pop$", vars)]
-  #   # add one min pop vars
-  #   aggrvars = intersect(get_aggrvars(), vars)
-  #   vars = c(vars, paste(aggrvars, "rate_1M_pop", sep = "_"))
-  # }
+  if (!strindx) {
+    vars = vars[!grepl("stringency", vars)]
+  }
+
   choices_plot = varsNames(vars)
   choices_plot
 }
@@ -65,12 +58,12 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
                                           #              #"new_prevalence_rate_1M_pop",
                                           #              #"new_tests", #"new_tests_rate_1M_pop","new_positive_tests_rate",
                                           #               "growth_factor_3", "lethality_rate" ),
-                                          actives = TRUE, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE){
+                                          actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, selectvar = "new_confirmed", oneMpop = TRUE){
   ns <- NS(id)
   # if(!oneMpop && grepl("1M_pop$", selectvar))
   #   stop("oneMpop is F but selectvar is ", selectvar)
 
-  choices_plot = choice_nthcases_plot(vars, actives, tests, hosp )
+  choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = strindx) # do not add stringency_index in possible choices
 
   # UI ----
   if (!oneMpop) {
@@ -88,7 +81,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
         )
       ),
       withSpinner(plotlyOutput(ns("plot"), height = 400)),
-      div(uiOutput(ns("caption")), align = "center")
+      #div(uiOutput(ns("caption")), align = "center")
+      div(htmlOutput(ns("caption")), align = "center", height = 10)
+
     )
   } else {
     tagList(
@@ -109,7 +104,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
         )
       ),
       withSpinner(plotlyOutput(ns("plot"), height = 400)),
-      div(uiOutput(ns("caption")), align = "center")
+      #div(uiOutput(ns("caption")), align = "center")
+      div(htmlOutput(ns("caption")), align = "center", height = 10)
+
     )
   }
 
@@ -142,14 +139,15 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               nn = 1000, w = 7,
                                               n_highligth = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
-                                              actives = TRUE, tests = FALSE, hosp = FALSE, oneMpop = TRUE){
+                                              actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, secondline = NULL){
   ns <- session$ns
   df$Date = df[[datevar]]
 
   if (oneMpop) {
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
-      choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp)
+      stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
+      choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars) # do not add stringency_index in possible choices
       varselect = input$radio_indicator
 
       if (req(input$radio_1Mpop) == "oneMpop")  {
@@ -179,21 +177,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       varname = input$radio_indicator
     varname
   })
+  # select only needed variables
+  df = df %>% .[, c("Country.Region", "date","Date", "population", intersect(vars_nthcases_plot, names(df)))]
   # Give DF standard structure; reacts to input$radio_indicator
   df_data <- reactive({
-    if (FALSE){ # old without indicator oneMpop
-      if (grepl("rate_1M_pop$", req(input$radio_indicator)))  {
-        if (all(is.na(df$population)))
-          stop("Missing population data")
-        if (!(req(input$radio_indicator) %in% names(df))) {
-          #varname = gsub("rate_1M_pop$","",reactSelectVar$radio_indicator)
-          #reactSelectVar$radio_indicator = gsub("rate_1M_pop$","",reactSelectVar())
-          message("divide by pop size")
-          df[, reactSelectVar()] = round(10^6*df[, reactSelectVar()] / df$population, 3)
-        }
-      }
-    }
-    if (!is.null(input$radio_1Mpop) && req(input$radio_1Mpop) == "oneMpop")  {
+
+    if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
       if (all(is.na(df$population)))
         stop("Missing population data")
       #if (!(paste(req(input$radio_indicator),"rate_1M_pop", sep = "_") %in% names(df))) {
@@ -203,13 +192,14 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         df[, reactSelectVar()] = round(10^6*df[, reactSelectVar()] / df$population, 3)
       #}
     }
-
-
     if(istop) {
-      countries_order =  df %>% filter(date == max(date)) %>%
-        arrange(desc(!!as.symbol(reactSelectVar()))) %>%
-        #arrange(!!as.symbol(input$radio_indicator)) %>%
-        top_n(n_highligth, wt = !!as.symbol(reactSelectVar())) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
+      # countries_order =  df %>% filter(date == max(date)) %>%
+      #   arrange(desc(!!as.symbol(reactSelectVar()))) %>%
+      #   #arrange(!!as.symbol(input$radio_indicator)) %>%
+      #   top_n(n_highligth, wt = !!as.symbol(reactSelectVar())) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
+      countries_order = df %>% filter(date == max(date)) %>%
+              slice_max(!!as.symbol(reactSelectVar()), n = n_highligth, with_ties = FALSE) %>% .[,"Country.Region"] %>% as.vector()
+
       data = df %>% right_join(countries_order)  %>%  # reordering according to variable if istop
                 mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
     } else {
@@ -218,9 +208,14 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
     # filter off x before nn
     date_first_contagion = min(data$date[data$confirmed >= nn], na.rm = TRUE)
-    data = data[data$date >= date_first_contagion, ]
+    data = data[data$date >= date_first_contagion, , drop = FALSE]
 
-    df_tmp <- data %>% .[,c("Country.Region", reactSelectVar(), "Date")] %>%
+    varsfinal = c("Country.Region", reactSelectVar(), "Date")
+    if (strindx)
+      varsfinal = unique(c(varsfinal, "stringency_index"))
+    if (!is.null(secondline))
+      varsfinal = unique(c(varsfinal, "stringency_index", secondline))
+    df_tmp <- data %>% .[,varsfinal] %>%
       bind_cols(data[,reactSelectVar()] %>% setNames("Value")) %>%
       rename(Status = Country.Region ) %>%
       #rename(Date = contagion_day ) %>%
@@ -249,10 +244,13 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     req(input$radio_log_linear) != "linear"
   })
 
+  rollw = TRUE
   # Plot -----
   output$plot <- renderPlotly({
+    #secondline = NULL
     p <- plot_all_highlight(df_data(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
-                            date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette)
+                            date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw)
+
     p <- p %>%
       plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
@@ -262,7 +260,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
   if (istop) {
     output$title <- renderUI({
-      div(h4(paste0("Top ",n_highligth," countries from day of ", nn ," contagion")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
     })
   } else {
     output$title <- renderUI({
@@ -270,10 +268,16 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     })
   }
 
-  output$caption <- renderUI({
+  caption_explain = paste0(ifelse(rollw, "Computed as rolling weekly average. ", ""),ifelse(datevar == "date", "First day", "Contagion day 0"),
+                   " is the day when ", nn," confirmed cases are reached.")
+  if (strindx && (!is.null(secondline)) && secondline == "stringency_index") {
+    caption_explain = c(caption_explain, paste("Dashed lines represent", caption_stringency()))
+  }
+  output$caption <- renderText({
 
-      p(paste0("Computed as rolling weekly average. ",ifelse(datevar == "date", "First day", "Contagion day 0"),
-               " is the day when ", nn," confirmed cases are reached."))
+    paste0("<p>", caption_explain, sep = '</p>')
+
   })
+
 }
 

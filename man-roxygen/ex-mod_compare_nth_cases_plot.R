@@ -83,7 +83,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("lines_points_plots")
+      mod_compare_nth_cases_plot_ui("lines_points_plots", strindx = FALSE)
     )
   )
   server <- function(input, output, session) {
@@ -102,7 +102,7 @@ if (interactive()) {
         filter(Country.Region %in% countries)
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highligth = length(countries), istop = FALSE)
+               nn = n, n_highligth = length(countries), istop = FALSE, strindx = TRUE, secondline = "stringency_index")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -118,7 +118,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("lines_points_plots", actives = FALSE, tests = TRUE, hosp = TRUE, selectvar = "new_confirmed", oneMpop = TRUE)
+      mod_compare_nth_cases_plot_ui("lines_points_plots", actives = FALSE, tests = TRUE, hosp = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, strindx = FALSE)
     )
   )
   server <- function(input, output, session) {
@@ -137,7 +137,15 @@ if (interactive()) {
       filter(Country.Region %in% countries)
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highligth = length(countries), istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE)
+               nn = n, n_highligth = length(countries), istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = TRUE)#, secondline = "stringency_index")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
+
+library(plotly)
+
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point() + geom_smooth()
+
+fig <- p %>%
+  ggplotly(layerData = 1, originalData = F)

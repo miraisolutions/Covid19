@@ -76,6 +76,8 @@ The Covid19datahub project can allow us to use the following variables:
   - *hosp*: number of hospitalized confirmed cases. Not available for
     all countries.  
   - *population*: population size.
+  - *stringency index*: Stringency of governmental responses, how strong a lock-down is. fFrom 0 to 100.
+
 
 The following variables are computed by the application:
 
@@ -94,7 +96,10 @@ The following variables are computed by the application:
   - *positive tests rate*: ratio confirmed cases over number of tests. 
      It could be all NAs for countries not providing tests figures.
 
-  - *new (variable)*: all variables labelled "new" are the delta of day X value - day X-1
+  - *new (variable)*: all variables labeled "new" are the delta of day X value - day X-1
+  - *last week (variable)*: all variables labeled "last week" are the totals of the last 7 days.
+  - *last month (variable)*: all variables labeled "last month" are the totals of the last 30 days.
+
   
 The results are visualized as a shiny app.
 

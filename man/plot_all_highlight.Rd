@@ -10,7 +10,9 @@ plot_all_highlight(
   text = "",
   percent = FALSE,
   date_x = FALSE,
-  g_palette = graph_palette
+  g_palette = graph_palette,
+  rollw = TRUE,
+  secondline = NULL
 )
 }
 \arguments{
@@ -25,7 +27,14 @@ plot_all_highlight(
 \item{date_x}{logical to convert x-axis labels to dates}
 
 \item{g_palette}{character vector of colors for the graph and legend}
+
+\item{rollw}{logical, if TRUE then rolling weekly averages are computed}
+
+\item{secondline}{character, variable name to be added with new line and axis}
 }
 \description{
 plot all countries but highlight first 10
+}
+\note{
+secondline argument not working, ggplotly removes secon axis. Not being used at the moment.
 }

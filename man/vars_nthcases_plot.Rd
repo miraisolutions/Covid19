@@ -5,7 +5,7 @@
 \alias{vars_nthcases_plot}
 \title{Variables used in nthcase_plot}
 \format{
-An object of class \code{character} of length 12.
+An object of class \code{character} of length 18.
 }
 \usage{
 vars_nthcases_plot

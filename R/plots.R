@@ -9,7 +9,7 @@
 #'
 #' @return ggplot plot
 #' @export
-stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30) {
+stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30) {
   suffix = NULL
   if (percent) {
     df$ratio.over.cases <- 100*df$ratio.over.cases
@@ -23,7 +23,7 @@ stackedbarplot_plot <- function(df, percent =  TRUE, labsize = 10, labangle = 30
     ggplot(aes(x = Country.Region, y = ratio.over.cases, fill = status,
                text = paste0("Percentage: ", round(ratio.over.cases, 1), suffix,"</br>",
                label = paste("Count: ",
-                             formatC(countstatus, format = "f", big.mark = "'", digits  = 0)))))+
+                             formatC(countstatus, format = "f", big.mark = "'", digits  = 0))))) +
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
@@ -501,12 +501,12 @@ date_bar_plot <- function(df){
 fix_colors <- function(p, labs = FALSE, hosp = FALSE) {
 
   if (hosp) {
-    varrcolors = .hosp_colors[.hosp_vars]
+    varcolors = .hosp_colors[.hosp_vars]
   } else {
-    varrcolors = .case_colors
+    varcolors = .case_colors
   }
-  varlabs = c(names(varrcolors),prefix_var(names(varrcolors)))
-  cc_vect  = rep(varrcolors, times = 3)
+  varlabs = c(names(varcolors),prefix_var(names(varcolors)))
+  cc_vect  = rep(varcolors, times = 3)
   names(cc_vect) = varlabs
   if (labs) {
     names(cc_vect) = names(varsNames(names(cc_vect)))
@@ -546,13 +546,17 @@ fix_legend_position <- function(p){
 #' @param percent logical to make the y axis in percent
 #' @param date_x logical to convert x-axis labels to dates
 #' @param g_palette character vector of colors for the graph and legend
+#' @param rollw logical, if TRUE then rolling weekly averages are computed
+#' @param secondline character, variable name to be added with new line and axis
+#'
+#' @note secondline argument not working, ggplotly removes secon axis. Not being used at the moment.
 #'
 #' @import ggplot2
 #' @import zoo
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette) {
+plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , secondline = NULL) {
 
   #clean df for log case
   if (log) {
@@ -567,28 +571,27 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   if (percent) {
     df$Value <- 100*df$Value
   }
-  # df_highlight <- df %>%
-  #   filter(as.integer(Status) < n_highligth + 1) #pick top n_highligth countries, using factor level (factor is ordered by decreasing Value)
-  # rolling weekly average (#80), changed alignment to right
-  df_highlight <- df %>% group_by(Status) %>%
-    arrange(Date)  %>%
-    mutate(Value = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right"))
 
-  if (F) { # not used, legacy
-    df_highlight_max <- df_highlight %>%
-      group_by(Status) %>%
-      filter(Value == max(Value)) %>%
-      ungroup()
-  }
+  df_highlight = df
+  if (rollw)
+    df = df %>%
+              group_by(Status) %>%
+              mutate(ValueRoll = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
+              ungroup()
+
   #TODO y_tooltip should be wrapped with gentext(Value), not so nice below, it does not seem to work
   # df = df %>% rename(Variable = Value)
   # df_highlight = df_highlight %>% rename(Variable = Value)
   #
   # df$Value = gen_text(df$Variable)
   # df_highlight$Value = gen_text(df_highlight$Variable)
-  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
-    geom_line(data = df_highlight, aes(x = Date, y = Value, colour = Status)) +
+  varChoice = ifelse(rollw, "ValueRoll", "Value")
+
+  p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
+    #geom_line(aes(x = Date, y = !!sym(varChoice), colour = Status)) +
+    geom_line() +
     basic_plot_theme() +
+    #noaxislab_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     scale_color_manual(values = g_palette)
 
@@ -600,6 +603,27 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   if (log) {
     p <- p %>%
       add_log_scale()
+  }
+
+  if (FALSE && !is.null(secondline)) {
+    message("add  second line ", secondline)
+    # rescale by value
+    # review, should be rescaled by range values, 0-100
+    ratiorescale = max(p$data[[varChoice]], na.rm = TRUE) / max(p$data[[secondline]], na.rm = TRUE)
+    #p$data[[secondline]] = p$data[[secondline]] * ratiorescale
+
+    p <- p +
+      geom_line(aes(y = !!sym(secondline)), linetype = "dashed") +
+      #basic_plot_theme() +
+      scale_y_continuous(
+        # Add a second axis and specify its features
+        #label_number(big.mark = "'"),
+        sec.axis = sec_axis( trans= function(x){ x / ratiorescale},
+                             name = names(varsNames(secondline)))
+      ) +
+      secondline_theme()
+    #p$data[[secondline]] = p$data[[secondline]] / ratiorescale
+
   }
 
   if (date_x) { # mutate x axis to a date format
@@ -650,7 +674,7 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    coord_cartesian(ylim = c(y_min, max(df$Value))) +
+    coord_cartesian(ylim = c(y_min, max(df$Value, na.rm = TRUE))) +
     theme(
       axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )
@@ -667,70 +691,95 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
 #' @param med list with median values for x and y
 #' @param x.min numeric adjustment for cartesian x axis
 #' @param y.min numeric adjustment for cartesian y axis
+#' @param xvar character variable name for x axis
+#' @param yvar character variable name for y axis
+#' @param coefflm numeric, intercept and slop of simple lm model
 #'
 #' @import ggplot2
 #' @importFrom scales label_number
 #'
 #' @return ggplot plot
 #' @export
-scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01)) {
+scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01), xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", coefflm = NULL) {
 
-  df = df %>% rename(
-    growthfactor = starts_with("growth")
-  )
-  # mean.x = mean(df$confirmed_rate_1M_pop)
-  # mean.y = mean(df$growthfactor)
-  color_cntry = rep("yellow3", nrow(df))
-  color_cntry[df$confirmed_rate_1M_pop < med$x & df$growthfactor < med$y ] = "darkgreen"
-  color_cntry[df$confirmed_rate_1M_pop > med$x & df$growthfactor > med$y ] = "#dd4b39"
-  color_cntry[df$confirmed_rate_1M_pop < med$x & df$growthfactor > med$y ] = "#E69F00"
+  # df = df %>% rename(
+  #   growthfactor = starts_with("growth")
+  # )
+  # mean.x = mean(df[[xvar]])
+  # mean.y = mean(df[[yvar]])
+  if (grepl("confirmed", xvar) && grepl("^growth", yvar))
+    color_cases = c("yellow3", "darkgreen", "#dd4b39", "#E69F00")
+  else
+    color_cases = c("#dd4b39","darkgreen", "gray3","#3c8dbc")
 
-  xlim =  c(min(df$confirmed_rate_1M_pop,med$x, na.rm = TRUE)- diff(range(df$confirmed_rate_1M_pop,med$x, na.rm = TRUE))*(1-x.min[1]),
-            max(df$confirmed_rate_1M_pop,med$x, na.rm = TRUE)*x.min[2])
-  ylimtop = max(df$growthfactor, med$y, na.rm = TRUE)
+  color_cntry = rep(color_cases[1], nrow(df))
+  color_cntry[df[[xvar]] < med$x & df[[yvar]] < med$y ] = color_cases[2]
+  color_cntry[df[[xvar]] > med$x & df[[yvar]] > med$y ] = color_cases[3]
+  color_cntry[df[[xvar]] < med$x & df[[yvar]] > med$y ] = color_cases[4]
 
- # ylimbot = min(1, df$growthfactor,med$y)
-  ylimbot = min(df$growthfactor,med$y, na.rm = TRUE)- diff(range(df$growthfactor,med$y, na.rm = TRUE))*(1-y.min[1])
+  xlim =  c(min(df[[xvar]],med$x, na.rm = TRUE)- diff(range(df[[xvar]],med$x, na.rm = TRUE))*(1-x.min[1]),
+            max(df[[xvar]],med$x, na.rm = TRUE)*x.min[2])
+  ylimtop = max(df[[yvar]], med$y, na.rm = TRUE)
+
+ # ylimbot = min(1, df[[yvar]],med$y)
+  ylimbot = min(df[[yvar]],med$y, na.rm = TRUE)- diff(range(df[[yvar]],med$y, na.rm = TRUE))*(1-y.min[1])
 
   ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
 
-  popuptext = function(area, gf, cfr1Mpop){
+  popuptext = function(area, yvarexpr, xvarexpr){
     paste(
       paste("Area: ",area,"<br>"),
-      paste("Growth Factor: ",gf,"<br>"),
-      paste(names(varsNames("confirmed_rate_1M_pop")), formatC(cfr1Mpop, format = "f", big.mark = "'", digits  = 1), "<br>"),
+      paste(names(varsNames(yvar)) ,yvarexpr,"<br>"),
+      paste(names(varsNames(xvar)), formatC(xvarexpr, format = "f", big.mark = "'", digits  = 1), "<br>"),
       sep = ""
     )
   }
 
-  #df$popuptext = popuptext(df$Country.Region,df$growthfactor,df$confirmed_rate_1M_pop)
-
-  p <- ggplot(df) +
-    basic_plot_theme() +
-    geom_point(aes(x = confirmed_rate_1M_pop, y = growthfactor,
-                   text = popuptext(Country.Region, growthfactor, confirmed_rate_1M_pop),
-                   #text = popuptext,
-                   #text = paste(names(varsNames("confirmed_rate_1M_pop")), formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")
-                   ),
-               color = color_cntry, size = 1.3) +
+  p <- ggplot(df, aes(x = !! sym(xvar), y = !! sym(yvar),
+                      text = popuptext(Country.Region, !! sym(yvar), !! sym(xvar)),
+                      group = 1
+                      #text = popuptext,
+                      #text = paste(names(varsNames("confirmed_rate_1M_pop")), formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")
+  )) +
+    #basic_plot_theme() +
+    labs(x= paste("(x)",names(varsNames(xvar))), y = paste("(y)",names(varsNames(xvar)))) +
+    geom_point(color = color_cntry, size = 1.3)   +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
-    geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3) +
-    geom_text(aes(x = confirmed_rate_1M_pop, y = growthfactor, label= Country.Region),
+    geom_hline(yintercept = med$y, colour = "darkblue", linetype="dotted", size = 0.3)
+
+  if (!is.null(coefflm)) {
+    p <- p +   geom_abline(intercept = coefflm[1], slope = coefflm[2], color = "grey", linetype="dashed", size = 0.8)
+    #p <- p +   geom_line(aes(y = predlm, x = !! sym(xvar)), size = 1)
+    #p <- p +   geom_smooth(method = "lm", se = FALSE)
+  }
+  p <- p +
+    geom_text(aes(x = !! sym(xvar), y = !! sym(yvar), label= Country.Region),
               check_overlap = TRUE, color = color_cntry, size = 3.3) +
     coord_cartesian(ylim = ylim,
                     xlim = xlim) +
-    scale_x_continuous(labels = label_number(
-      big.mark = "'",
-      #suffix = "K"
-      n.break = 5
-    )) +
-    scale_y_continuous(#limits = c(1, NA), # removed because growthrates can be even <1
-      labels = label_number(accuracy = accy),
-      n.break = 5
-      #labels = function(x) paste0(x, "%")
-    )
+    basic_plot_theme()
+    # scale_x_continuous(labels = label_number(
+    #   big.mark = "'",
+    #   #suffix = "K"
+    #   n.break = 5
+    # )) #+
+
+  # p +
+  #   labs(caption= paste("(x)",names(varsNames(xvar))), y = paste("(y)",names(varsNames(xvar))))
+
+  percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
+  if (percent) {
+    p <- p + scale_y_continuous(labels = function(x) paste0(x*100, "%"), n.break = 10)
+  } else
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 10) # add label
+
+  percent = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
+  if (percent) {
+    p <- p + scale_x_continuous(labels = function(x) paste0(x*100, "%"), n.break = 8)
+  } else
+    p <- p + scale_x_continuous(labels = label_number(big.mark = "'"), n.break = 8) # add label
 
   p
 }
@@ -745,8 +794,59 @@ backgroud_map_col = "grey90"
 
 #' caption growth factor
 #' @param growthvar character growth factor variable
-#' @return character gtext for caption
+#' @return character text for caption
 caption_growth_factor_fun <- function(growthvar)
   #paste0("Growth Factor: total confirmed cases since ", gsub("growth_factor_", "", growthvar)  ," days ago. / total confirmed cases in previous 30 days")
   paste0("Growth Factor: total confirmed cases today / total confirmed cases ", gsub("growth_factor_", "", growthvar) ," days ago. (within last 2 months)")
+
+#' caption death
+#' @param var character growth factor variable
+#' @return character text for caption
+caption_death_fun <- function(var) {
+  if (var %in% .rate_vars) {
+    caption_radio <- "/ total confirmed cases as of today."
+  } else {
+    caption_radio <- "per 1 M population."
+  }
+  caption_death <- paste0("Computed as total deaths as of today ",caption_radio)
+  caption_death
+}
+
+#' caption stringency index
+#' @return character text for caption
+caption_stringency <- function()
+  "Stringency Lock-Down Index as of today: none (0-100) max"
+
+#' caption prevalence
+#' @return character text for caption
+caption_prevalence <- function()
+  "Prevalence: confirmed cases over 1 M people."
+
+#' caption tests
+#' @return character text for caption
+caption_tests <- function() {
+  caption_tests1 <- "Tests per 1 Million people"
+  caption_tests2 <- "Updated Tests figures are unavailable for some countries"
+  c(caption_tests1, caption_tests2)
+}
+
+#' caption positive tests
+#' @return character text for caption
+caption_positive_tests <- function()
+  "% of positive tests."
+
+#' caption active
+#' @return character text for caption
+caption_active <- function() {
+  caption_active <- "Active values can be biased by non reported recovered cases"
+  caption_color <- "Yellow scale to represent negative active."
+  c(caption_active, caption_color)
+}
+
+#' caption fitted values
+#' @param col character color name
+#' @param type character linetype
+#' @return character text for caption
+caption_fitted <- function(col = "Grey", type = "dashed")
+  paste(col, type, "line: predicted values from Linear Model (y vs x)")
 
