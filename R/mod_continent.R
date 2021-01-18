@@ -332,8 +332,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              n_highligth = length(data_cont_maps$Country.Region), istop = FALSE,
              plottitle = c("Vaccination Status"),
              g_palette = list("plot_1" = barplots_colors[["vaccines"]],
-                              calc = TRUE),
-             pickvariable = list("plot_1" = "confirmed_rate_1M_pop"))
+                              calc = TRUE)#,
+             #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
+             )
 
   output[[paste("scatterplot_vax_vars_countries", uicont , sep = "_")]] <- renderUI({
     mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE)
