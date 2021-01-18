@@ -9,7 +9,9 @@ choice_nthcases_plot(
   actives = TRUE,
   tests = FALSE,
   hosp = FALSE,
-  strindx = FALSE
+  strindx = FALSE,
+  vax = FALSE,
+  log = TRUE
 )
 }
 \arguments{
@@ -22,6 +24,8 @@ choice_nthcases_plot(
 \item{hosp}{if TRUE then add new_hosp and hosp variables to vars.}
 
 \item{strindx}{if TRUE then add stringency_index variable to vars.}
+
+\item{log}{if FALSE tthen negative variables and new variables are removed}
 }
 \description{
 given arguments select choices for nth plot
