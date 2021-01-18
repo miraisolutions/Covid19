@@ -185,6 +185,8 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
   observeEvent(input$select_country, {
 
     message("process country page ", req(input$select_country))
+    strid  <- reactiveVal(0) # for removeUI of stringency index
+
     # Data ----
     country_data <-  data %>%
         filter(Country.Region %in% req(input$select_country)) %>%
@@ -218,6 +220,9 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         }
     }
     hospflag = sum(country_data$hosp, na.rm = TRUE) > 0
+    vaxflag = sum(country_data$vaccines, na.rm = TRUE) > 0
+    message("hospflag = ", hospflag)
+    message("vaxflag = ", vaxflag)
 
     country_data_today <- country_data %>%
       add_growth_death_rate()
@@ -229,10 +234,22 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       left_join(lw_country_data %>% select(-population))
 
     # Boxes ----
-    callModule(mod_caseBoxes_server, "count-boxes", lw_country_data_today)
+    vaxarg = NULL
+    if (vaxflag)
+      vaxarg = "recovered"
+    callModule(mod_caseBoxes_server, "count-boxes", lw_country_data_today, vax = vaxarg)
 
     # Boxes ----
     callModule(mod_caseBoxes_server, "count-boxes_hosp", lw_country_data_today, hosp = TRUE)
+
+    statuseslineplot = c("confirmed", "deaths", "recovered", "active")
+    if (vaxflag)
+      statuseslineplot = c("confirmed", "deaths", "vaccines", "active")
+
+    # output$barplots <- renderUI({
+    #   mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
+    # })
+    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn, statuses = statuseslineplot)
 
     # tables ----
     callModule(mod_add_table_server, "add_table_country", country_data %>% arrange(desc(date)), maxrowsperpage = 10)
@@ -259,16 +276,12 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 
     callModule(mod_plot_log_linear_server, "plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
-    # output$barplots <- renderUI({
-    #   mod_bar_plot_day_contagion_ui(ns("bar_plot_day_contagion"))
-    # })
-    callModule(mod_bar_plot_day_contagion_server, "bar_plot_day_contagion", country_data, nn = nn)
 
     output[["lines_points_plots_tot"]] <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = TRUE, hosp = hospflag, strindx = FALSE, selectvar = "new_confirmed", oneMpop = FALSE)
+      mod_compare_nth_cases_plot_ui(ns("lines_plots_country"), tests = TRUE, hosp = hospflag, strindx = FALSE, selectvar = "new_confirmed", oneMpop = FALSE, vax = vaxflag)
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , tests = TRUE, hosp = hospflag, strindx = TRUE, nn = nn, w = w, istop = FALSE, oneMpop = FALSE)#, secondline = "stringency_index")
+    callModule(mod_compare_nth_cases_plot_server, "lines_plots_country", country_data , tests = TRUE, hosp = hospflag, strindx = TRUE, nn = nn, w = w, istop = FALSE, oneMpop = FALSE, vax = vaxflag)#, secondline = "stringency_index")
 
 
   #  })
@@ -303,7 +316,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         build_data_aggr(area_data_2)
       # works in example
       message("id lev2 = ", id)
-      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,nn/10))
+      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,nn/10), strid_arg = strid)
 
     } else{
       message("remove level 2 UI for ", req(input$select_country))
@@ -336,7 +349,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 #' @import shiny
 #'
 #' @noRd
-mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, stringency = TRUE) {
+mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, stringency = TRUE, strid_arg) {
   ns <- session$ns
 
   message("mod_country_area_server n2 = ", n2)
@@ -446,7 +459,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     countries_order =  area_2_top_5_confirmed %>% filter(date == max(date)) %>%
       arrange(desc(confirmed)) %>%
       .[,"Country.Region"] %>% as.vector()
-    df_top_n = area_2_top_5_confirmed %>% filter(date > mindate) %>% # take only starting point where greater than n
+    df_top_n = area_2_top_5_confirmed %>% filter(date >= mindate) %>% # take only starting point where greater than n
       mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
       mutate(value = confirmed) %>%
       capitalize_names_df()
@@ -473,15 +486,17 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     testsflag = FALSE
 
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = testsflag, hosp = hospflag, strindx = strFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag)
+    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = testsflag, hosp = hospflag, strindx = strFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
   })
-  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2,  tests = testsflag, hosp = hospflag, strindx = strFlag, istop = TRUE, n_highligth = min(5,length(unique(data$Country.Region))), oneMpop = oneMpopflag)
+  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2,  tests = testsflag, hosp = hospflag, strindx = strFlag, istop = FALSE,
+             n_highligth = length(unique(data$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE)
 
   # > growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_barplot_ui(ns("rate_plots_area2"))
   })
-  callModule(mod_barplot_server, "rate_plots_area2", df = data_today, nn = n2, istop = FALSE, n_highligth = length(unique(data_2_filtered_today$Country.Region)))
+  callModule(mod_barplot_server, "rate_plots_area2", df = data_today, istop = FALSE,
+             n_highligth = length(unique(data_2_filtered_today$Country.Region)))
 
 
   areasC <-
@@ -520,18 +535,28 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   ######################
   # Barplot stringency is conditional on having stringency data
   if (stringency) {
-    strid  <- reactiveVal(0) # for removeUI
+    #strid  <- reactiveVal(0) # for removeUI
     #stridx2id = "plot_barplot_stringency_area2"
     if (strFlag) {
 
       # insert UI components
-      if (strid() == 0) {
-        strid(strid()+1)
-        id = paste0("area_stringency",strid())
-        message("id insert = ", id)
+      if (strid_arg() == 0) {
+        if (exists("stridx2id")) {
+          message("remove stringency id = ", stridx2id )
+
+          removeUI(
+            selector = paste0("#",ns(stridx2id)),
+            #selector = paste0("#area",lev2id()), # it works
+            immediate = TRUE
+          )
+        }
+
+        strid_arg(strid_arg()+1)
+        id = paste0("area_stringency",strid_arg())
+        message("id stringency insert = ", id)
 
         #lev2id(lev2id()+1)
-        message('Level 2 Stringency Index present: insertUI for barplot ', strid())
+        message('Level 2 Stringency Index present: insertUI for barplot ', strid_arg())
 
         insertUI(paste0("#","plot_barplot_stringency_area2"),
                  'afterEnd',
@@ -541,8 +566,9 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
                  immediate = TRUE
         )
       } else
-        id = paste0("strid",strid())
+        id = paste0("strid_arg",strid_arg())
       stridx2id <<-id
+      message("id call stringency module = ", id)
 
       # > barplot stringency
       callModule(mod_barplot_server, id, data_today, n_highligth = length(unique(data_today$Country.Region)), istop = FALSE,
@@ -555,13 +581,13 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
       id = stridx2id
       # remove the ui generated previously
-      message("remove id = ", id )
+      message("remove stringency id = ", id )
       removeUI(
         selector = paste0("#",ns(id)),
         #selector = paste0("#area",lev2id()), # it works
         immediate = TRUE
       )
-      strid(0)
+      strid_arg(0)
     }
 
   }
