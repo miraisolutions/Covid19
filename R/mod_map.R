@@ -12,8 +12,8 @@
 mod_map_ui <- function(id){
   ns <- NS(id)
   vars = setdiff(names(.case_colors), c("hosp","recovered")) # remove hosp for now
-  choices_map <- c(vars, "new_confirmed","new_deaths", "new_active", "stringency_index","vaccines") %>%
-    setNames(gsub("_", " ",c(vars, "new_confirmed", "new_deaths", "new_active", "stringency_index","vaccines"))) %>% as.list()
+  choices_map <- c(vars, paste0("new_",vars), "stringency_index") %>%
+    setNames(gsub("_", " ",c(vars, paste0("new_",vars), "stringency_index"))) %>% as.list()
   div(
     #fluidPage(
 
