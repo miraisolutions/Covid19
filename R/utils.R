@@ -147,6 +147,7 @@ varsNames = function(vars) {
   names(allvars)  = gsub("^Lw", "Last Week", names(allvars))
   names(allvars)  = gsub("^Lm", "Last Month", names(allvars))
   names(allvars)  = gsub("Rate ", "Over ", names(allvars))
+  names(allvars)  = gsub("Over Pop$", "Over Population size", names(allvars))
 
   # names(allvars)[grepl("rate_1M_pop$", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("rate_1M_pop$", allvars)])
   # names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
