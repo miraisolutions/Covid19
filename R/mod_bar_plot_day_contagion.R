@@ -19,22 +19,24 @@ mod_bar_plot_day_contagion_ui <- function(id){
 #' @param country_data data.frame for one country
 #' @param datevar character variable used for X axis, date or contagion_day
 #' @param nn minimum date derived from first day with more than nn cases. Default 1000
+#' @param statuses variables to be used in barplot, 4  of .case.colors, default c("confirmed", "deaths", "recovered", "active")
+#'
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
 #'
 #' @noRd
-mod_bar_plot_day_contagion_server <- function(input, output, session, country_data, datevar = "date", nn = 1000){
+mod_bar_plot_day_contagion_server <- function(input, output, session, country_data, datevar = "date", nn = 1000, statuses = c("confirmed", "deaths", "recovered", "active")){
   ns <- session$ns
 
-  statuses <- c("confirmed", "deaths", "recovered", "active")
+  #statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
   allstatuses = c(statuses, paste0("new_", statuses))
 
   output$bar_plot_day_contagion <- renderPlot({
 
     mindate = min(country_data$date[country_data$confirmed>nn], na.rm = TRUE)
-    country_data = country_data %>% filter(date > mindate)
+    country_data = country_data %>% filter(date >= mindate)
 
     df <- country_data %>%
       ungroup() %>%

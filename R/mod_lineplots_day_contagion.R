@@ -26,13 +26,14 @@ mod_lineplots_day_contagion_ui <- function(id){
 #' @param countries_data data.frame for multiple countries
 #' @param g_palette character vector of colors for the graph and legend
 #' @param nn minimum date derived from first day with more than nn cases
+#' @param statuses variables to be used in barplot, 4  of .case.colors, default c("confirmed", "deaths", "recovered", "active")
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
 #'
 #' @noRd
-mod_lineplots_day_contagion_server <- function(input, output, session, countries_data, g_palette = graph_palette, nn){
+mod_lineplots_day_contagion_server <- function(input, output, session, countries_data, g_palette = graph_palette, nn, statuses = c("confirmed", "deaths", "recovered", "active")){
   ns <- session$ns
   # countries_ordered <- reactive({
   #   countries_data() %>%
@@ -45,9 +46,9 @@ mod_lineplots_day_contagion_server <- function(input, output, session, countries
   #     pull()
   # })
   mindate = min(countries_data$date[countries_data$confirmed>nn], na.rm = TRUE)
-  countries_data = countries_data %>% filter(date > mindate)
+  countries_data = countries_data %>% filter(date >= mindate)
 
-  statuses <- c("confirmed", "deaths", "recovered", "active")
+  #statuses <- c("confirmed", "deaths", "recovered", "active")
   data = reactive({
     if (input$radio_1Mpop == "oneMpop"){
       countries_data %>%   mutate( # add aggregated vars
