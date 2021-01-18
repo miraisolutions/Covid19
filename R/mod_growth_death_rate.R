@@ -229,8 +229,8 @@ mod_barplot_server <- function(input, output, session, df,
 
     df_base_plot1_filtered = df_base_plot1() %>%
       filter(Value !=0)
-    g_palette_1 = g_palette_1[df_base_plot1()$Country %in% df_base_plot1_filtered$Country]
-
+    if (length(g_palette_1) > 1)
+      g_palette_1 = g_palette_1[df_base_plot1()$Country %in% df_base_plot1_filtered$Country]
     p <- plot_rate_hist(df_base_plot1_filtered, y_min = 1,
                         percent = is_percent_1(),
                         g_palette =  g_palette_1)
@@ -252,7 +252,8 @@ mod_barplot_server <- function(input, output, session, df,
 
       df_base_plot2_filtered = df_base_plot2() %>%
         filter(Value !=0)
-      g_palette_2 = g_palette_2[df_base_plot2()$Country %in% df_base_plot2_filtered$Country]
+      if (length(g_palette_2) > 1)
+        g_palette_2 = g_palette_2[df_base_plot2()$Country %in% df_base_plot2_filtered$Country]
 
       p <- plot_rate_hist(df_base_plot2(), percent = is_percent_2(), g_palette =  g_palette_2)
       p <- p %>%

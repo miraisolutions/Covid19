@@ -26,10 +26,10 @@ if (interactive()) {
     orig_data_aggregate_today = orig_data_aggregate_today  %>%
       left_join(lw_orig_data_aggregate %>% select(-population))
 
-    inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
+    #inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
 
 
-    callModule(mod_barplot_server, "plot", orig_data_aggregate_today)
+    callModule(mod_barplot_server, "plot", orig_data_aggregate_today, n_highligth = 10, istop = TRUE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
