@@ -717,10 +717,14 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
 
   funformat = function(x) {
     if (!percent) {
-      formatC(roundlab(x), format = "f", big.mark = "'")
+      maxy = max(x, na.rm = T)
+      minxy = min(x, na.rm = T)
+      dg = nchar(as.character(round(max(abs(minxy),maxy))))
+      dglab = getdg_lab(dg, maxy, minxy)
+      formatC(roundlab(x), format = "f", big.mark = "'", digits = dglab)
     }
     else
-      paste0( x, "%")
+      paste0( round(x,3), "%")
   }
   p <- ggplot(df, aes(x = Country, y = Value,
                       text = paste0("Value: ",funformat(Value)))) +

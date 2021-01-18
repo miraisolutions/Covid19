@@ -83,7 +83,7 @@ vars_nthcases_plot <-
     #"new_prevalence_rate_1M_pop",
     "tests","new_tests", #"new_tests_rate_1M_pop",
     "positive_tests_rate", "new_positive_tests_rate",
-    "vaccines","new_vaccines",
+    #"vaccines","new_vaccines",
     "lethality_rate",
     "stringency_index"
     )
