@@ -30,8 +30,11 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30)
       axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6)
+  } else {
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.break = 6) # add label
   }
+
   # p = p %>%
   #   fix_colors()
   p
@@ -291,8 +294,20 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     df <- df %>%
       mutate(value = ifelse(value == 0, NA, value))
   }
-  x.d.lim = range(df$date)
-  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+  dfmindate = df %>% #filter(bool_new == "new") %>%
+    filter(value >0) %>%
+    ungroup() %>%
+    group_by(status) %>%
+    summarize(mindate = min(date)-1) %>% # remove one day
+    ungroup()
+
+  dfnames = names(df)
+  df = df %>% left_join(select(dfmindate,status, mindate), by = "status") %>%
+    filter(date >= mindate) %>%
+    select(-mindate)
+
+  # x.d.lim = range(df$date)
+  # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
   p <-  ggplot(df, aes(x = date, y = value)) +
     geom_line(aes(colour = Country.Region), size = 1.7) + # size must be specified again being facet it is smaller
     #geom_line(aes(colour = Country.Region)) +
@@ -303,10 +318,9 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     scale_color_manual(values = g_palette) +
     scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
     #scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
-    scale_x_date(breaks = x.d.breaks,
-                 date_minor_breaks = "1 week", limits = x.d.lim,
-                 date_labels = "%d-%m") +
-
+    # scale_x_date(#breaks = x.d.breaks,
+    #              date_minor_breaks = "1 week", #limits = x.d.lim,
+    #              date_labels = "%d-%m") +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1)
     )
@@ -320,14 +334,21 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
   }
 
   p <- p +
-    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
+    facet_wrap( ~ status, scales = "free", nrow = 1, ncol = 4) +
     theme(strip.text = element_text(colour = 'white'))
+
+  p <- p + scale_x_date(#breaks = x.d.breaks,
+    date_minor_breaks = "1 week", #limits = x.d.lim,
+    date_labels = "%d-%m") +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
 
   # color top strip based on status
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- .case_colors
+  fills <- .case_colors[levels(p$data$status)]
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -416,19 +437,37 @@ from_contagion_day_bar_plot <- function(df){
 #' @export
 from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
   df$Date = df[[xdate]]
+  # dfmindate = df %>% filter(bool_new == "new") %>%
+  #   filter(value >0) %>%
+  #   group_by(status) %>%
+  #   mutate(mindate = min(date)-1) %>% # remove one day
+  #   filter(date == mindate) %>%
+  #   ungroup()
+
+  dfmindate = df %>% filter(bool_new == "new") %>%
+    filter(value >0) %>%
+    ungroup() %>%
+    group_by(status) %>%
+    summarize(mindate = min(date)-1) %>% # remove one day
+    ungroup()
+
+  dfnames = names(df)
+  df = df %>% left_join(select(dfmindate,status, mindate), by = "status") %>%
+    filter(date >= mindate) %>%
+    select(-mindate)
   p <- ggplot(df, aes(x = Date, y = value, fill = bool_new)) +
     geom_bar(stat = "identity") +
     scale_fill_manual(values = new_total_colors) + #c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
-    facet_wrap( ~ status, scales = "free_y", nrow = 1, ncol = 4) +
+    facet_wrap( ~ status, scales = "free", nrow = 1, ncol = 4) +
     theme(strip.text = element_text(colour = 'white'))
 
   if (xdate == "date") {
     # date x axis
-    x.d.lim = range(df$Date)
-    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-    p <- p + scale_x_date(breaks = x.d.breaks,
-                          date_minor_breaks = "1 week", limits = x.d.lim,
+    #x.d.lim = range(df$Date)
+   # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+    p <- p + scale_x_date(#breaks = x.d.breaks,
+                          date_minor_breaks = "1 week", #limits = x.d.lim,
                           date_labels = "%d-%m") +
       theme(
         axis.text.x = element_text(angle = 45, hjust = 1)
@@ -443,7 +482,7 @@ from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
   strip_both <- which(grepl('strip-', g$layout$name))
-  fills <- .case_colors
+  fills <- .case_colors[levels(p$data$status)]
   k <- 1
   for (i in strip_both) {
     j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
@@ -548,6 +587,7 @@ fix_legend_position <- function(p){
 #' @param g_palette character vector of colors for the graph and legend
 #' @param rollw logical, if TRUE then rolling weekly averages are computed
 #' @param secondline character, variable name to be added with new line and axis
+#' @param keeporder logical, if TRUE then lines order is kept according to df
 #'
 #' @note secondline argument not working, ggplotly removes secon axis. Not being used at the moment.
 #'
@@ -556,7 +596,7 @@ fix_legend_position <- function(p){
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , secondline = NULL) {
+plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , secondline = NULL, keeporder = FALSE) {
 
   #clean df for log case
   if (log) {
@@ -587,6 +627,8 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   # df_highlight$Value = gen_text(df_highlight$Variable)
   varChoice = ifelse(rollw, "ValueRoll", "Value")
 
+  if (keeporder)
+    df$Status = factor(df$Status , levels = unique(df$Status ))
   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
     #geom_line(aes(x = Date, y = !!sym(varChoice), colour = Status)) +
     geom_line() +
@@ -596,9 +638,9 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
     scale_color_manual(values = g_palette)
 
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"))
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6)
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.break = 6) # add label
 
   if (log) {
     p <- p %>%
@@ -670,18 +712,32 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     labangle = labangle + min(length(unique(df$Country))-16,30)
   }
 
-  p <- ggplot(df, aes(x = Country, y = Value)) +
+  ylim = c(y_min, max(df$Value, na.rm = TRUE))
+  accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
+
+  funformat = function(x) {
+    if (!percent) {
+      formatC(roundlab(x), format = "f", big.mark = "'")
+    }
+    else
+      paste0( x, "%")
+  }
+  p <- ggplot(df, aes(x = Country, y = Value,
+                      text = paste0("Value: ",funformat(Value)))) +
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    coord_cartesian(ylim = c(y_min, max(df$Value, na.rm = TRUE))) +
+    coord_cartesian(ylim = ylim) +
     theme(
       axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )
 
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%")) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+  } else {
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 6) # add label
   }
+
   p
 }
 
@@ -707,15 +763,20 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
   # )
   # mean.x = mean(df[[xvar]])
   # mean.y = mean(df[[yvar]])
-  if (grepl("confirmed", xvar) && grepl("^growth", yvar))
+
+  if (grepl("confirmed", xvar) && grepl("^growth", yvar)) {
     color_cases = c("yellow3", "darkgreen", "#dd4b39", "#E69F00")
-  else
+  } else if (grepl("stringency", xvar)) {
+    color_cases = c("#dd4b39","darkgreen", "gray3","#3c8dbc")
+  } else if (grepl("vaccines", xvar)) {
+    color_cases = c("darkgreen","deepskyblue1", "deepskyblue4","gray3")
+  } else
     color_cases = c("#dd4b39","darkgreen", "gray3","#3c8dbc")
 
   color_cntry = rep(color_cases[1], nrow(df))
   color_cntry[df[[xvar]] < med$x & df[[yvar]] < med$y ] = color_cases[2]
-  color_cntry[df[[xvar]] > med$x & df[[yvar]] > med$y ] = color_cases[3]
-  color_cntry[df[[xvar]] < med$x & df[[yvar]] > med$y ] = color_cases[4]
+  color_cntry[df[[xvar]] >= med$x & df[[yvar]] >= med$y ] = color_cases[3]
+  color_cntry[df[[xvar]] < med$x & df[[yvar]] >= med$y ] = color_cases[4]
 
   xlim =  c(min(df[[xvar]],med$x, na.rm = TRUE)- diff(range(df[[xvar]],med$x, na.rm = TRUE))*(1-x.min[1]),
             max(df[[xvar]],med$x, na.rm = TRUE)*x.min[2])
@@ -736,6 +797,11 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
       sep = ""
     )
   }
+  if (nrow(df) == 0) {
+    p <- ggplot()
+    return(p)
+  }
+
 
   p <- ggplot(df, aes(x = !! sym(xvar), y = !! sym(yvar),
                       text = popuptext(Country.Region, !! sym(yvar), !! sym(xvar)),
@@ -771,9 +837,9 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
 
   percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x*100, "%"), n.break = 10)
+    p <- p + scale_y_continuous(labels = function(x) paste0(x*100, "%"), n.break = 6)
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 10) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 6) # add label
 
   percent = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
   if (percent) {
@@ -823,10 +889,11 @@ caption_prevalence <- function()
   "Prevalence: confirmed cases over 1 M people."
 
 #' caption tests
+#' @param text character text of variable
 #' @return character text for caption
-caption_tests <- function() {
-  caption_tests1 <- "Tests per 1 Million people"
-  caption_tests2 <- "Updated Tests figures are unavailable for some countries"
+caption_tests <- function(text = "Tests") {
+  caption_tests1 <- paste(text,"per 1 Million people")
+  caption_tests2 <- paste("Updated",text,"figures are unavailable for some countries")
   c(caption_tests1, caption_tests2)
 }
 
