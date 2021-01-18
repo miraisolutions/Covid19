@@ -90,14 +90,18 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
     }
     observe({
       req(input[[update_ui$new_buttons$name[[1]]]])
+      #message("observe button 1 ", paste( req(input[[update_ui$new_buttons$name[[1]]]]), collapse = ","))
       button[[update_ui$new_buttons$name[[1]]]] =  input[[update_ui$new_buttons$name[[1]]]]
-    })
+    #})
     if (n.but == 2){
-      observe({
+      #observe({
+        #message("observe button 2 ", paste( req(input[[update_ui$new_buttons$name[[2]]]]), collapse = ","))
+
         req(input[[update_ui$new_buttons$name[[2]]]])
         button[[update_ui$new_buttons$name[[2]]]] =  input[[update_ui$new_buttons$name[[2]]]]
-      })
     }
+    })
+    #}
   } else
     button = NULL
 

@@ -22,11 +22,11 @@ if (interactive()) {
   #variable = "hospitalised over 1M" # set variable
   #variable = "stringency_index" # set variable
  # variable = "growth vs stringency" # set variable
-  variable = "growth vs prevalence" # set variable
-  variable = "vaccines" # set variable
-
- #variable = "growth factor" # set variable
-  #variable = "confirmed" # set variable
+ #  variable = "growth vs prevalence" # set variable
+ #  variable = "vaccines" # set variable
+ #
+ # #variable = "growth factor" # set variable
+   variable = "confirmed" # set variable
 
   sapply(file.path("R",list.files("R")), source)
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
