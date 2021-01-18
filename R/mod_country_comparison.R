@@ -31,7 +31,7 @@ mod_country_comparison_ui <- function(id){
     ),
     fluidRow(
       column(6,
-             withSpinner(uiOutput(ns("scatterplot_plots")))
+             withSpinner(mod_scatterplot_ui(ns("scatterplot_plots")))
       ),
       column(6,
              withSpinner(uiOutput(ns("status_stackedbarplot")))
@@ -42,7 +42,15 @@ mod_country_comparison_ui <- function(id){
              withSpinner(uiOutput(ns("scatterplot_stringency")))
       ),
       column(6,
-             mod_barplot_ui(ns("stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
+             mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
+      )
+    ),
+    fluidRow(
+      column(6,
+             withSpinner(mod_scatterplot_ui(ns("scatterplot_vax_vars"), growth = FALSE))
+      ),
+      column(6,
+             withSpinner( mod_barplot_ui(ns("barplot_vax_index"), plot1 = "ui_vaccines", plot2 = NULL))
       )
     ),
     mod_add_table_ui(ns("add_table_countries"))
@@ -101,8 +109,8 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
           filter(Country.Region %in% input$select_countries) %>%
           arrange(desc(date))
 
-      countries_data_today = countries_data %>%
-        add_growth_death_rate()
+      countries_data_today = all_countries_data_today %>%
+        filter(Country.Region %in% input$select_countries)
 
       # align contagion day for comparisons
       # data_filtered <-
@@ -137,30 +145,41 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
         mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
       )
     })
+    vaxflag = sum(countries_data$vaccines, na.rm = TRUE) > 0
 
-    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data, nn = nn)
+    statuseslineplot = c("confirmed", "deaths", "recovered", "active")
+    if (vaxflag)
+      statuseslineplot = c("confirmed", "deaths", "vaccines", "active")
+
+    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data, nn = nn, statuses = statuseslineplot)
 
     # Rate plots ----
     output$rateplots <- renderUI({
       mod_barplot_ui(ns("rate_plots"))
     })
 
-    callModule(mod_barplot_server, "rate_plots", countries_data_today, nn = nn, n_highligth = length(input$select_countries), istop = FALSE)
+    callModule(mod_barplot_server, "rate_plots", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
+               g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
+                                "plot_2" = graph_palette[1:length(input$select_countries)],
+                                calc = FALSE),
+               sortbyvar = FALSE)
 
 
     # Line with bullet plot
 
+
     output$lines_points_plots <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = TRUE)
+      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, vax = vaxflag)
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries), istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE,  oneMpop = TRUE)
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries),
+               istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE,  oneMpop = TRUE, vax = vaxflag)
 
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
-    output$scatterplot_plots <- renderUI({
-      mod_scatterplot_ui(ns("scatterplot_plots"))
-    })
+    # output$scatterplot_plots <- renderUI({
+    #   mod_scatterplot_ui(ns("scatterplot_plots"))
+    # })
     # set nmed to 10000 like in global page, istop == FALSE
     callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
 
@@ -177,11 +196,25 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
     callModule(mod_scatterplot_server, "scatterplot_stringency", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries(), xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 
     # > barplot stringency
-    callModule(mod_barplot_server, "stringency_index", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
+    callModule(mod_barplot_server, "barplot_stringency_index", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
                plottitle = c("Stringency Index"),
-               g_palette = list("plot_1" = barplots_colors$stringency,
-                                calc = TRUE),
-               pickvariable = list("plot_1" = "confirmed_rate_1M_pop")) # pick top 10 confirmed countries
+               g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
+                                calc = FALSE),
+               sortbyvar = FALSE)
+
+    #scatterplot vax versus vars
+    callModule(mod_scatterplot_server, "scatterplot_vax_vars",
+               all_countries_data_today, nmed = nn, n_highligth = length(input$select_countries),
+               istop = FALSE, countries = inputcountries(), xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+
+    #barplot vax
+
+    callModule(mod_barplot_server, "barplot_vax_index", countries_data_today,
+               n_highligth = length(input$select_countries), istop = FALSE,
+               plottitle = c("Vaccination Status"),
+               g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],#barplots_colors[["vaccines"]],
+                                calc = FALSE),
+               sortbyvar = FALSE)
 
 
     # tables ----

@@ -25,10 +25,10 @@ mod_continent_comparison_ui <- function(id){
     ),
     fluidRow(
       column(6,
-             withSpinner(uiOutput(ns("scatterplot_plots_cont")))
+             withSpinner( mod_scatterplot_ui(ns("scatterplot_plots_cont")))
       ),
       column(6,
-             withSpinner(uiOutput(ns("status_stackedbarplot_cont")))
+             withSpinner(mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL))
       )
     ),
     mod_add_table_ui(ns("add_table_cont"))
@@ -74,35 +74,47 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     )
   })
 
-  callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn)
+  callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
   # Rate plots ----
   output$rateplots_cont <- renderUI({
     mod_barplot_ui(ns("rate_plots_cont"))
   })
 
-  callModule(mod_barplot_server, "rate_plots_cont", continent_data_filtered_today, nn = nn, n_highligth = length(continents), istop = FALSE)
+  callModule(mod_barplot_server, "rate_plots_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE,
+             g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
+                              "plot_2" = graph_palette[1:length(continents)],
+                              calc = FALSE),
+             sortbyvar = FALSE)
 
   # Line with bullet plot
 
   output$lines_points_plots_cont <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE)
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn, w = w,
-             n_highligth = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE)
+             n_highligth = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot
-  output$scatterplot_plots_cont <- renderUI({
-    mod_scatterplot_ui(ns("scatterplot_plots_cont"))
-  })
+  # output$scatterplot_plots_cont <- renderUI({
+  #   mod_scatterplot_ui(ns("scatterplot_plots_cont"))
+  # })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highligth = length(continents), istop = FALSE, countries = continents)
 
-  output$status_stackedbarplot_cont <- renderUI({
-    mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
-  })
-  callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE)
+  # output$status_stackedbarplot_cont <- renderUI({
+  #   mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
+  # })
+  # callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE)
+
+  callModule(mod_barplot_server, "barplot_vax_index_cont", continent_data_filtered_today,
+             n_highligth = length(continents), istop = FALSE,
+             plottitle = c("Vaccination Status"),
+             g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
+                              calc = FALSE),
+             sortbyvar = FALSE
+             )
 
   # tables ----
   callModule(mod_add_table_server, "add_table_cont", continent_data_filtered, maxrowsperpage = 10)
