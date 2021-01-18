@@ -18,6 +18,7 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
+    # Data ----
     orig_data <- get_datahub() %>%
       get_timeseries_by_contagion_day_data()
 
