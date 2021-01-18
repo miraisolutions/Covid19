@@ -536,7 +536,7 @@ aggr_to_cont = function(data, group, time,
            ##new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = pmin(round(confirmed/tests, digits = 3),1),
            new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 3),1),
-           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 3),
+           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3), # not making much sense
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
