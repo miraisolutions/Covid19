@@ -1,4 +1,5 @@
 ### Covid19Mirai 2.3.1-9000 (develop)
+- Add vaccination maps and graphs (#157)
 
 ### Covid19Mirai 2.3.1 (2020-12-24)
 - Add restriction policy index maps and graphs (#149)

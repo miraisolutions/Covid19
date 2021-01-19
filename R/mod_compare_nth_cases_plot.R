@@ -4,8 +4,10 @@
 #' @param tests if TRUE then add new_test and test variables to vars.
 #' @param hosp if TRUE then add new_hosp and hosp variables to vars.
 #' @param strindx if TRUE then add stringency_index variable to vars.
-#' @param log if FALSE tthen negative variables and new variables are removed
+#' @param log if FALSE then negative variables and new variables are removed
+#' @param vax if TRUE then add new_vaccines and vaccines variables to vars.
 #'
+#' @noRd
 choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, log = TRUE){
   if (!actives && any(grepl("active",vars))) {
     vars = vars[!grepl("active", vars)]
