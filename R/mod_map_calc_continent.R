@@ -357,13 +357,13 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     new_buttons = list(name = list("radio","oneMpop"),
                        choices = list(mapvar, oneMpopbut), selected = list(mapvar["Last Week"], oneMpopbut["Over 1 M people"]))
 
-    caption <- "Total, Last Week and New Confirmed Positive cases"
+    caption <- "Total, Last Week, New and Over 1 Million peope Confirmed Positive cases"
     graph_title = "Confirmed positive cases"
     textvar = c(c(rev(prefix_var("confirmed")), "confirmed"),c(rev(prefix_var("confirmed_rate_1M_pop")), "confirmed_rate_1M_pop"),
-                "growth_factor_3",
+                "growth_factor_3","vaccines",
                 "tests", "population")
     if (global) {
-      caption <- "Confirmed positive cases"
+      caption <- "Total and Over a million Confirmed positive cases"
       textvar = setdiff(textvar, "growth_factor_3")
     }
   }   else if (grepl("stringency", var) && grepl("index$", var)) {
@@ -399,7 +399,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     new_buttons = list(name = list("radio","oneMpop"),
                        choices = list(mapvar, oneMpopbut), selected = list(mapvar["Last Week"], oneMpopbut["Over 1 M people"]))
 
-    caption <- paste("Total, Last Week and New", caption_tests()[1])
+    caption <- paste("Total, Last Week, New and", caption_tests()[1])
     caption = c(caption, caption_tests()[2])
     caption =HTML(paste(caption, collapse = '<br/>'))
 
@@ -445,7 +445,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
       graph_title = "Hospitalisation"
       #textvar = c("active",c(as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))), "icuvent_rate_hosp"))
-      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "icuvent_rate_hosp"))
+      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "icuvent_rate_hosp", "vaccines"))
 
   }  else if (grepl("vaccines", var)) {
     mapvar = grep("vaccines$", varsNames(), value = T)
@@ -456,9 +456,12 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     # caption <- paste("Total, Last Week and New", caption_tests("Vaccines")[1])
     # caption = c(caption, caption_tests()[2])
-    caption =HTML(paste(c(caption_tests("Vaccines")), collapse = '<br/>'))
+    caption <- paste("Total, Last Week New and", caption_tests()[1])
+    caption_vax <- caption_tests("Vaccines")[2]
 
-    graph_title = "Vaccination per Population size"
+    caption =HTML(paste(c(caption,caption_vax,caption_vaccines()), collapse = '<br/>'))
+
+    graph_title = "Vaccination"
     textvar = c("new_vaccines","lw_vaccines","vaccines", "population", "lw_vaccines_rate_pop", "vaccines_rate_pop")
 
   } else  {
