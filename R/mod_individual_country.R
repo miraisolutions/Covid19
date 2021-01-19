@@ -224,7 +224,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
     areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE)
     #areaUI("ind_country_subarea")
   })
-  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringency = FALSE)
+  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringency = FALSE, country = "Switzerland")
 
   output$maps_ind_subarea <- renderUI({
     areamapUI(ns("maps_subarea"), country)
