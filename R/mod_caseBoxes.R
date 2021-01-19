@@ -99,8 +99,8 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       output[[vax]]  <- renderUI({
         countBox(title1 = "Vaccinated: ",
                  subtitle1 = counts[["vaccines"]],
-                 title2 = "New: ",
-                 subtitle2 =  counts[["new_vaccines"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_vaccines"]],
                  color = "white",
                  background = .case_colors[["vaccines"]])
       })
