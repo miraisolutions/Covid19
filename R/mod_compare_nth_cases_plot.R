@@ -109,7 +109,7 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
                              choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
           ),
           column(3, offset = 1,
-                 selectInput(label = "Countries", inputId = ns("select_areas"), #choices = NULL, selected = NULL,
+                 selectInput(label = "Countries", inputId = ns("select_areas"), choices = NULL, selected = NULL,
                              multiple = TRUE)
 
           )
@@ -162,7 +162,8 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
                              choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop")
           ),
           column(3, offset = 1,
-                 selectInput(label = "Select Countries", inputId = ns("select_areas"), choices = NULL, selected = NULL, multiple = TRUE)
+                 selectInput(label = "Select Countries", inputId = ns("select_areas"), choices = NULL, selected = NULL,
+                             multiple = TRUE)
           )
         ),
         withSpinner(plotlyOutput(ns("plot"), height = 400)),
@@ -212,6 +213,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   df$Date = df[[datevar]]
 
   if (oneMpop || areasearch ) {
+
     if (areasearch) {
       countries =   df %>%
         select(date, Country.Region,confirmed) %>%
@@ -219,31 +221,35 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         arrange(desc(confirmed)) %>% .[,"Country.Region"]
       selected_countries = head(countries$Country.Region,3)
 
-      selectfun = function(x,y) {
-        if(is.null(x) || (!identical(x,y)))
-          y
-        else
-          x
-      }
+      # selectfun = function(x,y) {
+      #   if(is.null(x) || (!identical(x,y)))
+      #     y
+      #   else
+      #     x
+      # }
       #react_select = reactiveValues(selectarea = selectfun(input$select_areas, selected_countries) )
     }
-
+    # stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
+    # choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
+    #varselect = input$radio_indicator
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
       stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
       choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
-      varselect = input$radio_indicator
+      #varselect = input$radio_indicator
 
       if (oneMpop) {
+        varselect = req(input$radio_indicator)
 
         if (req(input$radio_1Mpop) == "oneMpop")  {
-          if (all(is.na(df$population)))
+          if (all(is.na(df$population))) {
             stop("Missing population data")
+          }
           choices_plot = intersect(get_aggrvars(), choices_plot)
           names(choices_plot) = names(varsNames(unlist(choices_plot)))
           message("update radio_indicator ", paste(unlist(choices_plot), collapse = ","))
           if (!(varselect) %in% unlist(choices_plot)) {
-            message("update selected")
+            message("update selected to new_confirmed")
             varselect = "new_confirmed"
           }
         }
@@ -257,15 +263,15 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
       if ( areasearch) {
         # Update select_areas
-        areaselect = if (is.null(input$select_areas))
+        areaselect = if (is.null(input$select_areas) )
           selected_countries
         else
           input$select_areas
-
-        message("observing select_areas: ", paste(selected_countries, collapse = ","))
+        message("observing select_areas: ", paste(areaselect, collapse = ","))
         updateSelectInput(session, "select_areas", choices = reactive(countries)()$Country.Region, selected = areaselect)
 
       }
+
     })
   }
 
