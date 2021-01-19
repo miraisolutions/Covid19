@@ -19,12 +19,18 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
                                                     "Over 2 weeks" = "growth_factor_14"),
                                      selected = "growth_factor_7"),
                    ui_death =  list(label = "",
-                                     choices = varsNames(c("lethality_rate","deaths_rate_1M_pop")),
+                                     choices = varsNames(c("lethality_rate","deaths_rate_1M_pop",
+                                                           c("lw_lethality_rate","lw_deaths_rate_1M_pop"))),
                                      selected = "lethality_rate"),
 
                    ui_stringency =  list(label = "",
                                           choices = varsNames(c("stringency_index")),
-                                          selected = "stringency_index"))
+                                          selected = "stringency_index"),
+                   ui_vaccines =  list(label = "",
+                                         choices = varsNames(c("vaccines","vaccines_rate_pop",
+                                                               c("lw_vaccines","lw_vaccines_rate_pop"))),
+                                         selected = "vaccines")
+                   )
 
   if (!is.null(plot1))
       uichoice1 = uichoices[[plot1]]
@@ -98,13 +104,13 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
 #' growth_death_rate Server Function
 #'
 #' @param df reactive data.frame
-#' @param nn min number of cases for a country to be considered. Default 1000
-#' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight
 #' @param istop logical to choose title
 #' @param g_palette list of character vector of colors for the graph and legend of plot_1 and death_rate
 #' @param plottitle character vector giving title to plot1 and plot2
 #' @param pickvariable list of character vector of 1 variable name to use for sorting bars from lef, default is none
+#' @param max.pop integer cut off Country.Region with lower population
+#' @param sortbyvar if FALSE then X axis is not sorted by a variable
 #'
 #' @import dplyr
 #' @import tidyr
@@ -112,21 +118,42 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
 #' @example ex-mod_growth_death_rate.R
 #'
 #' @noRd
-mod_barplot_server <- function(input, output, session, df, nn = 1000, w = 7,
+mod_barplot_server <- function(input, output, session, df,
                                          n_highligth = 5, istop = TRUE,
                                          g_palette = list("plot_1" = barplots_colors[["growth_factor"]],
-                                                        "plot_2" = barplots_colors[["death_rate"]], calc = FALSE),
+                                                        "plot_2" = barplots_colors[["death_rate"]],
+                                                        "calc" = FALSE),
                                          plottitle = c("Growth factor", "Death toll"),
-                                         pickvariable = list("plot_1" = character(0), "plot_2" = character(0))){
+                                         pickvariable = list("plot_1" = character(0), "plot_2" = character(0)),
+                                         sortbyvar = TRUE, max.pop = 100000){
   ns <- session$ns
+
 
   # Help funcs ----
   pick_rate_hist <- function(df1, rate, pickvar) {
     if (length(pickvar) == 0)
-      pickvar = rate
-    df_plot <- df %>%
-      #arrange(desc(rate)) %>%
-      slice_max(!!sym(pickvar), n = n_highligth, with_ties = FALSE) %>%
+      pick_var = rate
+    else
+      pick_var = pickvar
+
+    if (!all(is.na(df$population))) {
+      df_plot <- df %>%
+        #arrange(desc(rate)) %>%
+        filter( date == max(date) & #!!sym(rate) != 0 &
+                  population >= max.pop) # %>% # filter out those with rate = 0 and small countries
+    } else
+      df_plot <- df
+
+    if (sortbyvar) {
+      df_plot <- df_plot %>%
+        slice_max(!!sym(pick_var), n = n_highligth, with_ties = FALSE) #%>%
+    }
+    if (n_highligth < length(unique(df_plot$Country.Region))) {
+      df_plot <- df_plot %>%
+        filter(Country.Region %in% head(unique(df_plot$Country.Region),n_highligth))
+    }
+
+    df_plot <- df_plot %>%
       mutate(Country = factor(Country.Region, levels = .$Country.Region)) %>%
       select(Country, rate) %>% setNames(c("Country","Value"))
 
@@ -166,8 +193,11 @@ mod_barplot_server <- function(input, output, session, df, nn = 1000, w = 7,
       caption_death_fun(var)
     }  else if (grepl("^stringency",var)) {
       caption_stringency()
-    } else
+    } else if (grepl("vaccines", var)) {
+      caption_vaccines()
+    } else {
       names(varsNames(var))
+    }
   }
   caption_plot_1 <- reactive({
     cap = captionbarplot(req(input$plot_1))
@@ -202,13 +232,25 @@ mod_barplot_server <- function(input, output, session, df, nn = 1000, w = 7,
 
   output$plot_plot_1_hist <- renderPlotly({
     g_palette_1 = g_palette[["plot_1"]]
-    if (g_palette$calc)
+    if (g_palette$calc) {
       g_palette_1 = palette_calc(g_palette_1, as.character(unique(df_base_plot1()$Country[order(df_base_plot1()$Value)])))
-    p <- plot_rate_hist(df_base_plot1(), y_min = 1,
+    }
+
+    df_base_plot1_filtered = df_base_plot1() %>%
+      filter(Value !=0)
+
+     if (length(g_palette_1) > 1) {
+       if (is.null(names(g_palette_1)))
+         names(g_palette_1) = as.character(df_base_plot1()$Country)
+      g_palette_1 = g_palette_1[names(g_palette_1) %in% as.character(df_base_plot1_filtered$Country)]
+
+    }
+
+    p <- plot_rate_hist(df_base_plot1_filtered, y_min = 1,
                         percent = is_percent_1(),
                         g_palette =  g_palette_1)
     p <- p %>%
-      plotly::ggplotly() %>%
+      plotly::ggplotly(tooltip = c("x","text")) %>%
       plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
                       #             xaxis = list(tickfont = list(size = 10))
                      )
@@ -222,9 +264,19 @@ mod_barplot_server <- function(input, output, session, df, nn = 1000, w = 7,
 
       if (g_palette$calc)
         g_palette_2 =  palette_calc(g_palette_2, as.character(unique(df_base_plot2()$Country[order(df_base_plot2()$Value)])))
+
+      df_base_plot2_filtered = df_base_plot2() %>%
+        filter(Value !=0)
+
+      if (length(g_palette_2) > 1) {
+        if (is.null(names(g_palette_2)))
+          names(g_palette_2) = as.character(df_base_plot2()$Country)#
+        g_palette_2 = g_palette_2[names(g_palette_2) %in% as.character(df_base_plot2_filtered$Country)]
+      }
+
       p <- plot_rate_hist(df_base_plot2(), percent = is_percent_2(), g_palette =  g_palette_2)
       p <- p %>%
-        plotly::ggplotly() %>%
+        plotly::ggplotly(tooltip = c("x","text")) %>%
         plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
                        #xaxis = list(tickfont = list(size = 10))
         )

@@ -2,7 +2,7 @@ context("get datahub tests")
 
 data_full_ch <- get_datahub_fix_ch()
 data_full = data_full_ch$orig_data
-vars = c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","stringency_index",.hosp_vars)
+vars = c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","stringency_index","vaccines",.hosp_vars)
 
 test_that("get_datahub returns expected headers and variables", {
   expect_true(length(setdiff(names(data_full), vars)) == 0)
@@ -43,7 +43,7 @@ test_that("get_datahub lev = 1 Hong Kong works", {
 data <- get_timeseries_by_contagion_day_data(data_full)
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
-  varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests", .hosp_vars))
+  varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests","vaccines", .hosp_vars))
   expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date",varnames ,"population","stringency_index",
                                          paste0("new_",varnames), "contagion_day"))))
   expect_equal(class(data$contagion_day),"numeric")

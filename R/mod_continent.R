@@ -49,7 +49,7 @@ mod_continent_ui <- function(id, uicont){
              withSpinner(uiOutput(ns(paste("scatterplot_plots_cont", uicont , sep = "_"))))
       ),
       column(6,
-             withSpinner(uiOutput(ns(paste("status_stackedbarplot_cont", uicont , sep = "_"))))
+             withSpinner(uiOutput(ns(paste("barplot_vax_index_cont", uicont , sep = "_"))))
       )
     ),
    hr(),
@@ -61,6 +61,15 @@ mod_continent_ui <- function(id, uicont){
      ),
      column(6,
             withSpinner(uiOutput(ns(paste("scatterplot_stringency_vars_countries", uicont , sep = "_"))))
+     )
+   ),
+   hr(),
+   fluidRow(
+     column(6,
+            withSpinner(uiOutput(ns(paste("barplot_vax_countries", uicont , sep = "_"))))
+     ),
+     column(6,
+            withSpinner(uiOutput(ns(paste("scatterplot_vax_vars_countries", uicont , sep = "_"))))
      )
    ),
    hr(),
@@ -79,12 +88,14 @@ mod_continent_ui <- function(id, uicont){
             withSpinner(uiOutput(ns(paste("map_countries_growthvsprev", uicont , sep = "_"))))
      ),
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_prev", uicont , sep = "_"))))
+            #withSpinner(uiOutput(ns(paste("map_countries_prev", uicont , sep = "_"))))
+            withSpinner(uiOutput(ns(paste("map_countries_growth", uicont , sep = "_"))))
      )
    ),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_growth", uicont , sep = "_"))))
+            #withSpinner(uiOutput(ns(paste("map_countries_growth", uicont , sep = "_"))))
+            withSpinner(uiOutput(ns(paste("map_countries_vaccines", uicont , sep = "_"))))
      ),
      column(6,
             withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
@@ -184,7 +195,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   countries_data_map_cont = .subsetmap(countries_data_map, cc = cont)
 
   # Boxes ----
-  callModule(mod_caseBoxes_server, paste("count-boxes", uicont , sep = "_"), continent_data_today)
+  callModule(mod_caseBoxes_server, paste("count-boxes", uicont , sep = "_"), continent_data_today, vax = "recovered")
 
   # Map
   # Boxes ----
@@ -223,7 +234,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   callModule(mod_lineplots_day_contagion_server,
              "lineplots_day_contagion_cont",
-             subcontinent_data, g_palette = subcont_palette, nn = nn)
+             subcontinent_data, g_palette = subcont_palette, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
   # Rate plots ----
   output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
@@ -231,19 +242,20 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   })
 
   callModule(mod_barplot_server, "rate_plots_cont", subcontinent_data_filtered_today,
-             nn = nn, n_highligth = length(subcontinents), istop = FALSE,
+             n_highligth = length(subcontinents), istop = FALSE,
              g_palette = list("plot_1" = subcont_palette,
                                        "plot_2" = subcont_palette,
-                              calc = FALSE))
+                              calc = FALSE),
+             sortbyvar = FALSE)
 
   # Line with bullet plot
 
   output[[paste("lines_points_plots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", hosp = FALSE, tests = FALSE, oneMpop = TRUE)
+    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
   })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn, w = w,
-             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette, hosp = FALSE, tests = FALSE, oneMpop = TRUE)
+             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot
   output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
@@ -255,11 +267,22 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              istop = FALSE, countries = subcontinents)
 
 
-  output[[paste("status_stackedbarplot_cont", uicont , sep = "_")]] <- renderUI({
-    mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
+  # output[[paste("status_stackedbarplot_cont", uicont , sep = "_")]] <- renderUI({
+  #   mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
+  # })
+  # callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
+  #            subcontinent_data_filtered_today, n_highligth = length(subcontinents), istop = FALSE)
+
+  output[[paste("barplot_vax_index_cont", uicont , sep = "_")]] <- renderUI({
+    mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
   })
-  callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
-             subcontinent_data_filtered_today, n_highligth = length(subcontinents), istop = FALSE)
+  callModule(mod_barplot_server, "barplot_vax_index_cont", subcontinent_data_filtered_today,
+             n_highligth = length(subcontinents), istop = FALSE,
+             plottitle = c("Vaccination Status"),
+             g_palette = list("plot_1" = subcont_palette,
+                              calc = FALSE),
+             sortbyvar = FALSE
+             )
 
   # Compute Last week variables
   data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
@@ -300,6 +323,28 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              istop = FALSE, countries = countries200000, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 
 
+  # Rate plots ----
+  output[[paste("barplot_vax_countries", uicont , sep = "_")]] <- renderUI({
+    mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL)
+  })
+
+  callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
+             n_highligth = length(data_cont_maps$Country.Region), istop = FALSE,
+             plottitle = c("Vaccination Status"),
+             g_palette = list("plot_1" = barplots_colors[["vaccines"]],
+                              calc = TRUE)#,
+             #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
+             )
+
+  output[[paste("scatterplot_vax_vars_countries", uicont , sep = "_")]] <- renderUI({
+    mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE)
+  })
+
+  callModule(mod_scatterplot_server, "scatterplot_vax_vars_countries",
+             data_cont_maps, nmed = nn, n_highligth = length(countries200000),
+             istop = FALSE, countries = countries200000, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+
+  #############################################
   #maps confirmed
   output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
     mod_map_area_calc_ui(ns("map_countries_confirmed"))
@@ -322,11 +367,11 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              area = cont, variable = "growth vs prev")
 
   #maps prevalence
-  output[[paste("map_countries_prev", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_prev"))
+  output[[paste("map_countries_vaccines", uicont , sep = "_")]] <- renderUI({
+    mod_map_area_calc_ui(ns("map_countries_vaccines"))
   })
-  callModule(mod_map_area_calc_server, "map_countries_prev", df = data_cont_maps,  countries_data_map_cont,
-             area = cont, variable = "prevalence rate")
+  callModule(mod_map_area_calc_server, "map_countries_vaccines", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "vaccines")
   #maps growth
   output[[paste("map_countries_growth", uicont , sep = "_")]] <- renderUI({
     mod_map_area_calc_ui(ns("map_countries_growth"))
@@ -346,7 +391,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     mod_map_area_calc_ui(ns("map_countries_tests_1M"))
   })
   callModule(mod_map_area_calc_server, "map_countries_tests_1M", df = data_cont_maps,  countries_data_map_cont,
-             area = cont, variable = "tests over 1M")
+             area = cont, variable = "tests")
 
   #maps positive test rates
   output[[paste("map_countries_positive_rate", uicont , sep = "_")]] <- renderUI({

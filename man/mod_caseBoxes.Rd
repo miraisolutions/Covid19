@@ -8,7 +8,7 @@
 \usage{
 mod_caseBoxes_ui(id, hosp = FALSE)
 
-mod_caseBoxes_server(input, output, session, counts, hosp = FALSE)
+mod_caseBoxes_server(input, output, session, counts, hosp = FALSE, vax = NULL)
 }
 \arguments{
 \item{id, }{Internal parameters for {shiny}.}

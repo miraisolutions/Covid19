@@ -70,7 +70,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
       #arrange(desc(Value)) %>%
       # top_n(n_highligth, wt = Value)  %>%
       slice_max(Value, n = n_highligth, with_ties = FALSE) %>%
-      select(Country.Region,!!statuses) %>% .[n_highligth:1, , drop = FALSE] # revert order to have largest on left
+      select(Country.Region,!!statuses) #%>% .[n_highligth:1, , drop = FALSE] # revert order to have largest on left
   }
   if (active_hosp) {
     df_status$active = pmax(replace_na(df_status$active,0) -  replace_na(df_status$hosp, 0), 0)
@@ -89,9 +89,12 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     # mutate(tot.status = sum(countstatus),
     #        ratio.status  = countstatus/tot.status) %>%
     # ungroup() %>%
-    mutate(Country.Region = factor(Country.Region, levels = rev(unique(.$Country.Region))),
+    mutate(Country.Region = factor(Country.Region, levels = unique(df_status$Country.Region)),
            status = factor(status, levels = statuses_lab)) %>%
     arrange(status)
+
+  #idx = order(match(df_status_stack$Country.Region, df$Country.Region))
+  # df_status_stack = df_status_stack[idx, ]
 
   caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
 

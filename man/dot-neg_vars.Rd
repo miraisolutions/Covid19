@@ -5,7 +5,7 @@
 \alias{.neg_vars}
 \title{Variables where negative values are allowed in map plot}
 \format{
-An object of class \code{character} of length 2.
+An object of class \code{character} of length 8.
 }
 \usage{
 .neg_vars

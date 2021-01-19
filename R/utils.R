@@ -19,7 +19,8 @@ capitalize_first_letter <- function(x) {
   "deaths" = "black",
   "recovered" = "#00a65a",
   "active" = "#3c8dbc",
-  "hosp" = "#08306B"
+  "hosp" = "#08306B",
+  "vaccines" = "#17a2ff" #"#24bbff"#,##24bbff "lightskyblue"#"cadetblue2"
 )
 #' Color Palette Hospitalised vars
 #'
@@ -37,17 +38,13 @@ capitalize_first_letter <- function(x) {
   "tests" = "cadetblue",
   "positive_tests_rate" = "brown"#"darkblue",
 )
-#' Variables where negative values are allowed in map plot
-#' @export
-.neg_vars <- c(
-  c("new_active","lw_active")
-)
 #' Variables related to hospitalisation
 #' @export
 .hosp_vars <- c(
   #c("hosp","vent","icu")
   c("Hospitalised" = "hosp", "Ventilated/Int.Care" = "icuvent")
 )
+
 #' Variables related to hospitalisation in covid19datahub
 #' @export
 .hosp_vars_datahub <- c(
@@ -70,6 +67,12 @@ prefix_var <- function(cc = .case_colors,  prefix = c("lw","new")) {
   as.character(t(outer(prefix, cc, FUN = paste, sep = "_")))
 }
 
+#' Variables where negative values are allowed in map plot
+#' @export
+.neg_vars <- c(
+  c("new_active","lw_active", .hosp_vars, prefix_var(.hosp_vars))
+)
+
 #' Variables used in nthcase_plot
 vars_nthcases_plot <-
   c(#"confirmed", "deaths", "recovered", "active", "hosp",
@@ -80,7 +83,7 @@ vars_nthcases_plot <-
     #"new_prevalence_rate_1M_pop",
     "tests","new_tests", #"new_tests_rate_1M_pop",
     "positive_tests_rate", "new_positive_tests_rate",
-    #"growth_factor_3",
+    #"vaccines","new_vaccines",
     "lethality_rate",
     "stringency_index"
     )
@@ -111,6 +114,12 @@ varsNames = function(vars) {
               "icuvent_rate_hosp",
               "hosp_rate_active",
               "stringency_index",
+              # "vaccines",
+              # prefix_var("vaccines"),
+              # paste("vaccines", "rate_1M_pop", sep = "_"),
+              # paste(prefix_var("vaccines"), "rate_1M_pop", sep = "_"),
+              "vaccines_rate_pop",
+              prefix_var("vaccines_rate_pop"),
               "tests",
               prefix_var("tests"),
               paste("tests", "rate_1M_pop", sep = "_"),
@@ -127,6 +136,8 @@ varsNames = function(vars) {
   names(allvars)[grepl("confirmed_rate_1M_pop", allvars)] = gsub("confirmed","prevalence",names(allvars)[grepl("confirmed_rate_1M_pop", allvars)])
   names(allvars)[grepl("deaths_rate", allvars)] = gsub("deaths","mortality",names(allvars)[grepl("deaths_rate", allvars)])
 
+  names(allvars)[grepl("vaccines", allvars)] = gsub("vaccines","vaccinated",names(allvars)[grepl("vaccines", allvars)])
+
   for(hospvar in .hosp_vars) {
     names(allvars)[grepl(paste0(hospvar), unlist(allvars))] = gsub(hospvar, names(.hosp_vars)[.hosp_vars == hospvar], names(allvars)[grepl(paste0(hospvar), unlist(allvars))] )
   }
@@ -136,6 +147,7 @@ varsNames = function(vars) {
   names(allvars)  = gsub("^Lw", "Last Week", names(allvars))
   names(allvars)  = gsub("^Lm", "Last Month", names(allvars))
   names(allvars)  = gsub("Rate ", "Over ", names(allvars))
+  names(allvars)  = gsub("Over Pop$", "Over Population size", names(allvars))
 
   # names(allvars)[grepl("rate_1M_pop$", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("rate_1M_pop$", allvars)])
   # names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
@@ -160,6 +172,7 @@ varsNames = function(vars) {
   grep("lethality", unlist(varsNames()), value = TRUE),
   grep("positive_tests_rate", unlist(varsNames()), value = TRUE),
   grep("hosp_rate_active", unlist(varsNames()), value = TRUE),
+  grep("vaccines_rate_pop", unlist(varsNames()), value = TRUE),
   grep("icuvent_rate_hosp", unlist(varsNames()), value = TRUE)
 )
 #' Variables defined as 0-100 index in map plot
@@ -253,7 +266,8 @@ barplots_colors <- list(
   #"growth_factor" = "#dd4b39",
   "growth_factor" = "chocolate3",
   "death_rate" = "grey30",
-  "stringency" = c(col = "Greys", rev = TRUE, skip = 2)
+  "stringency" = c(col = "Greys", rev = TRUE, skip = 2),
+  "vaccines" = c(col = "Blues", rev = TRUE, skip = 2)
 )
 
 #' Color Palette
@@ -523,11 +537,12 @@ aggr_to_cont = function(data, group, time,
            ##new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
            positive_tests_rate = pmin(round(confirmed/tests, digits = 3),1),
            new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 3),1),
-           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 3),
+           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3), # not making much sense
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
+           vaccines_rate_pop =  pmin(round(vaccines/population, digits = 5), 1),
            #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
@@ -562,7 +577,7 @@ aggr_to_cont = function(data, group, time,
 tsdata_areplot <- function(data, levs, nn = 1000) {
 
   mindate = min(data$date[data$confirmed>nn], na.rm = TRUE)
-  data = data %>% filter(date > mindate)
+  data = data %>% filter(date >= mindate)
 
   data %>%
     select( date, !!levs) %>% #rename vars with labels
@@ -751,17 +766,15 @@ build_data_aggr <- function(data, popdata) {
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            # tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            # new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = pmin(round(confirmed/tests, digits = 3),1),
+           positive_tests_rate = pmin(round(confirmed/tests, digits = 4),1),
            #positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-           new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 3),1),
+           new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 4),1),
            #new_positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 3),
+           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3),
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
-           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
-           #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
-           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
+           vaccines_rate_pop =  pmin(round(vaccines/population, digits = 5), 1),
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
            )  %>%   #mutate(
            #   across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
@@ -814,8 +827,9 @@ lw_vars_calc <- function(data) {
            # lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
            #lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3),
            lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
-           lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 3),
-           lw_mortality_rate = round(pmax(0, replace_na(lw_deaths / population, 0)), digits = 3),
+           lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 4),
+           lw_vaccines_rate_pop =  round(pmax(0, replace_na(lw_vaccines / population, 0)), digits = 5),
+           #lw_mortality_rate = round(pmax(0, replace_na(lw_deaths / population, 0)), digits = 5)
            #lw_hosp_rate_active =  pmin(round(lw_hosp/lw_active, digits = 5), 1),
            #lw_icuvent_rate_hosp =  pmin(round(lw_icuvent/lw_hosp, digits = 4), 1),
            #lw_hosp_rate_1M_pop = round(10^6*lw_hosp/population, digits = 3)
@@ -838,8 +852,8 @@ get_aggrvars = function() {
 
   statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
-  allstatuses = c(statuses, "tests", .hosp_vars)
-  allstatuses = c(allstatuses, paste0("new_",allstatuses), paste0("lw_",allstatuses), "population")
+  allstatuses = c(statuses, "tests", as.vector(.hosp_vars), "vaccines")
+  allstatuses = c(allstatuses, prefix_var(allstatuses), "population")
   allstatuses
 }
 
