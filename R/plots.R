@@ -10,6 +10,10 @@
 #' @return ggplot plot
 #' @export
 stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30) {
+  if (nrow(df) == 0) {
+    p = ggplot()
+    return(p)
+  }
   suffix = NULL
   if (percent) {
     df$ratio.over.cases <- 100*df$ratio.over.cases
@@ -101,7 +105,9 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
   x.d.lim = range(df$Date)
   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
 
-  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, text = paste0(text, ": ", Status))) +
+  p <- ggplot(df, aes(x = Date, y = Value, colour = Status,
+                      text = paste0(text, ": ", Status)#, label = funformat(Value,FALSE))
+                      )) +
     geom_line() +
     basic_plot_theme() +
     scale_color_manual(values = g_palette) +
@@ -227,7 +233,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
 
   x.d.lim = range(df$Date)
   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-  p <- ggplot(df, aes(x = Date, y = Value,
+  p <- ggplot(df, aes(x = Date, y = Value, #label = paste("Value:",funformat(Value,FALSE)),
                       text = paste0(text, ": ", statuslabel)
 
                       # text = paste0(
@@ -576,6 +582,22 @@ fix_legend_position <- function(p){
   p
 }
 
+#' Format in ggplotly
+#' @param x numeric vector of data
+#' @param perc logical data are percentage if TRUE
+#'
+#' @return x formatted x
+funformat <- function(x, perc) {
+  if (!perc) {
+    maxy = max(x, na.rm = T)
+    minxy = min(x, na.rm = T)
+    dg = nchar(as.character(round(max(abs(minxy),maxy))))
+    dglab = getdg_lab(dg, maxy, minxy)
+    formatC(roundlab(x), format = "f", big.mark = "'", digits = dglab)
+  }
+  else
+    paste0( round(x,3), "%")
+}
 
 #' plot all countries but highlight first 10
 #'
@@ -598,6 +620,11 @@ fix_legend_position <- function(p){
 #' @export
 plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , secondline = NULL, keeporder = FALSE) {
 
+  if (nrow(df) == 0) {
+    p = ggplot()
+    return(p)
+  }
+
   #clean df for log case
   if (log) {
     df <- df %>%
@@ -606,6 +633,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
         TRUE ~ Value
       ))
   }
+
 
   # if percentage, multiply by 100
   if (percent) {
@@ -626,6 +654,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   # df$Value = gen_text(df$Variable)
   # df_highlight$Value = gen_text(df_highlight$Variable)
   varChoice = ifelse(rollw, "ValueRoll", "Value")
+  #df$ValueVar = funformat(df[[varChoice]], percent) # not working
 
   if (keeporder)
     df$Status = factor(df$Status , levels = unique(df$Status ))
@@ -667,7 +696,6 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
     #p$data[[secondline]] = p$data[[secondline]] / ratiorescale
 
   }
-
   if (date_x) { # mutate x axis to a date format
     x.d.lim = range(df$Date, na.rm = TRUE)
     x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
@@ -698,6 +726,10 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 #' @return ggplot plot
 #' @export
 plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize = 10, labangle = 30) {
+  if (nrow(df) == 0) {
+    p = ggplot()
+    return(p)
+  }
   if (percent) {
     df$Value <- 100*df$Value
   }
@@ -712,22 +744,12 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     labangle = labangle + min(length(unique(df$Country))-16,30)
   }
 
-  ylim = c(y_min, max(df$Value, na.rm = TRUE))
+  ylim = c(ifelse(percent, 0, y_min), max(df$Value, na.rm = TRUE)*1.05)
+
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
 
-  funformat = function(x) {
-    if (!percent) {
-      maxy = max(x, na.rm = T)
-      minxy = min(x, na.rm = T)
-      dg = nchar(as.character(round(max(abs(minxy),maxy))))
-      dglab = getdg_lab(dg, maxy, minxy)
-      formatC(roundlab(x), format = "f", big.mark = "'", digits = dglab)
-    }
-    else
-      paste0( round(x,3), "%")
-  }
   p <- ggplot(df, aes(x = Country, y = Value,
-                      text = paste0("Value: ",funformat(Value)))) +
+                      text = paste0("Value: ",funformat(Value, percent)))) +
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
@@ -762,11 +784,10 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
 #' @export
 scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01), xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", coefflm = NULL) {
 
-  # df = df %>% rename(
-  #   growthfactor = starts_with("growth")
-  # )
-  # mean.x = mean(df[[xvar]])
-  # mean.y = mean(df[[yvar]])
+  if (nrow(df) == 0) {
+    p = ggplot()
+    return(p)
+  }
 
   if (grepl("confirmed", xvar) && grepl("^growth", yvar)) {
     color_cases = c("yellow3", "darkgreen", "#dd4b39", "#E69F00")
@@ -776,6 +797,14 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
     color_cases = c("darkgreen","deepskyblue1", "deepskyblue4","gray3")
   } else
     color_cases = c("#dd4b39","darkgreen", "gray3","#3c8dbc")
+
+  percenty = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
+  percentx = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
+
+  if(percentx)
+    df[[xvar]] = 100 * df[[xvar]]
+  if(percenty)
+    df[[yvar]] = 100 * df[[yvar]]
 
   color_cntry = rep(color_cases[1], nrow(df))
   color_cntry[df[[xvar]] < med$x & df[[yvar]] < med$y ] = color_cases[2]
@@ -793,20 +822,15 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
 
+
   popuptext = function(area, yvarexpr, xvarexpr){
     paste(
       paste("Area: ",area,"<br>"),
-      paste(names(varsNames(yvar)) ,yvarexpr,"<br>"),
-      paste(names(varsNames(xvar)), formatC(xvarexpr, format = "f", big.mark = "'", digits  = 1), "<br>"),
+      paste(names(varsNames(yvar)) ,funformat(yvarexpr, percenty),"<br>"),
+      paste(names(varsNames(xvar)), funformat(xvarexpr, percentx), "<br>"),
       sep = ""
     )
   }
-  if (nrow(df) == 0) {
-    p <- ggplot()
-    return(p)
-  }
-
-
   p <- ggplot(df, aes(x = !! sym(xvar), y = !! sym(yvar),
                       text = popuptext(Country.Region, !! sym(yvar), !! sym(xvar)),
                       group = 1
@@ -841,13 +865,13 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
 
   percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x*100, "%"), n.break = 6)
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6)
   } else
     p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 6) # add label
 
   percent = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
   if (percent) {
-    p <- p + scale_x_continuous(labels = function(x) paste0(x*100, "%"), n.break = 8)
+    p <- p + scale_x_continuous(labels = function(x) paste0(x, "%"), n.break = 8)
   } else
     p <- p + scale_x_continuous(labels = label_number(big.mark = "'"), n.break = 8) # add label
 
@@ -892,12 +916,18 @@ caption_stringency <- function()
 caption_prevalence <- function()
   "Prevalence: confirmed cases over 1 M people."
 
+#' caption vaccination
+#' @return character text for caption
+caption_vaccines <- function()
+  "Source ourworldindata.org"
+
+
 #' caption tests
 #' @param text character text of variable
 #' @return character text for caption
 caption_tests <- function(text = "Tests") {
-  caption_tests1 <- paste(text,"per 1 Million people")
-  caption_tests2 <- paste("Updated",text,"figures are unavailable for some countries")
+  caption_tests1 <- paste("Over 1 Million people", text)
+  caption_tests2 <- paste("Updated",text,"figures could be unavailable for some countries")
   c(caption_tests1, caption_tests2)
 }
 
