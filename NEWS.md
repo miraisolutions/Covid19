@@ -1,4 +1,4 @@
-### Covid19Mirai 2.3.1-9000 (develop)
+### Covid19Mirai 2.4.1 (2021-01-19)
 - Add vaccination maps and graphs (#157)
 
 ### Covid19Mirai 2.3.1 (2020-12-24)
