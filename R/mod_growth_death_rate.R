@@ -109,6 +109,8 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
 #' @param g_palette list of character vector of colors for the graph and legend of plot_1 and death_rate
 #' @param plottitle character vector giving title to plot1 and plot2
 #' @param pickvariable list of character vector of 1 variable name to use for sorting bars from lef, default is none
+#' @param max.pop integer cut off Country.Region with lower population
+#' @param sortbyvar if FALSE then X axis is not sorted by a variable
 #'
 #' @import dplyr
 #' @import tidyr
@@ -123,7 +125,7 @@ mod_barplot_server <- function(input, output, session, df,
                                                         "calc" = FALSE),
                                          plottitle = c("Growth factor", "Death toll"),
                                          pickvariable = list("plot_1" = character(0), "plot_2" = character(0)),
-                                         sortbyvar = TRUE){
+                                         sortbyvar = TRUE, max.pop = 100000){
   ns <- session$ns
 
 
@@ -133,10 +135,14 @@ mod_barplot_server <- function(input, output, session, df,
       pick_var = rate
     else
       pick_var = pickvar
-    df_plot <- df %>%
-      #arrange(desc(rate)) %>%
-      filter( date == max(date) & #!!sym(rate) != 0 &
-              population >= 100000) # %>% # filter out those with rate = 0 and small countries
+
+    if (!all(is.na(df$population))) {
+      df_plot <- df %>%
+        #arrange(desc(rate)) %>%
+        filter( date == max(date) & #!!sym(rate) != 0 &
+                  population >= max.pop) # %>% # filter out those with rate = 0 and small countries
+    } else
+      df_plot <- df
 
     if (sortbyvar) {
       df_plot <- df_plot %>%
@@ -144,7 +150,7 @@ mod_barplot_server <- function(input, output, session, df,
     }
     if (n_highligth < length(unique(df_plot$Country.Region))) {
       df_plot <- df_plot %>%
-        filter(Country.Region %in% head(unique(df_plot$Country.Region),5))
+        filter(Country.Region %in% head(unique(df_plot$Country.Region),n_highligth))
     }
 
     df_plot <- df_plot %>%
@@ -187,8 +193,11 @@ mod_barplot_server <- function(input, output, session, df,
       caption_death_fun(var)
     }  else if (grepl("^stringency",var)) {
       caption_stringency()
-    } else
+    } else if (grepl("vaccines", var)) {
+      caption_vaccines()
+    } else {
       names(varsNames(var))
+    }
   }
   caption_plot_1 <- reactive({
     cap = captionbarplot(req(input$plot_1))
@@ -223,14 +232,20 @@ mod_barplot_server <- function(input, output, session, df,
 
   output$plot_plot_1_hist <- renderPlotly({
     g_palette_1 = g_palette[["plot_1"]]
-
-    if (g_palette$calc)
+    if (g_palette$calc) {
       g_palette_1 = palette_calc(g_palette_1, as.character(unique(df_base_plot1()$Country[order(df_base_plot1()$Value)])))
+    }
 
     df_base_plot1_filtered = df_base_plot1() %>%
       filter(Value !=0)
-    if (length(g_palette_1) > 1)
-      g_palette_1 = g_palette_1[df_base_plot1()$Country %in% df_base_plot1_filtered$Country]
+
+     if (length(g_palette_1) > 1) {
+       if (is.null(names(g_palette_1)))
+         names(g_palette_1) = as.character(df_base_plot1()$Country)
+      g_palette_1 = g_palette_1[names(g_palette_1) %in% as.character(df_base_plot1_filtered$Country)]
+
+    }
+
     p <- plot_rate_hist(df_base_plot1_filtered, y_min = 1,
                         percent = is_percent_1(),
                         g_palette =  g_palette_1)
@@ -252,8 +267,12 @@ mod_barplot_server <- function(input, output, session, df,
 
       df_base_plot2_filtered = df_base_plot2() %>%
         filter(Value !=0)
-      if (length(g_palette_2) > 1)
-        g_palette_2 = g_palette_2[df_base_plot2()$Country %in% df_base_plot2_filtered$Country]
+
+      if (length(g_palette_2) > 1) {
+        if (is.null(names(g_palette_2)))
+          names(g_palette_2) = as.character(df_base_plot2()$Country)#
+        g_palette_2 = g_palette_2[names(g_palette_2) %in% as.character(df_base_plot2_filtered$Country)]
+      }
 
       p <- plot_rate_hist(df_base_plot2(), percent = is_percent_2(), g_palette =  g_palette_2)
       p <- p %>%
