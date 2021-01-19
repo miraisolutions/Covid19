@@ -109,8 +109,14 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
           filter(Country.Region %in% input$select_countries) %>%
           arrange(desc(date))
 
+      # idx = order(match(countries_data$Country.Region, input$select_countries))
+      # countries_data = countries_data[idx, ]
+
       countries_data_today = all_countries_data_today %>%
         filter(Country.Region %in% input$select_countries)
+
+      # idx = order(match(countries_data_today$Country.Region, input$select_countries))
+      # countries_data_today = countries_data_today[idx, ]
 
       # align contagion day for comparisons
       # data_filtered <-
