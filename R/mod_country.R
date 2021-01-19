@@ -316,7 +316,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         build_data_aggr(area_data_2)
       # works in example
       message("id lev2 = ", id)
-      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,nn/10), strid_arg = strid)
+      callModule(mod_country_area_server, id, data = area_data_2_aggregate, n2 = max(1,nn/10), strid_arg = strid, country = req(input$select_country))
 
     } else{
       message("remove level 2 UI for ", req(input$select_country))
@@ -343,16 +343,17 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 #' @param w number of days of outbreak. Default 7
 #' @param tab logical, if TRUE then also the data table module is called
 #' @param stringency logical, if TRUE then also stringency barplot module is called
+#' @param country character, name of level 1 country
 #'
 #' @import dplyr
 #' @import tidyr
 #' @import shiny
 #'
 #' @noRd
-mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, stringency = TRUE, strid_arg) {
+mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, stringency = TRUE, strid_arg, country = NULL) {
   ns <- session$ns
 
-  message("mod_country_area_server n2 = ", n2)
+  message("mod_country_area_server n2 = ", n2, " Country = " ,country)
   # area_data_2 = datahub_2 %>%
   #   get_timeseries_by_contagion_day_data()
   #
@@ -485,10 +486,12 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   if (all(is.na(data_today$tests)) || all(data_today$tests == 0) || length(table(data_today$tests)) == 1)
     testsflag = FALSE
 
+  message("hospflag: ", hospflag, "/ oneMpopflag: ", oneMpopflag,"/ strFlag: ", strFlag,"/ testsflag: ", testsflag)
+  #paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
   output[["plot_compare_nth_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_plots_area2"), tests = testsflag, hosp = hospflag, strindx = strFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
+    mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_area2_",country)), tests = testsflag, hosp = hospflag, strindx = strFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
   })
-  callModule(mod_compare_nth_cases_plot_server, "lines_plots_area2", df = data, nn = n2,  tests = testsflag, hosp = hospflag, strindx = strFlag, istop = FALSE,
+  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_area2_",country), df = data, nn = n2,  tests = testsflag, hosp = hospflag, strindx = strFlag, istop = FALSE,
              n_highligth = length(unique(data$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE)
 
   # > growth_death_rate,
@@ -496,7 +499,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     mod_barplot_ui(ns("rate_plots_area2"))
   })
   callModule(mod_barplot_server, "rate_plots_area2", df = data_today, istop = FALSE,
-             n_highligth = length(unique(data_2_filtered_today$Country.Region)))
+             n_highligth = length(unique(data_today$Country.Region)))
 
 
   areasC <-
