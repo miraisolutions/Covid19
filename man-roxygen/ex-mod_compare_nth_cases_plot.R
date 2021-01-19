@@ -179,3 +179,39 @@ if (interactive()) {
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
 
+
+if (interactive()) {
+  library(shiny)
+  library(dplyr)
+  library(tidyr)
+  library(plotly)
+  library(ggplot2)
+
+  ui <- fluidPage(
+    tagList(
+      Covid19Mirai:::golem_add_external_resources(),
+      uiOutput("lines_points_plots_ui")
+    )
+  )
+  server <- function(input, output, session) {
+    # Data ----
+    orig_data <- get_datahub(country = "Germany", lev = 2) %>%
+      get_timeseries_by_contagion_day_data()
+
+    orig_data_aggregate = build_data_aggr(orig_data)
+
+    n = 1000
+
+
+    output[["lines_points_plots_ui"]] <- renderUI({
+      mod_compare_nth_cases_plot_ui("lines_points_plots", tests = TRUE, hosp = FALSE, actives = FALSE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = FALSE, areasearch = TRUE)
+    })
+
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", orig_data_aggregate,
+               nn = n, n_highligth = length(orig_data_aggregate$Country.Region), istop = FALSE, actives = FALSE, tests = TRUE, hosp = FALSE, oneMpop = FALSE, strindx = TRUE, areasearch = TRUE)#, secondline = "stringency_index")
+  }
+  runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
+}
+
+
+
