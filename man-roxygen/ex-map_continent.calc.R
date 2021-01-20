@@ -13,19 +13,20 @@ if (interactive()) {
   cont = "LatAm & Carib."
   cont = "Europe"
 
-  #variable = "death rate" # set variable
+  variable = "death rate" # set variable
   #variable = "prevalence rate" # set variable
-  #variable = "tests_rate_1M_pop" # set variable
-  variable = "tests over 1M" # set variable
-  variable = "positive tests rate" # set variable
-  variable = "hospitalised" # set variable
-  variable = "hospitalised over 1M" # set variable
-  variable = "stringency_index" # set variable
-  variable = "growth vs stringency" # set variable
-  #variable = "growth vs prevalence" # set variable
-
- #variable = "growth factor" # set variable
-  #variable = "confirmed" # set variable
+  variable = "actives" # set variable
+  #variable = "tests" # set variable
+  #variable = "positive tests rate" # set variable
+  #variable = "hospitalised" # set variable
+  #variable = "hospitalised over 1M" # set variable
+  #variable = "stringency_index" # set variable
+ # variable = "growth vs stringency" # set variable
+ #  variable = "growth vs prevalence" # set variable
+ #  variable = "vaccines" # set variable
+ #
+ # #variable = "growth factor" # set variable
+   variable = "confirmed" # set variable
 
   sapply(file.path("R",list.files("R")), source)
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)

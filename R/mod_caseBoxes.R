@@ -59,41 +59,63 @@ mod_caseBoxes_ui <- function(id, hosp = FALSE) {
 #' @param hosp logical, if TRUE hospitalised box variables is added.
 #'
 #' @rdname mod_caseBoxes
-mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE) {
+mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, vax = NULL) {
 
   if (!hosp) {
-    output$confirmed <- renderUI({
-      countBox(title1 = "Confirmed: ",
-               subtitle1 = counts[["confirmed"]],
-               title2 = "New: ",
-               subtitle2 =  counts[["new_confirmed"]],
-               color = "white",
-               background = .case_colors[["confirmed"]])
-    })
-    output$death <- renderUI({
-      countBox(title1 = "Deaths: ",
-               subtitle1 = counts[["deaths"]],
-               title2 = "New: ",
-               subtitle2 =  counts[["new_deaths"]],
-               color = "white",
-               background = .case_colors[["deaths"]])
-    })
-    output$recovered <- renderUI({
-      countBox(title1 = "Recovered: ",
-               subtitle1 = counts[["recovered"]],
-               title2 = "New: ",
-               subtitle2 =  counts[["new_recovered"]],
-               color = "white",
-               background = .case_colors[["recovered"]])
-    })
-    output$active <- renderUI({
-      countBox(title1 = "Active: ",
-               subtitle1 = counts[["active"]],
-               title2 = "New: ",
-               subtitle2 =  counts[["new_active"]],
-               color = "white",
-               background = .case_colors[["active"]])
-    })
+    vaxflag = !is.null(vax)
+
+    if (!vaxflag || vax != "confirmed") {
+      output$confirmed <- renderUI({
+        countBox(title1 = "Confirmed: ",
+                 subtitle1 = counts[["confirmed"]],
+                 title2 = "New: ",
+                 subtitle2 =  counts[["new_confirmed"]],
+                 color = "white",
+                 background = .case_colors[["confirmed"]])
+      })
+    }
+    if (!vaxflag || vax != "deaths") {
+      output$death <- renderUI({
+        countBox(title1 = "Deaths: ",
+                 subtitle1 = counts[["deaths"]],
+                 title2 = "New: ",
+                 subtitle2 =  counts[["new_deaths"]],
+                 color = "white",
+                 background = .case_colors[["deaths"]])
+      })
+    }
+    if (!vaxflag || vax != "recovered") {
+      output$recovered <- renderUI({
+        countBox(title1 = "Recovered: ",
+                 subtitle1 = counts[["recovered"]],
+                 title2 = "New: ",
+                 subtitle2 =  counts[["new_recovered"]],
+                 color = "white",
+                 background = .case_colors[["recovered"]])
+      })
+    }
+    if (!is.null(vax)) {
+      message("Vaccinated box")
+      output[[vax]]  <- renderUI({
+        countBox(title1 = "Vaccinated: ",
+                 subtitle1 = counts[["vaccines"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_vaccines"]],
+                 color = "white",
+                 background = .case_colors[["vaccines"]])
+      })
+    }
+    if (!vaxflag || vax != "active") {
+      output$active <- renderUI({
+        countBox(title1 = "Active: ",
+                 subtitle1 = counts[["active"]],
+                 title2 = "New: ",
+                 subtitle2 =  counts[["new_active"]],
+                 color = "white",
+                 background = .case_colors[["active"]])
+      })
+    }
+
   } else {
     output$hosp <- renderUI({
       countBox(title1 = "Hospitalised: ",

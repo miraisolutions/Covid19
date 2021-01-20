@@ -105,7 +105,7 @@ app_server <- function(input, output, session) {
   })
 
   # country choice, remove Switzerland
-  orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
+ # orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
   countriesnoswiss = reactive({
     countries()[countries()[,1] != "Switzerland",]
   })

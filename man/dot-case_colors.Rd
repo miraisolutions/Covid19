@@ -5,7 +5,7 @@
 \alias{.case_colors}
 \title{Color Palette for Areaplot variables}
 \format{
-An object of class \code{character} of length 5.
+An object of class \code{character} of length 6.
 }
 \usage{
 .case_colors

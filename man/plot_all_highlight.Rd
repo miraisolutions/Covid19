@@ -12,7 +12,8 @@ plot_all_highlight(
   date_x = FALSE,
   g_palette = graph_palette,
   rollw = TRUE,
-  secondline = NULL
+  secondline = NULL,
+  keeporder = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ plot_all_highlight(
 \item{rollw}{logical, if TRUE then rolling weekly averages are computed}
 
 \item{secondline}{character, variable name to be added with new line and axis}
+
+\item{keeporder}{logical, if TRUE then lines order is kept according to df}
 }
 \description{
 plot all countries but highlight first 10
