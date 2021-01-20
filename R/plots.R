@@ -320,7 +320,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
 
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
-    theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
+    #theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     scale_color_manual(values = g_palette) +
     scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
     #scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
