@@ -1,3 +1,6 @@
+### Covid19Mirai 2.4.2 (2021-01-21)
+- Correction to Last Week Vaccinated (#161)
+
 ### Covid19Mirai 2.4.1 (2021-01-19)
 - Add vaccination maps and graphs (#157)
 
