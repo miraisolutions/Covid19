@@ -106,8 +106,13 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
      build_data_aggr()
 
    total_today <-
-     total %>%
+     total_aggregate %>%
         filter(date == max(date))
+
+   lw_total =  lw_vars_calc(total_today)
+
+   total_today = total_today  %>%
+     left_join(lw_total %>% select(-population))
 
    orig_data_aggregate = orig_data_aggregate %>%
      filter(population > 100000) # remove very small countries

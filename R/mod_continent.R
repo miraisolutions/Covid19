@@ -180,6 +180,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   continent_data_today <-
     continent_data %>%
       filter(date == max(date))
+  lw_continent_data_today =  lw_vars_calc(continent_data_today)
+
+  continent_data_today = continent_data_today  %>%
+    left_join(lw_continent_data_today %>% select(-population))
 
   # filter map only continent
   #countries_data_map_cont = countries_data_map[countries_data_map@data$CONTINENT == cont,]
