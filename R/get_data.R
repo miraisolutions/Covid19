@@ -464,7 +464,7 @@ aggregate_country_data <- function(data){
 #' Aggregate data by province
 #' @rdname aggregate_province_timeseries_data
 #'
-#' @param data data.frameing
+#' @param data data.frame
 #'
 #' @import dplyr
 #' @import tidyr
