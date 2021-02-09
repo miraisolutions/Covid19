@@ -274,7 +274,6 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
           dataHub = dataHub %>% filter(Country.Region != "China") # remove china in case it was present
 
           dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
-          #dataHub
         }
     }
 
@@ -286,15 +285,12 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
   }
   if (!is.null(dataHub) && nrow(dataHub) > 0) {
     # adjust recovered where they do not make sense, e.g. France lev 2
-    #dataHub$recovered[is.na(dataHub$recovered)] = 0 #TODO: review, required only with COVID19 2.3.1
     dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed, na.rm = TRUE)
     dataHub$deaths    = pmin(dataHub$deaths, dataHub$confirmed, na.rm = TRUE)
 
     # compute active
     dataHub = dataHub %>%
-      #mutate(active = confirmed - deaths - recovered) %>%
       mutate(active = confirmed - replace_na(deaths,0) - replace_na(recovered,0)) #%>%
-      #mutate(active = replace_na(active, 0)) # TODO review
 
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
@@ -468,7 +464,7 @@ aggregate_country_data <- function(data){
 #' Aggregate data by province
 #' @rdname aggregate_province_timeseries_data
 #'
-#' @param data data.frameing
+#' @param data data.frame
 #'
 #' @import dplyr
 #' @import tidyr
