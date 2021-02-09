@@ -801,10 +801,14 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
   percenty = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
   percentx = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
 
-  if(percentx)
+  if(percentx) {
     df[[xvar]] = 100 * df[[xvar]]
-  if(percenty)
+    med$x = 100* med$x
+  }
+  if(percenty) {
     df[[yvar]] = 100 * df[[yvar]]
+    med$y = 100* med$y
+  }
 
   color_cntry = rep(color_cases[1], nrow(df))
   color_cntry[df[[xvar]] < med$x & df[[yvar]] < med$y ] = color_cases[2]

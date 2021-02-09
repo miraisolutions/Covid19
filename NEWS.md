@@ -1,3 +1,6 @@
+### Covid19Mirai 2.4.3 (2021-02-09)
+- Correction scatterplot median lines for rates (0-1) (#163)
+
 ### Covid19Mirai 2.4.2 (2021-01-21)
 - Correction to Last Week Vaccinated (#161)
 
