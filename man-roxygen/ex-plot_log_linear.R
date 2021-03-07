@@ -1,8 +1,6 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(ggplot2)
-  library(tidyr)
+  devtools::load_all()
+
   #sapply(file.path("R",list.files("R")), source)
   devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."

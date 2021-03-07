@@ -1,12 +1,5 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(ggplot2)
-  library(RColorBrewer)
-  library(COVID19)
-  library(plotly)
-  library(scales)
+  devtools::load_all()
 
   #sapply(file.path("R",list.files("R")), source)
   #devtools::load_all()

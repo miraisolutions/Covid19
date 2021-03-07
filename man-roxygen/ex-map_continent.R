@@ -1,13 +1,7 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(leaflet)
-  library(shinycssloaders)
+  devtools::load_all()
 
   cont = "Africa"
- #sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(

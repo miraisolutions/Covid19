@@ -1,9 +1,5 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(ggplot2)
-  library(plotly)
+  devtools::load_all()
 
   ui <- fluidPage(
     tagList(

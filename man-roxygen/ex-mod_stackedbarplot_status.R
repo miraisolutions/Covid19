@@ -1,16 +1,10 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(ggplot2)
-  library(plotly)
-  #devtools::load_all()
-  #sapply(file.path("R",list.files("R")), source)
+  devtools::load_all()
 
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_stackedbarplot_ui("plot", 5)
+      mod_stackedbarplot_ui("plot")
     )
   )
   server <- function(input, output, session) {
