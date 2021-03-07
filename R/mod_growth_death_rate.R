@@ -8,6 +8,8 @@
 #' @param plot2 character: ui_growth ui_death ui_stringency, choose UI element from uichoices for plot2 graph.
 #' @noRd
 #'
+#' @example man-roxygen/ex-mod_growth_death_rate.R
+#'
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner
 mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
