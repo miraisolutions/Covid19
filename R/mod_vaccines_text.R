@@ -145,9 +145,9 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
       #theme(plot.caption = element_text(hjust=0.5, size=rel(1))) +
       geom_hline(yintercept = data()$target_vaccines_per_day, colour = "darkblue", linetype="dotted", size = 0.3) +
       annotate("text", x = min(plotdata$Date), y = data()$target_vaccines_per_day*1.05,
-               label = "Target Average Vaccines per Day", size = 2.25,
+               label = "Target Average Vaccines per Day", size = 2.5,
                hjust = 0) +
-      labs(caption = caption_vaccines(), hjust = 0.5, size = 2.25)
+      labs(caption = caption_vaccines(), hjust = 0.5, size = 2.5)
 
     # no legend no interactivity
 
