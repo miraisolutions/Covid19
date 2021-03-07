@@ -14,18 +14,24 @@ mod_continent_comparison_ui <- function(id){
     # div(
     #   textOutput(ns("from_nth_case"))
     # ),
-    withSpinner(uiOutput(ns("lineplots_cont"))),
+    #withSpinner(uiOutput(ns("lineplots_cont"))),
+    h2("Continents Comparison"),
+    mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont")),
     fluidRow(
       column(5,
-             withSpinner(uiOutput(ns("rateplots_cont")))
+             #withSpinner(uiOutput(ns("rateplots_cont")))
+             withSpinner(mod_barplot_ui(ns("rate_plots_cont")))
       ),
       column(7,
-             withSpinner(uiOutput(ns("lines_points_plots_cont")))
-             )
+             # withSpinner(uiOutput(ns("lines_points_plots_cont")))
+             # )
+      withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE))
+      )
     ),
     fluidRow(
       column(6,
-             withSpinner( mod_scatterplot_ui(ns("scatterplot_plots_cont")))
+             # withSpinner( mod_scatterplot_ui(ns("scatterplot_plots_cont")))
+             withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
       ),
       column(6,
              withSpinner(mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL))
@@ -67,19 +73,19 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     left_join(lw_continent_data_filtered %>% select(-population))
 
 
-  output$lineplots_cont <- renderUI({
-    tagList(
-      h2("Continents Comparison"),
-      mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))
-    )
-  })
+  # output$lineplots_cont <- renderUI({
+  #   tagList(
+  #     h2("Continents Comparison"),
+  #     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))
+  #   )
+  # })
 
   callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
   # Rate plots ----
-  output$rateplots_cont <- renderUI({
-    mod_barplot_ui(ns("rate_plots_cont"))
-  })
+  # output$rateplots_cont <- renderUI({
+  #   mod_barplot_ui(ns("rate_plots_cont"))
+  # })
 
   callModule(mod_barplot_server, "rate_plots_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE,
              g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
@@ -89,9 +95,9 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   # Line with bullet plot
 
-  output$lines_points_plots_cont <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE)
-  })
+  # output$lines_points_plots_cont <- renderUI({
+  #   mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE)
+  # })
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn, w = w,
              n_highligth = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
