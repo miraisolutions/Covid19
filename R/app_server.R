@@ -67,53 +67,80 @@ app_server <- function(input, output, session) {
   })
 
 
-  # Modules ----
-
-  callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
-             countries_data_map)
-
-  orig_data_aggregate = orig_data_aggregate %>%
-              filter(!is.na(continent))
-
-  callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
-
-
-  # select continents in tabs
-  continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
-  mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
+  glob_var = reactiveVal(0)
+  summary_var = reactiveVal(0)
+  country_var = reactiveVal(0)
+  swiss_var = reactiveVal(0)
+  countrycmp_var = reactiveVal(0)
   uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
-  for (i.cont in 1:length(continents)) {
-    callModule(mod_continent_server, paste(mainuicontinents[i.cont], "comparison", sep = "_"),
-               orig_data_aggregate = orig_data_aggregate, nn = n, w = w,
-               pop_data = pop_data, countries_data_map = countries_data_map,
-               cont = continents[i.cont], uicont = uicontinents[i.cont])
-  }
-  # Switzerland page
-  callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, data2 = orig_data_ch_2, country = "Switzerland", nn = n, w = w)
+  continents_var <- reactiveValues(europe = 0, asia = 0, africa = 0, latam = 0, northernamerica = 0, oceania = 0)
+  # Modules ----
+  observe({
+    message("Current Tab: ", req(input$main_ui) )
+    if (req(input$main_ui) == "Global" && glob_var() == 0) {
+      callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
+                 countries_data_map)
+      glob_var(1)
+    }
 
-  # align contagion day for comparisons
-  data_filtered <-
-    orig_data_aggregate %>%
-    rescale_df_contagion(n = n, w = w)
+    orig_data_aggregate = orig_data_aggregate %>%
+                filter(!is.na(continent))
 
-  # determine vector of countries to be used in Global and Comparison pages
-  # reactive
-  countries <- reactive({
-    data_filtered %>%
-      select(Country.Region) %>%
-      distinct()
+    if (req(input$main_ui) == "Continents"  && summary_var() == 0) {
+      callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
+      summary_var(1)
+
+    }
+
+    message("Current SubTab: ", req(input$continents_ui) )
+
+    # select continents in tabs
+    tabuicontinents = c("Europe", "Asia", "Africa", "Lat. America & Carib.", "Northern America", "Oceania")
+    continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
+    mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
+    for (i.cont in 1:length(continents)) {
+      if (req(input$continents_ui) == tabuicontinents[i.cont] && continents_var[[uicontinents[i.cont]]] == 0) {
+        callModule(mod_continent_server, paste(mainuicontinents[i.cont], "comparison", sep = "_"),
+                   orig_data_aggregate = orig_data_aggregate, nn = n, w = w,
+                   pop_data = pop_data, countries_data_map = countries_data_map,
+                   cont = continents[i.cont], uicont = uicontinents[i.cont])
+        continents_var[[uicontinents[i.cont]]] = 1
+      }
+    }
+    # Switzerland page
+    if (req(input$main_ui) == "Switzerland" && swiss_var() == 0) {
+      callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, data2 = orig_data_ch_2, country = "Switzerland", nn = n, w = w)
+      swiss_var(1)
+    }
+
+    # align contagion day for comparisons
+    data_filtered <-
+      orig_data_aggregate %>%
+      rescale_df_contagion(n = n, w = w)
+
+    # determine vector of countries to be used in Global and Comparison pages
+    # reactive
+    countries <- reactive({
+      data_filtered %>%
+        select(Country.Region) %>%
+        distinct()
+    })
+
+    # country choice, remove Switzerland
+   # orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
+    countriesnoswiss = reactive({
+      countries()[countries()[,1] != "Switzerland",]
+    })
+    if (req(input$main_ui) == "Country" && country_var() == 0) {
+      callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, nn = n, w = w, n.select = n)
+      country_var(1)
+    }
+    if (req(input$main_ui) == "Country Comparison" && countrycmp_var() == 0) {
+      callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, nn = 100, w = w, n.select = n)
+      countrycmp_var(1)
+    }
+
   })
-
-  # country choice, remove Switzerland
- # orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
-  countriesnoswiss = reactive({
-    countries()[countries()[,1] != "Switzerland",]
-  })
-
-  callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, nn = n, w = w, n.select = n)
-
-  callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, nn = 100, w = w, n.select = n)
-
   # Modal ----
   # what is new pop-up
   observeEvent(input$btn_whatsnew, {
