@@ -78,6 +78,7 @@ app_server <- function(input, output, session) {
   observe({
     message("Current Tab: ", req(input$main_ui) )
     if (req(input$main_ui) == "Global" && glob_var() == 0) {
+      message("Do global module")
       callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
                  countries_data_map)
       glob_var(1)
@@ -87,6 +88,7 @@ app_server <- function(input, output, session) {
                 filter(!is.na(continent))
 
     if (req(input$main_ui) == "Continents"  && summary_var() == 0) {
+      message("Do Continents module")
       callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
       summary_var(1)
 
@@ -100,6 +102,8 @@ app_server <- function(input, output, session) {
     mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
     for (i.cont in 1:length(continents)) {
       if (req(input$continents_ui) == tabuicontinents[i.cont] && continents_var[[uicontinents[i.cont]]] == 0) {
+        message("Do mod_continent_server module for ", tabuicontinents[i.cont])
+
         callModule(mod_continent_server, paste(mainuicontinents[i.cont], "comparison", sep = "_"),
                    orig_data_aggregate = orig_data_aggregate, nn = n, w = w,
                    pop_data = pop_data, countries_data_map = countries_data_map,
@@ -109,6 +113,7 @@ app_server <- function(input, output, session) {
     }
     # Switzerland page
     if (req(input$main_ui) == "Switzerland" && swiss_var() == 0) {
+      message("Do Switzerland module")
       callModule(mod_ind_country_server, "swiss", data = orig_data_aggregate, data2 = orig_data_ch_2, country = "Switzerland", nn = n, w = w)
       swiss_var(1)
     }
@@ -132,10 +137,12 @@ app_server <- function(input, output, session) {
       countries()[countries()[,1] != "Switzerland",]
     })
     if (req(input$main_ui) == "Country" && country_var() == 0) {
+      message("Do Country module")
       callModule(mod_country_server, "country", data = orig_data_aggregate, countries = countriesnoswiss, nn = n, w = w, n.select = n)
       country_var(1)
     }
     if (req(input$main_ui) == "Country Comparison" && countrycmp_var() == 0) {
+      message("Do Country Comparison module")
       callModule(mod_country_comparison_server, "country_comparison", data = orig_data_aggregate, countries = countries, nn = 100, w = w, n.select = n)
       countrycmp_var(1)
     }
