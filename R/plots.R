@@ -707,6 +707,10 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
         axis.text.x = element_text(angle = 45, hjust = 1)
       )
   }
+  if (length(unique(df$Status)) == 1) {
+    p = p+
+      theme(legend.position = "none")
+  }
 
   p
 }
@@ -922,8 +926,10 @@ caption_prevalence <- function()
 
 #' caption vaccination
 #' @return character text for caption
-caption_vaccines <- function()
-  "Source ourworldindata.org"
+caption_vaccines <- function() {
+  c("Not accounting for the number of doses /nSource ourworldindata.org")
+}
+
 
 
 #' caption tests

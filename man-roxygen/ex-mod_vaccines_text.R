@@ -1,10 +1,8 @@
 if (interactive()) {
   #devtools::load_all()
-
-
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_bar_plot_day_contagion_ui("bar_plot_day_contagion")
+    mod_vaccines_text_ui("vaccines_text")
   )
   server <- function(input, output) {
 
@@ -12,11 +10,7 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data_with_ch <- get_datahub_fix_ch()
-    orig_data       = orig_data_with_ch$orig_data
-    orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
-
-    orig_data = orig_data %>%
+    orig_data <- get_datahub(country = "Italy") %>%
       get_timeseries_by_contagion_day_data()
 
 
@@ -30,12 +24,18 @@ if (interactive()) {
 
     country_data <-
       orig_data_aggregate %>%
-        filter(Country.Region %in% "Switzerland") %>%
+        #filter(Country.Region %in% "Switzerland") %>%
         filter(contagion_day > 0) %>%
         arrange(desc(date))
 
+    lw_country_data =  lw_vars_calc(country_data)
 
-    callModule(mod_bar_plot_day_contagion_server,"bar_plot_day_contagion", country_data = country_data, nn = n, statuses = c("confirmed", "deaths", "vaccines", "active"))
+    country_data_today = country_data %>%
+      add_growth_death_rate()
+    country_data_today = country_data_today  %>%
+      left_join(lw_country_data %>% select(-population))
+
+    callModule(mod_vaccines_text_server,"vaccines_text", dftoday = country_data_today, df = country_data)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

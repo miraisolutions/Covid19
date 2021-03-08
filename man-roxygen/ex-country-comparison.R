@@ -1,15 +1,6 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(RColorBrewer)
-  library(plotly)
-  library(shinycssloaders)
-  library(DT)
-  library(grid)
-  library(scales)
 
-  #sapply(file.path("R",list.files("R")), source)
+
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."

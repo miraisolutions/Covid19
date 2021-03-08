@@ -1,14 +1,5 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(leaflet)
-  library(leaflet.extras)
-
-  library(shinycssloaders)
-  library(RColorBrewer)
-  library(COVID19)
+  devtools::load_all()
 
   cont = "LatAm & Carib."
   cont = "Europe"
@@ -17,18 +8,18 @@ if (interactive()) {
   #variable = "prevalence rate" # set variable
   variable = "actives" # set variable
   #variable = "tests" # set variable
-  #variable = "positive tests rate" # set variable
+  variable = "positive tests rate" # set variable
   #variable = "hospitalised" # set variable
   #variable = "hospitalised over 1M" # set variable
   #variable = "stringency_index" # set variable
  # variable = "growth vs stringency" # set variable
  #  variable = "growth vs prevalence" # set variable
- #  variable = "vaccines" # set variable
+  #variable = "vaccines" # set variable
  #
- # #variable = "growth factor" # set variable
-   variable = "confirmed" # set variable
+ variable = "growth factor" # set variable
+  # variable = "confirmed" # set variable
 
-  sapply(file.path("R",list.files("R")), source)
+  #sapply(file.path("R",list.files("R")), source)
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."

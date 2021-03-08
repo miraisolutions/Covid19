@@ -1,16 +1,7 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(shinycssloaders)
-  library(plotly)
-  library(ggplot2)
-  library(RColorBrewer)
-  library(COVID19)
 
-  library(scales)
   #sapply(file.path("R",list.files("R")), source)
-  devtools::load_all()
+  #devtools::load_all()
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
@@ -37,11 +28,7 @@ if (interactive()) {
 }
 
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(ggplot2)
+
 
   ui <- fluidPage(
     tagList(
@@ -74,11 +61,6 @@ if (interactive()) {
 
 
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(ggplot2)
 
   ui <- fluidPage(
     tagList(

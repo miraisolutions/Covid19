@@ -69,13 +69,19 @@ app_ui <- function(request) {
 
       ), # end Header fluidRow
       # body ----
-      tabsetPanel(
+      #tabsetPanel(
+      navbarPage(
+        "",
+        #"Continents and Countries insight",
         id = "main_ui",
         tabPanel("Global",
                  id = "tab_global",
                  mod_global_ui("global")),
         tabPanel("Continents",
-                 tabsetPanel(
+                 #tabsetPanel(
+                 navbarPage(
+                   "",
+                   id = "continents_ui",
                    tabPanel("Summary",
                           id = "tab_global",
                            mod_continent_comparison_ui("continent_comparison")),

@@ -2,20 +2,22 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for {shiny}.
 #'
-#' @noRd
+#' @example man-roxygen/ex-mod_stackedbarplot_status.R
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner
-mod_stackedbarplot_ui <- function(id, n_highligth = 5){
+mod_stackedbarplot_ui <- function(id){
   ns <- NS(id)
+  caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
+
   tagList(
           uiOutput(ns("title_stackedbarplot_status")),
           #withSpinner(uiOutput(ns("plot_stackedbarplot_status")))
 
           withSpinner(plotlyOutput(ns("plot_stackedbarplot_status"), height = 500)),
-          div(htmlOutput(ns("caption")), align = "center", height = 10)
+          div(caption_explain, align = "center", height = 10)
       )
 }
 #' stackedbarplot_status Server Function
@@ -35,6 +37,7 @@ mod_stackedbarplot_ui <- function(id, n_highligth = 5){
 #' @noRd
 mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, n_highligth = 5, istop = TRUE, statuses = c("deaths", "active", "recovered"), active_hosp = FALSE){
   ns <- session$ns
+
   # titles
   if (istop) {
     output$title_stackedbarplot_status <- renderUI(div(h4(paste0("Current top ", n_highligth, " status split")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
@@ -96,12 +99,9 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
   #idx = order(match(df_status_stack$Country.Region, df$Country.Region))
   # df_status_stack = df_status_stack[idx, ]
 
-  caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
-
-
-  output$caption <- renderText({
-    caption_explain
-  })
+  # output$caption <- renderText({
+  #   caption_explain
+  # })
 
   output$plot_stackedbarplot_status <- renderPlotly({
     p = stackedbarplot_plot(df_status_stack, perc = TRUE) %>% fix_colors(labs = TRUE)

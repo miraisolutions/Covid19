@@ -565,8 +565,10 @@ legend_fun <- function(x, var){
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x, var)
+    cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
+    #if (dg < 6 || (var %in% domainlin_vars()) || cvx<1){
+    if ((grepl("growth",var) && grepl("fact",var)) || (var %in% .rate_vars) || (var %in% domainlin_vars()) || cvx<1){
 
-    if (dg < 6){
       bin = domain(x)
       bin = seq(bin[1],bin[2], length = 4)
       val = seq(min(bin),max(bin), length = 5000)
@@ -599,7 +601,6 @@ legend_fun <- function(x, var){
         val = c(-log(1:exp(-min(bin))),log(1:exp(max(bin))))
       else
         val = log(1:exp(max(bin)))
-
       dat = val
       suf = ifelse(grepl("1M", var)," over 1M", " cases")
       .round_val = function(x){
@@ -667,6 +668,16 @@ domainrate <- function(x) {
 domainindex <- function(x) {
   c(0,100)
 }
+
+# to control variables that do not go from 0 to many, where many countries have close values
+domainlin_vars = function(x) {
+  vars = unlist(varsNames())
+  vars = grep("vaccines", vars, value = TRUE)
+  #vars[(grepl("growth",var) && grepl("fact",var))]
+  vars = setdiff(vars, grep("rate_pop", vars, value = TRUE))
+  "none" # switched off for the moment
+}
+
 #' Utility to choose domain for legend
 #' @param x numeric vector of map data
 #' @param var character vector of variable name
@@ -676,6 +687,7 @@ choose_domain <- function(x, var) {
     maxy = max(x, na.rm = T)
     minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
+    cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
     if (var %in% .rate_vars){ # if rate
       domain = domainrate
     } else if (var %in% .index_vars){ # if rate
@@ -683,7 +695,10 @@ choose_domain <- function(x, var) {
     } else if ((grepl("growth",var) && grepl("fact",var))){
       # growth factors variables
       domain = domaingrowth
-    } else if (dg < 6) {
+    # } else if ((var %in% domainlin_vars()) || cvx<1) {
+    #   domain = domainlin
+    #} else if (dg < 6) {
+    } else if ((var %in% domainlin_vars()) || cvx<1) {
       if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
         domain = domainlin_neg
       else
@@ -760,11 +775,13 @@ pal_fun_calc <- function(x, var){
     maxv = max(x, na.rm = T)
     minxv = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
+    cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
 
     #if (dg == 1 && maxv<=1 && minxv>=0) {
     if (var %in% .rate_vars) {
       y = x *100 # rate
-    } else if (dg < 6) {
+    #} else if (dg < 6 || (var %in% domainlin_vars()) || cvx<1) {
+    } else if ((grepl("growth",var) && grepl("fact",var)) || (var %in% domainlin_vars()) || cvx<1) {
       # linear scale
       y = x
     } else {

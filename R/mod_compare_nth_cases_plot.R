@@ -369,8 +369,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                               date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw, keeporder = keeporder)
 
       p <- p %>%
-        plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
-        plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+        plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip"))
+
+      if (length(unique(df_data()$Status)) == 1)
+        p <- p %>%
+          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+
       p
 
     })

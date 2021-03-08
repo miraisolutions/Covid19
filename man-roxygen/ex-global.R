@@ -1,16 +1,6 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(RColorBrewer)
-  library(COVID19)
-  library(plotly)
-  library(shinycssloaders)
-  library(DT)
-  library(grid)
-  library(scales)
-  library(leaflet)
-  library(leaflet.extras)
+  devtools::load_all()
+
 
   #sapply(file.path("R",list.files("R")), source)
   #devtools::load_all()

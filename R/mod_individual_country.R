@@ -46,6 +46,9 @@ mod_ind_country_ui <- function(id){
 
       column(6,
              withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"), tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE, vax = TRUE))
+      ),
+      column(6,
+             withSpinner(mod_vaccines_text_ui(ns("ind_vaccines_text_plot")))
       )
     ),
     # hr(),
@@ -203,6 +206,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data , nn = nn, w = w, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE, vax = vaxflag)#, secondline = "stringency_index")
 
+  callModule(mod_vaccines_text_server, "ind_vaccines_text_plot", country_data, country_data_today)
 
 # # ##### country split within areas #############################################
 
@@ -224,7 +228,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
     areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE)
     #areaUI("ind_country_subarea")
   })
-  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringency = FALSE, country = "Switzerland")
+  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
 
   output$maps_ind_subarea <- renderUI({
     areamapUI(ns("maps_subarea"), country)
