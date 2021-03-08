@@ -22,7 +22,7 @@ A shiny Module for displaying stats about vaccination
 }
 \examples{
 if (interactive()) {
-  devtools::load_all()
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     mod_vaccines_text_ui("vaccines_text")

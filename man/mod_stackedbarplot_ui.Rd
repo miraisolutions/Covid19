@@ -7,14 +7,14 @@
 mod_stackedbarplot_ui(id)
 }
 \arguments{
-\item{id, input, output, session}{Internal parameters for {shiny}.}
+\item{id}{Internal parameters for {shiny}.}
 }
 \description{
 A shiny Module.
 }
 \examples{
 if (interactive()) {
-  devtools::load_all()
+ # devtools::load_all()
 
   ui <- fluidPage(
     tagList(

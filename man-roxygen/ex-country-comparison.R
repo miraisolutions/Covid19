@@ -1,13 +1,5 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(RColorBrewer)
-  library(plotly)
-  library(shinycssloaders)
-  library(DT)
-  library(grid)
-  library(scales)
+
 
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 

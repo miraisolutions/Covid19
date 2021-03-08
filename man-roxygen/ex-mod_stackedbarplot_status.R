@@ -1,5 +1,5 @@
 if (interactive()) {
-  devtools::load_all()
+ # devtools::load_all()
 
   ui <- fluidPage(
     tagList(

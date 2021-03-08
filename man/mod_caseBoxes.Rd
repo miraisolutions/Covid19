@@ -23,7 +23,7 @@ A shiny Module for displaying the number of cases by type as
 }
 \examples{
 if (interactive()) {
-  devtools::load_all()
+ # devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
