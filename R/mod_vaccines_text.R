@@ -32,7 +32,7 @@ mod_vaccines_text_ui <- function(id) {
           column(2, offset = 1, selectInput(inputId = ns("doses"), label = "Number of doses",
                                  choices = c(1,2),
                                  selected = 2)),
-          column(2, selectInput(inputId = ns("confdoses"), label = "Doses for already infected",
+          column(3, selectInput(inputId = ns("confdoses"), label = "Doses for already infected",
                                 choices = c(0,1,2),
                                 selected = 1)),
           column(2, offset = 1, dateInput(inputId = ns("tdate"), label = "Target date",
@@ -119,8 +119,8 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   output$vax_text =  renderPrint({
     div(HTML(
       paste0("  ",strong(dftday$Country.Region), ":\n",
-          "  Target Date: <b>", input$tdate,"</b>. ", .format_num(data()$days_to_target), " days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
-          "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>.<br/>",
+          "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
+          "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
           "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
                         .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
           #"  Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>:<br/>",
