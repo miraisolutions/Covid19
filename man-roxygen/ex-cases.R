@@ -1,19 +1,6 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(RColorBrewer)
-  library(COVID19)
-  library(plotly)
-  library(shinycssloaders)
-  library(DT)
-  library(grid)
-  library(scales)
-  library(leaflet)
-  library(leaflet.extras)
-
-  #sapply(file.path("R",list.files("R")), source)
   #devtools::load_all()
+
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),

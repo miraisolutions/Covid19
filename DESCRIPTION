@@ -1,6 +1,6 @@
 Package: Covid19Mirai
 Title: Covid-19 Data Analysis
-Version: 2.4.3
+Version: 2.5.1
 Authors@R: 
     c(person("Francesca", "Vitalini", role = c("cre", "aut"),
              email = 'francesca.vitalini@mirai-solutions.com'),
@@ -35,6 +35,8 @@ Imports:
     leaflet.extras,
     rgdal,
     shinycssloaders,
+    shinyWidgets,
+    shinydashboard,
     sp,
     markdown,
     scales,

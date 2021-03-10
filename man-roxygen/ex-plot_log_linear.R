@@ -1,10 +1,8 @@
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(ggplot2)
-  library(tidyr)
+  #devtools::load_all()
+
   #sapply(file.path("R",list.files("R")), source)
-  devtools::load_all()
+  #devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     Covid19Mirai:::mod_plot_log_linear_ui("test", select = FALSE, area = FALSE)

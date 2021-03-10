@@ -7,7 +7,7 @@
 aggregate_province_timeseries_data(data)
 }
 \arguments{
-\item{data}{data.frameing}
+\item{data}{data.frame}
 }
 \value{
 df tibble of by country confirmed, deaths, active and recovered for each day

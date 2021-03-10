@@ -444,7 +444,7 @@ get_timeseries_country_data <- function(data, country){
 #' Aggregate data by country
 #' @rdname aggregate_country_data
 #'
-#' @param data data.frameing
+#' @param data data.frame
 #'
 #' @import dplyr
 #'

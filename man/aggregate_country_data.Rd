@@ -7,7 +7,7 @@
 aggregate_country_data(data)
 }
 \arguments{
-\item{data}{data.frameing}
+\item{data}{data.frame}
 }
 \value{
 country_df tibble of by country confirmed, deaths, active and recovered for each day

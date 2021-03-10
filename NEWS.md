@@ -1,3 +1,6 @@
+### Covid19Mirai 2.5.1 (2021-03-10)
+- Vaccination text plot, added navPage across main tabs (#164)
+
 ### Covid19Mirai 2.4.3 (2021-02-09)
 - Correction scatterplot median lines for rates (0-1) (#163)
 

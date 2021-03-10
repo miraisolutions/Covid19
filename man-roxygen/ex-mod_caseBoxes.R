@@ -1,5 +1,5 @@
 if (interactive()) {
-  library(shiny)
+ # devtools::load_all()
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
     tagList(
