@@ -57,14 +57,16 @@ mod_vaccines_text_ui <- function(id) {
           #                        }"
           #     )
           # ),
-          shinydashboard::box(
-            #title = "Status summary",
-            background = "light-blue",
-            height = 200, width = 12,
-            solidHeader = TRUE, status = "primary", #"info",
-            collapsed = TRUE,
-            div(style = 'overflow-y: scroll',  htmlOutput(ns("vax_text")))
-          ),
+          # shinydashboard::box(
+          #   #title = "Status summary",
+          #   background = "light-blue",
+          #   height = 200, width = 12,
+          #   solidHeader = TRUE, status = "primary", #"info",
+          #   collapsed = TRUE,
+          #   div(style = 'overflow-y: scroll',  htmlOutput(ns("vax_text")))
+          # )
+          div(uiOutput(ns("vax_text")), height = 200)
+
           #)
         ),
         withSpinner(plotOutput(ns("vax_line"), height = 200))
@@ -112,34 +114,61 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
       # add number of daily vaccines required to achieve target
       mutate(target_vaccines_per_day = (vaccines_left_to_target) / days_to_target )
       })
+
   .format_num = function(x) {
     formatC(x,digits = 0, big.mark = "'",  format ="d")
   }
-
-  output$vax_text =  renderPrint({
-    div(HTML(
-      paste0("  ",strong(dftday$Country.Region), ":\n",
-          "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
-          "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
-          "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
-                        .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
-          #"  Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>:<br/>",
-          "<br/>",
-          "  Number of vaccines done as of today: <b>", .format_num(dftday$vaccines),"</b>.<br/>",
-          "  Average vaccines per day: <b>", .format_num(dftday$vaccines_per_day),"</b>.<br/>",
-          "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses)," dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$achieved_date,"</b>.<br/>",
-          "<br/>",
-          "  Number of vaccines done last week: <b>", .format_num(dftday$lw_vaccines),"</b>.<br/>",
-          "  Average vaccines per day during last week: <b>", .format_num(dftday$lw_vaccines_per_day),"</b>.<br/>",
-          "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses), " dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$lw_achieved_date,"</b>.<br/>"
-        )
-    ), align = "left", style = "margin-top:1px; margin-bottom:1px;
-                                 white-space: nowrap;
-                                 word-wrap: break-word;
-                                 font-size: 12px;
-                                 font-style: italic;")
-#font-size: 1vh;
+  # style = "margin-top:1px; margin-bottom:1px;
+  #                                white-space: nowrap;
+  #                                word-wrap: break-word;
+  #                                font-size: 12px;
+  #                                font-style: italic;"
+  # width = "100%"
+  output$vax_text = renderUI({
+      div( class = "count-box",
+           style = "color: white; max-width: 100%; background-color: #3c8dbc; overflow-x: scroll; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
+           HTML(
+              paste0("  ",strong(dftday$Country.Region), ":\n",
+                   "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
+                   "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
+                   "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
+                   .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
+                   #"  Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>:<br/>",
+                   "<br/>",
+                   "  Number of vaccines done as of today: <b>", .format_num(dftday$vaccines),"</b>.<br/>",
+                   "  Average vaccines per day: <b>", .format_num(dftday$vaccines_per_day),"</b>.<br/>",
+                   "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses)," dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$achieved_date,"</b>.<br/>",
+                   "<br/>",
+                   "  Number of vaccines done last week: <b>", .format_num(dftday$lw_vaccines),"</b>.<br/>",
+                   "  Average vaccines per day during last week: <b>", .format_num(dftday$lw_vaccines_per_day),"</b>.<br/>",
+                   "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses), " dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$lw_achieved_date,"</b>.<br/>"
+              )
+            ), align = "left")
   })
+#   output$vax_text =  renderPrint({
+#     div(HTML(
+#       paste0("  ",strong(dftday$Country.Region), ":\n",
+#           "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
+#           "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
+#           "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
+#                         .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
+#           #"  Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>:<br/>",
+#           "<br/>",
+#           "  Number of vaccines done as of today: <b>", .format_num(dftday$vaccines),"</b>.<br/>",
+#           "  Average vaccines per day: <b>", .format_num(dftday$vaccines_per_day),"</b>.<br/>",
+#           "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses)," dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$achieved_date,"</b>.<br/>",
+#           "<br/>",
+#           "  Number of vaccines done last week: <b>", .format_num(dftday$lw_vaccines),"</b>.<br/>",
+#           "  Average vaccines per day during last week: <b>", .format_num(dftday$lw_vaccines_per_day),"</b>.<br/>",
+#           "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses), " dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$lw_achieved_date,"</b>.<br/>"
+#         )
+#     ), align = "left", style = "margin-top:1px; margin-bottom:1px;
+#                                  white-space: nowrap;
+#                                  word-wrap: break-word;
+#                                  font-size: 12px;
+#                                  font-style: italic;")
+# #font-size: 1vh;
+#   })
   plotdata = df %>%
     select(date, new_vaccines) %>%
     rename(Date = date, Value = new_vaccines) %>%
@@ -177,4 +206,3 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   })
 
 }
-
