@@ -35,8 +35,6 @@ Imports:
     leaflet.extras,
     rgdal,
     shinycssloaders,
-    shinyWidgets,
-    shinydashboard,
     sp,
     markdown,
     scales,
