@@ -1,4 +1,4 @@
-### Covid19Mirai 2.5.1-9000
+### Covid19Mirai 2.5.2 (2021-03-10)
 - remove shiny dashboard (#172)
 
 ### Covid19Mirai 2.5.1 (2021-03-10)
