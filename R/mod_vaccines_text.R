@@ -134,15 +134,17 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
                             date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE)
     if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE))
       p = p + expand_limits(y = data()$target_vaccines_per_day*1.05)
-
+    p = p + geom_line(size = 1.35)
+    #p$theme$line$size = p$theme$line$size * 3
     # add line with target vaccination
     p <- p + #theme(legend.position = "none") +
       #theme(plot.caption = element_text(hjust=0.5, size=rel(1))) +
-      geom_hline(yintercept = data()$target_vaccines_per_day, colour = "darkblue", linetype="dotted", size = 0.3) +
+      geom_hline(yintercept = data()$target_vaccines_per_day, colour = "red3", linetype="dashed", size = 0.9) +
       annotate("text", x = min(plotdata$Date), y = data()$target_vaccines_per_day*1.07,
                label = "Target Average Vaccines per Day", size = 2.5,
                hjust = 0) +
-      labs(caption = caption_vaccines(), hjust = 0.5, size = 2.5)
+      labs(caption = caption_vaccines(), hjust = 0.5#, #size = 2.5
+           )
 
     # no legend no interactivity
 
