@@ -77,6 +77,7 @@ app_server <- function(input, output, session) {
   # Modules ----
   observe({
     message("Current Tab: ", req(input$main_ui) )
+    message("glob_var: ", glob_var(), " summary_var: ", summary_var(), " country_var: ",country_var(), " swiss_var: ", swiss_var(), " countrycmp_var: ", countrycmp_var())
     if (req(input$main_ui) == "Global" && glob_var() == 0) {
       message("Do global module")
       callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
@@ -91,7 +92,6 @@ app_server <- function(input, output, session) {
       message("Do Continents module")
       callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
       summary_var(1)
-
     }
 
     message("Current SubTab: ", req(input$continents_ui) )

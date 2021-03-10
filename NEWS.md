@@ -1,3 +1,6 @@
+### Covid19Mirai 2.5.2 (2021-03-10)
+- remove shiny dashboard (#172)
+
 ### Covid19Mirai 2.5.1 (2021-03-10)
 - Vaccination text plot, added navPage across main tabs (#164)
 
