@@ -17,18 +17,18 @@ mod_vaccines_text_ui <- function(id) {
     #shinyWidgets::useShinydashboard(),
         div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
         fluidRow(
-          column(2, numericInput(inputId = ns("target"), label = "% Target coverage",
+          column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
                                 value = 70,
                                 min = 0,
                                 max = 100,
                                 step = 1)),
-          column(2, offset = 1, selectInput(inputId = ns("doses"), label = "Number of doses",
+          column(3, selectInput(inputId = ns("doses"), label = div(style = "font-size:10px","Number of doses"),
                                  choices = c(1,2),
                                  selected = 2)),
-          column(3, selectInput(inputId = ns("confdoses"), label = "Doses for already infected",
+          column(3, selectInput(inputId = ns("confdoses"), label = div(style = "font-size:10px","Doses for already infected"),
                                 choices = c(0,1,2),
                                 selected = 1)),
-          column(2, offset = 1, dateInput(inputId = ns("tdate"), label = "Target date",
+          column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
                                  value = "2021-09-01",
                                  min = Sys.Date()
                                  ))
@@ -97,7 +97,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   # style = "margin-top:1px; margin-bottom:1px;
   #                                white-space: nowrap;
   #                                word-wrap: break-word;
-  #                                font-size: 12px;
+  #                                font-size: 10px;
   #                                font-style: italic;"
   # width = "100%"
   output$vax_text = renderUI({

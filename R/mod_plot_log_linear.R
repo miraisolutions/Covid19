@@ -69,7 +69,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
     message("selected first country: ", selectedcountry)
 
     output[["select_area_ui"]] <- renderUI({
-      selectInput(label = "Area", inputId = ns("select_area"), choices = sort(countries()$Country.Region), selected = selectedcountry)
+      selectInput(label = div(style = "font-size:10px","Area"), inputId = ns("select_area"), choices = sort(countries()$Country.Region), selected = selectedcountry)
     })
     # area plot with selection of countries
     observeEvent(input$select_area,  {    #

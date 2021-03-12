@@ -156,15 +156,15 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
         fluidRow(
           column(3,
                  offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = "Linear or Log",
+                 selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Linear or Log"),
                              choices = choices_plot, selected = selectvar)
           ),
           column(3, offset = 1,
-                 selectInput(inputId = ns("radio_1Mpop"), label = "Total or Over 1M People",
+                 selectInput(inputId = ns("radio_1Mpop"), label = div(style = "font-size:10px","Total or Over 1M People"),
                              choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop")
           ),
           column(3, offset = 1,
-                 selectInput(label = "Select Countries", inputId = ns("select_areas"), choices = NULL, selected = NULL,
+                 selectInput(label = div(style = "font-size:10px","Select Countries"), inputId = ns("select_areas"), choices = NULL, selected = NULL,
                              multiple = TRUE)
           )
         ),

@@ -1,12 +1,12 @@
 vars_vs_stringency = function(ax) {
-  list(label = paste0("Select (",ax,") variable"),
+  list(label = div(style = "font-size:10px",paste0("Select (",ax,") variable")),
        choices = varsNames(c("lw_confirmed_rate_1M_pop", "growth_factor_7", "lw_positive_tests_rate", #"lw_hosp", "lw_icuvent",
                              "lw_deaths_rate_1M_pop")),
        selected = "lw_confirmed_rate_1M_pop")
   }
 
 vars_growth = function(ax = "y") {
-  list(label = paste0("Select (",ax,") growth factor"),
+  list(label = div(style = "font-size:10px",paste0("Select (",ax,") growth factor")),
                    choices = list("Over 3 days" = "growth_factor_3",
                                   "Over one week" = "growth_factor_7",
                                   "Over 2 weeks" = "growth_factor_14"),
@@ -14,7 +14,7 @@ vars_growth = function(ax = "y") {
 }
 
 vars_vs_growth = function(ax = "x") {
-  list(label = paste0("Select (",ax,")  Prevalence over 1M people"),
+  list(label = div(style = "font-size:10px",paste0("Select (",ax,")  Prevalence over 1M people")),
                       choices = list("Over one week" = "lw_confirmed_rate_1M_pop",
                                      "Over 1 month" = "lm_confirmed_rate_1M_pop",
                                      "Total" = "confirmed_rate_1M_pop"),
@@ -49,11 +49,11 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
       uiOutput(ns("title_scatterplot")),
       fluidRow(
         column(6,
-               selectInput(inputId = ns("yvar"), label = varsy$label,
+               selectInput(inputId = ns("yvar"), label = div(style = "font-size:10px",varsy$label),
                            choices = varsy$choices,
                            selected = varsy$selected)),
         column(6,
-               selectInput(inputId = ns("xvar"), label = varsx$label,
+               selectInput(inputId = ns("xvar"), label = div(style = "font-size:10px",varsx$label),
                            choices = varsx$choices,
                            selected = varsx$selected)        )
       ),
@@ -71,7 +71,7 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
       uiOutput(ns("title_scatterplot")),
       fluidRow(
         column(6, #offset = 6,
-               selectInput(inputId = ns("yvar"), label = varsy$label,
+               selectInput(inputId = ns("yvar"), label = div(style = "font-size:10px",varsy$label),
                            choices = varsy$choices,
                            selected = varsy$selected))
       ),

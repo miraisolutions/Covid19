@@ -535,7 +535,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   xvar = "confirmed_rate_1M_pop"
   varsSelextX = NULL
   if (all(is.na(data_today$population))) {
-    varsSelextX = list(label = "Select (x) Total Confirmed Cases",
+    varsSelextX = list(label = div(style = "font-size:10px","Select (x) Total Confirmed Cases"),
                  choices = list("Over one week" = "lw_confirmed",
                                 #"Over 1 month" = "lm_confirmed",
                                 "Total" = "confirmed"),
