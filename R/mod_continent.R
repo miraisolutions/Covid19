@@ -32,24 +32,32 @@ mod_continent_ui <- function(id, uicont){
       uiOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
     ),
     hr(),
-    h2("Macro Area Comparison"),
+    div(h4("Macro Area Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     withSpinner(mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))),
     hr(),
     #withSpinner(uiOutput(ns(paste("lineplots_cont", uicont , sep = "_")))),
     fluidRow(
       column(5,
-             withSpinner(uiOutput(ns(paste("rateplots_cont", uicont , sep = "_"))))
+             #withSpinner(uiOutput(ns(paste("rateplots_cont", uicont , sep = "_"))))
+             withSpinner(mod_barplot_ui(ns("rate_plots_cont")))
+
       ),
       column(7,
-             withSpinner(uiOutput(ns(paste("lines_points_plots_cont", uicont , sep = "_"))))
+             withSpinner(#uiOutput(ns(paste("lines_points_plots_cont", uicont , sep = "_"))))
+                mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", istop = FALSE, nn = 1000, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
              )
+      )
     ),
     fluidRow(
       column(6,
-             withSpinner(uiOutput(ns(paste("scatterplot_plots_cont", uicont , sep = "_"))))
+             #withSpinner(uiOutput(ns(paste("scatterplot_plots_cont", uicont , sep = "_"))))
+             withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
       ),
       column(6,
-             withSpinner(uiOutput(ns(paste("barplot_vax_index_cont", uicont , sep = "_"))))
+             #withSpinner(uiOutput(ns(paste("barplot_vax_index_cont", uicont , sep = "_"))))
+             withSpinner(
+               mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
+                  )
       )
     ),
    hr(),
@@ -57,19 +65,23 @@ mod_continent_ui <- function(id, uicont){
    hr(),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("scatterplot_prev_countries", uicont , sep = "_"))))
+            #withSpinner(uiOutput(ns(paste("scatterplot_prev_countries", uicont , sep = "_"))))
+            withSpinner(mod_scatterplot_ui(ns("scatterplot_prev_countries")))
      ),
      column(6,
-            withSpinner(uiOutput(ns(paste("scatterplot_stringency_vars_countries", uicont , sep = "_"))))
+            withSpinner(mod_scatterplot_ui(ns("scatterplot_stringency_vars_countries"), growth = FALSE))
+            #withSpinner(uiOutput(ns(paste("scatterplot_stringency_vars_countries", uicont , sep = "_"))))
      )
    ),
    hr(),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("barplot_vax_countries", uicont , sep = "_"))))
+            withSpinner(mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL))
+            #withSpinner(uiOutput(ns(paste("barplot_vax_countries", uicont , sep = "_"))))
      ),
      column(6,
-            withSpinner(uiOutput(ns(paste("scatterplot_vax_vars_countries", uicont , sep = "_"))))
+            withSpinner(mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE))
+            #withSpinner(uiOutput(ns(paste("scatterplot_vax_vars_countries", uicont , sep = "_"))))
      )
    ),
    hr(),
@@ -77,44 +89,52 @@ mod_continent_ui <- function(id, uicont){
    hr(),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_confirmed", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_confirmed")))
+            #withSpinner(uiOutput(ns(paste("map_countries_confirmed", uicont , sep = "_"))))
      ),
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_active", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_active")))
+            #withSpinner(uiOutput(ns(paste("map_countries_active", uicont , sep = "_"))))
      )
    ),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_growthvsprev", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_growthvsprev")))
+            #withSpinner(uiOutput(ns(paste("map_countries_growthvsprev", uicont , sep = "_"))))
      ),
      column(6,
-            #withSpinner(uiOutput(ns(paste("map_countries_prev", uicont , sep = "_"))))
-            withSpinner(uiOutput(ns(paste("map_countries_growth", uicont , sep = "_"))))
-     )
-   ),
-   fluidRow(
-     column(6,
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_growth")))
             #withSpinner(uiOutput(ns(paste("map_countries_growth", uicont , sep = "_"))))
-            withSpinner(uiOutput(ns(paste("map_countries_vaccines", uicont , sep = "_"))))
-     ),
-     column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
      )
    ),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_tests_1M", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_vaccines")))
+            #withSpinner(uiOutput(ns(paste("map_countries_vaccines", uicont , sep = "_"))))
      ),
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_positive_rate", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_death")))
+            #withSpinner(uiOutput(ns(paste("map_countries_death", uicont , sep = "_"))))
      )
    ),
    fluidRow(
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_stringency", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_tests_1M")))
+            #withSpinner(uiOutput(ns(paste("map_countries_tests_1M", uicont , sep = "_"))))
      ),
      column(6,
-            withSpinner(uiOutput(ns(paste("map_countries_growthvsstringency", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_positive_rate")))
+            #withSpinner(uiOutput(ns(paste("map_countries_positive_rate", uicont , sep = "_"))))
+     )
+   ),
+   fluidRow(
+     column(6,
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_stringency")))
+            #withSpinner(uiOutput(ns(paste("map_countries_stringency", uicont , sep = "_"))))
+     ),
+     column(6,
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_growthvsstringency")))
+            #withSpinner(uiOutput(ns(paste("map_countries_growthvsstringency", uicont , sep = "_"))))
      )
    ),
     mod_add_table_ui(ns(paste("add_table_cont", uicont , sep = "_"))),
@@ -241,9 +261,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              subcontinent_data, g_palette = subcont_palette, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
   # Rate plots ----
-  output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_barplot_ui(ns("rate_plots_cont"))
-  })
+  # output[[paste("rateplots_cont", uicont , sep = "_")]] <- renderUI({
+  #   mod_barplot_ui(ns("rate_plots_cont"))
+  # })
 
   callModule(mod_barplot_server, "rate_plots_cont", subcontinent_data_filtered_today,
              n_highligth = length(subcontinents), istop = FALSE,
@@ -254,17 +274,17 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Line with bullet plot
 
-  output[[paste("lines_points_plots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
-  })
+  # output[[paste("lines_points_plots_cont", uicont , sep = "_")]] <- renderUI({
+  #   mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", istop = FALSE, nn = nn, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
+  # })
 
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn, w = w,
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn,
              n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot
-  output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
-    mod_scatterplot_ui(ns("scatterplot_plots_cont"))
-  })
+  # output[[paste("scatterplot_plots_cont", uicont , sep = "_")]] <- renderUI({
+  #   mod_scatterplot_ui(ns("scatterplot_plots_cont"))
+  # })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont",
              subcontinent_data_filtered_today, nmed = nn, n_highligth = length(subcontinents),
@@ -277,9 +297,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont",
   #            subcontinent_data_filtered_today, n_highligth = length(subcontinents), istop = FALSE)
 
-  output[[paste("barplot_vax_index_cont", uicont , sep = "_")]] <- renderUI({
-    mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
-  })
+  # output[[paste("barplot_vax_index_cont", uicont , sep = "_")]] <- renderUI({
+  #   mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
+  # })
   callModule(mod_barplot_server, "barplot_vax_index_cont", subcontinent_data_filtered_today,
              n_highligth = length(subcontinents), istop = FALSE,
              plottitle = c("Vaccination Status"),
@@ -295,9 +315,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     add_growth_death_rate()
 
   # scatterplot
-  output[[paste("scatterplot_prev_countries", uicont , sep = "_")]] <- renderUI({
-    mod_scatterplot_ui(ns("scatterplot_prev_countries"))
-  })
+  # output[[paste("scatterplot_prev_countries", uicont , sep = "_")]] <- renderUI({
+  #   mod_scatterplot_ui(ns("scatterplot_prev_countries"))
+  # })
 
   # remove small countries
   countries200000 = sort(unique(orig_data_aggregate_cont_today$Country.Region[orig_data_aggregate_cont_today$population > 200000]))
@@ -318,9 +338,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   #            orig_data_aggregate_cont_today, nmed = nn, n_highligth = length(countries200000),
   #            istop = FALSE, countries = countries200000, xvar = "stringency_index")
 
-  output[[paste("scatterplot_stringency_vars_countries", uicont , sep = "_")]] <- renderUI({
-    mod_scatterplot_ui(ns("scatterplot_stringency_vars_countries"), growth = FALSE)
-  })
+  # output[[paste("scatterplot_stringency_vars_countries", uicont , sep = "_")]] <- renderUI({
+  #   mod_scatterplot_ui(ns("scatterplot_stringency_vars_countries"), growth = FALSE)
+  # })
 
   callModule(mod_scatterplot_server, "scatterplot_stringency_vars_countries",
              data_cont_maps, nmed = nn, n_highligth = length(countries200000),
@@ -328,9 +348,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
 
   # Rate plots ----
-  output[[paste("barplot_vax_countries", uicont , sep = "_")]] <- renderUI({
-    mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL)
-  })
+  # output[[paste("barplot_vax_countries", uicont , sep = "_")]] <- renderUI({
+  #   mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL)
+  # })
 
   callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
              n_highligth = length(data_cont_maps$Country.Region), istop = FALSE,
@@ -340,9 +360,9 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
              #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
              )
 
-  output[[paste("scatterplot_vax_vars_countries", uicont , sep = "_")]] <- renderUI({
-    mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE)
-  })
+  # output[[paste("scatterplot_vax_vars_countries", uicont , sep = "_")]] <- renderUI({
+  #   mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE)
+  # })
 
   callModule(mod_scatterplot_server, "scatterplot_vax_vars_countries",
              data_cont_maps, nmed = nn, n_highligth = length(countries200000),
@@ -350,71 +370,71 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   #############################################
   #maps confirmed
-  output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_confirmed"))
-  })
+  # output[[paste("map_countries_confirmed", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_confirmed"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_confirmed", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "confirmed")
 
   #maps active
-  output[[paste("map_countries_active", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_active"))
-  })
+  # output[[paste("map_countries_active", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_active"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_active", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "active")
 
   #maps growth vs prev
-  output[[paste("map_countries_growthvsprev", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_growthvsprev"))
-  })
+  # output[[paste("map_countries_growthvsprev", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_growthvsprev"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_growthvsprev", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "growth vs prev")
 
-  #maps prevalence
-  output[[paste("map_countries_vaccines", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_vaccines"))
-  })
+  #maps vaccines
+  # output[[paste("map_countries_vaccines", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_vaccines"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_vaccines", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "vaccines")
   #maps growth
-  output[[paste("map_countries_growth", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_growth"))
-  })
+  # output[[paste("map_countries_growth", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_growth"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_growth", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "growth factor")
 
   #maps death
-  output[[paste("map_countries_death", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_death"))
-  })
+  # output[[paste("map_countries_death", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_death"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_death", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "death")
 
   #maps tests
-  output[[paste("map_countries_tests_1M", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_tests_1M"))
-  })
+  # output[[paste("map_countries_tests_1M", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_tests_1M"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_tests_1M", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "tests")
 
   #maps positive test rates
-  output[[paste("map_countries_positive_rate", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_positive_rate"))
-  })
+  # output[[paste("map_countries_positive_rate", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_positive_rate"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_positive_rate", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "positive tests rate")
 
   #maps stringency index
-  output[[paste("map_countries_stringency", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_stringency"))
-  })
+  # output[[paste("map_countries_stringency", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_stringency"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_stringency", df = data_cont_maps,  countries_data_map_cont,
-             area = cont, variable = "stringency_index")
+            area = cont, variable = "stringency_index")
 
   #maps growth vs stringency index
-  output[[paste("map_countries_growthvsstringency", uicont , sep = "_")]] <- renderUI({
-    mod_map_area_calc_ui(ns("map_countries_growthvsstringency"))
-  })
+  # output[[paste("map_countries_growthvsstringency", uicont , sep = "_")]] <- renderUI({
+  #   mod_map_area_calc_ui(ns("map_countries_growthvsstringency"))
+  # })
   callModule(mod_map_area_calc_server, "map_countries_growthvsstringency", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "growth vs stringency")
   # tables ----
