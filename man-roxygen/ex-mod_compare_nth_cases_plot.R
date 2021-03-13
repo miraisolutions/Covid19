@@ -1,31 +1,31 @@
-if (interactive()) {
+  if (interactive()) {
 
-  #sapply(file.path("R",list.files("R")), source)
-  #devtools::load_all()
-  ui <- fluidPage(
-    tagList(
-      Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("plot_compare_nth")
+    #sapply(file.path("R",list.files("R")), source)
+    #devtools::load_all()
+    ui <- fluidPage(
+      tagList(
+        Covid19Mirai:::golem_add_external_resources(),
+        mod_compare_nth_cases_plot_ui("plot_compare_nth", nn = 1000)
+      )
     )
-  )
-  server <- function(input, output, session) {
-    # Data ----
-    orig_data <- get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
+    server <- function(input, output, session) {
+      # Data ----
+      orig_data <- get_datahub() %>%
+          get_timeseries_by_contagion_day_data()
 
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+      pop_data = get_pop_datahub()
+      orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-    nn = 1000; w = 7
-   #  data_filtered <- #reactive({
-   #    orig_data_aggregate %>%
-   #      rescale_df_contagion(n = n, w = w)
-   # # })
-    callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = nn)
+      nn = 1000;
+     #  data_filtered <- #reactive({
+     #    orig_data_aggregate %>%
+     #      rescale_df_contagion(n = n, w = w)
+     # # })
+      callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = nn)
+    }
+    runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
   }
-  runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
-}
 
 if (interactive()) {
 
@@ -33,7 +33,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("lines_points_plots", oneMpop = FALSE)
+      mod_compare_nth_cases_plot_ui("lines_points_plots", istop = FALSE, oneMpop = FALSE)
     )
   )
   server <- function(input, output, session) {
@@ -45,7 +45,7 @@ if (interactive()) {
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-    n = 1000; w = 7
+    n = 1000;
 
     countries = c("Switzerland", "Italy", "France")
 
@@ -65,7 +65,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("lines_points_plots", strindx = FALSE)
+      mod_compare_nth_cases_plot_ui("lines_points_plots", strindx = FALSE, istop = FALSE)
     )
   )
   server <- function(input, output, session) {
@@ -100,7 +100,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("lines_points_plots", actives = FALSE, tests = TRUE, hosp = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, strindx = TRUE)
+      mod_compare_nth_cases_plot_ui("lines_points_plots", istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, strindx = TRUE)
     )
   )
   server <- function(input, output, session) {
@@ -126,16 +126,11 @@ if (interactive()) {
 # search country option
 
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(ggplot2)
 
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      uiOutput("lines_points_plots_ui")
+      uiOutput("lines_points_plots_ui", istop = FALSE)
     )
   )
   server <- function(input, output, session) {
@@ -163,16 +158,11 @@ if (interactive()) {
 
 
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(ggplot2)
 
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      uiOutput("lines_points_plots_ui")
+      uiOutput("lines_points_plots_ui", istop = FALSE)
     )
   )
   server <- function(input, output, session) {
