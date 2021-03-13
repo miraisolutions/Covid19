@@ -3,27 +3,42 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
+#' @param nn min number of cases for used to filter country data
 #'
 #' @noRd
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
-mod_country_comparison_ui <- function(id){
+mod_country_comparison_ui <- function(id, nn = 1000){
   ns <- NS(id)
+  from_nth_case_msg = paste(
+    message_conf_case("Areas", nn),
+    #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
+    #paste0("Some countries are not providing Recovered data."),
+    message_missing_data("Recovered and Tests", "some countries"),
+    #paste0("1st day is the day when ", nn ," confirmed cases are reached.")
+    message_firstday(nn),
+    sep = "<br/>")
+
+
   tagList(
     div(
       hr(),
       div(
-        uiOutput(ns("from_nth_case"))
+        HTML(from_nth_case_msg)
+        #uiOutput(ns("from_nth_case"))
       ),
       hr(),
       selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
     ),
-    #withSpinner(uiOutput(ns("barplots"))),
-    withSpinner(uiOutput(ns("lineplots"))),
+    #tagList(
+      div(h4("Countries Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+      mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion")),
+    #),
     fluidRow(
       column(5,
-             withSpinner(uiOutput(ns("rateplots")))
+             withSpinner(mod_barplot_ui(ns("rate_plots")))
+
       ),
       column(7,
              withSpinner(uiOutput(ns("lines_points_plots")))
@@ -34,15 +49,16 @@ mod_country_comparison_ui <- function(id){
              withSpinner(mod_scatterplot_ui(ns("scatterplot_plots")))
       ),
       column(6,
-             withSpinner(uiOutput(ns("status_stackedbarplot")))
+             withSpinner(mod_stackedbarplot_ui(ns("status_stackedbarplot")))
       )
     ),
     fluidRow(
       column(6,
-             withSpinner(uiOutput(ns("scatterplot_stringency")))
+             withSpinner(mod_scatterplot_ui(ns("scatterplot_stringency"), growth = FALSE))
+
       ),
       column(6,
-             mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
+             withSpinner(mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL))
       )
     ),
     fluidRow(
@@ -77,16 +93,16 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
   observe(
     updateSelectInput(session, "select_countries", choices = sort(countries()$Country.Region), selected = c("Switzerland", "Italy"))
   )
-  output$from_nth_case<- renderUI({
-    HTML(paste(
-               message_conf_case("Areas", nn),
-      #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
-               #paste0("Some countries are not providing Recovered data."),
-               message_missing_data("Recovered and Tests", "some countries"),
-               #paste0("1st day is the day when ", nn ," confirmed cases are reached.")
-                message_firstday(nn),
-      sep = "<br/>"))
-  })
+  # output$from_nth_case<- renderUI({
+  #   HTML(paste(
+  #              message_conf_case("Areas", nn),
+  #     #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
+  #              #paste0("Some countries are not providing Recovered data."),
+  #              message_missing_data("Recovered and Tests", "some countries"),
+  #              #paste0("1st day is the day when ", nn ," confirmed cases are reached.")
+  #               message_firstday(nn),
+  #     sep = "<br/>"))
+  # })
 
   all_countries_data <- data %>%
     filter(contagion_day > 0) %>%
@@ -145,12 +161,12 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       }
 
     # Line plots ----
-    output$lineplots <- renderUI({
-      tagList(
-        h2("Countries Comparison"),
-        mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
-      )
-    })
+    # output$lineplots <- renderUI({
+    #   tagList(
+    #     h2("Countries Comparison"),
+    #     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
+    #   )
+    # })
     vaxflag = sum(countries_data$vaccines, na.rm = TRUE) > 0
 
     statuseslineplot = c("confirmed", "deaths", "recovered", "active")
@@ -160,9 +176,9 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
     callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data, nn = nn, statuses = statuseslineplot)
 
     # Rate plots ----
-    output$rateplots <- renderUI({
-      mod_barplot_ui(ns("rate_plots"))
-    })
+    # output$rateplots <- renderUI({
+    #   mod_barplot_ui(ns("rate_plots"))
+    # })
 
     callModule(mod_barplot_server, "rate_plots", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
                g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
@@ -173,31 +189,22 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
 
     # Line with bullet plot
 
-
     output$lines_points_plots <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), tests = TRUE, hosp = TRUE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, vax = vaxflag)
+      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), istop = FALSE, nn = nn, tests = TRUE, hosp = TRUE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, vax = vaxflag)
     })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, w = w, n_highligth = length(input$select_countries),
+    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, n_highligth = length(input$select_countries),
                istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE,  oneMpop = TRUE, vax = vaxflag)
 
 
     inputcountries = reactive({input$select_countries}) # pass countries to plot below
-    # output$scatterplot_plots <- renderUI({
-    #   mod_scatterplot_ui(ns("scatterplot_plots"))
-    # })
+
     # set nmed to 10000 like in global page, istop == FALSE
     callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
 
 
-    output$status_stackedbarplot <- renderUI({
-      mod_stackedbarplot_ui(ns("status_stackedbarplot"))
-    })
     callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE)
 
-    output$scatterplot_stringency <- renderUI({
-      mod_scatterplot_ui(ns("scatterplot_stringency"), growth = FALSE)
-    })
     # set nmed to 10000 like in global page, istop == FALSE
     callModule(mod_scatterplot_server, "scatterplot_stringency", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries(), xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 

@@ -24,7 +24,7 @@ mod_global_ui <- function(id){
              withSpinner(mod_plot_log_linear_ui(ns("plot_area_global")))
       ),
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global"), hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE, vax = TRUE))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global"), istop = FALSE, hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE, vax = TRUE))
       )
     ),
     hr(),
@@ -39,7 +39,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", hosp = FALSE, oneMpop = TRUE, vax = TRUE)
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
       )
     ),
     hr(),
@@ -184,8 +184,8 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   # > comparison plot from day of nth contagion
 
-
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = n, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
+  # remove countries with few cases nn = 10000
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # > growth_death_rate
   callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highligth = 10)

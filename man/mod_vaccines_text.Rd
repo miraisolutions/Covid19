@@ -3,10 +3,13 @@
 \name{mod_vaccines_text}
 \alias{mod_vaccines_text}
 \alias{mod_vaccines_text_ui}
+\alias{mod_novaccines_text_server}
 \alias{mod_vaccines_text_server}
 \title{caseBoxes UI Function}
 \usage{
 mod_vaccines_text_ui(id)
+
+mod_novaccines_text_server(input, output, session, country)
 
 mod_vaccines_text_server(input, output, session, df, dftoday)
 }
@@ -33,7 +36,7 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data <- get_datahub(country = "USA") \%>\%
+    orig_data <- get_datahub(country = "Australia") \%>\%
       get_timeseries_by_contagion_day_data()
 
 
