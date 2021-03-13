@@ -53,6 +53,23 @@ mod_vaccines_text_ui <- function(id) {
   #tg
 }
 
+#' No Vaccines text Server Function
+#'
+#'
+#' @rdname mod_vaccines_text
+mod_novaccines_text_server <- function(input, output, session, country) {
+
+  output$vax_text = renderUI({
+    div( class = "count-box",
+         style = "color: white; max-width: 100%; background-color: #3c8dbc; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
+         HTML(
+           paste0("  No Vaccines data for ",strong(country), ".")
+         ), align = "left")
+  })
+  output$vax_line <- renderPlot({
+    plot.new()
+  })
+}
 #' Vaccines text Server Function
 #'
 #' @param df dataset whole time series.
@@ -127,37 +144,38 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
     rename(Date = date, Value = new_vaccines) %>%
     mutate(Status = "New Vaccinated")
 
-    #make plot
-  output$vax_line <- renderPlot({
-    #secondline = NULL
-    p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
-                            date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE)
-    if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE))
-      p = p + expand_limits(y = data()$target_vaccines_per_day*1.05)
-    p = p + geom_line(size = 1.35)
-    #p$theme$line$size = p$theme$line$size * 3
-    # add line with target vaccination
-    p <- p + #theme(legend.position = "none") +
-      #theme(plot.caption = element_text(hjust=0.5, size=rel(1))) +
-      geom_hline(yintercept = data()$target_vaccines_per_day, colour = "red3", linetype="dashed", size = 0.9) +
-      annotate("text", x = min(plotdata$Date), y = data()$target_vaccines_per_day*1.07,
-               label = "Target Average Vaccines per Day", size = 2.5,
-               hjust = 0) +
-      labs(caption = caption_vaccines(), hjust = 0.5#, #size = 2.5
-           )
+  if (sum(plotdata$Value)>0) {
+      #make plot if there are vaccine data
+    output$vax_line <- renderPlot({
+      #secondline = NULL
+      p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
+                              date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE)
+      if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE))
+        p = p + expand_limits(y = data()$target_vaccines_per_day*1.05)
+      p = p + geom_line(size = 1.35)
+      #p$theme$line$size = p$theme$line$size * 3
+      # add line with target vaccination
+      p <- p + #theme(legend.position = "none") +
+        #theme(plot.caption = element_text(hjust=0.5, size=rel(1))) +
+        geom_hline(yintercept = data()$target_vaccines_per_day, colour = "red3", linetype="dashed", size = 0.9) +
+        annotate("text", x = min(plotdata$Date), y = data()$target_vaccines_per_day*1.07,
+                 label = "Target Average Vaccines per Day", size = 2.5,
+                 hjust = 0) +
+        labs(caption = caption_vaccines(), hjust = 0.5#, #size = 2.5
+             )
 
-    # no legend no interactivity
+      # no legend no interactivity
 
-    # p <- p %>%
-    #   plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
-    #   plotly::layout(annotations = list(x = min(plotdata$Date), y = data()$target_vaccines_per_day,
-    #                                     align = "left",
-    #                                     text = "Target Average Vaccines per Day", size = 1))
+      # p <- p %>%
+      #   plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
+      #   plotly::layout(annotations = list(x = min(plotdata$Date), y = data()$target_vaccines_per_day,
+      #                                     align = "left",
+      #                                     text = "Target Average Vaccines per Day", size = 1))
 
-     # plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+       # plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
 
-    p
+      p
 
-  })
-
+    })
+  }
 }
