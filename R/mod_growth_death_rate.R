@@ -51,7 +51,7 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
         column(6,
                tagList(
                  uiOutput(ns("title_plot_1")),
-                 selectInput(inputId = ns("plot_1"), label = uichoice1$label,
+                 selectInput(inputId = ns("plot_1"), label = div(style = "font-size:10px",uichoice1$label),
                              choices = uichoice1$choices ,
                              selected = uichoice1$selected),
                  withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400)),
@@ -61,7 +61,7 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
         column(6,
                tagList(
                  uiOutput(ns("title_plot_2")),
-                 selectInput(inputId = ns("plot_2"), label = uichoice2$label,
+                 selectInput(inputId = ns("plot_2"), label = div(style = "font-size:10px",uichoice2$label),
                              choices = uichoice2$choices ,
                              selected = uichoice2$selected),
                  withSpinner(plotlyOutput(ns("plot_plot_2_hist"), height = 400)),
@@ -87,7 +87,7 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
 
         fluidRow(
           uiOutput(ns("title_plot_1")),
-          selectInput(inputId = ns("plot_1"), label = uichoice1$label,
+          selectInput(inputId = ns("plot_1"), label = div(style = "font-size:10px",uichoice1$label),
                       choices = uichoice1$choices ,
                       selected = uichoice1$selected),
           withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400)),

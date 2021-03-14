@@ -1,3 +1,6 @@
+### Covid19Mirai 2.5.3 (2021-03-14)
+- review labels, renderUI, fix problem with USA level 2 (#175)
+
 ### Covid19Mirai 2.5.2 (2021-03-10)
 - remove shiny dashboard (#172)
 

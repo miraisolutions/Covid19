@@ -15,7 +15,7 @@ mod_continent_comparison_ui <- function(id){
     #   textOutput(ns("from_nth_case"))
     # ),
     #withSpinner(uiOutput(ns("lineplots_cont"))),
-    h2("Continents Comparison"),
+    div(h4("Continents Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont")),
     fluidRow(
       column(5,
@@ -25,12 +25,11 @@ mod_continent_comparison_ui <- function(id){
       column(7,
              # withSpinner(uiOutput(ns("lines_points_plots_cont")))
              # )
-      withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE))
+      withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), istop = FALSE, nn = 1000, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE))
       )
     ),
     fluidRow(
       column(6,
-             # withSpinner( mod_scatterplot_ui(ns("scatterplot_plots_cont")))
              withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
       ),
       column(6,
@@ -72,14 +71,6 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   continent_data_filtered_today = continent_data_filtered_today  %>%
     left_join(lw_continent_data_filtered %>% select(-population))
 
-
-  # output$lineplots_cont <- renderUI({
-  #   tagList(
-  #     h2("Continents Comparison"),
-  #     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))
-  #   )
-  # })
-
   callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
   # Rate plots ----
@@ -95,11 +86,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   # Line with bullet plot
 
-  # output$lines_points_plots_cont <- renderUI({
-  #   mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE)
-  # })
-
-  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn, w = w,
+  callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn,
              n_highligth = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot

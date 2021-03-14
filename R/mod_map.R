@@ -78,7 +78,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   # UI controls ----
   output$slider_ui <- renderUI({
 
-    sliderInput(inputId = ns("slider_day"), label = "Day", min = min(orig_data_aggregate$date, na.rm = TRUE), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date),
+    sliderInput(inputId = ns("slider_day"), label = div(style = "font-size:10px","Day"), min = min(orig_data_aggregate$date, na.rm = TRUE), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date),
                 dragRange = FALSE, animate = animationOptions(interval = 4000, loop = FALSE), step = 7)
   })
 

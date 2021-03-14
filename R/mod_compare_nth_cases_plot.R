@@ -62,13 +62,7 @@ choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
-                                          # vars = c(#"confirmed", "deaths", "recovered", "active", "hosp",
-                                          #              names(.case_colors),
-                                          #              prefix_var(names(.case_colors), "new"),
-                                          #              #"new_confirmed", "new_deaths", "new_active",
-                                          #              #"new_prevalence_rate_1M_pop",
-                                          #              #"new_tests", #"new_tests_rate_1M_pop","new_positive_tests_rate",
-                                          #               "growth_factor_3", "lethality_rate" ),
+                                          istop = TRUE, n_highligth = 10, nn = 1000,
                                           actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, vax = FALSE, selectvar = "new_confirmed", areasearch = FALSE){
   ns <- NS(id)
   # if(!oneMpop && grepl("1M_pop$", selectvar))
@@ -76,11 +70,23 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
 
   choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices
 
+  if (istop) {
+    plottitle = paste0("Top ",n_highligth," countries from day with ", nn ," contagions")
+    # output$title <- renderUI({
+    #   div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+    # })
+  } else {
+    plottitle = paste0("Timeline from day with ", nn ," contagions")
+    # output$title <- renderUI({
+    #   div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+    # })
+  }
   # UI ----
   if (!oneMpop) {
     if (!areasearch) {
       tagList(
-        uiOutput(ns("title")),
+        #uiOutput(ns("title")),
+        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
         fluidRow(
           column(7,
                  offset = 1,
@@ -99,7 +105,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
       )
     } else {
       tagList(
-        uiOutput(ns("title")),
+        #uiOutput(ns("title")),
+        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+
         fluidRow(
           column(3,
                  offset = 1,
@@ -128,7 +136,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
   } else {
     if (!areasearch) {
       tagList(
-        uiOutput(ns("title")),
+        #uiOutput(ns("title")),
+        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+
         fluidRow(
           column(3,
                  offset = 1,
@@ -152,19 +162,21 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
     } else {
 
       tagList(
-        uiOutput(ns("title")),
+        #uiOutput(ns("title")),
+        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+
         fluidRow(
           column(3,
                  offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = "Linear or Log",
+                 selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Linear or Log"),
                              choices = choices_plot, selected = selectvar)
           ),
           column(3, offset = 1,
-                 selectInput(inputId = ns("radio_1Mpop"), label = "Total or Over 1M People",
+                 selectInput(inputId = ns("radio_1Mpop"), label = div(style = "font-size:10px","Total or Over 1M People"),
                              choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop")
           ),
           column(3, offset = 1,
-                 selectInput(label = "Select Countries", inputId = ns("select_areas"), choices = NULL, selected = NULL,
+                 selectInput(label = div(style = "font-size:10px","Select Countries"), inputId = ns("select_areas"), choices = NULL, selected = NULL,
                              multiple = TRUE)
           )
         ),
@@ -184,7 +196,6 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
 #'
 #' @param df data.frame
 #' @param nn minimum date derived from first day with more than nn cases. Default 1000
-#' @param w number of days of outbreak. Default 7
 #' @param n_highligth number of countries to highlight if istop == TRUE
 #' @param istop logical to choose title, if top n_highligth countries are selected
 #' @param g_palette character vector of colors for the graph and legend
@@ -208,11 +219,23 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
 #'
 #' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
-                                              nn = 1000, w = 7,
+                                              nn = 1000,
                                               n_highligth = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
                                               actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, oneMpop = TRUE, secondline = NULL, areasearch = FALSE){
   ns <- session$ns
   df$Date = df[[datevar]]
+
+  # if (istop) {
+  #   plottitle = paste0("Top ",n_highligth," countries from day with ", nn ," contagions")
+  #   # output$title <- renderUI({
+  #   #   div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+  #   # })
+  # } else {
+  #   plottitle = paste0("Timeline from day with ", nn ," contagions")
+  #   # output$title <- renderUI({
+  #   #   div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+  #   # })
+  # }
 
   if (oneMpop || areasearch ) {
 
@@ -397,15 +420,15 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     })
   }
 
-  if (istop) {
-    output$title <- renderUI({
-      div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-    })
-  } else {
-    output$title <- renderUI({
-      div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-    })
-  }
+  # if (istop) {
+  #   output$title <- renderUI({
+  #     div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+  #   })
+  # } else {
+  #   output$title <- renderUI({
+  #     div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
+  #   })
+  # }
 
   caption_explain = paste0(ifelse(rollw, "Computed as rolling weekly average. ", ""),ifelse(datevar == "date", "First day", "Contagion day 0"),
                    " is the day when ", nn," confirmed cases are reached.")
