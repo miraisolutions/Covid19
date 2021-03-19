@@ -80,7 +80,9 @@ The following variables are computed by the application:
 * _positive test rate_: number of positive tests, i.e. _confirmed_ divided by the _tests_ carried in the day.   
 * _int care hospitalised rate_: number of patients currently in Intensive Care / Ventilated status, divided by the number of currently _hospitalised_ patients.   
 * _vaccines rate_: number of _vaccines_ divided by the _population_ size.   
-
+* _new (variable)_: all variables labeled "new" are the delta of day X value - day X-1.  
+* _last week (variable)_: all variables labeled "last week" are the totals of the last 7 days.  
+* _last month (variable)_: all variables labeled "last month" are the totals of the last 30 days. 
 
 The results are visualized as a shiny app.
 
