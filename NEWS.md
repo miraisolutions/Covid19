@@ -1,3 +1,6 @@
+### Covid19Mirai 2.5.4 (2021-03-19)
+- Allow vaccination over population size to go beyond 1 (#168)
+
 ### Covid19Mirai 2.5.3 (2021-03-14)
 - review labels, renderUI, fix problem with USA level 2 (#175)
 
@@ -5,7 +8,7 @@
 - remove shiny dashboard (#172)
 
 ### Covid19Mirai 2.5.1 (2021-03-10)
-- Vaccination text plot, added navPage across main tabs (#164)
+- Vaccination text plot, added navPage across main tabs (#168)
 
 ### Covid19Mirai 2.4.3 (2021-02-09)
 - Correction scatterplot median lines for rates (0-1) (#163)
