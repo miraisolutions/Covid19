@@ -542,7 +542,7 @@ aggr_to_cont = function(data, group, time,
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
-           vaccines_rate_pop =  pmin(round(vaccines/population, digits = 5), 1),
+           vaccines_rate_pop =  round(vaccines/population, digits = 5),# do not cap to 1
            #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
@@ -774,7 +774,7 @@ build_data_aggr <- function(data, popdata) {
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3),
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
            icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
-           vaccines_rate_pop =  pmin(round(vaccines/population, digits = 5), 1),
+           vaccines_rate_pop =  round(vaccines/population, digits = 5), # do not cap to 1
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
            )  %>%   #mutate(
            #   across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of

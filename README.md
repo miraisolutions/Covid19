@@ -39,30 +39,37 @@ Ardia](https://ardiad.github.io/). We are very thankful to [David
 Bumbeishvili](https://github.com/bumbeishvili) for his great
 [work](https://github.com/bumbeishvili/covid19-daily-data)
 
-Data are read with 40h delay to allow all countries to have them available.
-
 ## The dashboard
 
-It consists of 4 main pages:
+It consists of 5 main pages:
 
   - **Global**: Summarizing top 5 countries in the world in each
     variable.  
   - **Continents**: Summarizing world data per continent (defined
     according to UN), underneath sub-tabs with insight within continent:
-      - **Europe**: European data split by macro-areas with heatmaps per
+      - **Europe**: European data split by macro-areas with heat-maps
+        per country.  
+      - **Asia**: Asia data split by macro-areas with heat-maps per
         country.  
-      - **Asia**: Asia data split by macro-areas with heatmaps per
-        country.  
-      - **Africa**: African data split by macro-areas with heatmaps per
+      - **Africa**: African data split by macro-areas with heat-maps per
         country.  
       - **Latin America & Carib.**: South and Central American with
-        Caribbean Isles by macro-areas with heatmaps per country.  
+        Caribbean Isles by macro-areas with heat-maps per country.  
       - **Northern America**: Northern America (USA and Canada) data
-        split by macro-areas with heatmaps per country.  
-  - **Country**: Single country report.  
+        split by macro-areas with heat-maps per country.  
+  - **Switzerland**: Single country report of Switzerland.
+      - Maps and graphs of Cantonal data displayed.
+  - **Country**: Single country report.
       - If available regional graphs and data will be displayed.
   - **Country Comparison**: Comparison report between N countries from
     all over the world.
+
+Macro areas of Continents are defined following United Nations
+indications.
+
+Data are updated with a delay of 40h, i.e. at 4pm the Last date is
+updated taking the yesterday date. This allows having data for about all
+countries when the date is updated with the new one.
 
 ## The Variables
 
@@ -73,34 +80,43 @@ The Covid19datahub project can allow us to use the following variables:
     countries have stopped reporting recovered cases.  
   - *deaths*: number of dead confirmed cases.  
   - *tests*: number of tests. Not available for all countries.  
-  - *hosp*: number of hospitalized confirmed cases. Not available for
-    all countries.  
+  - *hosp*: number of currently hospitalised confirmed cases. Not
+    available for all countries.  
+  - *icuvent*: number of currently hospitalised Ventilated or in
+    Intensive Care. Not available for all countries. Categorization
+    differed from countries to country therefore Ventilated and
+    Intensive Care variables have been aggregated.
+  - *stringency index*: Lock Down stringency index from 0 to 100.  
+  - *vaccines*: number of vaccined people.  
   - *population*: population size.
-  - *stringency index*: Stringency of governmental responses, how strong a lock-down is. fFrom 0 to 100.
-
 
 The following variables are computed by the application:
 
   - *active*: number of active cases, usually tested positive.
     *confirmed* - *recovered* - *deaths*.  
-  - *prevalence over 1M people*: number of confirmed cases per 1 Million
+  - *prevalence over 1M*: number of confirmed cases per 1 Million
     inhabitants.  
-  - *growth factors (3 5 7)*: number of confirmed cases today divided by
-    the number of confirmed cases 3 5 7 days ago.  
+  - *growth factors (3 7 14)*: number of confirmed cases today divided
+    by the number of confirmed cases 3 7 14 days ago over the previous 2
+    months.
   - *lethality rate*: number of *deaths* divided by the number of
     *confirmed* cases.  
   - *mortality rate*: number of *deaths* divided by the *population*
-    size.
-  - *tests over 1M people*: number of tests done per 1 Million
-    inhabitants.  
-  - *positive tests rate*: ratio confirmed cases over number of tests. 
-     It could be all NAs for countries not providing tests figures.
+    size.  
+  - *positive test rate*: number of positive tests, i.e. *confirmed*
+    divided by the *tests* carried in the day.  
+  - *int care hospitalised rate*: number of patients currently in
+    Intensive Care / Ventilated status, divided by the number of
+    currently *hospitalised* patients.  
+  - *vaccines rate*: number of *vaccines* divided by the *population*
+    size.  
+  - *new (variable)*: all variables labeled “new” are the delta of day X
+    value - day X-1.  
+  - *last week (variable)*: all variables labeled “last week” are the
+    totals of the last 7 days.  
+  - *last month (variable)*: all variables labeled “last month” are the
+    totals of the last 30 days.
 
-  - *new (variable)*: all variables labeled "new" are the delta of day X value - day X-1
-  - *last week (variable)*: all variables labeled "last week" are the totals of the last 7 days.
-  - *last month (variable)*: all variables labeled "last month" are the totals of the last 30 days.
-
-  
 The results are visualized as a shiny app.
 
 ## Installation
