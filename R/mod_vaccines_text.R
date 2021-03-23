@@ -15,41 +15,41 @@ mod_vaccines_text_ui <- function(id) {
   ns <- NS(id)
   tagList(
     #shinyWidgets::useShinydashboard(),
-        div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-        fluidRow(
-          column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
-                                value = 70,
-                                min = 0,
-                                max = 100,
-                                step = 1)),
-          column(3, selectInput(inputId = ns("doses"), label = div(style = "font-size:10px","Number of doses"),
-                                 choices = c(1,2),
-                                 selected = 2)),
-          column(3, selectInput(inputId = ns("confdoses"), label = div(style = "font-size:10px","Doses for already infected"),
-                                choices = c(0,1,2),
-                                selected = 1)),
-          column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
-                                 value = "2021-09-01",
-                                 min = Sys.Date()
-                                 ))
-      ),
+    div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    fluidRow(
+      column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
+                             value = 70,
+                             min = 0,
+                             max = 100,
+                             step = 1)),
+      column(3, selectInput(inputId = ns("doses"), label = div(style = "font-size:10px","Number of doses"),
+                            choices = c(1,2),
+                            selected = 2)),
+      column(3, selectInput(inputId = ns("confdoses"), label = div(style = "font-size:10px","Doses for already infected"),
+                            choices = c(0,1,2),
+                            selected = 1)),
+      column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
+                          value = "2021-09-01",
+                          min = Sys.Date()
+      ))
+    ),
     verticalLayout(
-        fluidRow(
-          # shinydashboard::box(
-          #   #title = "Status summary",
-          #   background = "light-blue",
-          #   height = 200, width = 12,
-          #   solidHeader = TRUE, status = "primary", #"info",
-          #   collapsed = TRUE,
-          #   div(style = 'overflow-y: scroll',  htmlOutput(ns("vax_text")))
-          # )
-          div(uiOutput(ns("vax_text")), height = 200)
-        ),
-        withSpinner(plotOutput(ns("vax_line"), height = 200))
+      fluidRow(
+        # shinydashboard::box(
+        #   #title = "Status summary",
+        #   background = "light-blue",
+        #   height = 200, width = 12,
+        #   solidHeader = TRUE, status = "primary", #"info",
+        #   collapsed = TRUE,
+        #   div(style = 'overflow-y: scroll',  htmlOutput(ns("vax_text")))
+        # )
+        div(uiOutput(ns("vax_text")), height = 200)
+      ),
+      withSpinner(plotOutput(ns("vax_line"), height = 200))
     )
 
   )
-    #)
+  #)
   #tg
 }
 
@@ -85,8 +85,8 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   dftday = dftoday %>% select(date, Country.Region,vaccines, lw_vaccines, vaccines_rate_pop, confirmed, population, deaths) %>%
     mutate(population = population - deaths,
            lw_vaccines_per_day = lw_vaccines/7,
-           ) #%>%
-    #select(-deaths)
+    ) #%>%
+  #select(-deaths)
   dftday$start_vaccines_date = min(df$date) # vaccination start dare
   # number of days of vaccination campaign
   dftday$vaccines_days = as.numeric(dftday$date-dftday$start_vaccines_date )
@@ -95,18 +95,18 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
 
   data = reactive({
 
-    dftday %>%
-      mutate(vaccines_left_to_target = input$target/100 * (as.integer(req(input$doses)) * (population- vaccines - (confirmed-deaths))+
-                                as.integer(req(input$confdoses)) * (confirmed-deaths))) %>%
-      # achieved_date = today + (target% * (targetdose * (population- vaccines- (confirmed-deaths)) + targetdoseconf * (confirmed-deaths))) / (lw_vaccines/7)
+    dftday %>% # if target already reached then 0
+      mutate(vaccines_left_to_target = max(0, input$target/100 * (as.integer(req(input$doses)) * (population- round(vaccines/as.integer(req(input$doses))) - (confirmed-deaths)) +
+                                                             as.integer(req(input$confdoses)) * (confirmed-deaths)))) %>%
+      # achieved_date = today + (target% * (targetdose * (population- round(vaccines/targetdose) - (confirmed-deaths)) + targetdoseconf * (confirmed-deaths))) / (lw_vaccines/7)
       mutate(lw_achieved_date = date + ceiling((vaccines_left_to_target) / (lw_vaccines_per_day)),
-     # achieved_date = today + (target% * targetdose * (population- vaccines- (confirmed-deaths))) + targetdoseconf * (confirmed-deaths)) / (vaccines/(today-startdate))
-            achieved_date = date + ceiling((vaccines_left_to_target) / (vaccines/vaccines_days))) %>%
+             # achieved_date = today + (target% * targetdose * (population- vaccines- (confirmed-deaths))) + targetdoseconf * (confirmed-deaths)) / (vaccines/(today-startdate))
+             achieved_date = date + ceiling((vaccines_left_to_target) / (vaccines/vaccines_days))) %>%
       #days_to_target = number of days between today and target date
       mutate(days_to_target = as.numeric(input$tdate - date)) %>%
       # add number of daily vaccines required to achieve target
       mutate(target_vaccines_per_day = (vaccines_left_to_target) / days_to_target )
-      })
+  })
 
   .format_num = function(x) {
     formatC(x,digits = 0, big.mark = "'",  format ="d")
@@ -118,25 +118,25 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   #                                font-style: italic;"
   # width = "100%"
   output$vax_text = renderUI({
-      div( class = "count-box",
-           style = "color: white; max-width: 100%; background-color: #3c8dbc; overflow-x: scroll; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
-           HTML(
-              paste0("  ",strong(dftday$Country.Region), ":\n",
-                   "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
-                   "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
-                   "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
-                   .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
-                   #"  Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>:<br/>",
-                   "<br/>",
-                   "  Number of vaccines done as of today: <b>", .format_num(dftday$vaccines),"</b>.<br/>",
-                   "  Average vaccines per day: <b>", .format_num(dftday$vaccines_per_day),"</b>.<br/>",
-                   "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses)," dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$achieved_date,"</b>.<br/>",
-                   "<br/>",
-                   "  Number of vaccines done last week: <b>", .format_num(dftday$lw_vaccines),"</b>.<br/>",
-                   "  Average vaccines per day during last week: <b>", .format_num(dftday$lw_vaccines_per_day),"</b>.<br/>",
-                   "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses), " dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$lw_achieved_date,"</b>.<br/>"
-              )
-            ), align = "left")
+    div( class = "count-box",
+         style = "color: white; max-width: 100%; background-color: #3c8dbc; overflow-x: scroll; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
+         HTML(
+           paste0("  ",strong(dftday$Country.Region), ". Population: ", .format_num(dftday$population)," <br/>",
+                  "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
+                  "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
+                  "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
+                  .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
+                  #"  Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$doses),"</b>:<br/>",
+                  "<br/>",
+                  "  Number of vaccines done as of today: <b>", .format_num(dftday$vaccines),"</b>.<br/>",
+                  "  Average vaccines per day: <b>", .format_num(dftday$vaccines_per_day),"</b>.<br/>",
+                  "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses)," dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$achieved_date,"</b>.<br/>",
+                  "<br/>",
+                  "  Number of vaccines done last week: <b>", .format_num(dftday$lw_vaccines),"</b>.<br/>",
+                  "  Average vaccines per day during last week: <b>", .format_num(dftday$lw_vaccines_per_day),"</b>.<br/>",
+                  "  With this average pace ", input$target,"% of the population will be covered with <b>",req(input$doses), " dose",ifelse(req(input$doses)==1, "","s"),"</b> by <b>",data()$lw_achieved_date,"</b>.<br/>"
+           )
+         ), align = "left")
   })
 
   plotdata = df %>%
@@ -145,7 +145,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
     mutate(Status = "New Vaccinated")
 
   if (sum(plotdata$Value)>0) {
-      #make plot if there are vaccine data
+    #make plot if there are vaccine data
     output$vax_line <- renderPlot({
       #secondline = NULL
       p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
@@ -162,7 +162,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
                  label = "Target Average Vaccines per Day", size = 2.5,
                  hjust = 0) +
         labs(caption = caption_vaccines(), hjust = 0.5#, #size = 2.5
-             )
+        )
 
       # no legend no interactivity
 
@@ -172,7 +172,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
       #                                     align = "left",
       #                                     text = "Target Average Vaccines per Day", size = 1))
 
-       # plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+      # plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
 
       p
 

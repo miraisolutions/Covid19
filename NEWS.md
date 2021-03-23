@@ -1,3 +1,6 @@
+### Covid19Mirai 2.5.5 (2021-03-23)
+- Update vacccines text plot (#168)
+
 ### Covid19Mirai 2.5.4 (2021-03-19)
 - Allow vaccination over population size to go beyond 1 (#168)
 
