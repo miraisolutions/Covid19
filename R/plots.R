@@ -927,7 +927,7 @@ caption_prevalence <- function()
 #' caption vaccination
 #' @return character text for caption
 caption_vaccines <- function() {
-  c("Not accounting for the number of doses. Source ourworldindata.org.")
+  c("Simple count of number of vaccines. Source ourworldindata.org.")
 }
 
 
