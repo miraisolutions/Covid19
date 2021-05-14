@@ -105,14 +105,16 @@ if (interactive()) {
   )
   server <- function(input, output, session) {
     # Data ----
-    orig_data <- get_datahub() %>%
+    orig_data <- get_datahub(country = "USA", lev = 2) %>%
       get_timeseries_by_contagion_day_data()
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    #pop_data = get_pop_datahub()
+    #orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    orig_data_aggregate = build_data_aggr(orig_data)
 
     n = 1000
     countries = c("Italy","USA")
+    countries = unique(orig_data_aggregate$Country.Region)
 
     countries_data <-
       countries_data <- orig_data_aggregate %>%
@@ -185,5 +187,34 @@ if (interactive()) {
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
 
+
+
+if (interactive()) {
+
+    ui <- fluidPage(
+      tagList(
+        Covid19Mirai:::golem_add_external_resources(),
+        uiOutput("lines_points_plots_ui", istop = FALSE)
+      )
+    )
+    server <- function(input, output, session) {
+      # Data ----
+      orig_data <- get_datahub(country = "USA", lev = 2) %>%
+        get_timeseries_by_contagion_day_data()
+
+      orig_data_aggregate = build_data_aggr(orig_data)
+
+      n = 1000
+
+
+      output[["lines_points_plots_ui"]] <- renderUI({
+        mod_compare_nth_cases_plot_ui("lines_points_plots", tests = FALSE, hosp = TRUE, actives = FALSE, strindx = FALSE, vax = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, areasearch = TRUE)
+      })
+
+      callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", orig_data_aggregate,
+                 nn = n, n_highligth = length(orig_data_aggregate$Country.Region), istop = FALSE, actives = FALSE, tests = FALSE, vax = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = FALSE, areasearch = TRUE)#, secondline = "stringency_index")
+    }
+    runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
+  }
 
 
