@@ -14,7 +14,7 @@ mod_country_comparison_ui <- function(id, nn = 1000){
   from_nth_case_msg = paste(
     message_conf_case("Areas", nn),
     #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
-    #paste0("Some countries are not providing Recovered data."),
+    message_missing_recovered(),
     message_missing_data("Recovered and Tests", "some countries"),
     #paste0("1st day is the day when ", nn ," confirmed cases are reached.")
     message_firstday(nn),
