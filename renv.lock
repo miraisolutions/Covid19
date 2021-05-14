@@ -18,7 +18,7 @@
     },
     "COVID19": {
       "Package": "COVID19",
-      "Version": "2.3.1",
+      "Version": "2.3.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "cb4816046426acfdd41289ac2f5aef91"
