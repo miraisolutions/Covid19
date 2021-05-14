@@ -2,13 +2,26 @@ context("get datahub tests")
 
 data_full_ch <- get_datahub_fix_ch()
 data_full = data_full_ch$orig_data
+data_ch2 = data_full_ch$orig_data_ch_2
 vars = c("Country.Region", "date", "confirmed", "deaths","active", "recovered", "tests","population","stringency_index","vaccines",.hosp_vars)
 
+check_data <- function(dat, vars) {
+  if (!missing(vars))
+    expect_true(length(setdiff(names(dat), vars)) == 0)
+  expect_false(any(sapply(dat, class) == "integer"))
+  expect_true(all(dat$confirmed >= dat$recovered, na.rm = TRUE))
+  expect_true(all(dat$confirmed >= dat$deaths, na.rm = TRUE))
+  expect_true(all(dat$confirmed >= (dat$recovered + dat$deaths), na.rm = TRUE))
+}
 test_that("get_datahub returns expected headers and variables", {
-  expect_true(length(setdiff(names(data_full), vars)) == 0)
-  expect_false(any(sapply(data_full, class) == "integer"))
-  expect_true(all(data_full$confirmed >= data_full$recovered, na.rm = TRUE))
-  expect_true(all(data_full$confirmed >= data_full$deaths, na.rm = TRUE))
+
+  check_data(data_full, vars)
+  check_data(data_ch2, vars)
+
+  # cumalitive vars are cumulative, not always true due to corrections
+  #expect_true(all(data_full %>% dplyr::group_by(Country.Region) %>% diff(confirmed), na.rm = TRUE))
+  #conftest = data_full %>% dplyr::group_by(Country.Region) %>% summarize(check = all(diff(confirmed) >=0)) %>% ungroup()
+
 })
 test_that("get_datahub does not return data from today", {
   expect_false(identical(Sys.Date(),max(data_full$date)))
@@ -19,31 +32,27 @@ if (FALSE) {
   })
 }
 
-# chinese data at level 2 not supported anymore
-data_CHINA <- get_datahub("China", lev = 2)
+# French data give always problems
+data_FR <- get_datahub("France", lev = 2)
 
-# test_that("get_datahub lev = 2 China does not contain Hong Kong", {
-#   expect_false("Hong Kong" %in% unique(data_CHINA$Country.Region))
-#   expect_true(length(setdiff(names(data_CHINA), vars)) == 0)
-#   expect_false(any(sapply(data_CHINA, class) == "integer"))
-#   expect_true(all(data_CHINA$confirmed >= data_CHINA$recovered))
-#   expect_true(all(data_CHINA$confirmed >= data_CHINA$deaths))
-#
-# })
+test_that("get_datahub lev = 2 France does is ol", {
+  check_data(data_FR, vars)
+})
 
 # HK not found anymore in china lev2 apparently
 data_HK <- get_datahub("Hong Kong", lev = 1)
 
-# test_that("get_datahub lev = 1 Hong Kong works", {
-#   expect_true("Hong Kong" %in% unique(data_HK$Country.Region))
-#   expect_true(length(setdiff(names(data_HK), c(vars))) == 0)
-#   expect_false(any(sapply(data_HK, class) == "integer"))
-# })
+test_that("get_datahub lev = 1 Hong Kong works", {
+  expect_true("Hong Kong" %in% unique(data_HK$Country.Region))
+  check_data(data_HK, vars)
 
+})
 
 data <- get_timeseries_by_contagion_day_data(data_full)
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
+
+  check_data(data)
   varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests","vaccines", .hosp_vars))
   expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date",varnames ,"population","stringency_index",
                                          paste0("new_",varnames), "contagion_day"))))
@@ -56,6 +65,7 @@ test_that("get_timeseries_by_contagion_day_data returns expected headers", {
 
 test_that("add_growth_death_rate returns expected headers", {
   df <- data %>% add_growth_death_rate()
+  check_data(df)
   expect_true(all(c("growth_factor_3", "growth_factor_14", "growth_factor_7") %in% names(df)))
 })
 

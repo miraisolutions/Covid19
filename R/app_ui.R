@@ -68,6 +68,11 @@ app_ui <- function(request) {
         ) # end header-left
 
       ), # end Header fluidRow
+      #div(p("Data is growing, allow 30 seconds for the first page to load..."), align = "left"),
+      modalDialog(title = "Covid19Mirai loading message",
+                  p("Data is growing, allow 30 seconds for the first page to load."),
+                  p("Load first page fully before navigating to others.")),
+
       # body ----
       #tabsetPanel(
       navbarPage(

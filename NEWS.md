@@ -1,3 +1,6 @@
+### Covid19Mirai 2.5.6 (2021-05-14)
+- Updated data from covid19datahub, fetching raw data (#182)
+
 ### Covid19Mirai 2.5.5 (2021-03-23)
 - Update vacccines text plot (#168)
 
@@ -5,10 +8,10 @@
 - Allow vaccination over population size to go beyond 1 (#168)
 
 ### Covid19Mirai 2.5.3 (2021-03-14)
-- review labels, renderUI, fix problem with USA level 2 (#175)
+- Review labels, renderUI, fix problem with USA level 2 (#175)
 
 ### Covid19Mirai 2.5.2 (2021-03-10)
-- remove shiny dashboard (#172)
+- Remove shiny dashboard (#172)
 
 ### Covid19Mirai 2.5.1 (2021-03-10)
 - Vaccination text plot, added navPage across main tabs (#168)
@@ -84,12 +87,12 @@ https://github.com/covid19datahub/COVID19
 
 ### Covid19 1.1.7 (2020-05-28)
 
-- set different color -grey for NA in new active mod_map.R (#59)
-- fix colour scale/legend over 1M by replacing data_clean() with data_plot() (#79)
+- Set different color -grey for NA in new active mod_map.R (#59)
+- Fix colour scale/legend over 1M by replacing data_clean() with data_plot() (#79)
 - Country comp Lineplot from day of 1000 contagion rolling weekly average, remove dots, add imports zoo (#80)
 - Fix colour order in mod_lineplots_day_contagion (#67)
 - Merge the two boxes for current and new values into one.(#69)
-- fix trend order of area plot both global and country tabs, added utils function (#74)
+- Fix trend order of area plot both global and country tabs, added utils function (#74)
 - correct plot titles for modules mod_compare_nth_cases_plot and mod_growth_death_rate (#66)
 - Add angle to bar-plot labels (#68)
 - Add scatterplot prevalence vs growth (#81)
@@ -97,17 +100,17 @@ https://github.com/covid19datahub/COVID19
 
 ### Covid19 1.1.6 (2020-04-06)
 
-- adding growth factor and lethality rate data to tables in country and country comparison tabs (#5)
-- adding growth factor and lethality rate plots to country comparison tab (#5)
-- adding comparison from 1000nd case to country comparison tab and country tab (#5)
-- fix NA in input data
-- add info to boxes #63
-- remove pop up with data source information (#63)
+- Adding growth factor and lethality rate data to tables in country and country comparison tabs (#5)
+- Adding growth factor and lethality rate plots to country comparison tab (#5)
+- Adding comparison from 1000nd case to country comparison tab and country tab (#5)
+- Fix NA in input data
+- Add info to boxes #63
+- Remove pop up with data source information (#63)
 
 ### Covid19 1.1.5 (2020-04-06)
 
-- fixed variables for map
-- fixed albels for death rate plots
+- Fixed variables for map
+- Fixed labels for death rate plots
 
 ### Covid19 1.1.4 (2020-04-03)
 

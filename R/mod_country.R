@@ -16,6 +16,7 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
                             #paste0("Only Countries with more than ", n.select, " confirmed cases can be chosen."),
                             message_firstday(nn),
                             #paste0("1st day is the day when ", nn ," confirmed cases are reached."),
+                            message_missing_recovered(),
                             message_missing_data(),
                             #paste0("Recovered, Hospitalised and Tests data can be partially/completely unavailable in our data source for some countries and areas."),
                             #paste0("Hospitalised and test data are updated with delay for some countries and areas in our data source where available."),
@@ -503,14 +504,14 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     testsflag = FALSE
 
   message("hospflag: ", hospflag, "/ oneMpopflag: ", oneMpopflag,"/ strFlag: ", strFlag,"/ testsflag: ", testsflag, "/ vaxFlag: ", vaxFlag)
-  #paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
+ # paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
   output[["plot_compare_nth_area2"]] <- renderUI({
     mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_area2_",country)), nn = n2, istop = FALSE, tests = testsflag, hosp = hospflag, strindx = strFlag,vax = vaxFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
   })
-  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_area2_",country), df = data, nn = n2,  tests = testsflag, hosp = hospflag, strindx = strFlag ,vax = vaxFlag, istop = FALSE,
+  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_area2_",country), df = data, nn = n2,  istop = FALSE, tests = testsflag, hosp = hospflag, strindx = strFlag ,vax = vaxFlag,
              n_highligth = length(unique(data$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE)
 
-  # > growth_death_rate,
+  # growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_barplot_ui(ns("rate_plots_area2"))
   })
@@ -540,6 +541,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   })
   callModule(mod_scatterplot_server, "scatterplot_plots_area2", df = data_today, istop = FALSE, nmed = n2, countries = areasC, xvar = xvar)
 
+  # reconsider hosp flag as of today, hosp data may have been removed or not updated as of today
   # > stacked barplot with status split, use data_2_filtered_today
   callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_today, istop = FALSE, n_highligth = length(unique(data_today$Country.Region)), active_hosp = active_hosp)
 
