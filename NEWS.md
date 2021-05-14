@@ -1,4 +1,5 @@
-### Covid19Mirai 2.5.5-9000
+### Covid19Mirai 2.5.6 (2021-05-14)
+- udpated data from covid19datahub, fetching raw data (#182)
 
 ### Covid19Mirai 2.5.5 (2021-03-23)
 - Update vacccines text plot (#168)
