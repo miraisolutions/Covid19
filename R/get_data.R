@@ -172,10 +172,11 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
   if (!identical(orig_data_ch_1$date, orig_data$date[orig_data$Country.Region == "Switzerland"]))
     warning("Not same dates in lev1 and lev2 for CH")
 
-  commondates = match(orig_data_ch_1$date ,orig_data$date[orig_data$Country.Region == "Switzerland"])
+  commondates = intersect(as.character(orig_data_ch_1$date), as.character(orig_data$date[orig_data$Country.Region == "Switzerland"]))
+  orig_data_ch_1 = filter(orig_data_ch_1, date %in% as.Date(commondates))
 
-  orig_data[orig_data$Country.Region == "Switzerland" & (orig_data$date %in% orig_data_ch_1$date), .hosp_vars] <-
-    orig_data_ch_1[(orig_data_ch_1$date %in% orig_data$date) , .hosp_vars]
+  orig_data[orig_data$Country.Region == "Switzerland" & (orig_data$date %in% as.Date(commondates)), .hosp_vars] <-
+    orig_data_ch_1[(orig_data_ch_1$date %in% as.Date(commondates)) , .hosp_vars]
 
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
@@ -196,11 +197,13 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 #'
 #' @importFrom COVID19 covid19
 #' @import dplyr
+#' @import zoo
 #'
 #' @export
 get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE, hosp = TRUE) {
+  # country = NULL; startdate = "2020-01-22"; lev = 1; verbose = FALSE; hosp = TRUE
   message("get_datahub: country = ", country, "/ startdate = ", startdate, "/ level = ", lev)
-  rawarg = FALSE
+  rawarg = TRUE
   if (!is.null(country)) {
     # remap country )
     country = recode(country,
@@ -214,7 +217,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
                      "U.S. Virgin Islands" = "U.S. Virgin Islands",
                      )
   }
-  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg) # select level2 to add states
+  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg, cache = TRUE) # select level2 to add states
   # raw = FALSE then NAs replaced with 0s
 
   vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "vaccines", "stringency_index","population")
@@ -283,17 +286,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
         dataHub = filter(dataHub, Country.Region != "Hong Kong")
     }
   }
+  ##################################################################
   if (!is.null(dataHub) && nrow(dataHub) > 0) {
-    # adjust recovered where they do not make sense, e.g. France lev 2
-    dataHub$recovered = pmin(dataHub$recovered, dataHub$confirmed, na.rm = TRUE)
-    dataHub$deaths    = pmin(dataHub$deaths, dataHub$confirmed, na.rm = TRUE)
-
-    # compute active
-    dataHub = dataHub %>%
-      mutate(active = confirmed - replace_na(deaths,0) - replace_na(recovered,0)) #%>%
-
-    # convert integers into numeric
-    dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
 
     # take yesterday, data are updated hourly and they are complete around mid day, 40h later
     # regardless of the timezone, select the day 40h ago
@@ -304,24 +298,68 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
     dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
 
+    # convert integers into numeric
+    dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
+
+    cumvars = c("confirmed", "deaths","recovered","tests", "vaccines")
+
+
+    # Impute cumulative Vars
+    if (rawarg) {
+
+      message("rawData, adjust cumulative vars: ", paste(cumvars, collapse = ","))
+
+      # sdet to NA so that it can be imputed later
+      dataHub[, cumvars][dataHub[, cumvars] <0] = NA
+
+      #varsimpute = intersect(c(get_aggrvars(),.hosp_vars_datahub ), names(dataHub))
+      dataHub = dataHub %>%  group_by(Country.Region) %>%
+        mutate(
+          across(all_of(as.vector(c(cumvars, .hosp_vars_datahub))), ~zoo::na.locf(.x, na.rm = FALSE)) # use all_of
+        ) %>% ungroup()
+      # some cases have NA confirmed and valid recovered and deaths at the beginning of 2020 (France belgium)
+      # Set recovered also to NA, better than giving confirmed = recovered
+      #dataHub$recovered[is.na(dataHub$confirmed)] = dataHub$deaths[is.na(dataHub$confirmed)] = NA
+      # there seems to be bigger problem with confirmed < (deaths + recovered)
+      # after switching to rawdata change Nas into 0s for backwards compatibility
+      # all but population
+      # remove NAs, at the beginning...... removes also American Samoa that has no data
+      bad = rowSums(!is.na(dataHub[,cumvars])) == 0
+      dataHub = dataHub[!bad, , drop = FALSE]
+      numVars = setdiff(names(dataHub)[sapply(dataHub, is.numeric)], "population")
+      dataHub[, numVars][is.na(dataHub[, numVars])] = 0
+    }
+    # adjust recovered where they do not make sense, e.g. France lev 2
+
+    message(sum((dataHub$recovered - dataHub$confirmed - dataHub$deaths) >0, na.rm = TRUE), " wrong cases where recovered > (conf - death)")
+    message(sum((dataHub$deaths - dataHub$confirmed - dataHub$recovered) >0, na.rm = TRUE), " wrong cases where deaths > (conf - recovered)")
+    message(sum((dataHub$deaths - dataHub$confirmed) >0, na.rm = TRUE), " wrong cases where deaths > (conf)")
+    dataHub$confirmed = pmax(dataHub$confirmed, dataHub$deaths, na.rm = TRUE) # france lev2 has more deaths than confirmed
+    dataHub$recovered = pmin(dataHub$recovered, (dataHub$confirmed - dataHub$deaths ), na.rm = TRUE)
+    #dataHub$deaths    = pmin(dataHub$deaths, (dataHub$confirmed), na.rm = TRUE) # do
+
+    # compute active
+    dataHub = dataHub %>%
+      #mutate(active = confirmed - replace_na(deaths,0) - replace_na(recovered,0)) #%>%
+      mutate(active = confirmed - deaths - recovered) #%>%
+
     if (hosp) {
       message("Edit hosp data")
       # hospitalised must be
       dataHub$icuvent = replace_na(dataHub$vent,0)+replace_na(dataHub$icu,0) # check NAs
       dataHub$icuvent[is.na(dataHub$vent) & is.na(dataHub$icu) ] = NA # NA if both were Na
+      message(sum((dataHub$hosp - dataHub$icuvent) < 0, na.rm = TRUE), " wrong cases where icuvent > (hosp)")
       dataHub$hosp = pmax(dataHub$hosp, dataHub$icuvent, na.rm = TRUE) # generally it can be lower
       dataHub = dataHub %>% select(-icu,-vent) # remove icu and vent
       if (any(dataHub$active < dataHub$hosp)) {
         warning(sum(dataHub$active < dataHub$hosp, na.rm = TRUE), " cases with active < hosp")
-      }
-      # fill NAs with 0 for hosp data
-
-      # remove rows countries without data to reduce dataset
-      #dataHub = dataHub[!is.na(dataHub$confirmed), , drop = FALSE]
-      # remove countries without data
-      if (F) {
-        country_nodata = dataHub %>% group_by(Country.Region) %>% summarize(allnas = all(is.na(confirmed))) %>% ungroup() %>% filter(allnas == TRUE) %>% .[,1] %>% as.character()
-        dataHub = dataHub[!(dataHub$Country.Region %in% country_nodata), , drop = FALSE]
+        # generally for Costa Atlantica cruise and Canada, peru'
+        # it seems that recovered and hosp are not in line, to recompute recovered and active again
+        # where at least those hospitalised appear active, however hosp data may not be very relliabley
+        # dataHub$recovered = pmin(dataHub$recovered, (dataHub$confirmed - dataHub$deaths- dataHub$hosp), na.rm = TRUE)
+        # dataHub = dataHub %>%
+        #   mutate(active = confirmed - replace_na(deaths,0) - replace_na(recovered,0)) #%>%
+        #
 
       }
     }
@@ -329,6 +367,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
   }  else {
     warning("Data not found for country = ", country, " startdate = ", startdate, " level = ", lev)
   }
+
 
   dataHub
 }
@@ -395,7 +434,7 @@ get_timeseries_by_contagion_day_data <- function(data) {
     # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
     ungroup()
   #TODO: remove all 0s confirmed from all countries
-  #data1 = filter(data1, contagion_day != 0)
+  data1 = filter(data1, contagion_day != 0)
   data1
 }
 

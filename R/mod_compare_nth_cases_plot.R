@@ -69,7 +69,6 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
   #   stop("oneMpop is F but selectvar is ", selectvar)
 
   choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices
-
   if (istop) {
     plottitle = paste0("Top ",n_highligth," countries from day with ", nn ," contagions")
     # output$title <- renderUI({
@@ -225,47 +224,28 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   ns <- session$ns
   df$Date = df[[datevar]]
 
-  # if (istop) {
-  #   plottitle = paste0("Top ",n_highligth," countries from day with ", nn ," contagions")
-  #   # output$title <- renderUI({
-  #   #   div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-  #   # })
-  # } else {
-  #   plottitle = paste0("Timeline from day with ", nn ," contagions")
-  #   # output$title <- renderUI({
-  #   #   div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-  #   # })
-  # }
-
   if (oneMpop || areasearch ) {
-
     if (areasearch) {
+
       countries =   df %>%
         select(date, Country.Region,confirmed) %>%
         filter(date == max(date)) %>%
         arrange(desc(confirmed)) %>% .[,"Country.Region"]
       selected_countries = head(countries$Country.Region,3)
 
-      # selectfun = function(x,y) {
-      #   if(is.null(x) || (!identical(x,y)))
-      #     y
-      #   else
-      #     x
-      # }
-      #react_select = reactiveValues(selectarea = selectfun(input$select_areas, selected_countries) )
     }
     # stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
     # choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
     #varselect = input$radio_indicator
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
+
       stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
       choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
       #varselect = input$radio_indicator
 
       if (oneMpop) {
         varselect = req(input$radio_indicator)
-
         if (req(input$radio_1Mpop) == "oneMpop")  {
           if (all(is.na(df$population))) {
             stop("Missing population data")
@@ -306,7 +286,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
     reactSelectVar = reactive({
 
-      if (grepl("rate_1M_pop$", input$radio_indicator) && (!(input$radio_indicator %in% names(dat)))) {
+      if (grepl("rate_1M_pop$", req(input$radio_indicator)) && (!(req(input$radio_indicator) %in% names(dat)))) {
         varname = gsub("_rate_1M_pop$","",input$radio_indicator)
       } else
         varname = input$radio_indicator
@@ -339,7 +319,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       } else {
         data = dat
       }
-
       # filter off x before nn
       date_first_contagion = min(data$date[data$confirmed >= nn], na.rm = TRUE)
       data = data[data$date >= date_first_contagion, , drop = FALSE]

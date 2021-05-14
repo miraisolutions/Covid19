@@ -885,6 +885,15 @@ message_firstday = function(ncases, var = "confirmed") {
 message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
   paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
 }
+#'Message text, recovered
+#' @param where character string, where text happens
+#' @param what character string, text for missing variables
+#'
+#' @return character vector
+#'
+message_missing_recovered = function(what = "Recovered", where = "Some countries and areas") {
+  paste(where ,"have stopped providing",what, "data.")
+}
 #'Message text, missing data
 #' @param where character string, where text happens
 #' @param what character string, text for missing variables
@@ -892,6 +901,6 @@ message_missing_data = function(what = "Recovered, Hospitalised and Tests", wher
 #'
 #' @return character vector
 #'
-message_hosp_data = function(what = "Hospitalised and Test", where = "some countries and areas", suffix = "where available") {
+message_hosp_data = function(what = "Hospitalised, Vaccinated and Test", where = "some countries and areas", suffix = "where available") {
   paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
 }

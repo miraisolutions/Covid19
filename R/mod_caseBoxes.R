@@ -68,8 +68,8 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       output$confirmed <- renderUI({
         countBox(title1 = "Confirmed: ",
                  subtitle1 = counts[["confirmed"]],
-                 title2 = "New: ",
-                 subtitle2 =  counts[["new_confirmed"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_confirmed"]],
                  color = "white",
                  background = .case_colors[["confirmed"]])
       })
@@ -78,8 +78,8 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       output$death <- renderUI({
         countBox(title1 = "Deaths: ",
                  subtitle1 = counts[["deaths"]],
-                 title2 = "New: ",
-                 subtitle2 =  counts[["new_deaths"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_deaths"]],
                  color = "white",
                  background = .case_colors[["deaths"]])
       })
@@ -88,8 +88,8 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       output$recovered <- renderUI({
         countBox(title1 = "Recovered: ",
                  subtitle1 = counts[["recovered"]],
-                 title2 = "New: ",
-                 subtitle2 =  counts[["new_recovered"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_recovered"]],
                  color = "white",
                  background = .case_colors[["recovered"]])
       })
@@ -109,8 +109,8 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       output$active <- renderUI({
         countBox(title1 = "Active: ",
                  subtitle1 = counts[["active"]],
-                 title2 = "New: ",
-                 subtitle2 =  counts[["new_active"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_active"]],
                  color = "white",
                  background = .case_colors[["active"]])
       })
