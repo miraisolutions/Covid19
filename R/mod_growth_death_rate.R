@@ -137,14 +137,14 @@ mod_barplot_server <- function(input, output, session, df,
       pick_var = rate
     else
       pick_var = pickvar
-
     if (!all(is.na(df$population))) {
       df_plot <- df %>%
         #arrange(desc(rate)) %>%
         filter( date == maxdate & #!!sym(rate) != 0 &
                   population >= max.pop) # %>% # filter out those with rate = 0 and small countries
     } else
-      df_plot <- df
+      df_plot <- df %>%
+            filter( date == maxdate)
 
     if (sortbyvar) {
       df_plot <- df_plot %>%

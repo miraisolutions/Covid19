@@ -811,9 +811,16 @@ lw_vars_calc <- function(data, days = 7) {
   data7 = data %>% filter(date > (max(date)-days))# last week
   data7 = data7 %>% filter(date < (min(date)+n.days))# if days are 14 then select the previous week
 
-  if(length(unique(data7$population))>1) {
-    warning("inconsistent population variable, taking max")
-    data7$population =  max(data7$population, na.rm = TRUE)
+  # check population:
+  if(nrow(unique(data7[,c("Country.Region","population")]))> length(unique(data7$Country.Region))) {
+    warning("inconsistent population variable, taking max for each Country")
+
+    data7 = data7 %>% group_by(Country.Region) %>% mutate(maxpop = max(population)) %>% ungroup()
+
+
+    data7$population =  data7$maxpop
+    data7 = data7 %>%
+      select(-maxpop)
   }
   aggr_vars = setdiff(get_aggrvars(),.current_vars) # remove variables that cannot be aggregated over a week
   aggr_vars = intersect(colnames(data7),aggr_vars)
@@ -834,7 +841,7 @@ lw_vars_calc <- function(data, days = 7) {
 
   # add back population
   data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population"), drop = FALSE])) %>%
-    right_join(data7extra)
+    right_join(data7extra) # right join simply to have them on the right
 
   aggrvars = setdiff(intersect(get_aggrvars(), names(data7vars)), "population")
   # compute rates
@@ -941,8 +948,7 @@ message_missing_country_days = function(data) {
   missdays[[as.character(max(data$date))]] = unique(c(countries_notinlast, missdays[[as.character(max(data$date))]]))
 
   countries = unique(unlist(missdays))
-  msg = c("Numbers in the latest days can be understimated for multiple reasons:",
-          "Cases can be revised and updated with delay after few days.")
+  msg = c("Numbers in the latest days can be understimated for multiple reasons,  for example cases can be revised and updated with delay after few days.")
 
   if (length(countries)>1) {
     country_miss = apply(sapply(countries, function(cc) {
@@ -967,7 +973,7 @@ message_missing_country_days = function(data) {
     daysstr[ddays == ""] = "day."
     msgdays = paste("last", ddays, daysstr, sep = " ")
     textcountries = sapply(country, paste, collapse = ",")
-    msg1 = paste(textcountries, "has no data updates since",msgdays)
+    msg1 = paste(textcountries, "have no data updates since",msgdays)
     n.countrys = as.vector(sapply(country, length))
     msg1[n.countrys == 1] = sapply(msg1[n.countrys == 1],function(x){
       gsub("have","has",x)

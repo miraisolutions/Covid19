@@ -579,7 +579,7 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     ungroup() %>%
     filter(date == maxdate) %>% # take the latest date per country. to check better
     #select(-maxdate) %>%
-    mutate(date = max(date)) %>% # override date with latest
+    #mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
       growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
       growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
