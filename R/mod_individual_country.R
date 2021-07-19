@@ -244,7 +244,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   # prepare data for table with country data
   area_data_2_aggregate_tab = area_data_2_aggregate %>% # only data from today
-    filter(date == max(date)) %>%
+    filter(date == maxdate) %>%
     arrange(desc(confirmed) )
 
   # add tables UIs

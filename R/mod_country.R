@@ -407,7 +407,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     rescale_df_contagion(n = n2, w = w) # take where 100 confirmed
 
   data_2_filtered_today = data_2_filtered %>%
-      filter(date == max(date))
+      filter(date == maxdate)
 
   data_today = data %>%
     add_growth_death_rate()
@@ -430,7 +430,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   area_data_2_aggregate_today <-
     data %>%
-    filter( date == max(date))
+    filter( date == maxdate)
 
   area_2_top_5_today <-
     area_data_2_aggregate_today %>%
@@ -490,7 +490,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     mindate = min(area_2_top_5_confirmed$date[area_2_top_5_confirmed$confirmed>n2], na.rm = TRUE)
 
     # create factors with first top confirmed
-    countries_order =  area_2_top_5_confirmed %>% filter(date == max(date)) %>%
+    countries_order =  area_2_top_5_confirmed %>% filter(date == maxdate) %>%
       arrange(desc(confirmed)) %>%
       .[,"Country.Region"] %>% as.vector()
     df_top_n = area_2_top_5_confirmed %>% filter(date >= mindate) %>% # take only starting point where greater than n
@@ -686,7 +686,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   if(tab) {
     # prepare data for table with country data
     area_data_2_aggregate_tab = data %>% # only data from today
-      filter(date == max(date)) %>%
+      filter(date == maxdate) %>%
       arrange(desc(confirmed) )
 
     callModule(mod_add_table_server, "add_table_area2",

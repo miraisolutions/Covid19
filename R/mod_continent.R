@@ -204,7 +204,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   continent_data_today <-
     continent_data %>%
-      filter(date == max(date))
+      filter(date == maxdate)
   lw_continent_data_today =  lw_vars_calc(continent_data)
   pw_continent_data_today =  lw_vars_calc(continent_data, 14)
 
@@ -457,7 +457,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # prepare data for table with country data
   orig_data_aggregate_cont_tab = orig_data_aggregate_cont %>% # only data from today
-    filter(date == max(date)) %>%
+    filter(date == maxdate) %>%
     arrange(desc(confirmed) )
   callModule(mod_add_table_server, paste("add_table_countries", uicont , sep = "_"),
              orig_data_aggregate_cont_tab, maxrowsperpage = 10)

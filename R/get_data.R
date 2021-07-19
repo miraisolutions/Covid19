@@ -494,7 +494,7 @@ get_timeseries_country_data <- function(data, country){
 aggregate_country_data <- function(data){
   country_df <- data %>%
     #filter( date == max(date)) %>%
-    filter( date == max(date)) %>%
+    filter( date == maxdate) %>%
     select(-Province.State, -Lat, -Long) %>%
     group_by(Country.Region) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
@@ -574,11 +574,11 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
            growth_factor_14 = round(pmax(1, sum(new_confirmed[date>lm74], na.rm = TRUE) / sum(new_confirmed[date>lm74 & date <=lm14]),1), digits = 3),
            lm_confirmed_rate_1M_pop = round(10^6*sum(new_confirmed[date>lm60], na.rm = TRUE)/population, digits = 3)
     ) %>%
-    mutate(maxdate = max(date)) %>%
+    #mutate(maxdate = max(date)) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
     filter(date == maxdate) %>% # take the latest date per country. to check better
-    select(-maxdate) %>%
+    #select(-maxdate) %>%
     mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
       growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),

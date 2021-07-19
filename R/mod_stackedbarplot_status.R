@@ -61,7 +61,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     keepvars = c(keepvars, "confirmed")
 
   df_status = df %>%
-    filter(date == max(date)) %>%
+    filter(date == maxdate) %>%
     select(Country.Region, !!keepvars)
 
   if (istop) {

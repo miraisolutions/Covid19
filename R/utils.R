@@ -574,7 +574,7 @@ tsdata_areplot <- function(data, levs, nn = 1000) {
   data = data %>% filter(date >= mindate)
 
   data %>%
-    select( date, !!levs) %>% #rename vars with labels
+    select( date,!!levs) %>% #rename vars with labels
     #select(Country.Region, date, levs) %>%
     #renamevars() %>%
     pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
@@ -806,6 +806,7 @@ lw_vars_calc <- function(data, days = 7) {
     stop("data must have at least 7 days")
   if (!days %in% c(7,14,30))
     stop("Allow 7 14 and 30 as last days in lw_vars_calc")
+
   n.days = ifelse(days == 30, 30, 7)
   data7 = data %>% filter(date > (max(date)-days))# last week
   data7 = data7 %>% filter(date < (min(date)+n.days))# if days are 14 then select the previous week
@@ -914,7 +915,7 @@ message_missing_data = function(what = "Recovered, Hospitalised and Tests", wher
   paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
 }
 #'Message text, missing days for given countries in the data
-#' @param country_data list, names are the number of days, the components are the country names
+#' @param data data.frame with Country data
 #'
 #' @return character vector with message
 #'

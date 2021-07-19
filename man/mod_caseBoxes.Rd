@@ -43,7 +43,7 @@ if (interactive()) {
       filter(Country.Region == "France")
 
     country_data_today <- country_data \%>\%
-      filter(date == max(date))
+      filter(date == maxdate)
 
     lw_country_data = lw_vars_calc(country_data)
     pw_country_data =  lw_vars_calc(country_data, 14)
@@ -80,7 +80,7 @@ if (interactive()) {
       filter(Country.Region == "France")
 
     country_data_today <- country_data \%>\%
-      filter(date == max(date))
+      filter(date == maxdate)
 
     lw_country_data = lw_vars_calc(country_data)
     pw_country_data =  lw_vars_calc(country_data, 14)

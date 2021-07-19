@@ -25,7 +25,7 @@ mod_global_ui <- function(id){
       ),
       column(6,
              #withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global"), istop = FALSE, hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE, vax = TRUE))
-             withSpinner(mod_compare_timeline_plot_ui(ns("lines_points_plots_global")))
+             withSpinner(mod_compare_timeline_plot_ui(ns("lines_points_plots_global"), titles = 1:2)) # no area plot
       )
     ),
     hr(),
@@ -108,7 +108,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
    total_today <-
      total_aggregate %>%
-        filter(date == max(date))
+        filter(date == maxdate)
    lw_total =  lw_vars_calc(total_aggregate)
    pw_total =  lw_vars_calc(total_aggregate, 14)
 
@@ -139,7 +139,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   world_top_5_confirmed <-
     orig_data_aggregate %>%
       filter(Country.Region %in% world_top_5_today$Country.Region) %>%
-      select(Country.Region, date, confirmed)
+      select(Country.Region, date, maxdate,confirmed)
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", total_today, vax = "recovered")
@@ -169,7 +169,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # > line plot top 5
   #df_top_n <-
     # create factors with first top confirmed
-  countries_order =  world_top_5_confirmed %>% filter(date == max(date)) %>%
+  countries_order =  world_top_5_confirmed %>% filter(date == maxdate) %>%
     arrange(desc(confirmed)) %>%
      .[,"Country.Region"] %>% as.vector()
 

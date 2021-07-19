@@ -7,7 +7,7 @@
 message_missing_country_days(data)
 }
 \arguments{
-\item{country_data}{list, names are the number of days, the components are the country names}
+\item{data}{data.frame with Country data}
 }
 \value{
 character vector with message
