@@ -217,15 +217,18 @@ countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, c
 
   format_thousands = function(x)
     formatC(x, format = "f", big.mark = "'", digits  = 0)
-  format_perc = function(x)
-    paste(x*100, "%")
+  format_perc = function(x) {
+    ifelse(is.na(x),"",paste(x*100,"%"))
+  }
+
   format_fun = ifelse(perc, format_perc, format_thousands)
 
   format_change = function(x) {
     sign.perc = "+"
-    if (x < 0)
+    if (is.na(x) || x < 0)
       sign.perc = ""
-    paste0(sign.perc,x*100, "%")
+    textx = ifelse(is.na(x),"",paste(x*100,"%"))
+    paste0(sign.perc,textx)
 
   }
   change.perc = round(subtitle2 / subtitle3 -1, 3)
