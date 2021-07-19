@@ -301,8 +301,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
 
-    cumvars = c("confirmed", "deaths","recovered","tests", "vaccines")
-
+    #cumvars = c("confirmed", "deaths","recovered","tests", "vaccines")
+    cumvars = get_cumvars()
 
     # Impute cumulative Vars
     if (rawarg) {
@@ -534,7 +534,9 @@ aggregate_province_timeseries_data <- function(data){
 #' @export
 add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
 
+  validdates = max(df$date) - 75
   df %>% #ungroup() %>%
+    filter(date >= validdates) %>%
     arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
     group_by(.dots = group) %>%
     # mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
@@ -552,12 +554,15 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
            growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 74)) / sum(head(lead(new_confirmed,14), 60), na.rm = TRUE),1), digits = 3),
            lm_confirmed_rate_1M_pop = round(10^6*sum(head(new_confirmed, 30))/population, digits = 3)
     ) %>%
+    mutate(maxdate = max(date)) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
-    filter(date == max(date)) %>%
+    filter(date == maxdate) %>% # take the latest date per country. to check better
+    select(-maxdate) %>%
+    mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
-    growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
-    growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
+      growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
+      growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
     mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} )
 
 }

@@ -19,13 +19,18 @@ mod_continent_ui <- function(id, uicont){
             mod_map_cont_ui(ns(paste("map_cont_ui", uicont , sep = "_")))
        ),
       column(6,
-            div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                mod_plot_log_linear_ui(ns("plot_area_cont"))
+            #div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+            #mod_plot_log_linear_ui(ns("plot_area_cont"))
+            mod_compare_timeline_plot_ui(ns("plot_area_cont"), titles = 3:1)
          ),
      ),
     hr(),
     div(
       uiOutput(ns(paste("from_nth_case", uicont , sep = "_")))
+    ),
+    hr(),
+    div(
+      uiOutput(ns(paste("ind_missing_days_countries", uicont , sep = "_")))
     ),
     hr(),
     div(
@@ -200,10 +205,12 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   continent_data_today <-
     continent_data %>%
       filter(date == max(date))
-  lw_continent_data_today =  lw_vars_calc(continent_data_today)
+  lw_continent_data_today =  lw_vars_calc(continent_data)
+  pw_continent_data_today =  lw_vars_calc(continent_data, 14)
 
   continent_data_today = continent_data_today  %>%
-    left_join(lw_continent_data_today %>% select(-population))
+    left_join(lw_continent_data_today %>% select(-population))  %>%
+    left_join(pw_continent_data_today %>% select(-population))
 
   # filter map only continent
   #countries_data_map_cont = countries_data_map[countries_data_map@data$CONTINENT == cont,]
@@ -227,11 +234,13 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # > area plot global
   levs <- areaplot_vars()
+  #
+  # df_continent =
+  #   tsdata_areplot(continent_data,levs, nn = nn)
 
-  df_continent =
-    tsdata_areplot(continent_data,levs, nn = nn)
+  callModule(mod_compare_timeline_plot_server, "plot_area_cont", continent_data, nn = nn, istop = FALSE,  hosp = FALSE, oneMpop = FALSE, vax = TRUE)
 
-  callModule(mod_plot_log_linear_server, "plot_area_cont", df = df_continent, type = "area", g_palette = subcont_palette)
+  #callModule(mod_plot_log_linear_server, "plot_area_cont", df = df_continent, type = "area", g_palette = subcont_palette)
   output[[paste("from_nth_case", uicont , sep = "_")]]<- renderUI({
     HTML(paste(
       paste0(cont, " countries are grouped in Macro Areas as defined by United Nations."),
@@ -325,6 +334,11 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # create datasets for maps merging today with data7
   data_cont_maps = orig_data_aggregate_cont_today  %>%
     left_join(data7_aggregate_cont %>% select(-population))
+
+  output[[paste("ind_missing_days_countries", uicont , sep = "_")]] <- renderUI({
+    HTML(
+      message_missing_country_days(data_cont_maps)
+    )})
 
   callModule(mod_scatterplot_server, "scatterplot_prev_countries",
              data_cont_maps, nmed = nn, n_highligth = length(countries200000),

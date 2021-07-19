@@ -641,11 +641,13 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   }
 
   df_highlight = df
-  if (rollw)
+  if (rollw) {
     df = df %>%
-              group_by(Status) %>%
-              mutate(ValueRoll = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
-              ungroup()
+      group_by(Status) %>%
+      mutate(ValueRoll = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
+      ungroup()
+  }
+
 
   #TODO y_tooltip should be wrapped with gentext(Value), not so nice below, it does not seem to work
   # df = df %>% rename(Variable = Value)
@@ -658,8 +660,8 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 
   if (keeporder)
     df$Status = factor(df$Status , levels = unique(df$Status ))
+
   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
-    #geom_line(aes(x = Date, y = !!sym(varChoice), colour = Status)) +
     geom_line() +
     basic_plot_theme() +
     #noaxislab_theme() +

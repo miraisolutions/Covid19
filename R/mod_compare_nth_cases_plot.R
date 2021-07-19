@@ -8,7 +8,7 @@
 #' @param vax if TRUE then add new_vaccines and vaccines variables to vars.
 #'
 #' @noRd
-choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, log = TRUE){
+choice_nthcases_plot = function(vars = .vars_nthcases_plot, actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, log = TRUE){
   if (!actives && any(grepl("active",vars))) {
     vars = vars[!grepl("active", vars)]
   }
@@ -61,9 +61,10 @@ choice_nthcases_plot = function(vars = vars_nthcases_plot, actives = TRUE, tests
 #' @import shiny
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
-mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
+mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
                                           istop = TRUE, n_highligth = 10, nn = 1000,
-                                          actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, vax = FALSE, selectvar = "new_confirmed", areasearch = FALSE){
+                                          actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, vax = FALSE, selectvar = "new_confirmed", areasearch = FALSE,
+                                          writetitle = TRUE){
   ns <- NS(id)
   # if(!oneMpop && grepl("1M_pop$", selectvar))
   #   stop("oneMpop is F but selectvar is ", selectvar)
@@ -81,11 +82,13 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
     # })
   }
   # UI ----
+  divtitle =  switch(writetitle,div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),NULL)
   if (!oneMpop) {
     if (!areasearch) {
       tagList(
         #uiOutput(ns("title")),
-        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+        #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+        divtitle,
         fluidRow(
           column(7,
                  offset = 1,
@@ -105,8 +108,8 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
     } else {
       tagList(
         #uiOutput(ns("title")),
-        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-
+        #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+        divtitle,
         fluidRow(
           column(3,
                  offset = 1,
@@ -136,8 +139,8 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
     if (!areasearch) {
       tagList(
         #uiOutput(ns("title")),
-        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-
+        #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+        divtitle,
         fluidRow(
           column(3,
                  offset = 1,
@@ -162,8 +165,8 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = vars_nthcases_plot,
 
       tagList(
         #uiOutput(ns("title")),
-        div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-
+        #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+        divtitle,
         fluidRow(
           column(3,
                  offset = 1,
@@ -235,13 +238,13 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
     }
     # stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
-    # choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
+    # choices_plot = choice_nthcases_plot(.vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
     #varselect = input$radio_indicator
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
 
       stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
-      choices_plot = choice_nthcases_plot(vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
+      choices_plot = choice_nthcases_plot(.vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
       #varselect = input$radio_indicator
 
       if (oneMpop) {
@@ -280,9 +283,9 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     })
   }
 
-  rollw = TRUE
+  rollw = reactiveVal(TRUE)
 
-  calc_line_plot = function(dat, vars_nthcases_plot) {
+  calc_line_plot = function(dat, .vars_nthcases_plot) {
 
     reactSelectVar = reactive({
 
@@ -293,7 +296,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       varname
     })
     # select only needed variables
-    dat = dat %>% .[, c("Country.Region", "date","Date", "population", intersect(vars_nthcases_plot, names(dat)))]
+    dat = dat %>% .[, c("Country.Region", "date","Date", "population", intersect(.vars_nthcases_plot, names(dat)))]
     # Give dat standard structure; reacts to input$radio_indicator
     df_data <- reactive({
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
@@ -367,8 +370,10 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     # Plot -----
     output$plot <- renderPlotly({
       #secondline = NULL
+      if (!(input$radio_indicator %in% get_aggrvars()))
+        rollw = reactiveVal(FALSE)
       p <- plot_all_highlight(df_data(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
-                              date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw, keeporder = keeporder)
+                              date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw(), keeporder = keeporder)
 
       p <- p %>%
         plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip"))
@@ -384,7 +389,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   }
   if (!areasearch) {
     keeporder = FALSE
-    calc_line_plot(df, vars_nthcases_plot)
+    calc_line_plot(df, .vars_nthcases_plot)
   } else {
     keeporder = TRUE
 
@@ -394,28 +399,18 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         df_select = df %>% filter(Country.Region %in% input$select_areas)
         idx = order(match(df_select$Country.Region, input$select_areas))
         df_select = df_select[idx,]
-        calc_line_plot(df_select, vars_nthcases_plot)
+        calc_line_plot(df_select, .vars_nthcases_plot)
      # }
     })
   }
 
-  # if (istop) {
-  #   output$title <- renderUI({
-  #     div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-  #   })
-  # } else {
-  #   output$title <- renderUI({
-  #     div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-  #   })
-  # }
-
-  caption_explain = paste0(ifelse(rollw, "Computed as rolling weekly average. ", ""),ifelse(datevar == "date", "First day", "Contagion day 0"),
-                   " is the day when ", nn," confirmed cases are reached.")
-  if (strindx && (!is.null(secondline)) && secondline == "stringency_index") {
-    caption_explain = c(caption_explain, paste("Dashed lines represent", caption_stringency()))
-  }
   output$caption <- renderText({
-
+    if (!(input$radio_indicator %in% get_aggrvars()))
+      rollw = reactiveVal(FALSE)
+    caption_explain = paste0(ifelse(rollw(), "Computed as rolling weekly average. ", ""))
+    if (strindx && (!is.null(secondline)) && secondline == "stringency_index") {
+      caption_explain = c(caption_explain, paste("Dashed lines represent", caption_stringency()))
+    }
     paste0("<p>", caption_explain, sep = '</p>')
 
   })

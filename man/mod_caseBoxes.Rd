@@ -32,17 +32,67 @@ if (interactive()) {
     )
   )
   server <- function(input, output, session) {
-    statuses <- c("confirmed", "deaths", "recovered", "active")
-    # select all variables
-    allstatuses = c(statuses, paste0("new_", statuses))
-    counts <- reactive({
-      invalidateLater(2000)
-      as.list(stats::setNames(sample.int(1000, length(allstatuses)), allstatuses))
-    })
-    callModule(Covid19Mirai:::mod_caseBoxes_server, "boxes", counts = counts)
+
+    orig_data <-get_datahub() \%>\%
+      get_timeseries_by_contagion_day_data()
+
+    pop_data = get_pop_datahub()
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+
+    country_data = orig_data_aggregate \%>\%
+      filter(Country.Region == "France")
+
+    country_data_today <- country_data \%>\%
+      filter(date == max(date))
+
+    lw_country_data = lw_vars_calc(country_data)
+    pw_country_data =  lw_vars_calc(country_data, 14)
+
+    country_data_today = country_data_today \%>\%
+      left_join(lw_country_data \%>\% select(-population))  \%>\%
+      left_join(pw_country_data \%>\% select(-population))
+
+    vaxarg = "recovered"
+
+    callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, vax = vaxarg)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
 
+if (interactive()) {
+  # devtools::load_all()
+  long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
+  ui <- fluidPage(
+    tagList(
+      Covid19Mirai:::golem_add_external_resources(),
+      Covid19Mirai:::mod_caseBoxes_ui("boxes", hosp = TRUE)
+    )
+  )
+  server <- function(input, output, session) {
+
+    orig_data <-get_datahub() \%>\%
+      get_timeseries_by_contagion_day_data()
+
+    pop_data = get_pop_datahub()
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+
+    country_data = orig_data_aggregate \%>\%
+      filter(Country.Region == "France")
+
+    country_data_today <- country_data \%>\%
+      filter(date == max(date))
+
+    lw_country_data = lw_vars_calc(country_data)
+    pw_country_data =  lw_vars_calc(country_data, 14)
+
+    country_data_today = country_data_today \%>\%
+      left_join(lw_country_data \%>\% select(-population))  \%>\%
+      left_join(pw_country_data \%>\% select(-population))
+
+
+    callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, hosp = TRUE)
+  }
+  runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
+}
 }
 \keyword{internal}

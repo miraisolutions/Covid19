@@ -20,6 +20,10 @@ mod_ind_country_ui <- function(id){
       uiOutput(ns("ind_from_nth_case"))
     ),
     hr(),
+    div(
+      uiOutput(ns("ind_missing_days"))
+    ),
+    hr(),
     fluidRow(
      # withSpinner(uiOutput(ns("ind_barplots")))
       withSpinner(mod_bar_plot_day_contagion_ui(ns("ind_bar_plot_day_contagion")))
@@ -45,7 +49,9 @@ mod_ind_country_ui <- function(id){
     fluidRow(
 
       column(6,
-             withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"),istop = FALSE,nn = 1, tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE, vax = TRUE))
+             #withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"),istop = FALSE,nn = 1, tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE, vax = TRUE))
+             withSpinner(mod_compare_timeline_plot_ui(ns("ind_lines_points_plots_tot"), titles = 1:2))
+
       ),
       column(6,
              withSpinner(mod_vaccines_text_ui(ns("ind_vaccines_text_plot")))
@@ -144,11 +150,18 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
       filter(contagion_day > 0) %>%
       arrange(desc(date))
 
+  output$ind_missing_days <- renderUI({
+    HTML(
+      message_missing_country_days(country_data)
+    )})
+
   lw_country_data = lw_vars_calc(country_data)
+  pw_country_data = lw_vars_calc(country_data, 14)
 
   # create datasets for box merging today with data7
   country_data_today = country_data %>% add_growth_death_rate() %>%
-    left_join(lw_country_data %>% select(-population))
+    left_join(lw_country_data %>% select(-population)) %>%
+    left_join(pw_country_data %>% select(-population))
 
   # country_data_today <- country_data %>%
   #     filter(date == max(date))
@@ -197,7 +210,8 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   callModule(mod_plot_log_linear_server, "ind_plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
 
-  callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data, nn = nn, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE, vax = vaxflag)#, secondline = "stringency_index")
+  #callModule(mod_compare_nth_cases_plot_server, "ind_lines_points_plots_tot", country_data, nn = nn, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE, vax = vaxflag)#, secondline = "stringency_index")
+  callModule(mod_compare_timeline_plot_server, "ind_lines_points_plots_tot", country_data , istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, nn = nn, oneMpop = FALSE, vax = vaxflag)#, secondline = "stringency_index")
 
   callModule(mod_vaccines_text_server, "ind_vaccines_text_plot", country_data, country_data_today)
 
@@ -285,64 +299,42 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
 
   # Compute Last week variables
 
-  data7_aggregate_cont = lw_vars_calc(data)
+  data7_aggregate = lw_vars_calc(data)
 
   # create datasets for maps merging today with data7
   data_maps = country_data_today %>% #filter(date == max(date)) %>%
-    left_join(data7_aggregate_cont %>% select(-population))
+    left_join(data7_aggregate %>% select(-population))
   # #maps confirmed
-  # output[["map_countries_confirmed"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_confirmed"))
-  # })
 
   callModule(mod_map_area_calc_server, "map_ind_confirmed", df = data_maps,  area2_map,
              area = country, variable = "confirmed", max.pop = 0, countrymap = TRUE)
 
   #maps active
-  # output[["map_countries_active"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_active"))
-  # })
   callModule(mod_map_area_calc_server, "map_ind_active", df = data_maps,  area2_map,
              area = country, variable = "active", max.pop = 0, countrymap = TRUE)
 
   #maps growth vs prev
-  # output[["map_countries_growthvsprev"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_growthvsprev"))
-  # })
   callModule(mod_map_area_calc_server, "map_ind_growthvsprev", df = data_maps,  area2_map,
              area = country, variable = "growth vs prev", max.pop = 0, countrymap = TRUE)
 
   #maps prevalence
-  # output[["map_countries_prev"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_prev"))
-  # })
   # callModule(mod_map_area_calc_server, "map_ind_prev", df = data_maps,  area2_map,
   #            area = country, variable = "prevalence rate", max.pop = 0, countrymap = TRUE)
-  #maps growth
-  # output[["map_countries_growth"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_growth"))
-  # })
   callModule(mod_map_area_calc_server, "map_ind_growth", df = data_maps,  area2_map,
              area = country, variable = "growth factor", max.pop = 0, countrymap = TRUE)
 
   #maps death
-  # output[["map_countries_death"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_death"))
-  # })
+
   callModule(mod_map_area_calc_server, "map_ind_death", df = data_maps,  area2_map,
              area = country, variable = "death", max.pop = 0, countrymap = TRUE)
 
   #maps hosp
-  # output[["map_countries_hosp"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_hosp"))
-  # })
+
   callModule(mod_map_area_calc_server, "map_ind_hosp", df = data_maps,  area2_map,
              area = country, variable = "hospitalised", max.pop = 0, countrymap = TRUE)
 
   #maps hosp per population
-  # output[["map_countries_hosp_1M_pop"]] <- renderUI({
-  #   mod_map_area_calc_ui(ns("map_ind_hosp_1M_pop"))
-  # })
+
   # callModule(mod_map_area_calc_server, "map_ind_hosp_1M_pop", df = data_maps,  area2_map,
   #            area = country, variable = "hospitalised over 1M", max.pop = 0, countrymap = TRUE)
 }
