@@ -74,7 +74,7 @@ prefix_var <- function(cc = .case_colors,  prefix = c("lw","new")) {
 )
 
 #' Variables used in nthcase_plot
-vars_nthcases_plot <-
+.vars_nthcases_plot <-
   c(#"confirmed", "deaths", "recovered", "active", "hosp",
     names(.case_colors), setdiff(.hosp_vars, names(.case_colors)),
     prefix_var(names(.case_colors), "new"),
@@ -84,7 +84,7 @@ vars_nthcases_plot <-
     "tests","new_tests", #"new_tests_rate_1M_pop",
     "positive_tests_rate", "new_positive_tests_rate",
     #"vaccines","new_vaccines",
-    "lethality_rate",
+    #"lethality_rate", not interesting anymore
     "stringency_index"
     )
 
@@ -148,11 +148,6 @@ varsNames = function(vars) {
   names(allvars)  = gsub("^Lm", "Last Month", names(allvars))
   names(allvars)  = gsub("Rate ", "Over ", names(allvars))
   names(allvars)  = gsub("Over Pop$", "Over Population size", names(allvars))
-
-  # names(allvars)[grepl("rate_1M_pop$", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("rate_1M_pop$", allvars)])
-  # names(allvars)[grepl("mortality_rate", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("mortality_rate", allvars)])
-  # names(allvars)[grepl("hosp_rate_active", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("hosp_rate_active", allvars)])
-  # names(allvars)[grepl("icuvent_rate_hosp", allvars)] = gsub("Rate", "Over", names(allvars)[grepl("icuvent_rate_hosp", allvars)])
 
   allvars = as.list(allvars)
 
@@ -521,7 +516,6 @@ aggr_to_cont = function(data, group, time,
                         allstatuses = intersect(get_aggrvars(), names(data))) {
 
   aggrvars = setdiff(intersect(get_aggrvars(), names(data)), "population")
-
   continent_data =    data %>% filter(!is.na(!!rlang::sym(group))) %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
@@ -535,8 +529,8 @@ aggr_to_cont = function(data, group, time,
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            ##tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            ##new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = pmin(round(confirmed/tests, digits = 3),1),
-           new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 3),1),
+           positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 3),1)),
+           new_positive_tests_rate = ifelse(tests == 0, NA, pmin(round(new_confirmed/new_tests, digits = 3),1)),
            lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3), # not making much sense
            hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
@@ -580,7 +574,7 @@ tsdata_areplot <- function(data, levs, nn = 1000) {
   data = data %>% filter(date >= mindate)
 
   data %>%
-    select( date, !!levs) %>% #rename vars with labels
+    select( date,!!levs) %>% #rename vars with labels
     #select(Country.Region, date, levs) %>%
     #renamevars() %>%
     pivot_longer(cols = -date, names_to = "status", values_to = "value") %>%
@@ -766,9 +760,9 @@ build_data_aggr <- function(data, popdata) {
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            # tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            # new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = pmin(round(confirmed/tests, digits = 4),1),
+           positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 4),1)),
            #positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-           new_positive_tests_rate = pmin(round(new_confirmed/new_tests, digits = 4),1),
+           new_positive_tests_rate = ifelse(tests == 0, NA, pmin(round(new_confirmed/new_tests, digits = 4),1)),
            #new_positive_tests_rate = positive_test_rate_calc(confirmed, tests),
            lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3),
@@ -795,15 +789,39 @@ build_data_aggr <- function(data, popdata) {
 
 #' Computes last week variables from \code{build_data_aggr}
 #' @param data data.frame
-#'
+#' @param days integer 7 14 or 30,
 #' @note Last week variables have prefix 'lw'
+#'       Past week variables have prefix 'pw'
+#'       Past month variables have prefix 'lm'
+#' @details days = 7 then last week variables are computed.
+#' days = 14 then past week variables from days -14 to -7 are computed.
+#' days = 30 then last month variables are computed.
 #'
-#' @return data.frame withe last week variables added
+#' @return data.frame with last/past week/month variables added
 #'
 #' @import dplyr
 #' @export
-lw_vars_calc <- function(data) {
-  data7 = filter(data, date > (max(date)-7))# last week
+lw_vars_calc <- function(data, days = 7) {
+  if (length(unique(data$date))<7)
+    stop("data must have at least 7 days")
+  if (!days %in% c(7,14,30))
+    stop("Allow 7 14 and 30 as last days in lw_vars_calc")
+
+  n.days = ifelse(days == 30, 30, 7)
+  data7 = data %>% filter(date > (max(date)-days))# last week
+  data7 = data7 %>% filter(date < (min(date)+n.days))# if days are 14 then select the previous week
+
+  # check population:
+  if(nrow(unique(data7[,c("Country.Region","population")]))> length(unique(data7$Country.Region))) {
+    warning("inconsistent population variable, taking max for each Country")
+
+    data7 = data7 %>% group_by(Country.Region) %>% mutate(maxpop = max(population)) %>% ungroup()
+
+
+    data7$population =  data7$maxpop
+    data7 = data7 %>%
+      select(-maxpop)
+  }
   aggr_vars = setdiff(get_aggrvars(),.current_vars) # remove variables that cannot be aggregated over a week
   aggr_vars = intersect(colnames(data7),aggr_vars)
   aggr_vars = grep("new", aggr_vars, value = TRUE) # select new ones
@@ -813,11 +831,17 @@ lw_vars_calc <- function(data) {
     summarise_at(aggr_vars, sum, na.rm = TRUE) %>% ungroup()
   # rename columns
   colnames(data7vars) = gsub("new","lw",colnames(data7vars))
-  data7ptr = data7 %>% group_by(Country.Region) %>%
-    summarize(lw_positive_tests_rate = lw_positive_test_rate_calc(new_confirmed, new_tests))
+  # calculate for hosp vars
+  lwcalc = function(x) {
+    x[1] - x[length(x)]
+  }
+  data7extra = data7 %>% group_by(Country.Region) %>%
+    summarize(lw_positive_tests_rate = lw_positive_test_rate_calc(new_confirmed, new_tests),
+              across(all_of(as.vector(.hosp_vars)), ~lwcalc(.x), .names= "lw_{col}")) # last week of hospitalised
+
   # add back population
-  data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population")])) %>%
-    right_join(data7ptr)
+  data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population"), drop = FALSE])) %>%
+    right_join(data7extra) # right join simply to have them on the right
 
   aggrvars = setdiff(intersect(get_aggrvars(), names(data7vars)), "population")
   # compute rates
@@ -825,7 +849,7 @@ lw_vars_calc <- function(data) {
     mutate(
            #lw_confirmed_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            # lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
-           #lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3),
+           #lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3), replaced by lw_positive_test_rate_calc
            lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
            lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 4),
            lw_vaccines_rate_pop =  round(pmax(0, replace_na(lw_vaccines / population, 0)), digits = 5),
@@ -840,8 +864,19 @@ lw_vars_calc <- function(data) {
       ifelse(is.infinite(x),NA, x)
     }))
 
-    #mutate(lw_positive_tests_rate = ifelse(is.infinite(as.numeric(lw_positive_tests_rate)),NA, lw_positive_tests_rate))
+  if (days == 14)
+    colnames(data7vars) = gsub("lw","pw",colnames(data7vars))
+  if (days == 30)
+    colnames(data7vars) = gsub("lw","lm",colnames(data7vars))
   data7vars
+}
+
+#'Global definition of numeric cumulative vars in dataset
+#'
+#' @return character vector
+#'
+get_cumvars = function() {
+  c("confirmed", "deaths","recovered","tests", "vaccines")
 }
 
 #'Global definition of numeric aggregatable vars in dataset
@@ -849,13 +884,14 @@ lw_vars_calc <- function(data) {
 #' @return character vector
 #'
 get_aggrvars = function() {
-
-  statuses <- c("confirmed", "deaths", "recovered", "active")
+  cumvars = get_cumvars()
+  #statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
-  allstatuses = c(statuses, "tests", as.vector(.hosp_vars), "vaccines")
+  allstatuses = c(cumvars, "active", as.vector(.hosp_vars))
   allstatuses = c(allstatuses, prefix_var(allstatuses), "population")
   allstatuses
 }
+
 
 #'Message text, selection of confirmed cases
 #' @param where character string, where text happens
@@ -884,6 +920,70 @@ message_firstday = function(ncases, var = "confirmed") {
 #'
 message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
   paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
+}
+#'Message text, missing days for given countries in the data
+#' @param data data.frame with Country data
+#'
+#' @return character vector with message
+#'
+message_missing_country_days = function(data) {
+
+  allcountries = unique(data$Country.Region)
+  # not in the last day at all
+  countries_notinlast = allcountries[!allcountries %in% unique(data[data$date == max(data$date), "Country.Region", drop = TRUE])]
+  last10days = max(data$date) - 0:9
+  vars_new = paste0("new_",get_cumvars())
+  missdata = data[, c("Country.Region","date",vars_new)] %>%
+    filter(date %in% last10days) %>% # take
+    group_by(Country.Region,date) %>% #.[,get_cumvars()] %>%
+    summarize(miss = sum(c_across(vars_new), na.rm = TRUE),
+              allzero = miss == 0) %>%
+    ungroup() %>% arrange(Country.Region, desc(date)) %>%
+    filter(allzero)
+  missdays = sapply(last10days,
+         function(day){
+           missdata$Country.Region[missdata$date == day]
+         })
+  names(missdays) = last10days
+  missdays[[as.character(max(data$date))]] = unique(c(countries_notinlast, missdays[[as.character(max(data$date))]]))
+
+  countries = unique(unlist(missdays))
+  msg = c("Numbers in the latest days can be understimated for multiple reasons,  for example cases can be revised and updated with delay after few days.")
+
+  if (length(countries)>1) {
+    country_miss = apply(sapply(countries, function(cc) {
+      sapply(missdays, function(ccd) {
+        cc %in% ccd
+      })
+    }), 2, function(df) {
+      if (df[1]) # first day must be missing
+        ifelse(all(df), length(df), min(which(!df)))
+      else
+        0
+    })
+    country = sapply(unique(country_miss), function(md) {
+      names(country_miss)[country_miss == md]
+    })
+    names(country) = unique(country_miss)
+    country = country[names(country) != "0"]
+    country = country[sort(names(country))]
+    ddays = names(country)
+    ddays[ddays ==1] = ""
+    daysstr = rep("days.", length(country))
+    daysstr[ddays == ""] = "day."
+    msgdays = paste("last", ddays, daysstr, sep = " ")
+    textcountries = sapply(country, paste, collapse = ",")
+    msg1 = paste(textcountries, "have no data updates since",msgdays)
+    n.countrys = as.vector(sapply(country, length))
+    msg1[n.countrys == 1] = sapply(msg1[n.countrys == 1],function(x){
+      gsub("have","has",x)
+    })
+    msg = c(msg,"In our dataset the following areas miss the most recent data:",
+                msg1)
+  }
+  msg = paste(msg, collapse = "<br/>")
+  msg
+
 }
 #'Message text, recovered
 #' @param where character string, where text happens

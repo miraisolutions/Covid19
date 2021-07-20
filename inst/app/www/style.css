@@ -246,15 +246,16 @@ Count Boxes
   padding: 10px;
   margin: 20px auto;
   max-width: 300px;
+  max-height: 300px;
 }
 
 .count-box h3 {
-  font-size: 28px;
+  font-size: 22px;
   color: inherit;
   display: inline-block;
 }
 
 .count-box p {
-  font-size: 23px;
+  font-size: 18px;
   display: inline-block;
 }

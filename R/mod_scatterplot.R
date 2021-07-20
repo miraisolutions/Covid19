@@ -143,7 +143,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   world = function(dat, yvar){
     dat %>% #TODO select_countries_n_cases_w_days can be removed if data_filtered is the input
       #select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == max(date) & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
+      filter( date == maxdate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
       #select(Country.Region,date,confirmed,starts_with("growth"), !!xvar)
       select(Country.Region,date,confirmed, !!reactList$xvar, !!reactList$yvar)
 
@@ -197,7 +197,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   }
   df_top_new = reactive({
     df_top %>%
-    filter( date == max(date) & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
+    filter( date == maxdate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
       #select(Country.Region,date,confirmed,starts_with("growth"), !!xvar)
       select(Country.Region,date,confirmed, !!reactList$xvar, !!reactList$yvar)
   })

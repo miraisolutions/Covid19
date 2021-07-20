@@ -35,20 +35,10 @@ mod_lineplots_day_contagion_ui <- function(id){
 #' @noRd
 mod_lineplots_day_contagion_server <- function(input, output, session, countries_data, g_palette = graph_palette, nn, statuses = c("confirmed", "deaths", "recovered", "active")){
   ns <- session$ns
-  # countries_ordered <- reactive({
-  #   countries_data() %>%
-  #     group_by(Country.Region) %>% #TODO: group_by before filter
-  #     filter(date == max(date)) %>%
-  #     filter(confirmed ==  max(confirmed)) %>%
-  #     ungroup() %>%
-  #     #arrange(desc(confirmed)) %>%
-  #     select(Country.Region) %>%
-  #     pull()
-  # })
+
   mindate = min(countries_data$date[countries_data$confirmed>nn], na.rm = TRUE)
   countries_data = countries_data %>% filter(date >= mindate)
 
-  #statuses <- c("confirmed", "deaths", "recovered", "active")
   data = reactive({
     if (input$radio_1Mpop == "oneMpop"){
       countries_data %>%   mutate( # add aggregated vars

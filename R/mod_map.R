@@ -71,7 +71,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   data_clean <- orig_data_aggregate %>%
     filter(!is.na(country_name))
-  keepcols = c("country_name","Country.Region","date",
+  keepcols = c("country_name","Country.Region","date","maxdate",
                names(data_clean)[sapply(data_clean, is.numeric)])
   data_clean = data_clean[, keepcols] # remove, not used
 

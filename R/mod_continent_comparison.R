@@ -74,9 +74,6 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
   # Rate plots ----
-  # output$rateplots_cont <- renderUI({
-  #   mod_barplot_ui(ns("rate_plots_cont"))
-  # })
 
   callModule(mod_barplot_server, "rate_plots_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE,
              g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
@@ -90,16 +87,9 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
              n_highligth = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot
-  # output$scatterplot_plots_cont <- renderUI({
-  #   mod_scatterplot_ui(ns("scatterplot_plots_cont"))
-  # })
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highligth = length(continents), istop = FALSE, countries = continents)
 
-  # output$status_stackedbarplot_cont <- renderUI({
-  #   mod_stackedbarplot_ui(ns("status_stackedbarplot_cont"))
-  # })
-  # callModule(mod_stackedbarplot_status_server, "status_stackedbarplot_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE)
 
   callModule(mod_barplot_server, "barplot_vax_index_cont", continent_data_filtered_today,
              n_highligth = length(continents), istop = FALSE,
