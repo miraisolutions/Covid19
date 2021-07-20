@@ -1,12 +1,14 @@
+### Covid19Mirai 2.5.7-9000
+
 ### Covid19Mirai 2.5.7 (2021-07-20)
 - Added line-plot comparing calendar years (#185)
-- extend boxes with past week info
+- Extended boxes with past week info
 
 ### Covid19Mirai 2.5.6 (2021-05-14)
 - Updated data from covid19datahub, fetching raw data (#182)
 
 ### Covid19Mirai 2.5.5 (2021-03-23)
-- Update vacccines text plot (#168)
+- Update vaccines text plot (#168)
 
 ### Covid19Mirai 2.5.4 (2021-03-19)
 - Allow vaccination over population size to go beyond 1 (#168)
