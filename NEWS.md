@@ -1,5 +1,6 @@
-### Covid19Mirai 2.5.7
+### Covid19Mirai 2.5.7 (2021-05-14)
 - Added line-plot comparing calendar years (#185)
+- extend boxes with past week info
 
 ### Covid19Mirai 2.5.6 (2021-05-14)
 - Updated data from covid19datahub, fetching raw data (#182)
