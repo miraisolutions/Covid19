@@ -301,8 +301,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
 
-    cumvars = c("confirmed", "deaths","recovered","tests", "vaccines")
-
+    #cumvars = c("confirmed", "deaths","recovered","tests", "vaccines")
+    cumvars = get_cumvars()
 
     # Impute cumulative Vars
     if (rawarg) {
@@ -402,6 +402,7 @@ get_timeseries_by_contagion_day_data <- function(data) {
       TRUE ~ 0
     )) %>%
     group_by(Country.Region) %>%
+    mutate(maxdate = max(date)) %>%
     mutate(incremental = seq(1:n())) %>%
     mutate(offset = sum(no_contagion)) %>%
     mutate(tmp = incremental - offset) %>%
@@ -492,7 +493,8 @@ get_timeseries_country_data <- function(data, country){
 #' @export
 aggregate_country_data <- function(data){
   country_df <- data %>%
-    filter( date == max(date)) %>%
+    #filter( date == max(date)) %>%
+    filter( date == maxdate) %>%
     select(-Province.State, -Lat, -Long) %>%
     group_by(Country.Region) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
@@ -534,8 +536,23 @@ aggregate_province_timeseries_data <- function(data){
 #' @export
 add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
 
-  df %>% #ungroup() %>%
-    arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>%
+  validdates = max(df$date) - 200
+
+  # determine dates that correspond to last week, data are missing some dates where non provided
+  lm3 = max(df$date) - 3
+  lm7 = max(df$date) - 7
+  lm14 = max(df$date) - 14
+
+  lm63 = max(df$date) - 63
+  lm67 = max(df$date) - 67
+  lm74 = max(df$date) - 74
+  lm60 = max(df$date) - 60
+  lm30 = max(df$date) - 30
+
+
+  res = df %>% #ungroup() %>%
+    filter(date >= validdates) %>%
+    #arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>% #not required anymore
     group_by(.dots = group) %>%
     # mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
     #        daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
@@ -547,19 +564,27 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     #        daily_growth_factor_14 = pmax(1, replace_na(zoo::rollapplyr(new_confirmed, 74, sum, partial=TRUE, align = "right") / zoo::rollapplyr(lag(new_confirmed,14), 60, sum, partial=TRUE, align = "right"),1)),
     #        daily_lethality_rate = pmax(0, replace_na(deaths / confirmed, 0)),
     # ) %>%
-    mutate(growth_factor_3 = round(pmax(1, sum(head(new_confirmed, 63)) / sum(head(lead(new_confirmed,3), 60), na.rm = TRUE),1), digits = 3),
-           growth_factor_7 = round(pmax(1, sum(head(new_confirmed, 67)) / sum(head(lead(new_confirmed,7), 60), na.rm = TRUE),1), digits = 3),
-           growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 74)) / sum(head(lead(new_confirmed,14), 60), na.rm = TRUE),1), digits = 3),
-           lm_confirmed_rate_1M_pop = round(10^6*sum(head(new_confirmed, 30))/population, digits = 3)
+    # mutate(growth_factor_3 = round(pmax(1, sum(head(new_confirmed, 63)) / sum(head(lead(new_confirmed,3), 60), na.rm = TRUE),1), digits = 3),
+    #        growth_factor_7 = round(pmax(1, sum(head(new_confirmed, 67)) / sum(head(lead(new_confirmed,7), 60), na.rm = TRUE),1), digits = 3),
+    #        growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 74)) / sum(head(lead(new_confirmed,14), 60), na.rm = TRUE),1), digits = 3),
+    #        lm_confirmed_rate_1M_pop = round(10^6*sum(head(new_confirmed, 30))/population, digits = 3)
+    # ) %>%
+    mutate(growth_factor_3 = round(pmax(1, sum(new_confirmed[date>lm63], na.rm = TRUE) / sum(new_confirmed[date>lm63 & date <=lm3]),1), digits = 3),
+           growth_factor_7 = round(pmax(1, sum(new_confirmed[date>lm67], na.rm = TRUE) / sum(new_confirmed[date>lm67 & date <=lm7]),1), digits = 3),
+           growth_factor_14 = round(pmax(1, sum(new_confirmed[date>lm74], na.rm = TRUE) / sum(new_confirmed[date>lm74 & date <=lm14]),1), digits = 3),
+           lm_confirmed_rate_1M_pop = round(10^6*sum(new_confirmed[date>lm60], na.rm = TRUE)/population, digits = 3)
     ) %>%
+    #mutate(maxdate = max(date)) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
-    filter(date == max(date)) %>%
+    filter(date == maxdate) %>% # take the latest date per country. to check better
+    #select(-maxdate) %>%
+    #mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
-    growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
-    growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
+      growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
+      growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
     mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} )
-
+  res
 }
 
 

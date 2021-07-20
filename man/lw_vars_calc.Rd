@@ -4,17 +4,26 @@
 \alias{lw_vars_calc}
 \title{Computes last week variables from \code{build_data_aggr}}
 \usage{
-lw_vars_calc(data)
+lw_vars_calc(data, days = 7)
 }
 \arguments{
 \item{data}{data.frame}
+
+\item{days}{integer 7 14 or 30,}
 }
 \value{
-data.frame withe last week variables added
+data.frame with last/past week/month variables added
 }
 \description{
 Computes last week variables from \code{build_data_aggr}
 }
+\details{
+days = 7 then last week variables are computed.
+days = 14 then past week variables from days -14 to -7 are computed.
+days = 30 then last month variables are computed.
+}
 \note{
 Last week variables have prefix 'lw'
+      Past week variables have prefix 'pw'
+      Past month variables have prefix 'lm'
 }

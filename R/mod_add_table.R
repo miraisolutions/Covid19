@@ -25,6 +25,8 @@ mod_add_table_ui <- function(id){
 mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5){
   ns <- session$ns
   # Add Labels
+  df = df %>%
+    select(-maxdate)
   vars = intersect(names(df), unlist(varsNames()))
   names(df)[names(df) %in% vars] = names(varsNames(vars))
 

@@ -1,6 +1,6 @@
 context("get data tests")
 
-if (F) {
+if (FALSE) {
   test_that("get_timeseries_data returns expected headers", {
     data <- get_timeseries_data()
     expect_equal(names(data), c("confirmed", "deaths", "recovered"))

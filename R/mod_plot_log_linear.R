@@ -44,6 +44,8 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #' @param countries character vector of countries considered, NULL if only one
 #' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
 #' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
+#' @param process_data logical, if TRUE apply tsdata_areplot function to df
+#' @param fun.args list, names lev and nn, arguments of tsdata_areplot function
 #'
 #' @example man-roxygen/ex-plot_log_linear.R
 #'
@@ -54,15 +56,26 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
 #' @importFrom scales label_number
 #'
 #' @noRd
-mod_plot_log_linear_server <- function(input, output, session, df, type, g_palette = graph_palette, countries = NULL, hosp = FALSE, active_hosp = FALSE){
+mod_plot_log_linear_server <- function(input, output, session, df, type, g_palette = graph_palette, countries = NULL, hosp = FALSE, active_hosp = FALSE, process_data = FALSE, fun.args = NULL){
   ns <- session$ns
   legend.y = 1.1
+
+  if (process_data){
+
+    if (is.null(fun.args)) {
+      stop("argument fun.args must be provided")
+    }
+    if(!identical(names(fun.args), c("levs","nn")))
+      stop("wrong argument funargs")
+    df = do.call("tsdata_areplot", c(list(data = df), fun.args))
+      #tsdata_areplot(continent_data,levs, nn = nn)
+  }
 
   if (!is.null(countries) && type == "area") {
     message("mod_plot_log_linear_server area with select country")
     # select the one with more confirmed cases today
 
-    selectedcountry = df %>% filter(Date == max(Date)) %>%
+    selectedcountry = df %>% filter(Date == max(Date)) %>% #maxdate not available here
       group_by(Country.Region)%>% summarise(conf = sum(Value, na.rm = TRUE)) %>%
       arrange(desc(conf)) %>% .$Country.Region %>% .[1]
     log = reactive(FALSE)
