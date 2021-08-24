@@ -72,16 +72,6 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
       )
     )
   } else if (!is.null(uichoice1)){
-    # if (length(uichoice1$choices) == 1) {
-    #   tagList(
-    #     fluidRow(
-    #       uiOutput(ns("title_plot_1")),
-    #       textInput(inputId = ns("plot_1"), value =  uichoice1$selected, label = NULL),
-    #       withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400)),
-    #       div(htmlOutput(ns("caption1")), align = "center")
-    #     )
-    #   )
-    # } else {
       tagList(
         div(id = id,
 
@@ -140,11 +130,11 @@ mod_barplot_server <- function(input, output, session, df,
     if (!all(is.na(df$population))) {
       df_plot <- df %>%
         #arrange(desc(rate)) %>%
-        filter( date == maxdate & #!!sym(rate) != 0 &
+        filter( date == AsOfDate & #!!sym(rate) != 0 &
                   population >= max.pop) # %>% # filter out those with rate = 0 and small countries
     } else
       df_plot <- df %>%
-            filter( date == maxdate)
+            filter( date == AsOfDate)
 
     if (sortbyvar) {
       df_plot <- df_plot %>%
@@ -154,10 +144,9 @@ mod_barplot_server <- function(input, output, session, df,
       df_plot <- df_plot %>%
         filter(Country.Region %in% head(unique(df_plot$Country.Region),n_highligth))
     }
-
     df_plot <- df_plot %>%
       mutate(Country = factor(Country.Region, levels = .$Country.Region)) %>%
-      select(Country, rate) %>% setNames(c("Country","Value"))
+      select(Country, AsOfDate,rate) %>% setNames(c("Country","AsOfDate","Value"))
 
     df_plot
   }
