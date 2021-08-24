@@ -180,34 +180,43 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
 
   days_year = ifelse(lubridate::leap_year(df$date), 366, 365)
 
-  years = (df$year - min(df$year)) * days_year
-  df$Date = df$date - years # (to consider leap year)
+  df$d.year = (df$year - min(df$year)) * days_year
+  df$Date = df$date - df$d.year # (to consider leap year)
   # make factor
 
   # df$Date = format.Date(df$Date, "%m-%d")
   # df$Date = factor(df$Date, ordered = TRUE)
 
   # rescale aggr vars removing data on 1st available date
-  .rescale_year_start = function(dat, years) {
+  .rescale_year_start = function(var, years) {
+    # depends on whether data are sorted asc or desc
+    if (years[1] == 0) { # if desc
+      id_last_day_of_year = which(!duplicated(years)) -1
+      last_day_of_prev_year = c(rep(0, length = table(years)[as.character(unique(years))][1]),
+                                rep(var[id_last_day_of_year[-1]], times = table(years)[as.character(unique(years))][-1]))
 
-    id_last_day_of_year = which(!duplicated(years)) -1
-    last_day_of_prev_year = c(rep(0, length = table(years)[1]),
-                              rep(dat[id_last_day_of_year[-1]], times = table(years)[-1]))
-    dat =  dat - last_day_of_prev_year
-    dat
+    } else{
+      id_last_day_of_year = which(!duplicated(years))
+
+      last_day_of_prev_year = c(rep(var[id_last_day_of_year[-1]], times = table(years)[as.character(unique(years))][-length(id_last_day_of_year)]),
+                                rep(0, length = table(years)[as.character(unique(years))][length(id_last_day_of_year)]))
+
+    }
+    var =  var - last_day_of_prev_year
+    var
   }
 
-  if (any(years>0)) {# if there are 2 years at least
-    df = df %>%
-      mutate( # add aggregated vars
-        across(all_of(as.vector(cum_vars)), ~.rescale_year_start(dat = .x, years = years)) # use all_of
-      )
-  }
+  # if (any(years>0)) {# if there are 2 years at least
+  #   df = df %>%
+  #     mutate( # add aggregated vars
+  #       across(all_of(as.vector(cum_vars)), ~.rescale_year_start(dat = .x, years = years)) # use all_of
+  #     )
+  # }
 
   # year column
   # stop if multiple countries are passed
 
-  calc_line_plot = function(dat, .vars_nthcases_plot) {
+  .calc_line_plot = function(dat, .vars_nthcases_plot, cum_vars = cum_vars) {
 
     # select only needed variables
     #dat = df %>% .[, c("Country.Region", "date","Date", "population", intersect(.vars_nthcases_plot, names(dat)))]
@@ -217,9 +226,16 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       date_first_var = min(dat$date[dat[[input$radio_indicator]] > 0], na.rm = TRUE)-1 # remove one day
       dat = dat[dat$date >= date_first_var, , drop = FALSE]
 
-      #dat$Date = factor(format(dat$date, "%d-%m"), ordered = TRUE)
-
       varsfinal = c("Country.Region", "year", input$radio_indicator, "Date")
+
+      if (any(dat$d.year>0) && (input$radio_indicator %in% cum_vars)) {
+        # if there are more than 2 years and if the variable is cumulative
+        dat = dat %>%
+            mutate( # add aggregated vars
+              #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(dat = .x, years = years)) # use all_of
+              across(all_of(as.vector(input$radio_indicator)), ~.rescale_year_start(var = .x, years = d.year)) # use all_of
+            )
+      }
       # if (strindx)
       #   varsfinal = unique(c(varsfinal, "stringency_index"))
       # if (!is.null(secondline))
@@ -232,12 +248,6 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       df_out
     })
 
-    # log <- reactive({
-    #   if (is.null(input$radio_log_linear))
-    #     FALSE
-    #   else
-    #     req(input$radio_log_linear) != "linear"
-    # })
 
     #rollw = TRUE
     # Plot -----
@@ -267,7 +277,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
 
   }
 
-  calc_line_plot(df, .vars_nthcases_plot)
+  .calc_line_plot(df, .vars_nthcases_plot, cum_vars)
 
 
   output$caption <- renderText({
