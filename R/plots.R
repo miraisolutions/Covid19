@@ -754,8 +754,17 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
 
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
 
+  popuptext = function(asofdate,  xvarexpr, percent){
+    paste(
+      paste("AsOfDate: ",asofdate,"<br>"),
+      paste0("Value: ",funformat(xvarexpr, percent), "<br>"),
+      sep = ""
+    )
+  }
+  # p <- ggplot(df, aes(x = Country, y = Value,
+  #                     text = paste0("Value: ",funformat(Value, percent)))) +
   p <- ggplot(df, aes(x = Country, y = Value,
-                      text = paste0("Value: ",funformat(Value, percent)))) +
+                        text = popuptext(AsOfDate,Value,percent))) +
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
@@ -833,16 +842,17 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
   accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
 
 
-  popuptext = function(area, yvarexpr, xvarexpr){
+  popuptext = function(area, asofdate, yvarexpr, xvarexpr){
     paste(
       paste("Area: ",area,"<br>"),
+      paste("AsOfDate: ",asofdate,"<br>"),
       paste(names(varsNames(yvar)) ,funformat(yvarexpr, percenty),"<br>"),
       paste(names(varsNames(xvar)), funformat(xvarexpr, percentx), "<br>"),
       sep = ""
     )
   }
   p <- ggplot(df, aes(x = !! sym(xvar), y = !! sym(yvar),
-                      text = popuptext(Country.Region, !! sym(yvar), !! sym(xvar)),
+                      text = popuptext(Country.Region, AsOfDate, !! sym(yvar), !! sym(xvar)),
                       group = 1
                       #text = popuptext,
                       #text = paste(names(varsNames("confirmed_rate_1M_pop")), formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")
