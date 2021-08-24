@@ -11,6 +11,8 @@ app_ui <- function(request) {
   n <- 1000 #  min number of cases for a country to be considered. Default 1000
   # to be used in Global and Comparison
   w <- 7 # number of days of outbreak. Default 7
+  now = as.POSIXct(Sys.time()) # given time zone
+  AsOfDate =  as.character(as.Date(now - 40*60*60))
 
   tagList(
     # Leave this function for adding external resources
@@ -51,9 +53,8 @@ app_ui <- function(request) {
             span(
               id = "subtitle",
               #"Data source: worldometers from 26.03.2020, JHU CSSE before.",
-              "Data source: COVID-19 Data Hub",
-              textOutput("last_update", inline = TRUE) %>%
-                #bs_embed_tooltip(title = "Data Repository by bumbeishvili. More information on the README.", placement = "right")
+              tags$p(paste("Data source: COVID-19 Data Hub, latest update on", AsOfDate)) %>%
+              #textOutput("last_update", inline = TRUE) %>%
                 bs_embed_tooltip(title = "Data Repository by COVID-19 Data Hub. More information in the README on our github page.", placement = "right")
 
             )
@@ -74,7 +75,6 @@ app_ui <- function(request) {
         ) # end header-left
 
       ), # end Header fluidRow
-      #div(p("Data is growing, allow 30 seconds for the first page to load..."), align = "left"),
       modalDialog(title = "Covid19Mirai loading message",
                   p("Data is growing, allow 30 seconds for the first page to load."),
                   p("Load first page fully before navigating to others.")),

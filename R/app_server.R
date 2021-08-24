@@ -59,11 +59,11 @@ app_server <- function(input, output, session) {
   orig_data_aggregate <-
     build_data_aggr(orig_data, pop_data)
 
-  output$last_update <- renderText({
-    paste0("Latest updated: ",
-           max(orig_data$date)
-    )
-  })
+  # output$last_update <- renderText({
+  #   paste0("Latest updated: ",
+  #          max(orig_data$date)
+  #   )
+  # })
 
 
   glob_var = reactiveVal(0)
