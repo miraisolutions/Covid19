@@ -13,8 +13,7 @@ mod_stackedbarplot_ui <- function(id){
   caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
 
   tagList(
-          uiOutput(ns("title_stackedbarplot_status")),
-          #withSpinner(uiOutput(ns("plot_stackedbarplot_status")))
+          div(htmlOutput(ns("title_stackedbarplot_status")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
 
           withSpinner(plotlyOutput(ns("plot_stackedbarplot_status"), height = 500)),
           div(caption_explain, align = "center", height = 10)
@@ -40,9 +39,17 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
 
   # titles
   if (istop) {
-    output$title_stackedbarplot_status <- renderUI(div(h4(paste0("Current top ", n_highligth, " status split")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_stackedbarplot_status <- renderText(#div(
+      #h4(
+        HTML(paste0("Current top ", n_highligth, " status split"))
+      #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      )
   } else {
-    output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_stackedbarplot_status <- renderText(#div(
+      #h4("Status split")
+      HTML("Status split")
+      #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      )
   }
   #active_hosp = FALSE
   if (active_hosp) {
@@ -61,7 +68,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     keepvars = c(keepvars, "confirmed")
 
   df_status = df %>%
-    filter(date == maxdate) %>%
+    filter(date == AsOfDate) %>%
     select(Country.Region, !!keepvars)
 
   if (istop) {

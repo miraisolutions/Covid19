@@ -46,7 +46,7 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
     } else
       varsx = varsx
     tagList(
-      uiOutput(ns("title_scatterplot")),
+      div(htmlOutput(ns("title_scatterplot")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
       fluidRow(
         column(6,
                selectInput(inputId = ns("yvar"), label = div(style = "font-size:10px",varsy$label),
@@ -68,7 +68,7 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
     } else
       varsy = varsy
     tagList(
-      uiOutput(ns("title_scatterplot")),
+      div(htmlOutput(ns("title_scatterplot")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
       fluidRow(
         column(6, #offset = 6,
                selectInput(inputId = ns("yvar"), label = div(style = "font-size:10px",varsy$label),
@@ -131,11 +131,19 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   )
   if (growth) {
     #reactList$yvar = input$yvar
-    output$title_scatterplot <- renderUI(div(h4(paste(istoptitle, "Growth vs", xTitle())), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_scatterplot <- renderText({
+      #div(
+      HTML(paste(istoptitle, "Growth vs", xTitle()))
+      #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+    }
+  )
   } else {
     #reactList$yvar = xvar
-    #output$title_scatterplot <- renderUI(div(h4(paste0(istoptitle, names(varsNames(req(input$yvar))), " vs ", names(varsNames(xvar)))), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
-    output$title_scatterplot <- renderUI(div(h4(paste(istoptitle, names(varsNames(reactList$yvar)), "vs", xTitle())), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_scatterplot <- renderText(
+      #div(
+      HTML(paste(istoptitle, names(varsNames(reactList$yvar)), "vs", xTitle()))
+        #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+        )
   }
 
 
@@ -143,9 +151,9 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   world = function(dat, yvar){
     dat %>% #TODO select_countries_n_cases_w_days can be removed if data_filtered is the input
       #select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == maxdate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
+      filter( date == AsOfDate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
       #select(Country.Region,date,confirmed,starts_with("growth"), !!xvar)
-      select(Country.Region,date,confirmed, !!reactList$xvar, !!reactList$yvar)
+      select(Country.Region,date,AsOfDate,confirmed, !!reactList$xvar, !!reactList$yvar)
 
   }
   pick_rate <- function(df, rate){
@@ -197,9 +205,9 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   }
   df_top_new = reactive({
     df_top %>%
-    filter( date == maxdate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
+    filter( date == AsOfDate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
       #select(Country.Region,date,confirmed,starts_with("growth"), !!xvar)
-      select(Country.Region,date,confirmed, !!reactList$xvar, !!reactList$yvar)
+      select(Country.Region,date,AsOfDate,confirmed, !!reactList$xvar, !!reactList$yvar)
   })
 
 
@@ -235,7 +243,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
     msg = c(caption_yvar(), caption_xvar(), caption_median())
     if (fitted)
       msg = c(msg, paste(caption_fitted(), "among all countries of this page with data"))
-    paste0("<p>", msg, sep = '</p>')
+    paste0(msg, sep = '</br>')
   })
 
   output$plot_scatterplot_xy <- renderPlotly({
