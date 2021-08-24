@@ -31,7 +31,7 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
     ),
     hr(),
     div(
-      uiOutput(ns("ind_missing_days"))
+        htmlOutput(ns("ind_missing_days"))
     ),
     hr(),
     selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
@@ -107,13 +107,12 @@ areaUI = function(id, tab = TRUE, stringency = TRUE, vaxflag = TRUE, n2 = 100){
            hr(),
            div(h3("Country split at level 2"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
            hr(),
-           #div(h5("Some countries have unreliable or inconsistent data at regional level. They may not match those at Country Level or they may miss information."), align = "left", style = "margin-top:20px; margin-bottom:20px;"),
            div(
              HTML(from_nth_case_area2_msg)
            ),
           hr(),
           div(
-              uiOutput(ns("ind_missing_days_area"))
+            htmlOutput(ns("ind_missing_days_area"))
           ),
            hr(),
            fluidRow(
@@ -261,7 +260,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       summarize(miss = sum(c_across(get_cumvars()))) %>%
       ungroup()
 
-    output$ind_missing_days <- renderUI({
+    output$ind_missing_days <- renderText({
       HTML(
         message_missing_country_days(country_data)
     )})
@@ -407,7 +406,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     rescale_df_contagion(n = n2, w = w) # take where 100 confirmed
 
   data_2_filtered_today = data_2_filtered %>%
-      filter(date == maxdate)
+      filter(date == AsOfDate)
 
   data_today = data %>%
     add_growth_death_rate()
@@ -417,7 +416,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   data_today = data_today  %>%
     left_join(lw_data %>% select(-population))
 
-  output$ind_missing_days_area <- renderUI({
+  output$ind_missing_days_area <- renderText({
     HTML(
       message_missing_country_days(data)
     )})
@@ -430,7 +429,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   area_data_2_aggregate_today <-
     data %>%
-    filter( date == maxdate)
+    filter( date == AsOfDate)
 
   area_2_top_5_today <-
     area_data_2_aggregate_today %>%
@@ -490,7 +489,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     mindate = min(area_2_top_5_confirmed$date[area_2_top_5_confirmed$confirmed>n2], na.rm = TRUE)
 
     # create factors with first top confirmed
-    countries_order =  area_2_top_5_confirmed %>% filter(date == maxdate) %>%
+    countries_order =  area_2_top_5_confirmed %>% filter(date == AsOfDate) %>%
       arrange(desc(confirmed)) %>%
       .[,"Country.Region"] %>% as.vector()
     df_top_n = area_2_top_5_confirmed %>% filter(date >= mindate) %>% # take only starting point where greater than n
@@ -686,7 +685,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   if(tab) {
     # prepare data for table with country data
     area_data_2_aggregate_tab = data %>% # only data from today
-      filter(date == maxdate) %>%
+      filter(date == AsOfDate) %>%
       arrange(desc(confirmed) )
 
     callModule(mod_add_table_server, "add_table_area2",

@@ -131,107 +131,72 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       countries_data_today = all_countries_data_today %>%
         filter(Country.Region %in% input$select_countries)
 
-      # idx = order(match(countries_data_today$Country.Region, input$select_countries))
-      # countries_data_today = countries_data_today[idx, ]
 
-      # align contagion day for comparisons
-      # data_filtered <-
-      #   countries_data %>%
-      #   rescale_df_contagion(n = nn, w = w)
-      # output$from_nth_case <- renderText({
-      #   paste0("Only countries with more than ", n, " confirmed cases, and outbreaks longer than ", w, " days considered. Contagion day 0 is the first day with more than ", n ," cases.")
+      vaxflag = sum(countries_data$vaccines, na.rm = TRUE) > 0
+
+      statuseslineplot = c("confirmed", "deaths", "recovered", "active")
+      if (vaxflag)
+        statuseslineplot = c("confirmed", "deaths", "vaccines", "active")
+
+      callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data, nn = nn, statuses = statuseslineplot)
+
+      # Rate plots ----
+      # output$rateplots <- renderUI({
+      #   mod_barplot_ui(ns("rate_plots"))
       # })
 
-      # Bar plots ----
-      if (FALSE) {
-        output$barplots <- renderUI({
-          lapply(input$select_countries, function(country){
-            tagList(
-              h2(country),
-              mod_bar_plot_day_contagion_ui(ns(paste0(country,"_bar_plot_day_contagion")))
-            )
-          })
-        })
-
-        lapply(input$select_countries, function(country){
-          country_data <- countries_data %>%
-            filter(Country.Region %in% country)
-          callModule(mod_bar_plot_day_contagion_server, paste0(country,"_bar_plot_day_contagion"), country_data, nn = nn)
-        })
-      }
-
-    # Line plots ----
-    # output$lineplots <- renderUI({
-    #   tagList(
-    #     h2("Countries Comparison"),
-    #     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion"))
-    #   )
-    # })
-    vaxflag = sum(countries_data$vaccines, na.rm = TRUE) > 0
-
-    statuseslineplot = c("confirmed", "deaths", "recovered", "active")
-    if (vaxflag)
-      statuseslineplot = c("confirmed", "deaths", "vaccines", "active")
-
-    callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion", countries_data, nn = nn, statuses = statuseslineplot)
-
-    # Rate plots ----
-    # output$rateplots <- renderUI({
-    #   mod_barplot_ui(ns("rate_plots"))
-    # })
-
-    callModule(mod_barplot_server, "rate_plots", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
-               g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
-                                "plot_2" = graph_palette[1:length(input$select_countries)],
-                                calc = FALSE),
-               sortbyvar = FALSE)
+      callModule(mod_barplot_server, "rate_plots", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
+                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
+                                  "plot_2" = graph_palette[1:length(input$select_countries)],
+                                  calc = FALSE),
+                 sortbyvar = FALSE)
 
 
-    # Line with bullet plot
+      # Line with bullet plot
 
-    output$lines_points_plots <- renderUI({
-      mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), istop = FALSE, nn = nn, tests = TRUE, hosp = TRUE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, vax = vaxflag)
-    })
+      output$lines_points_plots <- renderUI({
+        mod_compare_nth_cases_plot_ui(ns("lines_points_plots"), istop = FALSE, nn = nn, tests = TRUE, hosp = TRUE, strindx = TRUE, selectvar = "new_confirmed", oneMpop = TRUE, vax = vaxflag)
+      })
 
-    callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, n_highligth = length(input$select_countries),
-               istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE,  oneMpop = TRUE, vax = vaxflag)
-
-
-    inputcountries = reactive({input$select_countries}) # pass countries to plot below
-
-    # set nmed to 10000 like in global page, istop == FALSE
-    callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
+      callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data, nn = nn, n_highligth = length(input$select_countries),
+                 istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE,  oneMpop = TRUE, vax = vaxflag)
 
 
-    callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE)
+      inputcountries = reactive({input$select_countries}) # pass countries to plot below
 
-    # set nmed to 10000 like in global page, istop == FALSE
-    callModule(mod_scatterplot_server, "scatterplot_stringency", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries(), xvar = "stringency_index", growth = FALSE, fitted = FALSE)
-
-    # > barplot stringency
-    callModule(mod_barplot_server, "barplot_stringency_index", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
-               plottitle = c("Stringency Index"),
-               g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
-                                calc = FALSE),
-               sortbyvar = FALSE)
-
-    #scatterplot vax versus vars
-    callModule(mod_scatterplot_server, "scatterplot_vax_vars",
-               all_countries_data_today, nmed = nn, n_highligth = length(input$select_countries),
-               istop = FALSE, countries = inputcountries(), xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
-
-    #barplot vax
-
-    callModule(mod_barplot_server, "barplot_vax_index", countries_data_today,
-               n_highligth = length(input$select_countries), istop = FALSE,
-               plottitle = c("Vaccination Status"),
-               g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],#barplots_colors[["vaccines"]],
-                                calc = FALSE),
-               sortbyvar = FALSE)
+      # set nmed to 10000 like in global page, istop == FALSE
+      callModule(mod_scatterplot_server, "scatterplot_plots", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries())
 
 
-    # tables ----
-    callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
+      callModule(mod_stackedbarplot_status_server, "status_stackedbarplot", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE)
+
+      # set nmed to 10000 like in global page, istop == FALSE
+      callModule(mod_scatterplot_server, "scatterplot_stringency", all_countries_data_today, nmed = 10000, n_highligth = length(input$select_countries), istop = FALSE, countries = inputcountries(), xvar = "stringency_index", growth = FALSE, fitted = FALSE)
+
+      # > barplot stringency
+      callModule(mod_barplot_server, "barplot_stringency_index", countries_data_today, n_highligth = length(input$select_countries), istop = FALSE,
+                 plottitle = c("Stringency Index"),
+                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)], #barplots_colors$stringency,
+                                  calc = FALSE),
+                 sortbyvar = FALSE)
+
+      #scatterplot vax versus vars
+      callModule(mod_scatterplot_server, "scatterplot_vax_vars",
+                 all_countries_data_today, nmed = nn, n_highligth = length(input$select_countries),
+                 istop = FALSE, countries = inputcountries(), xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+
+      #barplot vax
+
+      callModule(mod_barplot_server, "barplot_vax_index", countries_data_today,
+                 n_highligth = length(input$select_countries), istop = FALSE,
+                 plottitle = c("Vaccination Status"),
+                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],#barplots_colors[["vaccines"]],
+                                  calc = FALSE),
+                 sortbyvar = FALSE)
+
+
+      # tables ----
+      callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
     }
   })
 
