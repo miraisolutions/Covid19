@@ -32,6 +32,19 @@ if (FALSE) {
   })
 }
 
+##############
+# test last week on swiss data
+
+data_ch2 = get_timeseries_by_contagion_day_data(data_ch2)
+orig_data_aggregate_ch2 = build_data_aggr(data_ch2)
+
+lw_orig_data_aggregate_ch2 =  lw_vars_calc(orig_data_aggregate_ch2)
+
+orig_data_aggregate_ch2_today = orig_data_aggregate_ch2 %>%
+  add_growth_death_rate()
+orig_data_aggregate_today_ch2_today = orig_data_aggregate_ch2_today  %>%
+  left_join(lw_orig_data_aggregate_ch2 %>% select(-population))
+
 # French data give always problems
 data_FR <- get_datahub("France", lev = 2)
 
@@ -49,13 +62,13 @@ test_that("get_datahub lev = 1 Hong Kong works", {
 })
 
 data <- get_timeseries_by_contagion_day_data(data_full)
-vars = c(vars,"maxdate")
+vars = c(vars,"AsOfDate")
 
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
 
   check_data(data)
   varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests","vaccines", .hosp_vars))
-  expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date","maxdate",varnames ,"population","stringency_index",
+  expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date","AsOfDate",varnames ,"population","stringency_index",
                                          paste0("new_",varnames), "contagion_day"))))
   expect_equal(class(data$contagion_day),"numeric")
   expect_false(any(sapply(data, class) == "integer"))
