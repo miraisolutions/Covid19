@@ -108,7 +108,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
    total_today <-
      total_aggregate %>%
-        filter(date == maxdate)
+        filter(date == AsOfDate)
    lw_total =  lw_vars_calc(total_aggregate)
    pw_total =  lw_vars_calc(total_aggregate, 14)
 
@@ -139,7 +139,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   world_top_5_confirmed <-
     orig_data_aggregate %>%
       filter(Country.Region %in% world_top_5_today$Country.Region) %>%
-      select(Country.Region, date, maxdate,confirmed)
+      select(Country.Region, date, AsOfDate,confirmed)
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", total_today, vax = "recovered")
@@ -169,7 +169,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # > line plot top 5
   #df_top_n <-
     # create factors with first top confirmed
-  countries_order =  world_top_5_confirmed %>% filter(date == maxdate) %>%
+  countries_order =  world_top_5_confirmed %>% filter(date == AsOfDate) %>%
     arrange(desc(confirmed)) %>%
      .[,"Country.Region"] %>% as.vector()
 

@@ -231,8 +231,8 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     if (areasearch) {
 
       countries =   df %>%
-        select(date,maxdate, Country.Region,confirmed) %>%
-        filter(date == maxdate) %>%
+        select(date,AsOfDate, Country.Region,confirmed) %>%
+        filter(date == AsOfDate) %>%
         arrange(desc(confirmed)) %>% .[,"Country.Region"]
       selected_countries = head(countries$Country.Region,3)
 
@@ -296,7 +296,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       varname
     })
     # select only needed variables
-    dat = dat %>% .[, c("Country.Region", "date","maxdate","Date", "population", intersect(.vars_nthcases_plot, names(dat)))]
+    dat = dat %>% .[, c("Country.Region", "date","AsOfDate","Date", "population", intersect(.vars_nthcases_plot, names(dat)))]
     # Give dat standard structure; reacts to input$radio_indicator
     df_data <- reactive({
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
@@ -314,7 +314,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         #   arrange(desc(!!as.symbol(reactSelectVar()))) %>%
         #   #arrange(!!as.symbol(input$radio_indicator)) %>%
         #   top_n(n_highligth, wt = !!as.symbol(reactSelectVar())) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
-        countries_order = dat %>% filter(date == maxdate) %>%
+        countries_order = dat %>% filter(date == AsOfDate) %>%
           slice_max(!!as.symbol(reactSelectVar()), n = n_highligth, with_ties = FALSE) %>% .[,"Country.Region"] %>% as.vector()
 
         data = dat %>% right_join(countries_order)  %>%  # reordering according to variable if istop
@@ -341,18 +341,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         select(-reactSelectVar())
 
       # filter dates with 0 contagions
-
-      # if (istop && ("China" %in% df_tmp$Status) && datevar == "contagion_day") {
-      #   # Day of the country with max contagions after china
-      #   max_contagion_no_china <- df_tmp %>%
-      #     filter(Status != "China") %>%
-      #     filter(Date == maxdate) %>%
-      #     select(Date) %>% unique() %>%
-      #     as.numeric()
-      #   df_out <- df_tmp %>%
-      #     #filter(Status %in% as.vector(countries$Status)) %>% #pick only filtered countries, not needed, now done before
-      #     filter(Date <= max_contagion_no_china) #%>% #cut china
-      # } else {
         df_out = df_tmp
       #}
 

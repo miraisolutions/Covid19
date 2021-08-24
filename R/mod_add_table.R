@@ -25,8 +25,9 @@ mod_add_table_ui <- function(id){
 mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5){
   ns <- session$ns
   # Add Labels
-  df = df %>%
-    select(-maxdate)
+  df = df %>% .[,c("date","AsOfDate",setdiff(names(df), c("date","AsOfDate")))] # place as of date in first place
+
+
   vars = intersect(names(df), unlist(varsNames()))
   names(df)[names(df) %in% vars] = names(varsNames(vars))
 
