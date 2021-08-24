@@ -34,9 +34,9 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30)
       axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
     )
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6)
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
   } else {
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.break = 6) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.breaks = 6) # add label
   }
 
   # p = p %>%
@@ -669,9 +669,9 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
     scale_color_manual(values = g_palette)
 
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6)
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.break = 6) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.breaks = 6) # add label
 
   if (log) {
     p <- p %>%
@@ -774,9 +774,9 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     )
 
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
   } else {
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 6) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.breaks = 6) # add label
   }
 
   p
@@ -877,7 +877,7 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
     # scale_x_continuous(labels = label_number(
     #   big.mark = "'",
     #   #suffix = "K"
-    #   n.break = 5
+    #   n.breaks = 5
     # )) #+
 
   # p +
@@ -885,15 +885,15 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
 
   percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
   if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.break = 6)
+    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
   } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.break = 6) # add label
+    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.breaks = 6) # add label
 
   percent = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
   if (percent) {
-    p <- p + scale_x_continuous(labels = function(x) paste0(x, "%"), n.break = 8)
+    p <- p + scale_x_continuous(labels = function(x) paste0(x, "%"), n.breaks = 8)
   } else
-    p <- p + scale_x_continuous(labels = label_number(big.mark = "'"), n.break = 8) # add label
+    p <- p + scale_x_continuous(labels = label_number(big.mark = "'"), n.breaks = 8) # add label
 
   p
 }
