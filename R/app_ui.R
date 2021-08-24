@@ -6,6 +6,12 @@
 #' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
 #' @noRd
 app_ui <- function(request) {
+
+  # Params ----
+  n <- 1000 #  min number of cases for a country to be considered. Default 1000
+  # to be used in Global and Comparison
+  w <- 7 # number of days of outbreak. Default 7
+
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
@@ -92,22 +98,22 @@ app_ui <- function(request) {
                            mod_continent_comparison_ui("continent_comparison")),
                    tabPanel("Europe",
                             id = "tab_global",
-                            mod_continent_ui("Europe_comparison", "europe")),
+                            mod_continent_ui("Europe_comparison", "europe", nn = n)),
                    tabPanel("Asia",
                             id = "tab_global",
-                            mod_continent_ui("Asia_comparison", "asia")),
+                            mod_continent_ui("Asia_comparison", "asia", nn = n)),
                    tabPanel("Africa",
                             id = "tab_global",
-                            mod_continent_ui("Africa_comparison", "africa")),
+                            mod_continent_ui("Africa_comparison", "africa", nn = n)),
                    tabPanel("Lat. America & Carib.",
                             id = "tab_global",
-                            mod_continent_ui("LatAm_comparison", "latam")),
+                            mod_continent_ui("LatAm_comparison", "latam", nn = n)),
                    tabPanel("Northern America",
                             id = "tab_global",
-                            mod_continent_ui("NorthernAmerica_comparison","northernamerica")),
+                            mod_continent_ui("NorthernAmerica_comparison","northernamerica", nn = n)),
                    tabPanel("Oceania",
                             id = "tab_global",
-                            mod_continent_ui("Oceania_comparison","oceania"))
+                            mod_continent_ui("Oceania_comparison","oceania", nn = n))
                  )
                 ),
         tabPanel("Switzerland",
