@@ -23,7 +23,7 @@ if (interactive()) {
 
     total_today <-
       total %>%
-      filter(date == maxdate)
+      filter(date == AsOfDate)
 
 
     callModule(mod_caseBoxes_server, "count-boxes", total_today)
@@ -71,7 +71,7 @@ if (interactive()) {
 
     total_today <-
       total %>%
-      filter(date == maxdate)
+      filter(date == AsOfDate)
 
 
     callModule(mod_caseBoxes_server, "count-boxes", total_today, vax = "recovered")

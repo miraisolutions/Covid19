@@ -19,7 +19,7 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     #countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
-    rds_map = "WorldMap_sp_rds"
+    rds_map = "WorldMap_sp_spl.rds"
     message("read map from RDS ", rds_map)
     countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 

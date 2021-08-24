@@ -5,7 +5,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_barplot_ui("plot")
+      Covid19Mirai:::mod_barplot_ui("plot")
     )
   )
   server <- function(input, output, session) {

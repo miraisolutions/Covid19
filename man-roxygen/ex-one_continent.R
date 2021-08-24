@@ -1,7 +1,7 @@
 if (interactive()) {
 
   #sapply(file.path("R",list.files("R")), source)
-  devtools::load_all()
+  #devtools::load_all()
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   cont = "Europe"
@@ -21,6 +21,7 @@ if (interactive()) {
         get_timeseries_by_contagion_day_data()
     #})
 
+    pop_data = get_pop_datahub()
     pop_data = get_pop_datahub()
     orig_data_aggregate = #reactive({
       build_data_aggr(orig_data, pop_data)

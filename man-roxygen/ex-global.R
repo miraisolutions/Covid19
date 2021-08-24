@@ -10,7 +10,7 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    rds_map = "WorldMap_sp_rds"
+    rds_map = "WorldMap_sp_spl.rds"
     message("read map from RDS ", rds_map)
     countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
