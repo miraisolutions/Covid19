@@ -898,7 +898,7 @@ get_aggrvars = function() {
   allstatuses = c(allstatuses, prefix_var(allstatuses), "population")
   allstatuses
 }
-#'Global definition of continent names
+#'Global definition of continent names for different purposes
 #' @param idx integer, id of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
 #' @param contname character, name of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
 #' @return data.frame with continent info
@@ -948,8 +948,10 @@ message_firstday = function(ncases, var = "confirmed") {
 message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
   paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
 }
+
 #'Message text, missing days for given countries in the data
 #' @param data data.frame with Country data
+#' @param sep character separator <br/>
 #'
 #' @return character vector with message
 #'
