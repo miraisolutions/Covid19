@@ -899,8 +899,9 @@ get_aggrvars = function() {
   allstatuses
 }
 #'Global definition of continent names
-#'
-#' @return data.frame
+#' @param idx integer, id of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
+#' @param contname character, name of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
+#' @return data.frame with continent info
 #'
 .getContinents = function(idx, contname){
   tabuicontinents = c("Europe", "Asia", "Africa", "Lat. America & Carib.", "Northern America", "Oceania")
