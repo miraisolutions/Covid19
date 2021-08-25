@@ -898,7 +898,7 @@ get_aggrvars = function() {
   allstatuses = c(allstatuses, prefix_var(allstatuses), "population")
   allstatuses
 }
-#'Global definition of continent names
+#'Global definition of continent names for different purposes
 #' @param idx integer, id of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
 #' @param contname character, name of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
 #' @return data.frame with continent info

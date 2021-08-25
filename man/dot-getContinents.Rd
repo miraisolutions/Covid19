@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.getContinents}
 \alias{.getContinents}
-\title{Global definition of continent names}
+\title{Global definition of continent names for different purposes}
 \usage{
 .getContinents(idx, contname)
 }
@@ -15,5 +15,5 @@
 data.frame with continent info
 }
 \description{
-Global definition of continent names
+Global definition of continent names for different purposes
 }
