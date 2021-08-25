@@ -6,8 +6,11 @@
 \usage{
 .getContinents(idx, contname)
 }
+\arguments{
+\item{idx}{character, name of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"}
+}
 \value{
-data.frame
+data.frame with continent info
 }
 \description{
 Global definition of continent names
