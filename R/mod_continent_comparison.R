@@ -75,7 +75,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   # Rate plots ----
 
-  callModule(mod_barplot_server, "rate_plots_cont", continent_data_filtered_today, n_highligth = length(continents), istop = FALSE,
+  callModule(mod_barplot_server, "rate_plots_cont", continent_data_filtered_today, n_highlight = length(continents), istop = FALSE,
              g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
                               "plot_2" = graph_palette[1:length(continents)],
                               calc = FALSE),
@@ -84,15 +84,15 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   # Line with bullet plot
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn,
-             n_highligth = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
+             n_highlight = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot
 
-  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highligth = length(continents), istop = FALSE, countries = continents)
+  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highlight = length(continents), istop = FALSE, countries = continents)
 
 
   callModule(mod_barplot_server, "barplot_vax_index_cont", continent_data_filtered_today,
-             n_highligth = length(continents), istop = FALSE,
+             n_highlight = length(continents), istop = FALSE,
              plottitle = c("Vaccination Status"),
              g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
                               calc = FALSE),

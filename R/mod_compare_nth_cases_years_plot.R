@@ -1,16 +1,54 @@
-mod_compare_timeline_plot_ui <- function(id, titles = 1:3){ # , istop = TRUE, n_highligth = 10, nn = 1000){
+#' mod_compare_timeline_plot_ui UI Function
+#'
+#' @description A shiny Module.
+#'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param istop logical to choose title, if top n_highlight countries are selected
+#' @param n_highlight number of countries to highlight
+#' @param nn min number of cases for used
+#' @param vars variable names in the drop down option.
+#' @param actives if TRUE then add new_active and active variables to vars.
+#' @param tests if TRUE then add new_test and test variables to vars.
+#' @param hosp if TRUE then add new_hosp and hosp variables to vars.
+#' @param strindx if TRUE then add stringency_index variables to vars.
+#' @param vax if TRUE then add new_vaccines and vaccines variables to vars.
+#' @param oneMpop if TRUE then rescaled vars over 1M pop are available.
+#'
+#' @noRd
+#'
+#' @import shiny
+#' @importFrom shinycssloaders withSpinner
+mod_compare_timeline_plot_ui <- function(id, titles = 1:3,
+                                         istop = TRUE, n_highlight = 10, nn = 1000,
+                                         actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, vax = FALSE){
   ns <- NS(id)#
   #plottitle = paste0("Select view")
 
-  # if (istop) {
-  #   plottitleTL = paste0("Top ",n_highligth," countries from day with ", nn ," contagions")
-  # } else {
-  #   plottitleTL = paste0("Timeline from day with ", nn ," contagions")
-  # }
   plottitleTLSE = "Timeline per variable"
   plottitleTLCY = "Timeline per calendar year"
   plottitleTLTE = "Pandemic time evolution"
   alltitles = c(plottitleTLSE, plottitleTLCY, plottitleTLTE)[titles]
+
+  plot_tabs <- tabsetPanel(
+    id = ns("title"),
+    type = "hidden",
+    tabPanel("Timeline per variable",
+             mod_compare_nth_cases_plot_ui(ns("timelines_plot"),
+                                        nn = nn, n_highlight = n_highlight,
+                                        istop = istop, tests = tests, hosp = hosp, strindx = strindx, oneMpop = oneMpop, vax = vax,
+                                        selectvar = "new_confirmed", writetitle = FALSE)
+    ),
+    tabPanel("Timeline per calendar year",
+             mod_compare_nth_cases_years_plot_ui(ns("lines_plot"), vars = .vars_nthcases_plot,
+                                                 n_highlight = n_highlight,
+                                                 istop = istop, tests = tests, hosp = hosp, strindx = strindx, vax = vax,
+                                                 selectvar = "new_deaths", writetitle = FALSE)
+    ),
+    tabPanel("Pandemic time evolution",
+             mod_plot_log_linear_ui(ns("timelinearea_plot"))
+    )
+  )
+
   # UI ----
   tagList(
     #uiOutput(ns("title")),
@@ -22,61 +60,71 @@ mod_compare_timeline_plot_ui <- function(id, titles = 1:3){ # , istop = TRUE, n_
                          choices = alltitles, selected = alltitles[1])
       )#,
     ),
-    withSpinner(uiOutput(ns("mainplot"), height = 500)), # it was 400
-
+    tabPanel("Panel plot",
+             plot_tabs
+    )
   )
 
 }
-
+#' mod_compare_timeline_plot_server Server Function, chooses between TimeLine plot per variable or Calendar year, or AreaPlot
+#'
+#' @param df data.frame
+#' @param nn minimum date derived from first day with more than nn cases. Default 1000
+#' @param n_highlight number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highlight countries are selected
+#' @param actives if TRUE then add new_active and active variables to vars.
+#' @param tests if TRUE then add new_test and test variables to vars.
+#' @param hosp if TRUE then add new_hosp and hosp variables to vars.
+#' @param strindx if TRUE then add stringency_index variables to vars.
+#' @param vax if TRUE then add new_vaccines and vaccines variables to vars.
+#'
+#' @example ex-mod_compare_nth_cases_years_plot.R
+#'
+#' @importFrom plotly renderPlotly
+#' @importFrom plotly ggplotly
+#' @importFrom plotly layout
+#' @import dplyr
+#' @import tidyr
+#' @import lubridate
+#' @import ggplot2
+#'
+#' @noRd
 mod_compare_timeline_plot_server <- function(input, output, session, df,
-                                              nn = 1000,
-                                              n_highligth = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
-                                              actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, oneMpop = TRUE, secondline = NULL, areasearch = FALSE){
+                                             nn = 1000,
+                                             n_highlight = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
+                                             actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, oneMpop = TRUE, secondline = NULL, areasearch = FALSE){
   ns <- session$ns
 
   observeEvent(req(input$plot_indicator), {
+    updateTabsetPanel(session = session, inputId = "title", selected = input$plot_indicator)
 
     message("Process TimeLine Plot ", req(input$plot_indicator))
 
     switch(req(input$plot_indicator),
            "Timeline per calendar year" = {
-              output[["mainplot"]] <- renderUI({
-                mod_compare_nth_cases_years_plot_ui(ns("lines_plot"), vars = .vars_nthcases_plot,
-                                                    istop = istop, n_highligth = n_highligth,
-                                                    actives = actives, tests = tests, hosp = hosp, strindx = strindx, vax = vax, selectvar = "new_deaths", writetitle = FALSE)
-              })
-
-              callModule(mod_compare_nth_cases_years_plot_server, "lines_plot",df,
-                         nn = nn,
-                         n_highligth = n_highligth, istop = istop, g_palette = graph_palette, datevar = datevar,
-                         secondline = NULL)#, secondline = "stringency_index")
+             callModule(mod_compare_nth_cases_years_plot_server, "lines_plot",df,
+                        nn = nn,
+                        n_highlight = n_highlight, istop = istop, g_palette = graph_palette, datevar = datevar,
+                        secondline = NULL)#, secondline = "stringency_index")
 
            }, "Timeline per variable" = {
-             output[["mainplot"]] <- renderUI({
-               mod_compare_nth_cases_plot_ui(ns("timelines_plot"), nn = nn, istop = istop, tests = tests, hosp = hosp, strindx = strindx, oneMpop = oneMpop, vax = vax, selectvar = "new_confirmed", writetitle = FALSE)
-             })
-
              callModule(mod_compare_nth_cases_plot_server, "timelines_plot", df ,  nn = nn,
-                        n_highligth = n_highligth, istop = istop, g_palette = graph_palette, datevar = "date",
+                        n_highlight = n_highlight, istop = istop, g_palette = graph_palette, datevar = "date",
                         actives = actives, tests = tests, hosp = hosp, strindx = strindx, vax = vax, oneMpop = oneMpop, secondline = secondline, areasearch = areasearch)#, secondline = "stringency_index")
 
            }, "Pandemic time evolution" ={
-             output[["mainplot"]] <- renderUI({
-               mod_plot_log_linear_ui(ns("timelinearea_plot"))
-             })
              levs <- areaplot_vars()
              callModule(mod_plot_log_linear_server, "timelinearea_plot", df = df, type = "area", process_data = TRUE, fun.args = list(levs = levs, nn = nn))
 
            },
            stop("Wrong title selected")
-           )
+    )
 
 
-  }, priority = 10)
+  })
+  #, priority = 10)
 
 }
-
-
 
 #' compare_nth_cases_years_plot UI Function
 #'
@@ -84,6 +132,8 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param vars variable names in the drop down option.
+#' @param istop logical to choose title, if top n_highlight countries are selected
+#' @param n_highlight number of countries to highlight
 #' @param actives if TRUE then add new_active and active variables to vars.
 #' @param tests if TRUE then add new_test and test variables to vars.
 #' @param hosp if TRUE then add new_hosp and hosp variables to vars.
@@ -91,7 +141,7 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
 #' @param vax if TRUE then add new_vaccines and vaccines variables to vars.
 #' @param oneMpop if TRUE then rescaled vars over 1M pop are available.
 #' @param selectvar character variable selected in ui.
-#' @param areasearch logical if TRUE replace with Country.Region selectInput
+#' @param writetitle logical if TRUE writes title in input
 #'
 #' @noRd
 #'
@@ -99,8 +149,8 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
-                                          istop = TRUE, n_highligth = 10,
-                                          actives = TRUE, tests = TRUE, hosp = TRUE, strindx = TRUE, vax = TRUE, selectvar = "new_deaths", writetitle = TRUE){
+                                                istop = TRUE, n_highlight = 10,
+                                                actives = TRUE, tests = TRUE, hosp = TRUE, strindx = TRUE, vax = TRUE, selectvar = "new_deaths", writetitle = TRUE){
   ns <- NS(id)
 
   choices_plot = choice_nthcases_plot(vars, actives = actives, tests = tests, hosp = hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices
@@ -111,25 +161,25 @@ mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
   divtitle =  switch(writetitle,div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),NULL)
 
   # UI ----
-      tagList(
-        #uiOutput(ns("title")),
-        #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-        divtitle,
-        fluidRow(
-          column(7,
-                 offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = "",
-                             choices = choices_plot, selected = selectvar)
-          )#,
-          # column(4,
-          #        selectInput(inputId = ns("radio_log_linear"), label = "",
-          #                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
-          # )
-        ),
-        withSpinner(plotlyOutput(ns("plot"), height = 400)),
-        #div(uiOutput(ns("caption")), align = "center")
-        div(htmlOutput(ns("caption")), align = "center", height = 10)
-      )
+  tagList(
+    #uiOutput(ns("title")),
+    #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    divtitle,
+    fluidRow(
+      column(7,
+             offset = 1,
+             selectInput(inputId = ns("radio_indicator"), label = "",
+                         choices = choices_plot, selected = selectvar)
+      )#,
+      # column(4,
+      #        selectInput(inputId = ns("radio_log_linear"), label = "",
+      #                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
+      # )
+    ),
+    withSpinner(plotlyOutput(ns("plot"), height = 400)),
+    #div(uiOutput(ns("caption")), align = "center")
+    div(htmlOutput(ns("caption")), align = "center", height = 10)
+  )
 
 
 
@@ -139,8 +189,8 @@ mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
 #'
 #' @param df data.frame
 #' @param nn minimum date derived from first day with more than nn cases. Default 1000
-#' @param n_highligth number of countries to highlight if istop == TRUE
-#' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param n_highlight number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param g_palette character vector of colors for the graph and legend
 #' @param datevar character variable used for X axis, date or contagion_day
 #' @param actives if TRUE then add new_active and active variables to vars.
@@ -163,9 +213,9 @@ mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
 #'
 #' @noRd
 mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
-                                              nn = 1000,
-                                              n_highligth = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
-                                              secondline = NULL){
+                                                    nn = 1000,
+                                                    n_highlight = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
+                                                    secondline = NULL){
   ns <- session$ns
   df$Date = df[[datevar]]
 
@@ -231,10 +281,10 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       if (any(dat$d.year>0) && (input$radio_indicator %in% cum_vars)) {
         # if there are more than 2 years and if the variable is cumulative
         dat = dat %>%
-            mutate( # add aggregated vars
-              #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(dat = .x, years = years)) # use all_of
-              across(all_of(as.vector(input$radio_indicator)), ~.rescale_year_start(var = .x, years = d.year)) # use all_of
-            )
+          mutate( # add aggregated vars
+            #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(dat = .x, years = years)) # use all_of
+            across(all_of(as.vector(input$radio_indicator)), ~.rescale_year_start(var = .x, years = d.year)) # use all_of
+          )
       }
       # if (strindx)
       #   varsfinal = unique(c(varsfinal, "stringency_index"))
@@ -263,13 +313,13 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
         plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip"))
       # change date format
       p$x$data = lapply(p$x$data, function(dat)  {
-              dat$text = gsub("Date: [0-9]+-", "Date: ", dat$text)
-              dat
-            })
+        dat$text = gsub("Date: [0-9]+-", "Date: ", dat$text)
+        dat
+      })
 
       if (length(unique(df_data()$Status)) == 1)
         p <- p %>%
-          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+        plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
 
       p
 

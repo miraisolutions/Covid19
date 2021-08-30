@@ -4,7 +4,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_caseBoxes_ui("boxes")
+      mod_caseBoxes_ui("boxes", outputui = TRUE)
     )
   )
   server <- function(input, output, session) {
@@ -16,21 +16,21 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     country_data = orig_data_aggregate %>%
-      filter(Country.Region == "France")
+      dplyr::filter(Country.Region == "France")
 
     country_data_today <- country_data %>%
-      filter(date == AsOfDate)
+      dplyr::filter(date == AsOfDate)
 
     lw_country_data = lw_vars_calc(country_data)
     pw_country_data =  lw_vars_calc(country_data, 14)
 
     country_data_today = country_data_today %>%
-      left_join(lw_country_data %>% select(-population))  %>%
-      left_join(pw_country_data %>% select(-population))
+      dplyr::left_join(lw_country_data %>% dplyr::select(-population))  %>%
+      dplyr::left_join(pw_country_data %>% dplyr::select(-population))
 
     vaxarg = "recovered"
 
-    callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, vax = vaxarg)
+    callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, vax = vaxarg, renderui = TRUE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -41,7 +41,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_caseBoxes_ui("boxes", hosp = TRUE)
+      mod_caseBoxes_ui("boxes", hosp = TRUE)
     )
   )
   server <- function(input, output, session) {
@@ -53,17 +53,17 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     country_data = orig_data_aggregate %>%
-      filter(Country.Region == "France")
+      dplyr::filter(Country.Region == "France")
 
     country_data_today <- country_data %>%
-      filter(date == AsOfDate)
+      dplyr::filter(date == AsOfDate)
 
     lw_country_data = lw_vars_calc(country_data)
     pw_country_data =  lw_vars_calc(country_data, 14)
 
     country_data_today = country_data_today %>%
-      left_join(lw_country_data %>% select(-population))  %>%
-      left_join(pw_country_data %>% select(-population))
+      dplyr::left_join(lw_country_data %>% dplyr::select(-population))  %>%
+      dplyr::left_join(pw_country_data %>% dplyr::select(-population))
 
 
     callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, hosp = TRUE)

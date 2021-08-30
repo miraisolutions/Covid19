@@ -14,6 +14,7 @@ app_ui <- function(request) {
   now = as.POSIXct(Sys.time()) # given time zone
   AsOfDate =  as.character(as.Date(now - 40*60*60))
 
+  message("app_ui")
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),

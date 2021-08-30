@@ -47,6 +47,9 @@ choice_nthcases_plot = function(vars = .vars_nthcases_plot, actives = TRUE, test
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param vars variable names in the drop down option.
+#' @param n_highlight number of countries to highlight
+#' @param nn min number of cases for used
+#' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param actives if TRUE then add new_active and active variables to vars.
 #' @param tests if TRUE then add new_test and test variables to vars.
 #' @param hosp if TRUE then add new_hosp and hosp variables to vars.
@@ -62,24 +65,17 @@ choice_nthcases_plot = function(vars = .vars_nthcases_plot, actives = TRUE, test
 #' @importFrom plotly plotlyOutput
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
-                                          istop = TRUE, n_highligth = 10, nn = 1000,
+                                          istop = TRUE, n_highlight = 10, nn = 1000,
                                           actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, vax = FALSE, selectvar = "new_confirmed", areasearch = FALSE,
                                           writetitle = TRUE){
   ns <- NS(id)
   # if(!oneMpop && grepl("1M_pop$", selectvar))
   #   stop("oneMpop is F but selectvar is ", selectvar)
-
   choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices
   if (istop) {
-    plottitle = paste0("Top ",n_highligth," countries from day with ", nn ," contagions")
-    # output$title <- renderUI({
-    #   div(h4(paste0("Top ",n_highligth," countries from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-    # })
+    plottitle = paste0("Top ",n_highlight," countries from day with ", nn ," contagions")
   } else {
     plottitle = paste0("Timeline from day with ", nn ," contagions")
-    # output$title <- renderUI({
-    #   div(h4(paste0("Timeline from day with ", nn ," contagions")), align = "center", style = "margin-top:20px; margin-bottom:20px;")
-    # })
   }
   # UI ----
   divtitle =  switch(writetitle,div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),NULL)
@@ -198,8 +194,8 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
 #'
 #' @param df data.frame
 #' @param nn minimum date derived from first day with more than nn cases. Default 1000
-#' @param n_highligth number of countries to highlight if istop == TRUE
-#' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param n_highlight number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param g_palette character vector of colors for the graph and legend
 #' @param datevar character variable used for X axis, date or contagion_day
 #' @param actives if TRUE then add new_active and active variables to vars.
@@ -222,7 +218,7 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
 #' @noRd
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               nn = 1000,
-                                              n_highligth = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
+                                              n_highlight = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
                                               actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, oneMpop = TRUE, secondline = NULL, areasearch = FALSE){
   ns <- session$ns
   df$Date = df[[datevar]]
@@ -313,9 +309,9 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         # countries_order =  data %>% filter(date == max(date)) %>%
         #   arrange(desc(!!as.symbol(reactSelectVar()))) %>%
         #   #arrange(!!as.symbol(input$radio_indicator)) %>%
-        #   top_n(n_highligth, wt = !!as.symbol(reactSelectVar())) %>% .[1:n_highligth,"Country.Region"] %>% as.vector()
+        #   top_n(n_highlight, wt = !!as.symbol(reactSelectVar())) %>% .[1:n_highlight,"Country.Region"] %>% as.vector()
         countries_order = dat %>% filter(date == AsOfDate) %>%
-          slice_max(!!as.symbol(reactSelectVar()), n = n_highligth, with_ties = FALSE) %>% .[,"Country.Region"] %>% as.vector()
+          slice_max(!!as.symbol(reactSelectVar()), n = n_highlight, with_ties = FALSE) %>% .[,"Country.Region"] %>% as.vector()
 
         data = dat %>% right_join(countries_order)  %>%  # reordering according to variable if istop
           mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))

@@ -37,8 +37,8 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
     selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
 
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
-    mod_caseBoxes_ui(ns("count-boxes")),
-    mod_caseBoxes_ui(ns("count-boxes_hosp"), hosp = TRUE),
+    mod_caseBoxes_ui(ns("count-boxes"), outputui = TRUE),
+    mod_caseBoxes_ui(ns("count-boxes_hosp"), hosp = TRUE, outputui = TRUE),
     hr(),
     fluidRow(
       #withSpinner(uiOutput(ns("barplots")))
@@ -64,7 +64,7 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
     fluidRow(
       column(6,
             #withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_tot"), tests = TRUE, hosp = TRUE))
-            withSpinner(mod_compare_timeline_plot_ui(ns("lines_plots_country"), titles = 1:2))
+            withSpinner(mod_compare_timeline_plot_ui(ns("lines_plots_country"), titles = 1:2, tests = TRUE, hosp = TRUE, strindx = TRUE, nn = nn, oneMpop = FALSE, vax = TRUE))
       ),
       column(6,
              withSpinner(mod_vaccines_text_ui(ns("vaccines_text_plot")))
@@ -230,18 +230,21 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
      # adjust hospitalised data if we have better in lev 2
       if (sum(area_data_2$hosp, na.rm = TRUE) > sum(country_data$hosp, na.rm = TRUE)*1.5) {
         message("Update Lev 1 hospitalised data based on lev2 fo country ", req(input$select_country))
-        # aggregate hosp data at country level
-        area_data_1 = area_data_2 %>% select(date, all_of(as.vector(.hosp_vars))) %>%
-          filter(date >= min(country_data$date)) %>% # filter to align dates with country data
-          group_by(date) %>%
-          summarise_if(is.numeric, sum, na.rm = TRUE) %>% #
-          ungroup() %>%
-          mutate(Country.Region = req(input$select_country)) %>%
-          arrange(desc(date))
-        area_data_1 = area_data_1[, c("Country.Region", setdiff(names(area_data_1),"Country.Region"))]
-        if (!identical(area_data_1$date, country_data$date))
-          warning("wrong dates in lev1 and lev2 for ", req(input$select_country))
-        country_data[country_data$date %in% area_data_1$date, .hosp_vars] <- area_data_1[area_data_1$date %in% country_data$date, .hosp_vars]
+
+        country_data = combine_hospvars_lev2(country_data, area_data_2, req(input$select_country))
+
+        # # aggregate hosp data at country level
+        # area_data_1 = area_data_2 %>% select(date, all_of(as.vector(.hosp_vars))) %>%
+        #   filter(date >= min(country_data$date)) %>% # filter to align dates with country data
+        #   group_by(date) %>%
+        #   summarise_if(is.numeric, sum, na.rm = TRUE) %>% #
+        #   ungroup() %>%
+        #   mutate(Country.Region = req(input$select_country)) %>%
+        #   arrange(desc(date))
+        # area_data_1 = area_data_1[, c("Country.Region", setdiff(names(area_data_1),"Country.Region"))]
+        # if (!identical(area_data_1$date, country_data$date))
+        #   warning("wrong dates in lev1 and lev2 for ", req(input$select_country))
+        # country_data[country_data$date %in% area_data_1$date, .hosp_vars] <- area_data_1[area_data_1$date %in% country_data$date, .hosp_vars]
 
         country_data = country_data[, !grepl("^new", names(country_data))]
         country_data = country_data %>%
@@ -280,10 +283,10 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     vaxarg = NULL
     if (vaxflag)
       vaxarg = "recovered"
-    callModule(mod_caseBoxes_server, "count-boxes", country_data_today, vax = vaxarg)
+    callModule(mod_caseBoxes_server, "count-boxes", country_data_today, vax = vaxarg, renderui = TRUE)
 
     # Boxes ----
-    callModule(mod_caseBoxes_server, "count-boxes_hosp", country_data_today, hosp = TRUE)
+    callModule(mod_caseBoxes_server, "count-boxes_hosp", country_data_today, hosp = TRUE, renderui = TRUE)
 
     statuseslineplot = c("confirmed", "deaths", "recovered", "active")
     if (vaxflag)
@@ -529,14 +532,14 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_area2_",country)), nn = n2, istop = FALSE, tests = testsflag, hosp = hospflag, strindx = strFlag,vax = vaxFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
   })
   callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_area2_",country), df = data, nn = n2,  istop = FALSE, tests = testsflag, hosp = hospflag, strindx = strFlag ,vax = vaxFlag,
-             n_highligth = length(unique(data$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE)
+             n_highlight = length(unique(data$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE)
 
   # growth_death_rate,
   output[["plot_growth_death_rate_area2"]] <- renderUI({
     mod_barplot_ui(ns("rate_plots_area2"))
   })
   callModule(mod_barplot_server, "rate_plots_area2", df = data_today, istop = FALSE,
-             n_highligth = length(unique(data_today$Country.Region)))
+             n_highlight = length(unique(data_today$Country.Region)))
 
 
   areasC <-
@@ -563,7 +566,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   # reconsider hosp flag as of today, hosp data may have been removed or not updated as of today
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_today, istop = FALSE, n_highligth = length(unique(data_today$Country.Region)), active_hosp = active_hosp)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_today, istop = FALSE, n_highlight = length(unique(data_today$Country.Region)), active_hosp = active_hosp)
 
 
   ######################
@@ -604,7 +607,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       message("id call stringency module = ", id)
 
       # > barplot stringency
-      callModule(mod_barplot_server, id, data_today, n_highligth = length(unique(data_today$Country.Region)), istop = FALSE,
+      callModule(mod_barplot_server, id, data_today, n_highlight = length(unique(data_today$Country.Region)), istop = FALSE,
                  plottitle = c("Stringency Index"),
                  g_palette = list("plot_1" = barplots_colors$stringency,
                                   calc = TRUE),
@@ -662,7 +665,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       message("id call vaccines module = ", id)
 
       # > barplot stringency
-      callModule(mod_barplot_server, id, data_today, n_highligth = length(unique(data_today$Country.Region)), istop = FALSE,
+      callModule(mod_barplot_server, id, data_today, n_highlight = length(unique(data_today$Country.Region)), istop = FALSE,
                  plottitle = c("Vaccinations"),
                  g_palette = list("plot_1" = barplots_colors$vaccines,
                                   calc = TRUE),

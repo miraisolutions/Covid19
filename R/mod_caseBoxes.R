@@ -5,6 +5,7 @@
 #'
 #' @param id, Internal parameters for {shiny}.
 #' @param hosp logical, if TRUE hospitalised box variables is added.
+#' @param outputui logical, if TRUE shiny::uiOutput is used
 #'
 #' @example man-roxygen/ex-mod_caseBoxes.R
 #'
@@ -13,43 +14,68 @@
 
 #' @rdname mod_caseBoxes
 #' @import shiny
-mod_caseBoxes_ui <- function(id, hosp = FALSE) {
+mod_caseBoxes_ui <- function(id, hosp = FALSE, outputui = FALSE) {
   ns <- NS(id)
-  tg = tagList(
-      div(id = id,
-          fluidRow(
-          column(3, shiny::uiOutput(ns("confirmed"))),
-          column(3, shiny::uiOutput(ns("death"))),
-          column(3, shiny::uiOutput(ns("recovered"))),
-          column(3, shiny::uiOutput(ns("active")))
-        ),
-        fluidRow(
-          column(3, shiny::uiOutput(ns("new_confirmed"))),
-          column(3, shiny::uiOutput(ns("new_death"))),
-          column(3, shiny::uiOutput(ns("new_recovered"))),
-          column(3, shiny::uiOutput(ns("new_active")))
-        )
-      )
-  )
-  if (hosp) {
+
+  if (!outputui) {
     tg = tagList(
       div(id = id,
-          tg,
-        fluidRow(
-          column(3, shiny::uiOutput(ns("hosp"))),
-          column(3, shiny::uiOutput(ns("icuvent"))),
-          column(3, shiny::uiOutput(ns("tests"))),
-          column(3, shiny::uiOutput(ns("testratepositive")))
-        ),
-        fluidRow(
-          column(3, shiny::uiOutput(ns("new_hosp"))),
-          column(3, shiny::uiOutput(ns("new_icuvent"))),
-          column(3, shiny::uiOutput(ns("new_tests"))),
-          column(3, shiny::uiOutput(ns("new_test_rate_positive")))
-        )
+          fluidRow(
+            column(3,
+                   tags$div(id = ns("confirmed"))),
+            column(3,
+                   tags$div(id = ns("death"))),
+            column(3,
+                   tags$div(id = ns("recovered"))),
+            column(3,
+                   tags$div(id = ns("active")))
+          )
       )
     )
+    if (hosp) {
+      tg = tagList(
+        div(id = id,
+            tg,
+            fluidRow(
+              column(3,
+                     tags$div(id = ns("hosp"))),
+              column(3,
+                     tags$div(id = ns("icuvent"))),
+              column(3,
+                     tags$div(id = ns("tests"))),
+              column(3,
+                     tags$div(id = ns("testratepositive")))
+            )#,
+        )
+      )
+    }
+  } else {
+    tg = tagList(
+      div(id = id,
+          fluidRow(
+            column(3, shiny::uiOutput(ns("confirmed"))),
+            column(3, shiny::uiOutput(ns("death"))),
+            column(3, shiny::uiOutput(ns("recovered"))),
+            column(3, shiny::uiOutput(ns("active")))
+
+          )
+      )
+    )
+    if (hosp) {
+      tg = tagList(
+        div(id = id,
+            tg,
+            fluidRow(
+              column(3, shiny::uiOutput(ns("hosp"))),
+              column(3, shiny::uiOutput(ns("icuvent"))),
+              column(3, shiny::uiOutput(ns("tests"))),
+              column(3, shiny::uiOutput(ns("testratepositive")))
+            )
+        )
+      )
+    }
   }
+
   tg
 }
 
@@ -57,121 +83,270 @@ mod_caseBoxes_ui <- function(id, hosp = FALSE) {
 #'
 #' @param counts Reactive expression yielding the named vector of cases by type.
 #' @param hosp logical, if TRUE hospitalised box variables is added.
+#' @param vax character, output id for the vaccination box
+#' @param renderui logical, if TRUE shiny::renderUI is used
 #'
 #' @rdname mod_caseBoxes
-mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, vax = NULL) {
+mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, vax = NULL, renderui = FALSE) {
+
+  ns <- session$ns
 
   if (!hosp) {
     vaxflag = !is.null(vax)
 
     if (!vaxflag || vax != "confirmed") {
-      output$confirmed <- renderUI({
-        countBox3(title1 = "Confirmed: ",
-                 subtitle1 = counts[["confirmed"]],
-                 title2 = "Last Week: ",
-                 subtitle2 =  counts[["lw_confirmed"]],
-                 title3 = "Prev. Week: ",
-                 subtitle3 =  counts[["pw_confirmed"]],
-                 color = "white",
-                 background = .case_colors[["confirmed"]])
-      })
+      if(!renderui) {
+        insertUI(paste0("#",ns("confirmed")),
+                 ui = countBox3(title1 = "Confirmed: ",
+                                subtitle1 = counts[["confirmed"]],
+                                title2 = "Last Week: ",
+                                subtitle2 =  counts[["lw_confirmed"]],
+                                title3 = "Prev. Week: ",
+                                subtitle3 =  counts[["pw_confirmed"]],
+                                color = "white",
+                                background = .case_colors[["confirmed"]]),
+                 session = session,
+                 immediate = TRUE
+        )
+      }  else {
+        output$confirmed <- renderUI({
+          countBox3(title1 = "Confirmed: ",
+                    subtitle1 = counts[["confirmed"]],
+                    title2 = "Last Week: ",
+                    subtitle2 =  counts[["lw_confirmed"]],
+                    title3 = "Prev. Week: ",
+                    subtitle3 =  counts[["pw_confirmed"]],
+                    color = "white",
+                    background = .case_colors[["confirmed"]])
+        })
+      }
+
     }
     if (!vaxflag || vax != "deaths") {
-      output$death <- renderUI({
-        countBox3(title1 = "Deaths: ",
-                 subtitle1 = counts[["deaths"]],
-                 title2 = "Last Week: ",
-                 subtitle2 =  counts[["lw_deaths"]],
-                 title3 = "Prev. Week: ",
-                 subtitle3 =  counts[["pw_deaths"]],
-                 color = "white",
-                 background = .case_colors[["deaths"]])
-      })
+      if(!renderui)
+        insertUI(paste0("#",ns("death")),
+                 ui = countBox3(title1 = "Deaths: ",
+                              subtitle1 = counts[["deaths"]],
+                              title2 = "Last Week: ",
+                              subtitle2 =  counts[["lw_deaths"]],
+                              title3 = "Prev. Week: ",
+                              subtitle3 =  counts[["pw_deaths"]],
+                              color = "white",
+                              background = .case_colors[["deaths"]]),
+                 session = session,
+                 immediate = TRUE
+        )
+      else {
+        output$death <- renderUI({
+          countBox3(title1 = "Deaths: ",
+                   subtitle1 = counts[["deaths"]],
+                   title2 = "Last Week: ",
+                   subtitle2 =  counts[["lw_deaths"]],
+                   title3 = "Prev. Week: ",
+                   subtitle3 =  counts[["pw_deaths"]],
+                   color = "white",
+                   background = .case_colors[["deaths"]])
+        })
+      }
+
     }
     if (!vaxflag || vax != "recovered") {
-      output$recovered <- renderUI({
-        countBox3(title1 = "Recovered: ",
-                 subtitle1 = counts[["recovered"]],
-                 title2 = "Last Week: ",
-                 subtitle2 =  counts[["lw_recovered"]],
-                 title3 = "Prev. Week: ",
-                 subtitle3 =  counts[["pw_recovered"]],
-                 color = "white",
-                 background = .case_colors[["recovered"]])
-      })
+      if(!renderui)
+        insertUI(paste0("#",ns("recovered")),
+                 ui = countBox3(title1 = "Recovered: ",
+                                subtitle1 = counts[["recovered"]],
+                                title2 = "Last Week: ",
+                                subtitle2 =  counts[["lw_recovered"]],
+                                title3 = "Prev. Week: ",
+                                subtitle3 =  counts[["pw_recovered"]],
+                                color = "white",
+                                background = .case_colors[["recovered"]]),
+                 session = session,
+                 immediate = TRUE
+        )
+      else {
+        output$recovered <- renderUI({
+          countBox3(title1 = "Recovered: ",
+                   subtitle1 = counts[["recovered"]],
+                   title2 = "Last Week: ",
+                   subtitle2 =  counts[["lw_recovered"]],
+                   title3 = "Prev. Week: ",
+                   subtitle3 =  counts[["pw_recovered"]],
+                   color = "white",
+                   background = .case_colors[["recovered"]])
+        })
+      }
+
     }
     if (!is.null(vax)) {
       message("Vaccinated box")
-      output[[vax]]  <- renderUI({
-        countBox3(title1 = "Vaccinated: ",
-                 subtitle1 = counts[["vaccines"]],
-                 title2 = "Last Week: ",
-                 subtitle2 =  counts[["lw_vaccines"]],
-                 title3 = "Prev. Week: ",
-                 subtitle3 =  counts[["pw_vaccines"]],
-                 color = "white",
-                 background = .case_colors[["vaccines"]])
-      })
+      if(!renderui)
+        insertUI(paste0("#",ns(vax)),
+                 ui = countBox3(title1 = "Vaccinated: ",
+                                subtitle1 = counts[["vaccines"]],
+                                title2 = "Last Week: ",
+                                subtitle2 =  counts[["lw_vaccines"]],
+                                title3 = "Prev. Week: ",
+                                subtitle3 =  counts[["pw_vaccines"]],
+                                color = "white",
+                                background = .case_colors[["vaccines"]]),
+                 session = session,
+                 immediate = TRUE
+        )
+      else {
+        output[[vax]]  <- renderUI({
+          countBox3(title1 = "Vaccinated: ",
+                   subtitle1 = counts[["vaccines"]],
+                   title2 = "Last Week: ",
+                   subtitle2 =  counts[["lw_vaccines"]],
+                   title3 = "Prev. Week: ",
+                   subtitle3 =  counts[["pw_vaccines"]],
+                   color = "white",
+                   background = .case_colors[["vaccines"]])
+        })
+      }
+
     }
     if (!vaxflag || vax != "active") {
-      output$active <- renderUI({
-        countBox3(title1 = "Active: ",
-                 subtitle1 = counts[["active"]],
+      if(!renderui)
+        insertUI(paste0("#",ns("active")),
+               ui =       countBox3(title1 = "Active: ",
+                                    subtitle1 = counts[["active"]],
+                                    title2 = "Last Week: ",
+                                    subtitle2 =  counts[["lw_active"]],
+                                    title3 = "Prev. Week: ",
+                                    subtitle3 =  counts[["pw_active"]],
+                                    color = "white",
+                                    background = .case_colors[["active"]],
+                                    diffcalc = FALSE),
+               session = session,
+               immediate = TRUE
+      )
+      else {
+        output$active <- renderUI({
+          countBox3(title1 = "Active: ",
+                   subtitle1 = counts[["active"]],
+                   title2 = "Last Week: ",
+                   subtitle2 =  counts[["lw_active"]],
+                   title3 = "Prev. Week: ",
+                   subtitle3 =  counts[["pw_active"]],
+                   color = "white",
+                   background = .case_colors[["active"]],
+                   diffcalc = FALSE)
+        })
+      }
+
+    }
+
+  } else {
+    if(!renderui) {
+      insertUI(paste0("#",ns("hosp")),
+               ui = countBox3(title1 = "Hospitalised: ",
+                              subtitle1 = counts[["hosp"]],
+                              title2 = "Last Week: ",
+                              subtitle2 =  counts[["lw_hosp"]],
+                              title3 = "Prev. Week: ",
+                              subtitle3 =  counts[["pw_hosp"]],
+                              color = "white",
+                              background = .hosp_colors[["hosp"]],
+                              diffcalc = FALSE),
+               session = session,
+               immediate = TRUE
+      )
+      insertUI(paste0("#",ns("icuvent")),
+               ui = countBox3(title1 = "Int. Care: ",
+                              subtitle1 = counts[["icuvent"]],
+                              title2 = "Last Week: ",
+                              subtitle2 =  counts[["lw_icuvent"]],
+                              title3 = "Prev. Week: ",
+                              subtitle3 =  counts[["pw_icuvent"]],
+                              color = "white",
+                              background = .hosp_colors[["icuvent"]],
+                              diffcalc = FALSE),
+               session = session,
+               immediate = TRUE
+      )
+      insertUI(paste0("#",ns("tests")),
+               ui = countBox3(title1 = "Tests: ",
+                              subtitle1 = counts[["tests"]],
+                              title2 = "Last Week: ",
+                              subtitle2 =  counts[["lw_tests"]],
+                              title3 = "Prev Week: ",
+                              subtitle3 =  counts[["pw_tests"]],
+                              color = "white",
+                              background = .tests_colors[["tests"]]),
+               session = session,
+               immediate = TRUE
+      )
+      insertUI(paste0("#",ns("testratepositive")),
+               ui = countBox3(title1 = "Positive Tests: ",
+                              subtitle1 = counts[["positive_tests_rate"]],
+                              title2 = "Last Week: ",
+                              subtitle2 =  counts[["lw_positive_tests_rate"]],
+                              title3 = "Prev. Week: ",
+                              subtitle3 =  counts[["pw_positive_tests_rate"]],
+                              color = "white",
+                              background = .tests_colors[["positive_tests_rate"]],
+                              perc = TRUE,
+                              diffcalc = FALSE),
+               session = session,
+               immediate = TRUE
+      )
+    } else {
+      output$hosp <- renderUI({
+        countBox3(title1 = "Hospitalised: ",
+                 subtitle1 = counts[["hosp"]],
                  title2 = "Last Week: ",
-                 subtitle2 =  counts[["lw_active"]],
+                 subtitle2 =  counts[["lw_hosp"]],
                  title3 = "Prev. Week: ",
-                 subtitle3 =  counts[["pw_active"]],
+                 subtitle3 =  counts[["pw_hosp"]],
                  color = "white",
-                 background = .case_colors[["active"]],
+                 background = .hosp_colors[["hosp"]],
+                 diffcalc = FALSE)
+      })
+
+
+      output$icuvent <- renderUI({
+        countBox3(title1 = "Int. Care: ",
+                 subtitle1 = counts[["icuvent"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_icuvent"]],
+                 title3 = "Prev. Week: ",
+                 subtitle3 =  counts[["pw_icuvent"]],
+                 color = "white",
+                 background = .hosp_colors[["icuvent"]],
+                 diffcalc = FALSE)
+      })
+
+
+      output$tests <- renderUI({
+        countBox3(title1 = "Tests: ",
+                 subtitle1 = counts[["tests"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_tests"]],
+                 title3 = "Prev Week: ",
+                 subtitle3 =  counts[["pw_tests"]],
+                 color = "white",
+                 background = .tests_colors[["tests"]])
+      })
+
+
+      output$testratepositive <- renderUI({
+        countBox3(title1 = "Positive Tests: ",
+                 subtitle1 = counts[["positive_tests_rate"]],
+                 title2 = "Last Week: ",
+                 subtitle2 =  counts[["lw_positive_tests_rate"]],
+                 title3 = "Prev. Week: ",
+                 subtitle3 =  counts[["pw_positive_tests_rate"]],
+                 color = "white",
+                 background = .tests_colors[["positive_tests_rate"]],
+                 perc = TRUE,
                  diffcalc = FALSE)
       })
     }
 
-  } else {
-    output$hosp <- renderUI({
-      countBox3(title1 = "Hospitalised: ",
-               subtitle1 = counts[["hosp"]],
-               title2 = "Last Week: ",
-               subtitle2 =  counts[["lw_hosp"]],
-               title3 = "Prev. Week: ",
-               subtitle3 =  counts[["pw_hosp"]],
-               color = "white",
-               background = .hosp_colors[["hosp"]],
-               diffcalc = FALSE)
-    })
-    output$icuvent <- renderUI({
-      countBox3(title1 = "Int. Care: ",
-               subtitle1 = counts[["icuvent"]],
-               title2 = "Last Week: ",
-               subtitle2 =  counts[["lw_icuvent"]],
-               title3 = "Prev. Week: ",
-               subtitle3 =  counts[["pw_icuvent"]],
-               color = "white",
-               background = .hosp_colors[["icuvent"]],
-               diffcalc = FALSE)
-    })
-    output$tests <- renderUI({
-      countBox3(title1 = "Tests: ",
-               subtitle1 = counts[["tests"]],
-               title2 = "Last Week: ",
-               subtitle2 =  counts[["lw_tests"]],
-               title3 = "Prev Week: ",
-               subtitle3 =  counts[["pw_tests"]],
-               color = "white",
-               background = .tests_colors[["tests"]])
-    })
-    output$testratepositive <- renderUI({
-      countBox3(title1 = "Positive Tests: ",
-               subtitle1 = counts[["positive_tests_rate"]],
-               title2 = "Last Week: ",
-               subtitle2 =  counts[["lw_positive_tests_rate"]],
-               title3 = "Prev. Week: ",
-               subtitle3 =  counts[["pw_positive_tests_rate"]],
-               color = "white",
-               background = .tests_colors[["positive_tests_rate"]],
-               perc = TRUE,
-               diffcalc = FALSE)
-    })
+
+
   }
 }
 
