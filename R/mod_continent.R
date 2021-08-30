@@ -4,6 +4,7 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param uicont character continent or region.
+#' @param nn min number of cases for used for mod_compare_timeline_plot_ui
 #'
 #' @noRd
 #'
@@ -24,14 +25,13 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
             mod_map_cont_ui(ns(paste("map_cont_ui", uicont , sep = "_")))
        ),
       column(6,
-            #div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
             #mod_plot_log_linear_ui(ns("plot_area_cont"))
-            mod_compare_timeline_plot_ui(ns("plot_area_cont"), titles = 3:1)
+            mod_compare_timeline_plot_ui(ns("plot_area_cont"), titles = 3:1,
+                                         nn = nn, istop = FALSE,  hosp = FALSE, oneMpop = FALSE, vax = TRUE)
          ),
      ),
     hr(),
     div(
-      #uiOutput(ns(paste("from_nth_case", uicont , sep = "_")))
       HTML(paste(
         paste0(continent.name, " countries are grouped in Macro Areas as defined by United Nations."),
         paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
@@ -43,7 +43,6 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
     ),
     hr(),
     div(
-      #uiOutput(ns(paste("ind_missing_days_countries", uicont , sep = "_")))
       htmlOutput(ns(paste("ind_missing_days_countries", uicont , sep = "_")))
     )
     ,
@@ -56,7 +55,6 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
     div(h4("Macro Area Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     withSpinner(mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))),
     hr(),
-    #withSpinner(uiOutput(ns(paste("lineplots_cont", uicont , sep = "_")))),
     fluidRow(
       column(5,
              #withSpinner(uiOutput(ns(paste("rateplots_cont", uicont , sep = "_"))))
@@ -71,11 +69,9 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
     ),
     fluidRow(
       column(6,
-             #withSpinner(uiOutput(ns(paste("scatterplot_plots_cont", uicont , sep = "_"))))
              withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
       ),
       column(6,
-             #withSpinner(uiOutput(ns(paste("barplot_vax_index_cont", uicont , sep = "_"))))
              withSpinner(
                mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
                   )
@@ -86,12 +82,10 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
    hr(),
    fluidRow(
      column(6,
-            #withSpinner(uiOutput(ns(paste("scatterplot_prev_countries", uicont , sep = "_"))))
             withSpinner(mod_scatterplot_ui(ns("scatterplot_prev_countries")))
      ),
      column(6,
             withSpinner(mod_scatterplot_ui(ns("scatterplot_stringency_vars_countries"), growth = FALSE))
-            #withSpinner(uiOutput(ns(paste("scatterplot_stringency_vars_countries", uicont , sep = "_"))))
      )
    ),
    hr(),
@@ -284,7 +278,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Rate plots ----
 
   callModule(mod_barplot_server, "rate_plots_cont", subcontinent_data_filtered_today,
-             n_highligth = length(subcontinents), istop = FALSE,
+             n_highlight = length(subcontinents), istop = FALSE,
              g_palette = list("plot_1" = subcont_palette,
                                        "plot_2" = subcont_palette,
                               calc = FALSE),
@@ -293,17 +287,17 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Line with bullet plot
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", subcontinent_data, nn = nn,
-             n_highligth = length(subcontinents), istop = FALSE , g_palette = subcont_palette, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
+             n_highlight = length(subcontinents), istop = FALSE , g_palette = subcont_palette, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # scatterplot
 
   callModule(mod_scatterplot_server, "scatterplot_plots_cont",
-             subcontinent_data_filtered_today, nmed = nn, n_highligth = length(subcontinents),
+             subcontinent_data_filtered_today, nmed = nn, n_highlight = length(subcontinents),
              istop = FALSE, countries = subcontinents)
 
 
   callModule(mod_barplot_server, "barplot_vax_index_cont", subcontinent_data_filtered_today,
-             n_highligth = length(subcontinents), istop = FALSE,
+             n_highlight = length(subcontinents), istop = FALSE,
              plottitle = c("Vaccination Status"),
              g_palette = list("plot_1" = subcont_palette,
                               calc = FALSE),
@@ -336,19 +330,19 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     })
 
   callModule(mod_scatterplot_server, "scatterplot_prev_countries",
-             data_cont_maps, nmed = nn, n_highligth = length(countries200000),
+             data_cont_maps, nmed = nn, n_highlight = length(countries200000),
              istop = FALSE, countries = countries200000)
 
 
   callModule(mod_scatterplot_server, "scatterplot_stringency_vars_countries",
-             data_cont_maps, nmed = nn, n_highligth = length(countries200000),
+             data_cont_maps, nmed = nn, n_highlight = length(countries200000),
              istop = FALSE, countries = countries200000, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 
 
   # Rate plots ----
 
   callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
-             n_highligth = length(data_cont_maps$Country.Region), istop = FALSE,
+             n_highlight = length(data_cont_maps$Country.Region), istop = FALSE,
              plottitle = c("Vaccination Status"),
              g_palette = list("plot_1" = barplots_colors[["vaccines"]],
                               calc = TRUE)#,
@@ -357,7 +351,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
 
   callModule(mod_scatterplot_server, "scatterplot_vax_vars_countries",
-             data_cont_maps, nmed = nn, n_highligth = length(countries200000),
+             data_cont_maps, nmed = nn, n_highlight = length(countries200000),
              istop = FALSE, countries = countries200000, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
 
   #############################################

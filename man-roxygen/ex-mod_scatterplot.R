@@ -26,7 +26,7 @@ if (interactive()) {
 
     inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
 
-    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highligth = 5, istop = FALSE)
+    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highlight = 5, istop = FALSE)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
@@ -70,7 +70,7 @@ if (interactive()) {
 
     inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
 
-    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highligth = 5, istop = FALSE, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
+    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highlight = 5, istop = FALSE, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
@@ -109,7 +109,7 @@ if (interactive()) {
 
     #inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
 
-    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highligth = 10, istop = TRUE, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
+    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highlight = 10, istop = TRUE, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
@@ -194,7 +194,7 @@ if (interactive()) {
     #inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
     orig_data_aggregate_today = orig_data_aggregate_today %>% filter(continent == "Africa")
 
-    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highligth = 10, istop = TRUE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highlight = 10, istop = TRUE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

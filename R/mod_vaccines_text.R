@@ -14,7 +14,6 @@
 mod_vaccines_text_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    #shinyWidgets::useShinydashboard(),
     div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     fluidRow(
       column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
@@ -29,7 +28,7 @@ mod_vaccines_text_ui <- function(id) {
                             choices = c(0,1,2),
                             selected = 1)),
       column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
-                          value = "2021-09-01",
+                          value = "2021-10-01",
                           min = Sys.Date()
       ))
     ),
@@ -165,15 +164,6 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
         )
 
       # no legend no interactivity
-
-      # p <- p %>%
-      #   plotly::ggplotly(tooltip = c("text", "x_tooltip", "y_tooltip")) %>%
-      #   plotly::layout(annotations = list(x = min(plotdata$Date), y = data()$target_vaccines_per_day,
-      #                                     align = "left",
-      #                                     text = "Target Average Vaccines per Day", size = 1))
-
-      # plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
-
       p
 
     })

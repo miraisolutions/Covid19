@@ -4,7 +4,7 @@ if (interactive()) {
     ui <- fluidPage(
       tagList(
         Covid19Mirai:::golem_add_external_resources(),
-        Covid19Mirai:::mod_compare_nth_cases_years_plot_ui("plot_compare_nth")
+        mod_compare_nth_cases_years_plot_ui("plot_compare_nth")
       )
     )
     server <- function(input, output, session) {

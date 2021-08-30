@@ -50,8 +50,7 @@ mod_ind_country_ui <- function(id){
 
       column(6,
              #withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"),istop = FALSE,nn = 1, tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE, vax = TRUE))
-             withSpinner(mod_compare_timeline_plot_ui(ns("ind_lines_points_plots_tot"), titles = 1:2))
-
+             withSpinner(mod_compare_timeline_plot_ui(ns("ind_lines_points_plots_tot"), titles = 1:2, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE, vax = TRUE, nn = 100))
       ),
       column(6,
              withSpinner(mod_vaccines_text_ui(ns("ind_vaccines_text_plot")))

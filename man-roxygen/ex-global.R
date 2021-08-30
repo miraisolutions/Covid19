@@ -1,5 +1,5 @@
 if (interactive()) {
-  devtools::load_all()
+  #devtools::load_all()
 
 
   #sapply(file.path("R",list.files("R")), source)

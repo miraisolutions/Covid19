@@ -86,8 +86,8 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
 #' @param df data.frame for multiple countries
 #' @param nmed number of cases of countries to be used for median computation
 #' @param wmed days of outbreak of countries to be used for median computation
-#' @param n_highligth number of countries to highlight if istop == TRUE
-#' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param n_highlight number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param countries countries selected
 #' @param xvar character variable name for x axis
 #' @param yvar character variable name for y axis
@@ -102,11 +102,11 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
 #' @importFrom plotly ggplotly layout plotly_build
 #'
 #' @noRd
-mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wmed = 7, n_highligth = 5, istop = TRUE, countries, xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", growth = TRUE, fitted = FALSE){
+mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wmed = 7, n_highlight = 5, istop = TRUE, countries, xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", growth = TRUE, fitted = FALSE){
   ns <- session$ns
   # titles
   istoptitle = if(istop) {
-      paste("Top", n_highligth, "Confirmed cases: ")
+      paste("Top", n_highlight, "Confirmed cases: ")
     } else {
     character(0)
     }
@@ -192,12 +192,12 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
     med_calc(world_10000(), reactList$xvar)
     })
 
-  if (istop)  { # choose top n_highligth
+  if (istop)  { # choose top n_highlight
     df_top = pick_rate(df, "confirmed") %>%
         arrange(desc(Value))
     df_top = df_top %>%
-      #top_n(n_highligth, wt = Value) %>% .[1:n_highligth,, drop = FALSE]
-      slice_max(Value, n = n_highligth, with_ties = FALSE)
+      #top_n(n_highlight, wt = Value) %>% .[1:n_highlight,, drop = FALSE]
+      slice_max(Value, n = n_highlight, with_ties = FALSE)
 
   } else {
     df_top = df %>%

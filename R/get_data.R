@@ -139,7 +139,7 @@ get_timeseries_full_data <- function() {
 #'
 #' @param country character country, to chose with lev = 2
 #' @param startdate character staring date
-#' @param lev integer 1 for country level, 2 for reagions
+#' @param lev integer 1 for country level, 2 for reasons
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
 #'
 #' @details data sourced from https://github.com/covid19datahub/COVID19/
@@ -160,27 +160,60 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 
   message("replace hosp data (",paste(.hosp_vars, collapse = ","), ") in lev1 dataset with lev2 swiss data")
 
-  # aggregate hosp data at country level
-  orig_data_ch_1 = orig_data_ch_2 %>%
-    select(date, all_of(as.vector(.hosp_vars))) %>%
-    group_by(date) %>%
-    summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
-    ungroup() %>%
-    mutate(Country.Region = "Switzerland")
-  orig_data_ch_1 = orig_data_ch_1[, c("Country.Region", setdiff(names(orig_data_ch_1),"Country.Region"))]
-
-  if (!identical(orig_data_ch_1$date, orig_data$date[orig_data$Country.Region == "Switzerland"]))
-    warning("Not same dates in lev1 and lev2 for CH")
-
-  commondates = intersect(as.character(orig_data_ch_1$date), as.character(orig_data$date[orig_data$Country.Region == "Switzerland"]))
-  orig_data_ch_1 = filter(orig_data_ch_1, date %in% as.Date(commondates))
-
-  orig_data[orig_data$Country.Region == "Switzerland" & (orig_data$date %in% as.Date(commondates)), .hosp_vars] <-
-    orig_data_ch_1[(orig_data_ch_1$date %in% as.Date(commondates)) , .hosp_vars]
+  orig_data = combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
 
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
 
+
+#' replace hospital data of level1 with level2 data
+#'
+#' @param data1 data.frame level 1 data
+#' @param data1 data.frame level 1 data
+#' @param country character country name for replacement
+#'
+#' @details at level1 hospital data are not complete
+#'
+#' @return data1 with hospital data from data2
+#'
+#' @import dplyr
+#'
+#' @export
+combine_hospvars_lev2 <- function(data1, data2, country = "Swizterland") {
+
+  # aggregate hosp data at country level
+  data2 <- data2 %>% select(Country.Region, date, as.character(.hosp_vars))
+  maxdate1 = max(data1$date[data1$Country.Region == country])
+
+  stackhosp = function(dat, maxd) {
+    if(max(dat$date) < maxd) {
+      dat = rbind(dat,
+                  data.frame(date = seq(max(dat$date)+1, maxd, 1), hosp = tail(dat$hosp, 1), icuvent = tail(dat$icuvent, 1), stringsAsFactors = FALSE)
+      )
+    }
+    dat
+  }
+  # impute last days hosp data
+  data2 = data2 %>% group_by(Country.Region) %>% group_modify(~stackhosp(.x, maxdate1))
+
+  data2_1 = data2 %>%
+    select(date, all_of(as.vector(.hosp_vars))) %>%
+    group_by(date) %>%
+    summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
+    ungroup() %>%
+    mutate(Country.Region = country)
+  data2_1 = data2_1[, c("Country.Region", setdiff(names(data2_1),"Country.Region"))]
+
+  if (!identical(data2_1$date, data1$date[data1$Country.Region == country]))
+    warning("Not same dates in lev1 and lev2 for CH")
+
+  commondates = intersect(as.character(data2_1$date), as.character(data1$date[data1$Country.Region == country]))
+  data2_1 = filter(data2_1, date %in% as.Date(commondates))
+
+  data1[data1$Country.Region == country & (data1$date %in% as.Date(commondates)), .hosp_vars] <-
+    data2_1[(data2_1$date %in% as.Date(commondates)) , .hosp_vars]
+  data1
+}
 
 #' Get timeseries full data from datahub
 #' @rdname get_datahub

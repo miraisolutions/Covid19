@@ -29,7 +29,7 @@ if (interactive()) {
     #inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
 
 
-    callModule(mod_barplot_server, "plot", orig_data_aggregate_today, n_highligth = 10, istop = TRUE)
+    callModule(mod_barplot_server, "plot", orig_data_aggregate_today, n_highlight = 10, istop = TRUE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
