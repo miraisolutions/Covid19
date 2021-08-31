@@ -169,7 +169,7 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 #' replace hospital data of level1 with level2 data
 #'
 #' @param data1 data.frame level 1 data
-#' @param data1 data.frame level 1 data
+#' @param data2 data.frame level 2 data
 #' @param country character country name for replacement
 #'
 #' @details at level1 hospital data are not complete

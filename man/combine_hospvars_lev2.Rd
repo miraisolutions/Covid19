@@ -9,6 +9,8 @@ combine_hospvars_lev2(data1, data2, country = "Swizterland")
 \arguments{
 \item{data1}{data.frame level 1 data}
 
+\item{data2}{data.frame level 2 data}
+
 \item{country}{character country name for replacement}
 }
 \value{
