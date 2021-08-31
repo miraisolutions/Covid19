@@ -13,8 +13,7 @@ mod_stackedbarplot_ui <- function(id){
   caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
 
   tagList(
-          uiOutput(ns("title_stackedbarplot_status")),
-          #withSpinner(uiOutput(ns("plot_stackedbarplot_status")))
+          div(htmlOutput(ns("title_stackedbarplot_status")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
 
           withSpinner(plotlyOutput(ns("plot_stackedbarplot_status"), height = 500)),
           div(caption_explain, align = "center", height = 10)
@@ -24,8 +23,8 @@ mod_stackedbarplot_ui <- function(id){
 #'
 #' @param df data.frame for multiple countries
 #' @param w number of days of outbreak. Default 7
-#' @param n_highligth number of countries considered.
-#' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param n_highlight number of countries considered.
+#' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param statuses character vector of statuses in stacked barplot
 #' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
 #'
@@ -35,14 +34,22 @@ mod_stackedbarplot_ui <- function(id){
 #' @import purrr
 #' @importFrom plotly ggplotly layout
 #' @noRd
-mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, n_highligth = 5, istop = TRUE, statuses = c("deaths", "active", "recovered"), active_hosp = FALSE){
+mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, n_highlight = 5, istop = TRUE, statuses = c("deaths", "active", "recovered"), active_hosp = FALSE){
   ns <- session$ns
 
   # titles
   if (istop) {
-    output$title_stackedbarplot_status <- renderUI(div(h4(paste0("Current top ", n_highligth, " status split")), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_stackedbarplot_status <- renderText(#div(
+      #h4(
+        HTML(paste0("Current top ", n_highlight, " status split"))
+      #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      )
   } else {
-    output$title_stackedbarplot_status <- renderUI(div(h4("Status split"), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_stackedbarplot_status <- renderText(#div(
+      #h4("Status split")
+      HTML("Status split")
+      #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+      )
   }
   #active_hosp = FALSE
   if (active_hosp) {
@@ -61,7 +68,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     keepvars = c(keepvars, "confirmed")
 
   df_status = df %>%
-    filter(date == maxdate) %>%
+    filter(date == AsOfDate) %>%
     select(Country.Region, !!keepvars)
 
   if (istop) {
@@ -72,9 +79,9 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     }
     df_status = pick_status(df_status, "confirmed") %>%
       #arrange(desc(Value)) %>%
-      # top_n(n_highligth, wt = Value)  %>%
-      slice_max(Value, n = n_highligth, with_ties = FALSE) %>%
-      select(Country.Region,!!statuses) #%>% .[n_highligth:1, , drop = FALSE] # revert order to have largest on left
+      # top_n(n_highlight, wt = Value)  %>%
+      slice_max(Value, n = n_highlight, with_ties = FALSE) %>%
+      select(Country.Region,!!statuses) #%>% .[n_highlight:1, , drop = FALSE] # revert order to have largest on left
   }
   if (active_hosp) {
     df_status$active = pmax(replace_na(df_status$active,0) -  replace_na(df_status$hosp, 0), 0)

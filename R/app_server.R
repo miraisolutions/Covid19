@@ -18,8 +18,7 @@ app_server <- function(input, output, session) {
 
   # Data ----
   # map
-  #countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
-  rds_map = "WorldMap_sp_rds"
+  rds_map = "WorldMap_sp_spl.rds"
   message("read map from RDS ", rds_map)
   countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
@@ -60,11 +59,11 @@ app_server <- function(input, output, session) {
   orig_data_aggregate <-
     build_data_aggr(orig_data, pop_data)
 
-  output$last_update <- renderText({
-    paste0("Latest updated: ",
-           max(orig_data$date)
-    )
-  })
+  # output$last_update <- renderText({
+  #   paste0("Latest updated: ",
+  #          max(orig_data$date)
+  #   )
+  # })
 
 
   glob_var = reactiveVal(0)
@@ -72,7 +71,7 @@ app_server <- function(input, output, session) {
   country_var = reactiveVal(0)
   swiss_var = reactiveVal(0)
   countrycmp_var = reactiveVal(0)
-  uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
+  #uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
   continents_var <- reactiveValues(europe = 0, asia = 0, africa = 0, latam = 0, northernamerica = 0, oceania = 0)
   # Modules ----
   observe({
@@ -97,18 +96,21 @@ app_server <- function(input, output, session) {
     message("Current SubTab: ", req(input$continents_ui) )
 
     # select continents in tabs
-    tabuicontinents = c("Europe", "Asia", "Africa", "Lat. America & Carib.", "Northern America", "Oceania")
-    continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
-    mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
-    for (i.cont in 1:length(continents)) {
-      if (req(input$continents_ui) == tabuicontinents[i.cont] && continents_var[[uicontinents[i.cont]]] == 0) {
-        message("Do mod_continent_server module for ", tabuicontinents[i.cont])
+    # tabuicontinents = c("Europe", "Asia", "Africa", "Lat. America & Carib.", "Northern America", "Oceania")
+    # continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
+    # mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
 
-        callModule(mod_continent_server, paste(mainuicontinents[i.cont], "comparison", sep = "_"),
+    contInfo = .getContinents()
+
+    for (i.cont in 1:nrow(contInfo)) {
+      if (req(input$continents_ui) == contInfo$tab[i.cont] && continents_var[[contInfo$ui[i.cont]]] == 0) {
+        message("Do mod_continent_server module for ",contInfo$tab[i.cont])
+
+        callModule(mod_continent_server, paste(contInfo$mainui[i.cont], "comparison", sep = "_"),
                    orig_data_aggregate = orig_data_aggregate, nn = n, w = w,
                    pop_data = pop_data, countries_data_map = countries_data_map,
-                   cont = continents[i.cont], uicont = uicontinents[i.cont])
-        continents_var[[uicontinents[i.cont]]] = 1
+                   cont = contInfo$names[i.cont], uicont = contInfo$ui[i.cont])
+        continents_var[[contInfo$ui[i.cont]]] = 1
       }
     }
     # Switzerland page

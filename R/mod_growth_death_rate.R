@@ -72,16 +72,6 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
       )
     )
   } else if (!is.null(uichoice1)){
-    # if (length(uichoice1$choices) == 1) {
-    #   tagList(
-    #     fluidRow(
-    #       uiOutput(ns("title_plot_1")),
-    #       textInput(inputId = ns("plot_1"), value =  uichoice1$selected, label = NULL),
-    #       withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400)),
-    #       div(htmlOutput(ns("caption1")), align = "center")
-    #     )
-    #   )
-    # } else {
       tagList(
         div(id = id,
 
@@ -106,7 +96,7 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
 #' growth_death_rate Server Function
 #'
 #' @param df reactive data.frame
-#' @param n_highligth number of countries to highlight
+#' @param n_highlight number of countries to highlight
 #' @param istop logical to choose title
 #' @param g_palette list of character vector of colors for the graph and legend of plot_1 and death_rate
 #' @param plottitle character vector giving title to plot1 and plot2
@@ -121,7 +111,7 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
 #'
 #' @noRd
 mod_barplot_server <- function(input, output, session, df,
-                                         n_highligth = 5, istop = TRUE,
+                                         n_highlight = 5, istop = TRUE,
                                          g_palette = list("plot_1" = barplots_colors[["growth_factor"]],
                                                         "plot_2" = barplots_colors[["death_rate"]],
                                                         "calc" = FALSE),
@@ -140,24 +130,23 @@ mod_barplot_server <- function(input, output, session, df,
     if (!all(is.na(df$population))) {
       df_plot <- df %>%
         #arrange(desc(rate)) %>%
-        filter( date == maxdate & #!!sym(rate) != 0 &
+        filter( date == AsOfDate & #!!sym(rate) != 0 &
                   population >= max.pop) # %>% # filter out those with rate = 0 and small countries
     } else
       df_plot <- df %>%
-            filter( date == maxdate)
+            filter( date == AsOfDate)
 
     if (sortbyvar) {
       df_plot <- df_plot %>%
-        slice_max(!!sym(pick_var), n = n_highligth, with_ties = FALSE) #%>%
+        slice_max(!!sym(pick_var), n = n_highlight, with_ties = FALSE) #%>%
     }
-    if (n_highligth < length(unique(df_plot$Country.Region))) {
+    if (n_highlight < length(unique(df_plot$Country.Region))) {
       df_plot <- df_plot %>%
-        filter(Country.Region %in% head(unique(df_plot$Country.Region),n_highligth))
+        filter(Country.Region %in% head(unique(df_plot$Country.Region),n_highlight))
     }
-
     df_plot <- df_plot %>%
       mutate(Country = factor(Country.Region, levels = .$Country.Region)) %>%
-      select(Country, rate) %>% setNames(c("Country","Value"))
+      select(Country, AsOfDate,rate) %>% setNames(c("Country","AsOfDate","Value"))
 
     df_plot
   }
@@ -174,10 +163,10 @@ mod_barplot_server <- function(input, output, session, df,
   # titles
   if (istop) {
     varsort1 = if(length(pickvariable[["plot_1"]]) == 0) pickvariable[["plot_1"]] else  paste("by <", names(varsNames(pickvariable[["plot_1"]])), ">")
-    output$title_plot_1 <- renderUI(div(h4(HTML(paste0("Current top ", n_highligth, " countries ", varsort1, '<br/>',plottitle[1], '<br/>'))), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_plot_1 <- renderUI(div(h4(HTML(paste0("Current top ", n_highlight, " countries ", varsort1, '<br/>',plottitle[1], '<br/>'))), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
     if (isPlot2) {
       varsort2 = if(length(pickvariable[["plot_2"]]) == 0) pickvariable[["plot_2"]] else  paste("by<", names(varsNames(pickvariable[["plot_2"]])), ">")
-      output$title_plot_2 <- renderUI(div(h4(HTML(paste0("Current top ", n_highligth, " countries ", varsort2, '<br/>',plottitle[2], '<br/>'))), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+      output$title_plot_2 <- renderUI(div(h4(HTML(paste0("Current top ", n_highlight, " countries ", varsort2, '<br/>',plottitle[2], '<br/>'))), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
     }
 
   } else {

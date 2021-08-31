@@ -1,4 +1,8 @@
 ### Covid19Mirai 2.5.7-9000
+- Improved speed UI and map (#188) 
+- removed time slider map global
+- Improved case boxes
+- Adjusted weekly stats and hosp data
 
 ### Covid19Mirai 2.5.7 (2021-07-20)
 - Added line-plot comparing calendar years (#185)

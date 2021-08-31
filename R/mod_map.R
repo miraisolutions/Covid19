@@ -20,6 +20,8 @@ mod_map_ui <- function(id){
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     withSpinner(leafletOutput(ns("map"), width = "100%", height = "800")),
+    #leafletOutput(ns("map")),
+    #plotOutput(ns("map_poly")),
     tags$head(tags$style(
       HTML('
              #input_date_control {background-color: rgba(192,192,192,0.6);;}
@@ -38,7 +40,7 @@ mod_map_ui <- function(id){
           uiOutput(ns("title_map")),
           radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
           radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
-          uiOutput(ns("slider_ui")),
+          #uiOutput(ns("slider_ui")),
           helpText("Click on the country to obtain its details."),
           div(uiOutput(ns("caption")), align = "center")
 
@@ -71,25 +73,25 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
   data_clean <- orig_data_aggregate %>%
     filter(!is.na(country_name))
-  keepcols = c("country_name","Country.Region","date","maxdate",
+  keepcols = c("country_name","Country.Region","date","AsOfDate",
                names(data_clean)[sapply(data_clean, is.numeric)])
   data_clean = data_clean[, keepcols] # remove, not used
 
   # UI controls ----
-  output$slider_ui <- renderUI({
-
-    sliderInput(inputId = ns("slider_day"), label = div(style = "font-size:10px","Day"), min = min(orig_data_aggregate$date, na.rm = TRUE), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date),
-                dragRange = FALSE, animate = animationOptions(interval = 4000, loop = FALSE), step = 7)
-  })
+  # output$slider_ui <- renderUI({
+  #
+  #   sliderInput(inputId = ns("slider_day"), label = div(style = "font-size:10px","Day"), min = min(orig_data_aggregate$date, na.rm = TRUE), max = max(orig_data_aggregate$date), value = max(orig_data_aggregate$date),
+  #               dragRange = FALSE, animate = animationOptions(interval = 4000, loop = FALSE), step = 7)
+  # })
 
   # Map ----
 
   # Data for a given date
-  data_date <- reactive({
+  #data_date <- r#eactive({
     #vars_aggr = intersect(get_aggrvars(), names(data_clean))
-    maxdate = req(input$slider_day)
+    #maxdate = req(input$slider_day)
     data_date <- data_clean %>%
-      filter(date == maxdate) %>%
+      filter(date == AsOfDate) %>%
       #filter(date == max(date)) %>%
       #select(-c(Country.Region, date, contagion_day)) #%>%
       select(-c(Country.Region, contagion_day)) #%>%
@@ -98,10 +100,10 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       # ungroup() %>%
       #mutate(date = maxdate)
     data_date
-  })
+ # })
   data_plot <- reactive({
-    data_selected <- data_date() %>%
-      bind_cols(data_date()[,input$radio_choices] %>%
+    data_selected <- data_date %>%
+      bind_cols(data_date[,input$radio_choices] %>%
                   setNames("indicator"))
 
     if (req(input$radio_pop) == "per 1M pop") {
@@ -143,25 +145,10 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
     c(0,log(roundUp(max_value())))
   })
 
-  # pal2 <- reactive({
-  #   # colorBin(palette = c("#FFFFFFFF",rev(viridis::inferno(256))), domain = c(0,roundUp(max_value())), na.color = "#f2f5f3", bins = 20)
-  #   if (input$radio_choices == "confirmed" || input$radio_choices == "new_confirmed") {
-  #     colorNumeric(palette = "Reds", domain = domain(), na.color = "white")
-  #   } else if (input$radio_choices == "deaths" || input$radio_choices == "new_deaths" || input$radio_choices == "stringency_index") {
-  #     colorNumeric(palette = "Greys", domain = domain(), na.color = "white")
-  #   } else if (input$radio_choices == "active" || input$radio_choices == "new_active") {
-  #     colorNumeric(palette = "Blues", domain = domain(), na.color = "grey")
-  #   }  else if (input$radio_choices == "recovered" || input$radio_choices == "new_recovered") {
-  #     colorNumeric(palette = "Greens", domain = domain(), na.color = "white")
-  #   } else {
-  #     stop("wrong variable for map global")
-  #   }
-  #
-  # })
 
   output$map <- renderLeaflet({
     # Using leaflet() to include non dynamic aspects of the map
-    leaflet(
+    leaflet('map',
       data = countries_data_map,
       options = leafletOptions(zoomControl = FALSE) # not needed, clashes with slider
     ) %>%
@@ -171,43 +158,48 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   # # update map with reactive part
   observe({
   #observeEvent(data_plot(), {
-
-    if(req(input$radio_pop) == "per 1M pop")
-      var1M =   "per 1M pop"
-    else {
-      var1M = NULL
-    }
-    leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
-    #message("leg_par$bins 1:", paste(leg_par$bins, collapse = ","))
-    #mapdata = leafletProxy("map", data = data_plot())  %>%
-    mapdata = leafletProxy("map", data = countries_data_map)  %>%
-      clearMarkers() %>%
-      #clearShapes() %>% removes everything
-      clearControls() %>% addLegend(position = "bottomright",
-                                                            #layerId="colorLegend",
-                                                            pal = leg_par$pal,
-                                                            opacity = leg_par$opacity,
-                                                            bins = leg_par$bins,
-                                                            values = leg_par$values,
-                                                            data = leg_par$data,
-                                                            labFormat = leg_par$labFormat
-      )
-    mapdata = mapdata %>%
-      addPolygons(layerId = ~NAME,
-                  # GM line for new colors
-                  fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
-                  #fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
-                  fillOpacity = 1,
-                  color = "#BDBDC3",
-                  group = "mapdata",
-                  label = ~NAME,
-                  weight = 1,
-                  popup = map_popup_data(data_plot(), "NAME", "indicator", input$radio_choices, update_ui()$textvar, namvarsfx = var1M),
-                  popupOptions = popupOptions(keepInView = T, autoPan = F
-                                              #autoPanPadding = c(100, 100)
-                                              #offset = c(100,0)
-                  )
-      ) #%>%  addLegend(position = "bottomright",
+  #output$map:poly <- renderPlot({
+    #if("per 1M pop" %in% req(input$radio_pop)) {
+      if(req(input$radio_pop) == "per 1M pop") {
+        var1M =   "per 1M pop"
+        if (!req(input$radio_choices) %in% get_aggrvars())
+          return()
+        }
+      else {
+        var1M = NULL
+      }
+      leg_par <- legend_fun(data_plot()$indicator, input$radio_choices)
+      #message("leg_par$bins 1:", paste(leg_par$bins, collapse = ","))
+      #mapdata = leafletProxy("map", data = data_plot())  %>%
+      #mapdata = leafletProxy("map")  %>%
+      mapdata = leafletProxy("map", data = countries_data_map)  %>%
+        clearMarkers() %>%
+        #clearShapes() %>% removes everything
+        clearControls() %>% addLegend(position = "bottomright",
+                                      #layerId="colorLegend",
+                                      pal = leg_par$pal,
+                                      opacity = leg_par$opacity,
+                                      bins = leg_par$bins,
+                                      values = leg_par$values,
+                                      data = leg_par$data,
+                                      labFormat = leg_par$labFormat
+        )
+      mapdata = mapdata %>%
+        addPolygons(layerId = ~NAME,
+                    # GM line for new colors
+                    fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
+                    #fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
+                    fillOpacity = 1,
+                    color = "#BDBDC3",
+                    group = "mapdata",
+                    label = ~NAME,
+                    weight = 1,
+                    popup = map_popup_data(data_plot(), "NAME", "indicator", input$radio_choices, update_ui()$textvar, namvarsfx = var1M),
+                    popupOptions = popupOptions(keepInView = T, autoPan = F
+                                                #autoPanPadding = c(100, 100)
+                                                #offset = c(100,0)
+                    )
+        ) #%>%  addLegend(position = "bottomright",
       #                  #layerId="colorLegend",
       #                  pal = leg_par$pal,
       #                  opacity = leg_par$opacity,
@@ -217,12 +209,14 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       #                  labFormat = leg_par$labFormat
       # )
 
-    mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
-                                 options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
-                                                                 position = "topright",hideMarkerOnCollapse = T,
-                                                                 moveToLocation = FALSE))
+      mapdata =  addSearchFeatures(mapdata, targetGroups  = "mapdata",
+                                   options = searchFeaturesOptions(zoom=0, openPopup=TRUE, firstTipSubmit = TRUE,
+                                                                   position = "topright",hideMarkerOnCollapse = T,
+                                                                   moveToLocation = FALSE))
 
-    mapdata
+      mapdata
+   # }
+
 
   })
 

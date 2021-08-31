@@ -21,7 +21,7 @@ if (interactive()) {
     countries_data_map = leaflet::gadmCHE
 
     subcont_palette =
-      subcont_palette_calc(col_cont = area_map_spec(country, "col"),
+      palette_calc(col_cont = area_map_spec(country, "col"),
                            x = sort(unique(area_data_2_aggregate$Country.Region)))
 
 

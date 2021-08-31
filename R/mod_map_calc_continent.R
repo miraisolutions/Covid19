@@ -19,7 +19,7 @@ mod_map_area_calc_ui <- function(id){
     uiOutput(ns("controls")), # radio buttons to be updated in server
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     withSpinner(leafletOutput(ns("map_area_calc"), width = "100%", height = "500")),
-    div(uiOutput(ns("caption")), align = "center")
+    div(htmlOutput(ns("caption")), align = "center")
 )
  # )
 }
@@ -185,8 +185,8 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 
   # add caption info depending on plot
   if (!is.null(update_ui$caption)) {
-    output$caption <- renderUI(
-      p(update_ui$caption)
+    output$caption <- renderText(
+      update_ui$caption
     )
   }
 
@@ -313,7 +313,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     caption_leth_rate <- paste("Lethality Rate:", caption_death_fun("lethality_rate"))
     caption_mrt_rate <- paste("Mortality Rate:", caption_death_fun("deaths_rate_1M_pop"))
-    caption =HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
+    caption = HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
     textvar = c("new_deaths", "lw_deaths", "deaths", "lw_lethality_rate","population")
     if(global) {
@@ -467,10 +467,11 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
   } else  {
       new_buttons = NULL
       caption = NULL
-    }
+  }
+  textvar = c("AsOfDate", textvar)
   if (global) {
     textvar = textvar[!grepl("^lw",textvar )]
-    textvar = c("date",textvar, "population")
+    textvar = c(textvar, "population")
     textvar = unique(textvar)
   }
 

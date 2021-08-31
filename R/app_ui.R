@@ -6,6 +6,15 @@
 #' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
 #' @noRd
 app_ui <- function(request) {
+
+  # Params ----
+  n <- 1000 #  min number of cases for a country to be considered. Default 1000
+  # to be used in Global and Comparison
+  w <- 7 # number of days of outbreak. Default 7
+  now = as.POSIXct(Sys.time()) # given time zone
+  AsOfDate =  as.character(as.Date(now - 40*60*60))
+
+  message("app_ui")
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
@@ -45,9 +54,8 @@ app_ui <- function(request) {
             span(
               id = "subtitle",
               #"Data source: worldometers from 26.03.2020, JHU CSSE before.",
-              "Data source: COVID-19 Data Hub",
-              textOutput("last_update", inline = TRUE) %>%
-                #bs_embed_tooltip(title = "Data Repository by bumbeishvili. More information on the README.", placement = "right")
+              tags$p(paste("Data source: COVID-19 Data Hub, latest update on", AsOfDate)) %>%
+              #textOutput("last_update", inline = TRUE) %>%
                 bs_embed_tooltip(title = "Data Repository by COVID-19 Data Hub. More information in the README on our github page.", placement = "right")
 
             )
@@ -68,7 +76,6 @@ app_ui <- function(request) {
         ) # end header-left
 
       ), # end Header fluidRow
-      #div(p("Data is growing, allow 30 seconds for the first page to load..."), align = "left"),
       modalDialog(title = "Covid19Mirai loading message",
                   p("Data is growing, allow 30 seconds for the first page to load."),
                   p("Load first page fully before navigating to others.")),
@@ -92,22 +99,22 @@ app_ui <- function(request) {
                            mod_continent_comparison_ui("continent_comparison")),
                    tabPanel("Europe",
                             id = "tab_global",
-                            mod_continent_ui("Europe_comparison", "europe")),
+                            mod_continent_ui("Europe_comparison", "europe", nn = n)),
                    tabPanel("Asia",
                             id = "tab_global",
-                            mod_continent_ui("Asia_comparison", "asia")),
+                            mod_continent_ui("Asia_comparison", "asia", nn = n)),
                    tabPanel("Africa",
                             id = "tab_global",
-                            mod_continent_ui("Africa_comparison", "africa")),
+                            mod_continent_ui("Africa_comparison", "africa", nn = n)),
                    tabPanel("Lat. America & Carib.",
                             id = "tab_global",
-                            mod_continent_ui("LatAm_comparison", "latam")),
+                            mod_continent_ui("LatAm_comparison", "latam", nn = n)),
                    tabPanel("Northern America",
                             id = "tab_global",
-                            mod_continent_ui("NorthernAmerica_comparison","northernamerica")),
+                            mod_continent_ui("NorthernAmerica_comparison","northernamerica", nn = n)),
                    tabPanel("Oceania",
                             id = "tab_global",
-                            mod_continent_ui("Oceania_comparison","oceania"))
+                            mod_continent_ui("Oceania_comparison","oceania", nn = n))
                  )
                 ),
         tabPanel("Switzerland",

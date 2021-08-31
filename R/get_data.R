@@ -139,7 +139,7 @@ get_timeseries_full_data <- function() {
 #'
 #' @param country character country, to chose with lev = 2
 #' @param startdate character staring date
-#' @param lev integer 1 for country level, 2 for reagions
+#' @param lev integer 1 for country level, 2 for reasons
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
 #'
 #' @details data sourced from https://github.com/covid19datahub/COVID19/
@@ -160,27 +160,60 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 
   message("replace hosp data (",paste(.hosp_vars, collapse = ","), ") in lev1 dataset with lev2 swiss data")
 
-  # aggregate hosp data at country level
-  orig_data_ch_1 = orig_data_ch_2 %>%
-    select(date, all_of(as.vector(.hosp_vars))) %>%
-    group_by(date) %>%
-    summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
-    ungroup() %>%
-    mutate(Country.Region = "Switzerland")
-  orig_data_ch_1 = orig_data_ch_1[, c("Country.Region", setdiff(names(orig_data_ch_1),"Country.Region"))]
-
-  if (!identical(orig_data_ch_1$date, orig_data$date[orig_data$Country.Region == "Switzerland"]))
-    warning("Not same dates in lev1 and lev2 for CH")
-
-  commondates = intersect(as.character(orig_data_ch_1$date), as.character(orig_data$date[orig_data$Country.Region == "Switzerland"]))
-  orig_data_ch_1 = filter(orig_data_ch_1, date %in% as.Date(commondates))
-
-  orig_data[orig_data$Country.Region == "Switzerland" & (orig_data$date %in% as.Date(commondates)), .hosp_vars] <-
-    orig_data_ch_1[(orig_data_ch_1$date %in% as.Date(commondates)) , .hosp_vars]
+  orig_data = combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
 
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
 
+
+#' replace hospital data of level1 with level2 data
+#'
+#' @param data1 data.frame level 1 data
+#' @param data2 data.frame level 2 data
+#' @param country character country name for replacement
+#'
+#' @details at level1 hospital data are not complete
+#'
+#' @return data1 with hospital data from data2
+#'
+#' @import dplyr
+#'
+#' @export
+combine_hospvars_lev2 <- function(data1, data2, country = "Swizterland") {
+
+  # aggregate hosp data at country level
+  data2 <- data2 %>% select(Country.Region, date, as.character(.hosp_vars))
+  maxdate1 = max(data1$date[data1$Country.Region == country])
+
+  stackhosp = function(dat, maxd) {
+    if(max(dat$date) < maxd) {
+      dat = rbind(dat,
+                  data.frame(date = seq(max(dat$date)+1, maxd, 1), hosp = tail(dat$hosp, 1), icuvent = tail(dat$icuvent, 1), stringsAsFactors = FALSE)
+      )
+    }
+    dat
+  }
+  # impute last days hosp data
+  data2 = data2 %>% group_by(Country.Region) %>% group_modify(~stackhosp(.x, maxdate1))
+
+  data2_1 = data2 %>%
+    select(date, all_of(as.vector(.hosp_vars))) %>%
+    group_by(date) %>%
+    summarise_if(is.numeric, sum, na.rm = TRUE) %>% # todo, use only hospvars
+    ungroup() %>%
+    mutate(Country.Region = country)
+  data2_1 = data2_1[, c("Country.Region", setdiff(names(data2_1),"Country.Region"))]
+
+  if (!identical(data2_1$date, data1$date[data1$Country.Region == country]))
+    warning("Not same dates in lev1 and lev2 for CH")
+
+  commondates = intersect(as.character(data2_1$date), as.character(data1$date[data1$Country.Region == country]))
+  data2_1 = filter(data2_1, date %in% as.Date(commondates))
+
+  data1[data1$Country.Region == country & (data1$date %in% as.Date(commondates)), .hosp_vars] <-
+    data2_1[(data2_1$date %in% as.Date(commondates)) , .hosp_vars]
+  data1
+}
 
 #' Get timeseries full data from datahub
 #' @rdname get_datahub
@@ -292,11 +325,11 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # take yesterday, data are updated hourly and they are complete around mid day, 40h later
     # regardless of the timezone, select the day 40h ago
     now = as.POSIXct(Sys.time()) # given time zone
-    maxdate =  as.character(as.Date(now - 40*60*60))
+    AsOfDate =  as.character(as.Date(now - 40*60*60))
 
-    message("Maximum date set to: ", maxdate)
+    message("Maximum date set to: ", AsOfDate)
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
-    dataHub = dataHub %>% filter(date <= maxdate) %>% arrange(Country.Region, date)
+    dataHub = dataHub %>% filter(date <= AsOfDate) %>% arrange(Country.Region, date)
 
     # convert integers into numeric
     dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
@@ -402,7 +435,7 @@ get_timeseries_by_contagion_day_data <- function(data) {
       TRUE ~ 0
     )) %>%
     group_by(Country.Region) %>%
-    mutate(maxdate = max(date)) %>%
+    mutate(AsOfDate = max(date)) %>%
     mutate(incremental = seq(1:n())) %>%
     mutate(offset = sum(no_contagion)) %>%
     mutate(tmp = incremental - offset) %>%
@@ -494,7 +527,7 @@ get_timeseries_country_data <- function(data, country){
 aggregate_country_data <- function(data){
   country_df <- data %>%
     #filter( date == max(date)) %>%
-    filter( date == maxdate) %>%
+    filter( date == AsOfDate) %>%
     select(-Province.State, -Lat, -Long) %>%
     group_by(Country.Region) %>%
     summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered), active = sum(active), new_confirmed = sum(new_confirmed), new_deaths = sum(new_deaths), new_active = sum(new_active), new_recovered = sum(new_recovered), contagion_day = max(contagion_day)) %>%
@@ -549,6 +582,8 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   lm60 = max(df$date) - 60
   lm30 = max(df$date) - 30
 
+  now = as.POSIXct(Sys.time()) # given time zone
+  LastDate =  as.Date(now - 40*60*60)
 
   res = df %>% #ungroup() %>%
     filter(date >= validdates) %>%
@@ -572,13 +607,12 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     mutate(growth_factor_3 = round(pmax(1, sum(new_confirmed[date>lm63], na.rm = TRUE) / sum(new_confirmed[date>lm63 & date <=lm3]),1), digits = 3),
            growth_factor_7 = round(pmax(1, sum(new_confirmed[date>lm67], na.rm = TRUE) / sum(new_confirmed[date>lm67 & date <=lm7]),1), digits = 3),
            growth_factor_14 = round(pmax(1, sum(new_confirmed[date>lm74], na.rm = TRUE) / sum(new_confirmed[date>lm74 & date <=lm14]),1), digits = 3),
-           lm_confirmed_rate_1M_pop = round(10^6*sum(new_confirmed[date>lm60], na.rm = TRUE)/population, digits = 3)
+           lm_confirmed_rate_1M_pop = round(10^6*sum(new_confirmed[date>lm60], na.rm = TRUE)/population, digits = 3),
     ) %>%
-    #mutate(maxdate = max(date)) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
-    filter(date == maxdate) %>% # take the latest date per country. to check better
-    #select(-maxdate) %>%
+    filter((date == AsOfDate) & (AsOfDate > (LastDate-7))) %>% # take the latest date per country. exclude countries without enough data
+    #select(-maxdate) %>%)
     #mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
       growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),

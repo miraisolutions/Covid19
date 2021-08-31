@@ -51,7 +51,7 @@ mod_map_cont_server <- function(input, output, session, orig_data_aggregate, cou
   data_clean <- reactive({
     data <-
       orig_data_aggregate %>%
-      filter(continent == area & date == maxdate) # %>%# select data from continent only
+      filter(continent == area & date == AsOfDate) # %>%# select data from continent only
     #align_country_names() # align names with country data
 
     data$country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(data$Country.Region, unique(as.character(countries_data_map$NAME)))])

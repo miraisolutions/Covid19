@@ -6,16 +6,30 @@
 \alias{mod_caseBoxes_server}
 \title{caseBoxes UI Function}
 \usage{
-mod_caseBoxes_ui(id, hosp = FALSE)
+mod_caseBoxes_ui(id, hosp = FALSE, outputui = FALSE)
 
-mod_caseBoxes_server(input, output, session, counts, hosp = FALSE, vax = NULL)
+mod_caseBoxes_server(
+  input,
+  output,
+  session,
+  counts,
+  hosp = FALSE,
+  vax = NULL,
+  renderui = FALSE
+)
 }
 \arguments{
 \item{id, }{Internal parameters for {shiny}.}
 
 \item{hosp}{logical, if TRUE hospitalised box variables is added.}
 
+\item{outputui}{logical, if TRUE shiny::uiOutput is used}
+
 \item{counts}{Reactive expression yielding the named vector of cases by type.}
+
+\item{vax}{character, output id for the vaccination box}
+
+\item{renderui}{logical, if TRUE shiny::renderUI is used}
 }
 \description{
 A shiny Module for displaying the number of cases by type as
@@ -28,7 +42,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_caseBoxes_ui("boxes")
+      mod_caseBoxes_ui("boxes", outputui = TRUE)
     )
   )
   server <- function(input, output, session) {
@@ -40,21 +54,21 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     country_data = orig_data_aggregate \%>\%
-      filter(Country.Region == "France")
+      dplyr::filter(Country.Region == "France")
 
     country_data_today <- country_data \%>\%
-      filter(date == maxdate)
+      dplyr::filter(date == AsOfDate)
 
     lw_country_data = lw_vars_calc(country_data)
     pw_country_data =  lw_vars_calc(country_data, 14)
 
     country_data_today = country_data_today \%>\%
-      left_join(lw_country_data \%>\% select(-population))  \%>\%
-      left_join(pw_country_data \%>\% select(-population))
+      dplyr::left_join(lw_country_data \%>\% dplyr::select(-population))  \%>\%
+      dplyr::left_join(pw_country_data \%>\% dplyr::select(-population))
 
     vaxarg = "recovered"
 
-    callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, vax = vaxarg)
+    callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, vax = vaxarg, renderui = TRUE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -65,7 +79,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      Covid19Mirai:::mod_caseBoxes_ui("boxes", hosp = TRUE)
+      mod_caseBoxes_ui("boxes", hosp = TRUE)
     )
   )
   server <- function(input, output, session) {
@@ -77,17 +91,17 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     country_data = orig_data_aggregate \%>\%
-      filter(Country.Region == "France")
+      dplyr::filter(Country.Region == "France")
 
     country_data_today <- country_data \%>\%
-      filter(date == maxdate)
+      dplyr::filter(date == AsOfDate)
 
     lw_country_data = lw_vars_calc(country_data)
     pw_country_data =  lw_vars_calc(country_data, 14)
 
     country_data_today = country_data_today \%>\%
-      left_join(lw_country_data \%>\% select(-population))  \%>\%
-      left_join(pw_country_data \%>\% select(-population))
+      dplyr::left_join(lw_country_data \%>\% dplyr::select(-population))  \%>\%
+      dplyr::left_join(pw_country_data \%>\% dplyr::select(-population))
 
 
     callModule(mod_caseBoxes_server, "boxes", counts = country_data_today, hosp = TRUE)

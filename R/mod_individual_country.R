@@ -17,11 +17,11 @@ mod_ind_country_ui <- function(id){
     mod_caseBoxes_ui(ns("ind_count-boxes_hosp"), hosp = TRUE),
     hr(),
     div(
-      uiOutput(ns("ind_from_nth_case"))
+      htmlOutput(ns("ind_from_nth_case"))
     ),
     hr(),
     div(
-      uiOutput(ns("ind_missing_days"))
+      htmlOutput(ns("ind_missing_days"))
     ),
     hr(),
     fluidRow(
@@ -50,8 +50,7 @@ mod_ind_country_ui <- function(id){
 
       column(6,
              #withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"),istop = FALSE,nn = 1, tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE, vax = TRUE))
-             withSpinner(mod_compare_timeline_plot_ui(ns("ind_lines_points_plots_tot"), titles = 1:2))
-
+             withSpinner(mod_compare_timeline_plot_ui(ns("ind_lines_points_plots_tot"), titles = 1:2, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE, vax = TRUE, nn = 100))
       ),
       column(6,
              withSpinner(mod_vaccines_text_ui(ns("ind_vaccines_text_plot")))
@@ -136,7 +135,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   ns <- session$ns
 
   message("mod_ind_country_server")
-  output$ind_from_nth_case<- renderUI({
+  output$ind_from_nth_case<- renderText({
     HTML(paste(
          message_missing_data("Recovered and Tests",where = "most of Cantons"),
          message_firstday(nn),
@@ -150,7 +149,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
       filter(contagion_day > 0) %>%
       arrange(desc(date))
 
-  output$ind_missing_days <- renderUI({
+  output$ind_missing_days <- renderText({
     HTML(
       message_missing_country_days(country_data)
     )})
@@ -244,7 +243,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   # prepare data for table with country data
   area_data_2_aggregate_tab = area_data_2_aggregate %>% # only data from today
-    filter(date == maxdate) %>%
+    filter(date == AsOfDate) %>%
     arrange(desc(confirmed) )
 
   # add tables UIs

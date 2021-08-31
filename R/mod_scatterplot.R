@@ -46,7 +46,7 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
     } else
       varsx = varsx
     tagList(
-      uiOutput(ns("title_scatterplot")),
+      div(htmlOutput(ns("title_scatterplot")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
       fluidRow(
         column(6,
                selectInput(inputId = ns("yvar"), label = div(style = "font-size:10px",varsy$label),
@@ -68,7 +68,7 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
     } else
       varsy = varsy
     tagList(
-      uiOutput(ns("title_scatterplot")),
+      div(htmlOutput(ns("title_scatterplot")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
       fluidRow(
         column(6, #offset = 6,
                selectInput(inputId = ns("yvar"), label = div(style = "font-size:10px",varsy$label),
@@ -86,8 +86,8 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
 #' @param df data.frame for multiple countries
 #' @param nmed number of cases of countries to be used for median computation
 #' @param wmed days of outbreak of countries to be used for median computation
-#' @param n_highligth number of countries to highlight if istop == TRUE
-#' @param istop logical to choose title, if top n_highligth countries are selected
+#' @param n_highlight number of countries to highlight if istop == TRUE
+#' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param countries countries selected
 #' @param xvar character variable name for x axis
 #' @param yvar character variable name for y axis
@@ -102,11 +102,11 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL){
 #' @importFrom plotly ggplotly layout plotly_build
 #'
 #' @noRd
-mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wmed = 7, n_highligth = 5, istop = TRUE, countries, xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", growth = TRUE, fitted = FALSE){
+mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wmed = 7, n_highlight = 5, istop = TRUE, countries, xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", growth = TRUE, fitted = FALSE){
   ns <- session$ns
   # titles
   istoptitle = if(istop) {
-      paste("Top", n_highligth, "Confirmed cases: ")
+      paste("Top", n_highlight, "Confirmed cases: ")
     } else {
     character(0)
     }
@@ -131,11 +131,19 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   )
   if (growth) {
     #reactList$yvar = input$yvar
-    output$title_scatterplot <- renderUI(div(h4(paste(istoptitle, "Growth vs", xTitle())), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_scatterplot <- renderText({
+      #div(
+      HTML(paste(istoptitle, "Growth vs", xTitle()))
+      #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+    }
+  )
   } else {
     #reactList$yvar = xvar
-    #output$title_scatterplot <- renderUI(div(h4(paste0(istoptitle, names(varsNames(req(input$yvar))), " vs ", names(varsNames(xvar)))), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
-    output$title_scatterplot <- renderUI(div(h4(paste(istoptitle, names(varsNames(reactList$yvar)), "vs", xTitle())), align = "center", style = "margin-top:20px; margin-bottom:20px;"))
+    output$title_scatterplot <- renderText(
+      #div(
+      HTML(paste(istoptitle, names(varsNames(reactList$yvar)), "vs", xTitle()))
+        #, align = "center", style = "margin-top:20px; margin-bottom:20px;")
+        )
   }
 
 
@@ -143,9 +151,9 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   world = function(dat, yvar){
     dat %>% #TODO select_countries_n_cases_w_days can be removed if data_filtered is the input
       #select_countries_n_cases_w_days(n = n, w = w) %>%
-      filter( date == maxdate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
+      filter( date == AsOfDate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
       #select(Country.Region,date,confirmed,starts_with("growth"), !!xvar)
-      select(Country.Region,date,confirmed, !!reactList$xvar, !!reactList$yvar)
+      select(Country.Region,date,AsOfDate,confirmed, !!reactList$xvar, !!reactList$yvar)
 
   }
   pick_rate <- function(df, rate){
@@ -184,12 +192,12 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
     med_calc(world_10000(), reactList$xvar)
     })
 
-  if (istop)  { # choose top n_highligth
+  if (istop)  { # choose top n_highlight
     df_top = pick_rate(df, "confirmed") %>%
         arrange(desc(Value))
     df_top = df_top %>%
-      #top_n(n_highligth, wt = Value) %>% .[1:n_highligth,, drop = FALSE]
-      slice_max(Value, n = n_highligth, with_ties = FALSE)
+      #top_n(n_highlight, wt = Value) %>% .[1:n_highlight,, drop = FALSE]
+      slice_max(Value, n = n_highlight, with_ties = FALSE)
 
   } else {
     df_top = df %>%
@@ -197,9 +205,9 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
   }
   df_top_new = reactive({
     df_top %>%
-    filter( date == maxdate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
+    filter( date == AsOfDate & !!sym(reactList$xvar) != 0 & !!sym(reactList$yvar) != 0) %>%
       #select(Country.Region,date,confirmed,starts_with("growth"), !!xvar)
-      select(Country.Region,date,confirmed, !!reactList$xvar, !!reactList$yvar)
+      select(Country.Region,date,AsOfDate,confirmed, !!reactList$xvar, !!reactList$yvar)
   })
 
 
@@ -235,7 +243,7 @@ mod_scatterplot_server <- function(input, output, session, df, nmed = 10000, wme
     msg = c(caption_yvar(), caption_xvar(), caption_median())
     if (fitted)
       msg = c(msg, paste(caption_fitted(), "among all countries of this page with data"))
-    paste0("<p>", msg, sep = '</p>')
+    paste0(msg, sep = '</br>')
   })
 
   output$plot_scatterplot_xy <- renderPlotly({
