@@ -103,15 +103,15 @@ get_timeseries_full_data <- function() {
     left_join(deaths, by = join_by_cols) %>%
     left_join(recovered, by = join_by_cols) %>%
     mutate_if(is.numeric, function(x){x = replace_na(x, 0)}) #%>% #control NAs
-    #mutate(active = confirmed - deaths - recovered)
+  #mutate(active = confirmed - deaths - recovered)
 
   sumcountries = function(data,tocountry, fromcountry) {
     message("Adding ", paste(fromcountry, collapse = ","), " to ", tocountry)
     data[data$Country.Region == tocountry, c("confirmed", "deaths", "recovered") ] =
       data %>% filter(Country.Region %in% c(tocountry,fromcountry ) ) %>% group_by(date) %>%
-        select(date, confirmed, deaths, recovered) %>%
-        summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered)) %>%
-        ungroup() %>% select(confirmed, deaths, recovered)
+      select(date, confirmed, deaths, recovered) %>%
+      summarize(confirmed = sum(confirmed), deaths = sum(deaths), recovered = sum(recovered)) %>%
+      ungroup() %>% select(confirmed, deaths, recovered)
     # remove from countries
     data = data[!is.element(data$Country.Region,fromcountry), , drop = F]
     data
@@ -129,7 +129,7 @@ get_timeseries_full_data <- function() {
 
   # compute active
   data = data %>%
-       mutate(active = confirmed - deaths - recovered)
+    mutate(active = confirmed - deaths - recovered)
 
   data
 }
@@ -179,22 +179,27 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 #' @import dplyr
 #'
 #' @export
-combine_hospvars_lev2 <- function(data1, data2, country = "Swizterland") {
+combine_hospvars_lev2 <- function(data1, data2, country = "Switzerland") {
 
   # aggregate hosp data at country level
   data2 <- data2 %>% select(Country.Region, date, as.character(.hosp_vars))
-  maxdate1 = max(data1$date[data1$Country.Region == country])
+  #maxdate1 = max(data1$date[data1$Country.Region == country])
 
-  stackhosp = function(dat, maxd) {
-    if(max(dat$date) < maxd) {
-      dat = rbind(dat,
-                  data.frame(date = seq(max(dat$date)+1, maxd, 1), hosp = tail(dat$hosp, 1), icuvent = tail(dat$icuvent, 1), stringsAsFactors = FALSE)
-      )
-    }
-    dat
-  }
-  # impute last days hosp data
-  data2 = data2 %>% group_by(Country.Region) %>% group_modify(~stackhosp(.x, maxdate1))
+  # datC = data1 %>% dplyr::filter(Country.Region == country) %>% select(date)
+  # stackhosp = function(dat, datC) {
+  #   if (!identical(dat$date, datC$date)) {
+  #     dat = datC %>% left_join(dat, by = "date") %>% fill()
+  #     dat[, .hosp_vars][is.na(dat[, .hosp_vars])] = 0
+  #   }
+  #   # if(max(dat$date) < maxd) {
+  #   #   dat = rbind(dat,
+  #   #               data.frame(date = seq(max(dat$date)+1, maxd, 1), hosp = tail(dat$hosp, 1), icuvent = tail(dat$icuvent, 1), stringsAsFactors = FALSE)
+  #   #   )
+  #   # }
+  #   dat
+  # }
+  # # impute last days hosp data
+  # data2 = data2 %>% group_by(Country.Region) %>% group_modify(~stackhosp(.x, datC))
 
   data2_1 = data2 %>%
     select(date, all_of(as.vector(.hosp_vars))) %>%
@@ -248,7 +253,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
                      "UK" = "United Kingdom",
                      "USA" = "United States",
                      "U.S. Virgin Islands" = "U.S. Virgin Islands",
-                     )
+    )
   }
   dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg, cache = TRUE) # select level2 to add states
   # raw = FALSE then NAs replaced with 0s
@@ -311,12 +316,12 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 
           dataHub = rbind(dataHub, dataMiss) %>% arrange(Country.Region,date)
         }
-    }
+      }
 
     }
     if (lev == 2 && country == "China") {
-        message("remove Hong Kong from China")
-        dataHub = filter(dataHub, Country.Region != "Hong Kong")
+      message("remove Hong Kong from China")
+      dataHub = filter(dataHub, Country.Region != "Hong Kong")
     }
   }
   ##################################################################
@@ -342,13 +347,14 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 
       message("rawData, adjust cumulative vars: ", paste(cumvars, collapse = ","))
 
-      # sdet to NA so that it can be imputed later
+      # set to NA so that it can be imputed later
       dataHub[, cumvars][dataHub[, cumvars] <0] = NA
 
+      daterange = data.frame(date = unique(dataHub$date), stringsAsFactors = FALSE)
       #varsimpute = intersect(c(get_aggrvars(),.hosp_vars_datahub ), names(dataHub))
-      dataHub = dataHub %>%  group_by(Country.Region) %>%
+      dataHub = dataHub %>%  group_by(Country.Region) %>% right_join(daterange) %>% # extend data to all missing
         mutate(
-          across(all_of(as.vector(c(cumvars, .hosp_vars_datahub))), ~zoo::na.locf(.x, na.rm = FALSE)) # use all_of
+          across(all_of(as.vector(c(cumvars, "population","stringency_index", .hosp_vars_datahub))), ~zoo::na.locf(.x, na.rm = FALSE)) # use all_of
         ) %>% ungroup()
       # some cases have NA confirmed and valid recovered and deaths at the beginning of 2020 (France belgium)
       # Set recovered also to NA, better than giving confirmed = recovered
@@ -357,7 +363,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
       # after switching to rawdata change Nas into 0s for backwards compatibility
       # all but population
       # remove NAs, at the beginning...... removes also American Samoa that has no data
-      bad = rowSums(!is.na(dataHub[,cumvars])) == 0
+      bad = rowSums(!is.na(dataHub[,c(cumvars,"stringency_index", .hosp_vars_datahub)])) == 0 # remove where initial data are all 0
       dataHub = dataHub[!bad, , drop = FALSE]
       numVars = setdiff(names(dataHub)[sapply(dataHub, is.numeric)], "population")
       dataHub[, numVars][is.na(dataHub[, numVars])] = 0
@@ -459,14 +465,14 @@ get_timeseries_by_contagion_day_data <- function(data) {
     #     new_recovered = recovered - replace_na(lag(recovered),0),
     #     new_tests = tests - replace_na(lag(tests),0),
     #     new_hosp = hosp - replace_na(lag(hosp),0)
-    #     # new_vent = vent - replace_na(lag(vent),0),
-    #     # new_icu = icu - replace_na(lag(icu),0)
-    #     ) %>%
-    # mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
-    # mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
-    # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
-    # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
-    ungroup()
+  #     # new_vent = vent - replace_na(lag(vent),0),
+  #     # new_icu = icu - replace_na(lag(icu),0)
+  #     ) %>%
+  # mutate(new_confirmed = if_else(is.na(new_confirmed), 0, new_confirmed)) %>%
+  # mutate(new_deaths = if_else(is.na(new_deaths), 0, new_deaths)) %>%
+  # mutate(new_active = if_else(is.na(new_active), 0, new_active)) %>%
+  # mutate(new_recovered = if_else(is.na(new_recovered), 0, new_recovered)) %>%
+  ungroup()
   #TODO: remove all 0s confirmed from all countries
   data1 = filter(data1, contagion_day != 0)
   data1
@@ -600,23 +606,23 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
     #        daily_lethality_rate = pmax(0, replace_na(deaths / confirmed, 0)),
     # ) %>%
     # mutate(growth_factor_3 = round(pmax(1, sum(head(new_confirmed, 63)) / sum(head(lead(new_confirmed,3), 60), na.rm = TRUE),1), digits = 3),
-    #        growth_factor_7 = round(pmax(1, sum(head(new_confirmed, 67)) / sum(head(lead(new_confirmed,7), 60), na.rm = TRUE),1), digits = 3),
-    #        growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 74)) / sum(head(lead(new_confirmed,14), 60), na.rm = TRUE),1), digits = 3),
-    #        lm_confirmed_rate_1M_pop = round(10^6*sum(head(new_confirmed, 30))/population, digits = 3)
-    # ) %>%
-    mutate(growth_factor_3 = round(pmax(1, sum(new_confirmed[date>lm63], na.rm = TRUE) / sum(new_confirmed[date>lm63 & date <=lm3]),1), digits = 3),
-           growth_factor_7 = round(pmax(1, sum(new_confirmed[date>lm67], na.rm = TRUE) / sum(new_confirmed[date>lm67 & date <=lm7]),1), digits = 3),
-           growth_factor_14 = round(pmax(1, sum(new_confirmed[date>lm74], na.rm = TRUE) / sum(new_confirmed[date>lm74 & date <=lm14]),1), digits = 3),
-           lm_confirmed_rate_1M_pop = round(10^6*sum(new_confirmed[date>lm60], na.rm = TRUE)/population, digits = 3),
-    ) %>%
+  #        growth_factor_7 = round(pmax(1, sum(head(new_confirmed, 67)) / sum(head(lead(new_confirmed,7), 60), na.rm = TRUE),1), digits = 3),
+  #        growth_factor_14 = round(pmax(1, sum(head(new_confirmed, 74)) / sum(head(lead(new_confirmed,14), 60), na.rm = TRUE),1), digits = 3),
+  #        lm_confirmed_rate_1M_pop = round(10^6*sum(head(new_confirmed, 30))/population, digits = 3)
+  # ) %>%
+  mutate(growth_factor_3 = round(pmax(1, sum(new_confirmed[date>lm63], na.rm = TRUE) / sum(new_confirmed[date>lm63 & date <=lm3]),1), digits = 3),
+         growth_factor_7 = round(pmax(1, sum(new_confirmed[date>lm67], na.rm = TRUE) / sum(new_confirmed[date>lm67 & date <=lm7]),1), digits = 3),
+         growth_factor_14 = round(pmax(1, sum(new_confirmed[date>lm74], na.rm = TRUE) / sum(new_confirmed[date>lm74 & date <=lm14]),1), digits = 3),
+         lm_confirmed_rate_1M_pop = round(10^6*sum(new_confirmed[date>lm60], na.rm = TRUE)/population, digits = 3),
+  ) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
     filter((date == AsOfDate) & (AsOfDate > (LastDate-7))) %>% # take the latest date per country. exclude countries without enough data
     #select(-maxdate) %>%)
     #mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
-      growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
-      growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
+           growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
+           growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
     mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} )
   res
 }
@@ -705,12 +711,12 @@ get_pop_data <- function(){
     #   "Guam(US)" = "Guam",
     #   "Greenland(Denmark)" = "Greenland",
     #   "Eswatini" = "eSwatini",
-    #   "Isle of Man(UK)" = "Channel Islands",
-    #   "Central African Republic" = "CAR",
-    #   "Cape Verde" = "Cabo Verde",
-    #   "Antigua and Barbuda" = "Antigua and Barb.",
-    #   "United States" = "United States of America"
-    # )
+  #   "Isle of Man(UK)" = "Channel Islands",
+  #   "Central African Republic" = "CAR",
+  #   "Cape Verde" = "Cabo Verde",
+  #   "Antigua and Barbuda" = "Antigua and Barb.",
+  #   "United States" = "United States of America"
+  # )
   recode(
     "Ivory Coast" = "Cote d'Ivoire",
     "DR Congo" = "Republic of the Congo",
@@ -795,36 +801,36 @@ get_pop_datahub <- function(){
   population <- read.csv2(system.file("population_data/popUN.csv", package = "Covid19Mirai"),stringsAsFactors = F)
 
   population$Country.Region <- population$Country.Region %>%
-  recode(
-    "Ivory Coast" = "Cote d'Ivoire", # ok
-    "DR Congo" = "Republic of the Congo", #ok
-    #"United Arab Emirates" = "UAE", same name
-    "East Timor" = "Timor-Leste" , #ok
-    "Saint Vincent and the Grenadines" = "St. Vincent Grenadines", #ok
-    "Puerto Rico(US)" = "Puerto Rico", # ok
-    #"Comoros" = "Mayotte", same name
-    "Guam(US)" = "Guam", #ok
-    "Greenland(Denmark)" = "Greenland", # missing in datahub anyway
-    "Eswatini" = "Swaziland", # called Swaziland in new DF
-    "Isle of Man(UK)" = "Channel Islands", # called Channel Islands in new DF
-    #"Isle of Man(UK)" = "Isle of Man",
-    #"Central African Republic" = "CAR", same name
-    "United States" = "USA",
+    recode(
+      "Ivory Coast" = "Cote d'Ivoire", # ok
+      "DR Congo" = "Republic of the Congo", #ok
+      #"United Arab Emirates" = "UAE", same name
+      "East Timor" = "Timor-Leste" , #ok
+      "Saint Vincent and the Grenadines" = "St. Vincent Grenadines", #ok
+      "Puerto Rico(US)" = "Puerto Rico", # ok
+      #"Comoros" = "Mayotte", same name
+      "Guam(US)" = "Guam", #ok
+      "Greenland(Denmark)" = "Greenland", # missing in datahub anyway
+      "Eswatini" = "Swaziland", # called Swaziland in new DF
+      "Isle of Man(UK)" = "Channel Islands", # called Channel Islands in new DF
+      #"Isle of Man(UK)" = "Isle of Man",
+      #"Central African Republic" = "CAR", same name
+      "United States" = "USA",
 
-    ##################################################
-    "Bosnia and Herz." = "Bosnia and Herzegovina",
-    "Czechia" = "Czech Republic", # taken from reverse
-    "Dominican Rep." = "Dominican Republic", # taken from reverse
-    "Macedonia" = "North Macedonia", # taken from reverse
-    "United Kingdom" = "UK", # taken from reverse
-    "Vatican" = "Vatican City", # taken from reverse
-    "Faeroe Is." = "Faeroe Islands", # possibly it is with DK in new DF
-    "Gibraltar(UK)" = "Gibraltar", # possibly it is with UK in new DF
-    "Saint Martin(France)" = "St Martin", # possibly it is with France in new DF
-    "Cayman Islands(UK)" = "Cayman Islands", # possibly it is with UK in new DF
-    "New Caledonia(France)" = "New Caledonia", # possibly it is with France in new DF
-    "F.S. Micronesia" = "Micronesia"
-  )
+      ##################################################
+      "Bosnia and Herz." = "Bosnia and Herzegovina",
+      "Czechia" = "Czech Republic", # taken from reverse
+      "Dominican Rep." = "Dominican Republic", # taken from reverse
+      "Macedonia" = "North Macedonia", # taken from reverse
+      "United Kingdom" = "UK", # taken from reverse
+      "Vatican" = "Vatican City", # taken from reverse
+      "Faeroe Is." = "Faeroe Islands", # possibly it is with DK in new DF
+      "Gibraltar(UK)" = "Gibraltar", # possibly it is with UK in new DF
+      "Saint Martin(France)" = "St Martin", # possibly it is with France in new DF
+      "Cayman Islands(UK)" = "Cayman Islands", # possibly it is with UK in new DF
+      "New Caledonia(France)" = "New Caledonia", # possibly it is with France in new DF
+      "F.S. Micronesia" = "Micronesia"
+    )
   # rename non ASCII characters
   population$Country.Region[grepl("^St-Barth", population$Country.Region)] = "St. Barth" # ok
   population$Country.Region[grepl("and Pr", population$Country.Region)] = "Sao Tome and Principe" # ok
@@ -875,9 +881,9 @@ merge_pop_data <- function(data, popdata) {
   data_pop <- data %>%
     #mutate(Country.Region = country_name) %>%
     left_join(popdata, by = "Country.Region") #%>%
-    #mutate(population = if_else(population < 1000, NA_integer_, as.integer(population))) # set to NA very small countries
-    #filter(!is.na(population) & population > 1000) # removing super small countries
-    #filter(!is.na(population)) # not the right place
+  #mutate(population = if_else(population < 1000, NA_integer_, as.integer(population))) # set to NA very small countries
+  #filter(!is.na(population) & population > 1000) # removing super small countries
+  #filter(!is.na(population)) # not the right place
 
   #select(-country_name)
 
@@ -916,7 +922,7 @@ select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") 
 #' @param group character Country.Region or continent or subcontinent
 rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
   df_rescaled <- df %>%
-  select_countries_n_cases_w_days(n = n, w = w, group) %>%
+    select_countries_n_cases_w_days(n = n, w = w, group) %>%
     mutate(no_contagion = case_when( #drop rows where confirmed <- n
       confirmed < n ~ 1,
       TRUE ~ 0

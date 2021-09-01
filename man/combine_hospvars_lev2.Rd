@@ -4,7 +4,7 @@
 \alias{combine_hospvars_lev2}
 \title{replace hospital data of level1 with level2 data}
 \usage{
-combine_hospvars_lev2(data1, data2, country = "Swizterland")
+combine_hospvars_lev2(data1, data2, country = "Switzerland")
 }
 \arguments{
 \item{data1}{data.frame level 1 data}
