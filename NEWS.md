@@ -1,4 +1,4 @@
-### Covid19Mirai 2.5.7-9000
+### Covid19Mirai 2.5.8 (2021-09-01)
 - Improved speed UI and map (#188) 
 - removed time slider map global
 - Improved case boxes
