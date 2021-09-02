@@ -128,7 +128,7 @@ varsNames = function(vars) {
               prefix_var("positive_tests_rate"),
               "population", paste("growth_vs_prev", c(3,7,14), sep = "_"),
               paste("growth_vs_stringency", c(3,7,14), sep = "_"),
-              "date")
+              "date", "AsOfDate")
 
   allvars = allvars %>%
     setNames(gsub("_", " ", allvars))
@@ -807,6 +807,13 @@ lw_vars_calc <- function(data, days = 7) {
   if (!days %in% c(7,14,30))
     stop("Allow 7 14 and 30 as last days in lw_vars_calc")
 
+  now = as.POSIXct(Sys.time()) # given time zone
+  LastDate =  as.Date(now - 40*60*60)
+
+  # remove all countries without updates in the last week
+  data = data %>%
+      filter(AsOfDate > (LastDate-7))
+
   n.days = ifelse(days == 30, 30, 7)
   data7 = data %>% filter(date > (max(date)-days))# last week
   data7 = data7 %>% filter(date < (min(date)+n.days))# if days are 14 then select the previous week
@@ -891,6 +898,26 @@ get_aggrvars = function() {
   allstatuses = c(allstatuses, prefix_var(allstatuses), "population")
   allstatuses
 }
+#'Global definition of continent names for different purposes
+#' @param idx integer, id of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
+#' @param contname character, name of continent to be extracted: "Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania"
+#' @return data.frame with continent info
+#'
+.getContinents = function(idx, contname){
+  tabuicontinents = c("Europe", "Asia", "Africa", "Lat. America & Carib.", "Northern America", "Oceania")
+  continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
+  mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
+  uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
+
+  res = data.frame(tab = tabuicontinents, names = continents, mainui = mainuicontinents, ui = uicontinents, stringsAsFactors = FALSE)
+  if (!missing(idx)) {
+    res = res[idx,, drop = FALSE]
+  }
+  if (!missing(contname)) {
+    res = res[res$names == contname,, drop = FALSE]
+  }
+  res
+}
 
 
 #'Message text, selection of confirmed cases
@@ -921,12 +948,14 @@ message_firstday = function(ncases, var = "confirmed") {
 message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
   paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
 }
+
 #'Message text, missing days for given countries in the data
 #' @param data data.frame with Country data
+#' @param sep character separator <br/>
 #'
 #' @return character vector with message
 #'
-message_missing_country_days = function(data) {
+message_missing_country_days = function(data, sep = "<br/>") {
 
   allcountries = unique(data$Country.Region)
   # not in the last day at all
@@ -981,7 +1010,7 @@ message_missing_country_days = function(data) {
     msg = c(msg,"In our dataset the following areas miss the most recent data:",
                 msg1)
   }
-  msg = paste(msg, collapse = "<br/>")
+  msg = paste(msg, collapse = sep)
   msg
 
 }

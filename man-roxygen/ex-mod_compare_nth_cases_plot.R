@@ -54,7 +54,7 @@ if (interactive()) {
         filter(Country.Region %in% countries)
     #})
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highligth = length(countries), istop = FALSE, oneMpop = FALSE)
+               nn = n, n_highlight = length(countries), istop = FALSE, oneMpop = FALSE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -84,7 +84,7 @@ if (interactive()) {
         filter(Country.Region %in% countries)
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highligth = length(countries), istop = FALSE, strindx = TRUE, secondline = "stringency_index")
+               nn = n, n_highlight = length(countries), istop = FALSE, strindx = TRUE, secondline = "stringency_index")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -121,7 +121,7 @@ if (interactive()) {
       filter(Country.Region %in% countries)
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highligth = length(countries), istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = TRUE)#, secondline = "stringency_index")
+               nn = n, n_highlight = length(countries), istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = TRUE)#, secondline = "stringency_index")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -153,7 +153,7 @@ if (interactive()) {
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highligth = length(countries_data$Country.Region), istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = TRUE, areasearch = TRUE)#, secondline = "stringency_index")
+               nn = n, n_highlight = length(countries_data$Country.Region), istop = FALSE, actives = FALSE, tests = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = TRUE, areasearch = TRUE)#, secondline = "stringency_index")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -182,7 +182,7 @@ if (interactive()) {
     })
 
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", orig_data_aggregate,
-               nn = n, n_highligth = length(orig_data_aggregate$Country.Region), istop = FALSE, actives = FALSE, tests = TRUE, hosp = FALSE, oneMpop = FALSE, strindx = TRUE, areasearch = TRUE)#, secondline = "stringency_index")
+               nn = n, n_highlight = length(orig_data_aggregate$Country.Region), istop = FALSE, actives = FALSE, tests = TRUE, hosp = FALSE, oneMpop = FALSE, strindx = TRUE, areasearch = TRUE)#, secondline = "stringency_index")
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
@@ -212,7 +212,7 @@ if (interactive()) {
       })
 
       callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", orig_data_aggregate,
-                 nn = n, n_highligth = length(orig_data_aggregate$Country.Region), istop = FALSE, actives = FALSE, tests = FALSE, vax = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = FALSE, areasearch = TRUE)#, secondline = "stringency_index")
+                 nn = n, n_highlight = length(orig_data_aggregate$Country.Region), istop = FALSE, actives = FALSE, tests = FALSE, vax = TRUE, hosp = TRUE, oneMpop = TRUE, strindx = FALSE, areasearch = TRUE)#, secondline = "stringency_index")
     }
     runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
   }

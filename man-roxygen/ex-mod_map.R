@@ -14,7 +14,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     #countries_data_map <- load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
-    rds_map = "WorldMap_sp_rds"
+    rds_map = "WorldMap_sp_spl.rds"
     message("read map from RDS ", rds_map)
     countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
@@ -37,18 +37,3 @@ if (interactive()) {
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
 
-# if (interactive()) {
-#   library(shiny)
-#   library(leaflet)
-#   ui <- fluidPage(
-#     leafletOutput("myMap", width = "100%", height = "800px")
-#   )
-#   server <- function(input, output, session) {
-#     countries_data <- load_countries_data(destpath = "./inst")
-#     map <- leaflet(data = countries_data) %>%
-#       setView(0, 30, zoom = 3) %>%
-#       addPolygons(data = countries_data)
-#     output$myMap <- renderLeaflet({map})
-#   }
-#   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
-# }

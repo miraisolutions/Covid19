@@ -1,13 +1,11 @@
 Package: Covid19Mirai
 Title: Covid-19 Data Analysis
-Version: 2.5.7
+Version: 2.5.8
 Authors@R: 
     c(person("Francesca", "Vitalini", role = c("cre", "aut"),
              email = 'francesca.vitalini@mirai-solutions.com'),
       person("Riccardo", "Porreca", role = ("aut"),
              email = "riccardo.porreca@mirai-solutions.com"),
-      person("Gabriel", "Foix", role = ("aut"),
-             email = "gabriel.foix@mirai-solutions.com"),
       person("Guido", "Maggio", role = ("aut"),
              email = "guido.maggio@mirai-solutions.com"),
       person("Mirai Solutions GmbH", role = "cph",
@@ -17,6 +15,8 @@ License: GPL-3
 URL: https://mirai-solutions.ch,
     https://github.com/miraisolutions/Covid19#readme
 BugReports: https://github.com/miraisolutions/Covid19/issues
+Depends: 
+    R (>= 3.5.0)
 Imports: 
     config,
     purrr,

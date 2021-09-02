@@ -10,6 +10,8 @@
 #' @importFrom DT DTOutput
 #' @importFrom plotly plotlyOutput
 mod_global_ui <- function(id){
+  n = 1000 # define areaplot start
+
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
@@ -25,7 +27,7 @@ mod_global_ui <- function(id){
       ),
       column(6,
              #withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_global"), istop = FALSE, hosp = FALSE, oneMpop = FALSE, tests = FALSE, actives = FALSE, vax = TRUE))
-             withSpinner(mod_compare_timeline_plot_ui(ns("lines_points_plots_global"), titles = 1:2)) # no area plot
+             withSpinner(mod_compare_timeline_plot_ui(ns("lines_points_plots_global"), titles = 1:2, nn = n, istop = FALSE,  hosp = FALSE, oneMpop = FALSE, vax = TRUE)) # no area plot
       )
     ),
     hr(),
@@ -108,7 +110,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
    total_today <-
      total_aggregate %>%
-        filter(date == maxdate)
+        filter(date == AsOfDate)
    lw_total =  lw_vars_calc(total_aggregate)
    pw_total =  lw_vars_calc(total_aggregate, 14)
 
@@ -139,7 +141,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   world_top_5_confirmed <-
     orig_data_aggregate %>%
       filter(Country.Region %in% world_top_5_today$Country.Region) %>%
-      select(Country.Region, date, maxdate,confirmed)
+      select(Country.Region, date, AsOfDate,confirmed)
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", total_today, vax = "recovered")
@@ -169,7 +171,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # > line plot top 5
   #df_top_n <-
     # create factors with first top confirmed
-  countries_order =  world_top_5_confirmed %>% filter(date == maxdate) %>%
+  countries_order =  world_top_5_confirmed %>% filter(date == AsOfDate) %>%
     arrange(desc(confirmed)) %>%
      .[,"Country.Region"] %>% as.vector()
 
@@ -191,21 +193,21 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
 
   # > growth_death_rate
-  callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highligth = 10)
+  callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highlight = 10)
 
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
-  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highligth = 10)
+  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highlight = 10)
 
   # > stacked barplot with status split
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highligth = 10, istop = TRUE)
+  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highlight = 10, istop = TRUE)
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
-  callModule(mod_scatterplot_server, "plot_scatterplot_stringency_glob", orig_data_aggregate_today, n_highligth = 10, growth = FALSE, xvar = "stringency_index",
+  callModule(mod_scatterplot_server, "plot_scatterplot_stringency_glob", orig_data_aggregate_today, n_highlight = 10, growth = FALSE, xvar = "stringency_index",
              istop = TRUE, fitted = FALSE)
 
   # > barplot stringency
-  callModule(mod_barplot_server, "barplot_stringency_index", orig_data_aggregate_today, n_highligth = 10, plottitle = c("Stringency Index"), istop = TRUE,
+  callModule(mod_barplot_server, "barplot_stringency_index", orig_data_aggregate_today, n_highlight = 10, plottitle = c("Stringency Index"), istop = TRUE,
              g_palette = list("plot_1" = barplots_colors$stringency,
                               calc = TRUE),
              pickvariable = list("plot_1" = "confirmed")) # pick top 10 confirmed countries
@@ -213,13 +215,13 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   #scatterplot vax versus vars
   callModule(mod_scatterplot_server, "plot_scatterplot_vax_glob",
-             orig_data_aggregate_today, n_highligth = 10,
+             orig_data_aggregate_today, n_highlight = 10,
              istop = TRUE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
 
   #barplot vax
 
   callModule(mod_barplot_server, "barplot_vax_index", orig_data_aggregate_today,
-             n_highligth = 10, istop = TRUE,
+             n_highlight = 10, istop = TRUE,
              plottitle = c("Vaccination Status"),
              g_palette = list("plot_1" = barplots_colors[["vaccines"]],
                               calc = TRUE)#,

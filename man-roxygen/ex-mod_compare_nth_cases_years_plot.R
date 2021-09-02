@@ -1,4 +1,4 @@
-  if (interactive()) {
+if (interactive()) {
 
     #devtools::load_all()
     ui <- fluidPage(
@@ -16,14 +16,14 @@
       pop_data = get_pop_datahub()
       orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
-      country_data = orig_data_aggregate %>% filter(Country.Region == "Israel") # possibly with select also multiple countries possible
+      country_data = orig_data_aggregate %>% dplyr::filter(Country.Region == "Israel") # possibly with select also multiple countries possible
       df = country_data
 
 
       callModule(mod_compare_nth_cases_years_plot_server, "plot_compare_nth", country_data)
     }
     runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
-  }
+}
 
 if (interactive()) {
 

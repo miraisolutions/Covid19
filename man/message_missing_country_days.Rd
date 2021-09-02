@@ -4,10 +4,12 @@
 \alias{message_missing_country_days}
 \title{Message text, missing days for given countries in the data}
 \usage{
-message_missing_country_days(data)
+message_missing_country_days(data, sep = "<br/>")
 }
 \arguments{
 \item{data}{data.frame with Country data}
+
+\item{sep}{character separator <br/>}
 }
 \value{
 character vector with message
