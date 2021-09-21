@@ -12,8 +12,10 @@ plot_all_highlight(
   date_x = FALSE,
   g_palette = graph_palette,
   rollw = TRUE,
+  barplot = FALSE,
   secondline = NULL,
-  keeporder = FALSE
+  keeporder = FALSE,
+  dateformat = "\%d-\%m-\%y"
 )
 }
 \arguments{

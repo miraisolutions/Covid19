@@ -4,7 +4,13 @@
 \alias{time_evol_line_plot}
 \title{Time evolution as line plot}
 \usage{
-time_evol_line_plot(df, log = FALSE, text = "", g_palette = graph_palette)
+time_evol_line_plot(
+  df,
+  log = FALSE,
+  text = "",
+  g_palette = graph_palette,
+  formatdate = "\%d-\%m-\%y"
+)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}

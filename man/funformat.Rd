@@ -4,7 +4,7 @@
 \alias{funformat}
 \title{Format in ggplotly}
 \usage{
-funformat(x, perc)
+funformat(x, perc, digits = NULL)
 }
 \arguments{
 \item{x}{numeric vector of data}

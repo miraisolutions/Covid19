@@ -4,7 +4,7 @@
 \alias{prefix_var}
 \title{Add prefix new and last week variables}
 \usage{
-prefix_var(cc = .case_colors, prefix = c("lw", "new"))
+prefix_var(cc = .case_colors, prefix = c("lw", "pw", "new"))
 }
 \arguments{
 \item{cc}{vector \code{.case_colors}}

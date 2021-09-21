@@ -10,7 +10,7 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data <- get_datahub(country = "Israel") %>%
+    orig_data <- get_datahub(country = "USA") %>%
       get_timeseries_by_contagion_day_data()
 
 

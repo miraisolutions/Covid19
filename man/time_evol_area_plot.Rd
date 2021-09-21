@@ -10,7 +10,8 @@ time_evol_area_plot(
   log = F,
   text = "",
   hosp = FALSE,
-  active_hosp
+  active_hosp,
+  formatdate = "\%d-\%m-\%y"
 )
 }
 \arguments{

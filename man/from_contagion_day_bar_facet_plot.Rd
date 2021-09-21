@@ -4,7 +4,11 @@
 \alias{from_contagion_day_bar_facet_plot}
 \title{Evolution from contagion day facet}
 \usage{
-from_contagion_day_bar_facet_plot(df, xdate = "date")
+from_contagion_day_bar_facet_plot(
+  df,
+  xdate = "date",
+  formatdate = "\%d-\%m-\%y"
+)
 }
 \arguments{
 \item{df}{data.frame to plot}

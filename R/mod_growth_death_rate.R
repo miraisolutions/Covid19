@@ -10,28 +10,39 @@
 #'
 #' @example man-roxygen/ex-mod_growth_death_rate.R
 #'
+#' @importFrom plotly renderPlotly
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner
 mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death"){
   ns <- NS(id)
-  uichoices = list(ui_growth = list(label = "",
+  uichoices = list(ui_growth = list(label = div(style = "font-size:10px","Choose growth in last days"),
                                      choices = list("Over 3 days" = "growth_factor_3",
                                                     # "Over 5 days" = "growth_factor_5",
                                                     "Over one week" = "growth_factor_7",
                                                     "Over 2 weeks" = "growth_factor_14"),
                                      selected = "growth_factor_7"),
-                   ui_death =  list(label = "",
+                   ui_death =  list(label = div(style = "font-size:10px","Choose Variable"),
                                      choices = varsNames(c("lethality_rate","deaths_rate_1M_pop",
                                                            c("lw_lethality_rate","lw_deaths_rate_1M_pop"))),
                                      selected = "lethality_rate"),
 
-                   ui_stringency =  list(label = "",
+                   ui_stringency =  list(label = div(style = "font-size:10px","Choose Variable"),
                                           choices = varsNames(c("stringency_index")),
                                           selected = "stringency_index"),
-                   ui_vaccines =  list(label = "",
+                   ui_vaccines =  list(label = div(style = "font-size:10px","Choose Variable"),
                                          choices = varsNames(c("vaccines","vaccines_rate_pop",
                                                                c("lw_vaccines","lw_vaccines_rate_pop"))),
-                                         selected = "vaccines")
+                                         selected = "vaccines_rate_pop"),
+                   ui_tests =  list(label = div(style = "font-size:10px","Choose Tests or Test rate"),
+                                       choices = varsNames(c("tests_rate_1M_pop","lw_tests_rate_1M_pop",
+                                                             c("positive_tests_rate","lw_positive_tests_rate"))),
+                                       selected = "lw_tests_rate_1M_pop"),
+                   ui_hosp =  list(label = div(style = "font-size:10px","Choose variable"),
+                                    choices = varsNames(c("hosp_rate_1M_pop","lw_hosp_rate_1M_pop",
+                                                          c("icuvent_rate_1M_pop","lw_icuvent_rate_1M_pop",
+                                                            "hosp_rate_active"))),
+                                    selected = "hosp_rate_1M_pop")
+
                    )
 
   if (!is.null(plot1))
@@ -240,11 +251,11 @@ mod_barplot_server <- function(input, output, session, df,
     p <- plot_rate_hist(df_base_plot1_filtered, y_min = 1,
                         percent = is_percent_1(),
                         g_palette =  g_palette_1)
-    p <- p %>%
-      plotly::ggplotly(tooltip = c("x","text")) %>%
-      plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
-                      #             xaxis = list(tickfont = list(size = 10))
-                     )
+    # p <- p %>%
+    #   plotly::ggplotly(tooltip = c("x","text")) %>%
+    #   plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
+    #                   #annotations = list(align = "left", xshift = 2, size = 2),
+    #                  )
     p
   })
   if (isPlot2) {
@@ -266,11 +277,11 @@ mod_barplot_server <- function(input, output, session, df,
       }
 
       p <- plot_rate_hist(df_base_plot2(), percent = is_percent_2(), g_palette =  g_palette_2)
-      p <- p %>%
-        plotly::ggplotly(tooltip = c("x","text")) %>%
-        plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
-                       #xaxis = list(tickfont = list(size = 10))
-        )
+      # p <- p %>%
+      #   plotly::ggplotly(tooltip = c("x","text")) %>%
+      #   plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom")
+      #                  #xaxis = list(tickfont = list(size = 10))
+      #   )
       p
     })
   }
