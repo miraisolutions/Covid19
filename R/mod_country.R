@@ -279,6 +279,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       left_join(lw_country_data %>% select(-population))  %>%
       left_join(pw_country_data %>% select(-population))
 
+
     # Boxes ----
     vaxarg = NULL
     if (vaxflag)
@@ -415,9 +416,12 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     add_growth_death_rate()
 
   lw_data =  lw_vars_calc(data)
+  pw_data =  lw_vars_calc(data, 14)
 
   data_today = data_today  %>%
-    left_join(lw_data %>% select(-population))
+    left_join(lw_data %>% select(-population)) %>%
+    left_join(pw_data %>% select(-population))
+
 
   output$ind_missing_days_area <- renderText({
     HTML(
