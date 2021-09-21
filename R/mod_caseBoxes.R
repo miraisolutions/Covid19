@@ -218,7 +218,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                                     subtitle3 =  counts[["pw_active"]],
                                     color = "white",
                                     background = .case_colors[["active"]],
-                                    diffcalc = FALSE),
+                                    diffcalc = TRUE),
                session = session,
                immediate = TRUE
       )
@@ -232,7 +232,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                    subtitle3 =  counts[["pw_active"]],
                    color = "white",
                    background = .case_colors[["active"]],
-                   diffcalc = FALSE)
+                   diffcalc = TRUE)
         })
       }
 
