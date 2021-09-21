@@ -306,6 +306,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # Compute Last week variables
   data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
+  data14_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont, 14)
 
   orig_data_aggregate_cont_today = orig_data_aggregate_cont %>%
     add_growth_death_rate()
@@ -317,7 +318,8 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # create datasets for maps merging today with data7
   data_cont_maps = orig_data_aggregate_cont_today  %>%
-    left_join(data7_aggregate_cont %>% select(-population))
+    left_join(data7_aggregate_cont %>% select(-population))  %>%
+    left_join(data14_aggregate_cont %>% select(-population))
 
   # output[[paste("ind_missing_days_countries", uicont , sep = "_")]] <- renderUI({
   #   HTML(

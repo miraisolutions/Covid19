@@ -120,7 +120,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
     div( class = "count-box",
          style = "color: white; max-width: 100%; background-color: #3c8dbc; overflow-x: scroll; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
          HTML(
-           paste0("  ",strong(dftday$Country.Region), ". Population: ", .format_num(dftday$population)," <br/>",
+           paste0("  ",strong(dftday$Country.Region), ". Population: ", .format_num(dftday$population),". Doses per population: ",paste(round(dftday$vaccines_rate_pop*100,1), "%"),"<br/>",
                   "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
                   "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
                   "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
@@ -147,10 +147,17 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
     #make plot if there are vaccine data
     output$vax_line <- renderPlot({
       #secondline = NULL
+      message("compute rolling average")
+      plotdata = plotdata %>%
+        #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
+        mutate(WeeklyAvg := rollAvg(Value,Date))
       p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
-                              date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE)
-      if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE))
-        p = p + expand_limits(y = data()$target_vaccines_per_day*1.05)
+                              date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE, barplot = FALSE)
+      if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE)) {
+        p = p + expand_limits(y = data()$target_vaccines_per_day*1.05) +
+               scale_y_continuous(labels = lab_num, breaks = breaks_lab(c(plotdata$Value, data()$target_vaccines_per_day), .breaks.yaxis)) # add label
+
+      }
       p = p + geom_line(size = 1.35)
       #p$theme$line$size = p$theme$line$size * 3
       # add line with target vaccination
@@ -162,7 +169,6 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
                  hjust = 0) +
         labs(caption = caption_vaccines(), hjust = 0.5#, #size = 2.5
         )
-
       # no legend no interactivity
       p
 
