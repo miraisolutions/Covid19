@@ -29,7 +29,7 @@ mod_country_comparison_ui <- function(id, nn = 1000){
         #uiOutput(ns("from_nth_case"))
       ),
       hr(),
-      selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
+      selectInput(label = div(style = "font-size:10px","Select Countries"), inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
     ),
     #tagList(
       div(h4("Countries Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
