@@ -12,19 +12,35 @@
 mod_map_ui <- function(id){
   ns <- NS(id)
   vars = setdiff(names(.case_colors), c("hosp","recovered")) # remove hosp for now
-  choices_map <- c(vars, paste0("new_",vars), "stringency_index") %>%
-    setNames(gsub("_", " ",c(vars, paste0("new_",vars), "stringency_index"))) %>% as.list()
+  choices_map <- c(vars, paste0("lw",vars), "stringency_index") %>%
+    setNames(gsub("_", " ",c(vars, paste0("lw_",vars), "stringency_index"))) %>% as.list()
   div(
     #fluidPage(
 
     style = "position: relative;",
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    withSpinner(leafletOutput(ns("map"), width = "100%", height = "800")),
+    #withSpinner(
+      leafletOutput(ns("map"), width = "100%", height = "800")
+      #)
+    ,
     #leafletOutput(ns("map")),
     #plotOutput(ns("map_poly")),
     tags$head(tags$style(
       HTML('
-             #input_date_control {background-color: rgba(192,192,192,0.6);;}
+             #input_show_map {position: absolute; margin: auto;}'
+      )
+    )),
+    absolutePanel(
+        id = "input_show_map",
+        top = 0, right = 0, left = 0, width = "8.5vw", height = "2.5vw", draggable = FALSE, class = "panel panel-default", #height = "auto",
+        #div(style = "margin:10px;",
+          actionButton(ns("goButton"), "Show Map", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
+        #)
+      )
+  ,
+    tags$head(tags$style(
+      HTML('
+             #input_date_control {background-color: rgba(192,192,192,0.6);}
              #sel_date {background-color: rgba(0,0,255,1);}
              #help-block a {color: #ff0000 !important;}'
       )
@@ -101,70 +117,71 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       #mutate(date = maxdate)
     data_date
  # })
-  data_plot <- reactive({
-    data_selected <- data_date %>%
-      bind_cols(data_date[,input$radio_choices] %>%
-                  setNames("indicator"))
+  observeEvent(input$goButton, {
+    data_plot <- reactive({
+      data_selected <- data_date %>%
+        bind_cols(data_date[,input$radio_choices] %>%
+                    setNames("indicator"))
 
-    if (req(input$radio_pop) == "per 1M pop") {
-      max.pop = 100000
+      if (req(input$radio_pop) == "per 1M pop") {
+        max.pop = 100000
+        data_selected <- data_selected %>%
+          filter(population > max.pop) %>% # filter out very small countries
+          # percentage of indicator per 1M population
+          mutate(indicator = round(1000000 * .$indicator / .$population))
+      }
       data_selected <- data_selected %>%
-        filter(population > max.pop) %>% # filter out very small countries
-        # percentage of indicator per 1M population
-        mutate(indicator = round(1000000 * .$indicator / .$population))
+        select(country_name, indicator, update_ui()$textvar)
+
+      data <-  sp::merge(countries_data_map,
+                         data_selected,
+                         by.x = "NAME",
+                         by.y = "country_name",
+                         sort = FALSE)
+      # GM: To be removed with new legend NAs can be shown
+      #data[["indicator"]] <- replace_na(data[["indicator"]], 0)
+      data
+    })
+    update_ui <- reactive(update_radio(input$radio_choices, global = TRUE))
+
+    if (isolate(!is.null(update_ui()$caption))) {
+      output$caption <- renderUI(
+        div(p(update_ui()$caption), align = "left",
+            style = "margin-top:5px; margin-bottom:5px;")
+      )
     }
-    data_selected <- data_selected %>%
-      select(country_name, indicator, update_ui()$textvar)
+    # add Title to output
+    output$title_map <- renderUI(div(h4(update_ui()$graph_title), align = "center",
+                                     style = "margin-top:10px; margin-bottom:0px;"))
 
-    data <-  sp::merge(countries_data_map,
-                       data_selected,
-                       by.x = "NAME",
-                       by.y = "country_name",
-                       sort = FALSE)
-    # GM: To be removed with new legend NAs can be shown
-    #data[["indicator"]] <- replace_na(data[["indicator"]], 0)
-    data
-  })
-  update_ui <- reactive(update_radio(input$radio_choices, global = TRUE))
+    max_value <- reactive({
+      max(data_plot()[["indicator"]])
+    })
 
-  if (isolate(!is.null(update_ui()$caption))) {
-    output$caption <- renderUI(
-      div(p(update_ui()$caption), align = "left",
-          style = "margin-top:5px; margin-bottom:5px;")
-    )
-  }
-  # add Title to output
-  output$title_map <- renderUI(div(h4(update_ui()$graph_title), align = "center",
-                                   style = "margin-top:10px; margin-bottom:0px;"))
-
-  max_value <- reactive({
-    max(data_plot()[["indicator"]])
-  })
-
-  domain <- reactive({
-    c(0,log(roundUp(max_value())))
-  })
+    domain <- reactive({
+      c(0,log(roundUp(max_value())))
+    })
 
 
-  output$map <- renderLeaflet({
-    # Using leaflet() to include non dynamic aspects of the map
-    leaflet('map',
-      data = countries_data_map,
-      options = leafletOptions(zoomControl = FALSE) # not needed, clashes with slider
-    ) %>%
-      setView(0, 30, zoom = 3)
-  })
+    output$map <- renderLeaflet({
+      # Using leaflet() to include non dynamic aspects of the map
+      leaflet('map',
+              data = countries_data_map,
+              options = leafletOptions(zoomControl = FALSE) # not needed, clashes with slider
+      ) %>%
+        setView(0, 30, zoom = 3)
+    })
 
-  # # update map with reactive part
-  observe({
-  #observeEvent(data_plot(), {
-  #output$map:poly <- renderPlot({
-    #if("per 1M pop" %in% req(input$radio_pop)) {
+    # # update map with reactive part
+    observe({
+      #observeEvent(data_plot(), {
+      #output$map:poly <- renderPlot({
+      #if("per 1M pop" %in% req(input$radio_pop)) {
       if(req(input$radio_pop) == "per 1M pop") {
         var1M =   "per 1M pop"
         if (!req(input$radio_choices) %in% get_aggrvars())
           return()
-        }
+      }
       else {
         var1M = NULL
       }
@@ -215,9 +232,12 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
                                                                    moveToLocation = FALSE))
 
       mapdata
-   # }
+      # }
 
 
-  })
+    })
+ })
+
+
 
 }
