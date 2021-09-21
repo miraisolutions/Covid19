@@ -126,9 +126,11 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
     add_growth_death_rate()
 
   lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
+  pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate, 14)
 
   orig_data_aggregate_today = orig_data_aggregate_today  %>%
-    left_join(lw_orig_data_aggregate %>% select(-population))
+    left_join(lw_orig_data_aggregate %>% select(-population)) %>%
+    left_join(pw_orig_data_aggregate %>% select(-population))
   # TODO: REVIEW!
   world <-
     orig_data_aggregate_today %>%
@@ -154,7 +156,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   #   left_join(data7_orig_data_aggregate %>% select(-population))
 
 
-  callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
+  callModule(mod_map_server, "map_ui", orig_data_aggregate_today, countries_data_map)
 
   # plots ----
   levs <- areaplot_vars()
