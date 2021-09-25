@@ -114,13 +114,7 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 8.5, labangle = 30
     theme(
       axis.text.x = element_text(angle = labangle, size = labsize)
     )
-  # if (percent) {
-  #   p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
-  # } else {
-  #   #p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.breaks = 6) # add label
-  #   p <- p + scale_y_continuous(labels = ylabfun, n.breaks = 6) # add label
-  #
-  # }
+
   .ylabfun = ifelse(percent, lab_percent, lab_num)
   p <- p + scale_y_continuous(labels = .ylabfun, n.breaks = .breaks.yaxis) # add label
 

@@ -383,7 +383,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       #   rollw = reactiveVal(FALSE)
       # rollw = FALSE because Value has been rolled
       p <- plot_all_highlight(df_out(), log = FALSE, text = "Year", percent = ifelse(input$radio_indicator %in% .rate_vars, TRUE, FALSE),
-                              date_x = TRUE, g_palette,  secondline = FALSE, rollw = rollw(), keeporder = TRUE, dateformat = "%d-%m", barplot = FALSE)
+                              date_x = TRUE, g_palette,  secondline = FALSE, rollw = rollw(), keeporder = TRUE, formatdate = "%d-%m", barplot = FALSE)
       tooltips = tooltip = c("text", "x_tooltip", "y_tooltip")
       if (rollw())
         tooltips = c(tooltips, "z_tooltip")
