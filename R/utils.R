@@ -866,8 +866,8 @@ lw_vars_calc <- function(data, days = 7) {
       filter(AsOfDate > (LastDate-7))
 
   n.days = ifelse(days == 30, 30, 7)
-  data7 = data %>% filter(date > (max(date)-days))# last week
-  data7 = data7 %>% filter(date < (min(date)+n.days))# if days are 14 then select the previous week
+  data7 = data %>% filter(date > (max(date, na.rm = TRUE)-days))# last week
+  data7 = data7 %>% filter(date < (min(date, na.rm = TRUE)+n.days))# if days are 14 then select the previous week
 
   # check population:
   if(nrow(unique(data7[,c("Country.Region","population")]))> length(unique(data7$Country.Region))) {

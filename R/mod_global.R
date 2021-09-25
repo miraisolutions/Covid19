@@ -209,8 +209,9 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # > barplot stringency
   callModule(mod_barplot_server, "barplot_hosp", orig_data_aggregate_today, n_highlight = 10, istop = TRUE,
              g_palette = list("plot_1" = barplots_colors$hosp$calc,
-                              calc = TRUE),
-             pickvariable = list("plot_1" = "confirmed"))
+                              calc = TRUE)#,
+             #pickvariable = list("plot_1" = "hosp")
+             )
 
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default

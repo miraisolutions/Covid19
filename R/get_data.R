@@ -617,13 +617,15 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   ) %>%
     #mutate_if(is.numeric, function(x){ifelse(x == "Inf",NA, x)} ) %>% # can be done just  later
     ungroup() %>%
-    filter((date == AsOfDate) & (AsOfDate > (LastDate-7))) %>% # take the latest date per country. exclude countries without enough data
+    filter((date == AsOfDate) #& (AsOfDate > (LastDate-7))
+           ) %>% # take the latest date per country. exclude countries without enough data
     #select(-maxdate) %>%)
     #mutate(date = max(date)) %>% # override date with latest
     mutate(growth_factor_3 = if_else(is.infinite(growth_factor_3),1, growth_factor_3),
            growth_factor_14 = if_else(is.infinite(growth_factor_14),1, growth_factor_14),
            growth_factor_7 = if_else(is.infinite(growth_factor_7),1, growth_factor_7)) %>%
     mutate_if(is.numeric, function(x){dplyr::na_if(x, Inf)} )
+
   res
 }
 

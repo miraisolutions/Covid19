@@ -186,12 +186,12 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- get_datahub() %>%
+    orig_data <- get_datahub(country = "France", lev = 2) %>%
       get_timeseries_by_contagion_day_data()
 
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    #pop_data = get_pop_datahub()
+    orig_data_aggregate = build_data_aggr(orig_data)
 
     lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
     pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate,14)

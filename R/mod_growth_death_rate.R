@@ -251,7 +251,7 @@ mod_barplot_server <- function(input, output, session, df,
          names(g_palette_1) = as.character(df_base_plot1()$Country)
       g_palette_1 = g_palette_1[names(g_palette_1) %in% as.character(df_base_plot1_filtered$Country)]
 
-    }
+     }
     p <- plot_rate_hist(df_base_plot1_filtered, y_min = 1,
                         percent = is_percent_1(),
                         g_palette =  g_palette_1)
