@@ -580,7 +580,11 @@ aggr_to_cont = function(data, group, time,
 #' @import tidyr
 tsdata_areplot <- function(data, levs, nn = 1000) {
 
+  # assumption, there are data with
+  if (all(!data$confirmed>nn))
+    warning("there are not enough cases")
   mindate = min(data$date[data$confirmed>nn], na.rm = TRUE)
+
   data = data %>% filter(date >= mindate)
 
   # data are in descending order, first dates at the end
