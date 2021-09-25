@@ -18,7 +18,7 @@ mod_map_ui <- function(id){
     fixedRow(
       column(12,
              offset = 5,
-             actionButton(ns("goButton"), "Show Map", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
+             actionButton(ns("goButton"), "World heat map for the main indicators", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
       )
 
     ),
