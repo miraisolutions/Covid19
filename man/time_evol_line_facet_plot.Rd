@@ -17,6 +17,8 @@ time_evol_line_facet_plot(
 \item{log}{character string log or linear}
 
 \item{g_palette}{character vector of colors for the graph and legend}
+
+\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
 }
 \value{
 area plot by date

@@ -31,15 +31,19 @@ plot_all_highlight(
 
 \item{g_palette}{character vector of colors for the graph and legend}
 
-\item{rollw}{logical, if TRUE then rolling weekly averages are computed}
+\item{rollw}{logical, if TRUE then rolling Weekly averages are computed}
+
+\item{barplot}{logical, if TRUE barplot of Points is done}
 
 \item{secondline}{character, variable name to be added with new line and axis}
 
 \item{keeporder}{logical, if TRUE then lines order is kept according to df}
+
+\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
 }
 \description{
 plot all countries but highlight first 10
 }
 \note{
-secondline argument not working, ggplotly removes secon axis. Not being used at the moment.
+secondline argument not working, ggplotly removes secons axis. Not being used at the moment.
 }

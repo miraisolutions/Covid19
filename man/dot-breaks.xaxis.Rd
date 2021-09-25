@@ -3,7 +3,7 @@
 \docType{data}
 \name{.breaks.xaxis}
 \alias{.breaks.xaxis}
-\title{length breaks of y axis}
+\title{length breaks of x axis}
 \format{
 An object of class \code{numeric} of length 1.
 }
@@ -11,6 +11,6 @@ An object of class \code{numeric} of length 1.
 .breaks.xaxis
 }
 \description{
-length breaks of y axis
+length breaks of x axis
 }
 \keyword{datasets}

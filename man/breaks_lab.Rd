@@ -8,6 +8,8 @@ breaks_lab(x, breaks = .breaks.xaxis)
 }
 \arguments{
 \item{x}{vector of data}
+
+\item{breaks}{integer number of breaks in label, default = .breaks.xaxis}
 }
 \value{
 x breaks values

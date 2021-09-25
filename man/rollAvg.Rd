@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{rollAvg}
 \alias{rollAvg}
-\title{compute rolling weekly average}
+\title{compute rolling Weekly average}
 \usage{
 rollAvg(x, date, days = 7)
 }
@@ -17,5 +17,5 @@ rollAvg(x, date, days = 7)
 x as partial rolling average
 }
 \description{
-compute rolling weekly average
+compute rolling Weekly average
 }

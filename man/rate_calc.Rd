@@ -13,7 +13,11 @@ rate_calc(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE)
 
 \item{cap}{numeric cap, 1 or Inf for no cap}
 
+\item{floor}{numeric floor, 0 or -Inf for no floor}
+
 \item{digits}{numeric digits for rounding}
+
+\item{nawith0}{if TRUE then NAs are replaced with 0s}
 }
 \value{
 x numeric rate

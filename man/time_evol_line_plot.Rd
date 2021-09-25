@@ -20,6 +20,8 @@ time_evol_line_plot(
 \item{text}{element for tooltip}
 
 \item{g_palette}{character vector of colors for the graph and legend}
+
+\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
 }
 \value{
 line plot of given variable by date
