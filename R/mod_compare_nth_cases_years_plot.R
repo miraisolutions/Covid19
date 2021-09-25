@@ -13,20 +13,33 @@ rescale_from_start = function(var, category, lstmonth = FALSE, desc = FALSE) {
 
   if (lstmonth) {
     fromLast = ifelse(desc, TRUE, FALSE)
+    reptimes = unique(table(category)[as.character(unique(category))])
+    # if(length(unique(reptimes)) == 1) # if countries all have same lengths then rep behaves differently
+    #   reptimes = unique(reptimes)
     idx_first_day = which(!duplicated(category, fromLast = fromLast))
-    last_day_of_prev_cat = rep(var[idx_first_day], times = table(category)[as.character(unique(category))])
+    # use each or times depending on the order of categories
+    reparg = "each"
+    if (identical(tail(category, length(unique(category))), unique(category) ))
+      reparg = "times"
+
+    last_day_of_prev_cat = rep(var[idx_first_day], each = reptimes)
+    argsrep = list(var[idx_first_day], reptimes)
+    names(argsrep) = c("x",reparg)
+    last_day_of_prev_cat = do.call("rep", argsrep)
+
   } else {
     # depends on whether data are sorted asc or desc
+    reptimes =  table(category)[as.character(unique(category))]
     if (category[1] == 0) { # if desc, i.e. first year, not using desc argument but would be the same
       id_last_day_of_cat = which(!duplicated(category)) -1
-      last_day_of_prev_cat = c(rep(0, length = table(category)[as.character(unique(category))][1]),
-                                rep(var[id_last_day_of_cat[-1]], times = table(category)[as.character(unique(category))][-1]))
+      last_day_of_prev_cat = c(rep(0, length = reptimes[1]),
+                                rep(var[id_last_day_of_cat[-1]], times = reptimes[-1]))
 
     } else{
       id_last_day_of_cat = which(!duplicated(category))
 
-      last_day_of_prev_cat = c(rep(var[id_last_day_of_cat[-1]], times = table(category)[as.character(unique(category))][-length(id_last_day_of_cat)]),
-                                rep(0, length = table(category)[as.character(unique(category))][length(id_last_day_of_cat)]))
+      last_day_of_prev_cat = c(rep(var[id_last_day_of_cat[-1]], times = reptimes[-length(id_last_day_of_cat)]),
+                                rep(0, length = reptimes[length(id_last_day_of_cat)]))
 
     }
   }
@@ -279,69 +292,81 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
     #dat = df %>% .[, c("Country.Region", "date","Date", "population", intersect(.vars_nthcases_plot, names(dat)))]
     # Give dat standard structure; reacts to input$radio_indicator
 
-    df_data <- reactive({
-      if (rollw()) {
-        message("compute rolling average")
-        dat %>%
-          group_by(Country.Region) %>%
-          #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
-          mutate(WeeklyAvg := rollAvg(input$radio_indicator,date)) %>%
-          ungroup()
-      } else
-        dat
-
-    })
-    df_data <- reactive({
-
+    # df_data <- reactive({
+    #   if (rollw()) {
+    #     message("compute rolling average")
+    #     dat %>%
+    #       group_by(Country.Region) %>%
+    #       #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
+    #       mutate(WeeklyAvg := rollAvg(input$radio_indicator,date)) %>%
+    #       ungroup()
+    #   } else
+    #     dat
+    #
+    # })
+    df_roll <- reactive({
+      data = dat
       if (rollw()) {
         message("compute rolling average")
         # override variable.
-        dat = dat %>%
+        data = data %>%
           #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
           #mutate(!!sym(input$radio_indicator) := rollAvg(!!sym(input$radio_indicator),date))
-          mutate(WeeklyAvg := rollAvg(!!sym(input$radio_indicator),date))
+          mutate(WeeklyAvgVal := rollAvg(!!sym(input$radio_indicator),date))
 
       }
+      data = data[data$date >= date_first_var(), , drop = FALSE]
+      data
+    })
+
       # filter off x before nn
-      date_first_var = min(dat$date[dat[[input$radio_indicator]] > 0], na.rm = TRUE)-1 # remove one day
-      #dat = dat[dat$date >= date_first_var, , drop = FALSE]
-      lstmonth = FALSE
+    date_first_var = reactive({
+      min(dat$date[dat[[input$radio_indicator]] > 0], na.rm = TRUE)-1 # remove one day
+    })
+
+    lstmonth = reactive({ifelse(!is.null(input$time_frame) && (input$time_frame != "sincestart"), TRUE, FALSE)})
+
+    df_data_timeframe <- reactive({
+      message("df_data_timeframe")
+      data = df_roll()
+      #data = data[data$datae >= datae_first_var, , drop = FALSE]
+      #lstmonth = FALSE
       if (!is.null(input$time_frame)) {
         if (input$time_frame == "sincestart") {
-          dat = dat[dat$date >= date_first_var, , drop = FALSE]
-          lstmonth = FALSE
+          #data = data[data$datae >= datae_first_var, , drop = FALSE]
+          #lstmonth = FALSE
           # } else if (input$time_frame == "lst6month") {
-          #   date_lst_6month = max(max(dat$date) - 30*6,date_first_var) # TODO: to be changed
-          #   dat = dat[dat$date >= date_lst_6month, , drop = FALSE]
+          #   datae_lst_6month = max(max(data$datae) - 30*6,datae_first_var) # TODO: to be changed
+          #   data = data[data$date >= date_lst_6month, , drop = FALSE]
         } else if (input$time_frame == "lstmonth") {
           #rollw = reactiveVal(FALSE)
 
-          date_lst_month = max(dat$date) - 31-365 # TODO: to be changed
-          dat = dat[dat$Date >= date_lst_month & dat$Date <= max(dat$date) -365, , drop = FALSE]
-          lstmonth = TRUE
+          date_lst_month = max(data$date) - 31-365 # TODO: to be changed
+          data = data[data$Date >= date_lst_month & data$Date <= max(data$date) -365, , drop = FALSE]
+          #lstmonth = TRUE
         }
       }
-      varsfinal = c("Country.Region", "year", input$radio_indicator, "Date")
-      if ((rollw() ))
-        varsfinal = c(varsfinal, "WeeklyAvg")
-
-      if (any(dat$d.year>0) && (input$radio_indicator %in% cum_vars)) {
+      if (any(data$d.year>0) && (input$radio_indicator %in% cum_vars)) {
         # if there are more than 2 years and if the variable is cumulative
-        desc = ifelse(tail(dat$date,1) > head(dat$date,1), FALSE, TRUE )
+        desc = ifelse(tail(data$date,1) > head(data$date,1), FALSE, TRUE )
 
-        dat = dat %>%
+        data = data %>%
           mutate( # add aggregated vars
-            #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(dat = .x, years = years)) # use all_of
-            across(all_of(as.vector(input$radio_indicator)), ~rescale_from_start(var = .x, category = d.year, lstmonth = lstmonth, desc = desc)) # use all_of
+            #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(data = .x, years = years)) # use all_of
+            across(all_of(as.vector(input$radio_indicator)), ~rescale_from_start(var = .x, category = d.year, lstmonth = lstmonth(), desc = desc)) # use all_of
           )
       }
+      data
+    })
+    df_out <- reactive({
+      message("df_out")
+      data = df_data_timeframe()
 
-      # if (strindx)
-      #   varsfinal = unique(c(varsfinal, "stringency_index"))
-      # if (!is.null(secondline))
-      #   varsfinal = unique(c(varsfinal, "stringency_index", secondline))
-      df_out <- dat %>% .[,varsfinal] %>%
-        bind_cols(dat[,input$radio_indicator] %>% setNames("Value")) %>% #arrange(Date) %>%
+      varsfinal = c("Country.Region", "year", input$radio_indicator, "Date")
+      if (rollw())
+        varsfinal = c(varsfinal, "WeeklyAvgVal")
+      df_out <- data %>% .[,varsfinal] %>%
+        bind_cols(data[,input$radio_indicator] %>% setNames("Points")) %>% #arrange(Date) %>%
         rename(Status = year ) %>%
         #rename(Date = contagion_day ) %>%
         select(-input$radio_indicator)
@@ -357,7 +382,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       # if (!(input$radio_indicator %in% get_aggrvars()))
       #   rollw = reactiveVal(FALSE)
       # rollw = FALSE because Value has been rolled
-      p <- plot_all_highlight(df_data(), log = FALSE, text = "Year", percent = ifelse(input$radio_indicator %in% .rate_vars, TRUE, FALSE),
+      p <- plot_all_highlight(df_out(), log = FALSE, text = "Year", percent = ifelse(input$radio_indicator %in% .rate_vars, TRUE, FALSE),
                               date_x = TRUE, g_palette,  secondline = FALSE, rollw = rollw(), keeporder = TRUE, dateformat = "%d-%m", barplot = FALSE)
       tooltips = tooltip = c("text", "x_tooltip", "y_tooltip")
       if (rollw())
@@ -370,7 +395,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
         dat
       })
 
-      if (length(unique(df_data()$Status)) == 1)
+      if (length(unique(df_out()$Status)) == 1)
         p <- p %>%
         plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
 

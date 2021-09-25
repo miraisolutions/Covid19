@@ -317,9 +317,9 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     # filter off x before nn
     date_first_contagion = min(dat$date[dat$confirmed >= nn], na.rm = TRUE)
     dat = dat[dat$date >= date_first_contagion, , drop = FALSE]
-
     # Give dat standard structure; reacts to input$radio_indicator
-    df_data <- reactive({
+    df_data_1Mpop <- reactive({
+      message("df_data_1Mpop:")
       data = dat
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
         if (all(is.na(data$population)))
@@ -331,30 +331,47 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         data[, reactSelectVar()] = round(10^6*data[, reactSelectVar()] / data$population, 3)
         #}
       }
+      data
+    })
+
+    date_first_var = reactive(
+        min(dat$date[dat[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
+      )
+
+    df_data_roll <- reactive({
+      message("df_data_roll")
 
       if (rollw()) {
         message("compute rolling average")
-        data = data %>%
+        data = df_data_1Mpop() %>%
           group_by(Country.Region) %>%
           #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
-          mutate(WeeklyAvg := rollAvg(!!sym(reactSelectVar()),date)) %>%
+          mutate(WeeklyAvgVal := rollAvg(!!sym(reactSelectVar()),date)) %>%
           ungroup()
-      }
+      } else
+        data = df_data_1Mpop()
       # date_first_var = min(data$date[data[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
       # data = data[data$date >= date_first_var, , drop = FALSE]
-      date_first_var = min(data$date[data[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
+      #date_first_var = min(data$date[data[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
+      data = data[data$date >= date_first_var(), , drop = FALSE]
+      data
+    })
+    df_data_timeframe <- reactive({
+      message("df_data_timeframe")
 
+      data = df_data_roll()
       if (!is.null(input$time_frame)) {
         if (input$time_frame == "sincestart") {
-          data = data[data$date >= date_first_var, , drop = FALSE]
+          #data = data[data$date >= date_first_var, , drop = FALSE]
+          data = df_data_roll()
         } else {
 
           if (input$time_frame == "lst6month") {
-            date_lst_6month = max(max(data$date) - 30*6+1,date_first_var) # TODO: to be changed
+            date_lst_6month = max(max(data$date) - 30*6+1,date_first_var()) # TODO: to be changed
             data = data[data$date >= date_lst_6month, , drop = FALSE]
 
           } else if (input$time_frame == "lstmonth") {
-            date_lst_month = max(max(data$date) - 31,date_first_var) # TODO: to be changed
+            date_lst_month = max(max(data$date) - 31,date_first_var()) # TODO: to be changed
             data = data[data$date >= date_lst_month, , drop = FALSE]
           }
           # cum_vars = intersect(get_cumvars(), names(data))
@@ -363,16 +380,20 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
             desc = ifelse(tail(data$date,1) > head(data$date,1), FALSE, TRUE )
             # varsscale = c(reactSelectVar())
             # if ((barp() || rollw() ))
-            #   varsscale = c(varsscale, "WeeklyAvg")
-            # non need to rescale WeeklyAvg, it is not being used if cumulative
+            #   varsscale = c(varsscale, "WeeklyAvgVal")
+            # non need to rescale WeeklyAvgVal, it is not being used if cumulative
             data = data %>%
               mutate( # add aggregated vars
-                across(all_of(as.vector((reactSelectVar()))), ~rescale_from_start(var = .x, category = Country.Region, lstmonth = TRUE, desc = desc)) # use all_of
+                across(all_of(as.vector(reactSelectVar())), ~rescale_from_start(var = .x, category = Country.Region, lstmonth = TRUE, desc = desc)) # use all_of
               )
           }
         }
       }
-
+      data
+    })
+    df_istop <- reactive({
+      message("df_istop")
+      data = df_data_timeframe()
       if(istop) {
         # countries_order =  data %>% filter(date == max(date)) %>%
         #   arrange(desc(!!as.symbol(reactSelectVar()))) %>%
@@ -384,25 +405,30 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         data = data %>% right_join(countries_order)  %>%  # reordering according to variable if istop
           mutate(Country.Region = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T]))
       }
+      data
+    })
 
+
+    df_out <- reactive({
+      message("df_out")
+      data = df_istop()
       varsfinal = c("Country.Region", reactSelectVar(), "Date")
       if (strindx)
         varsfinal = unique(c(varsfinal, "stringency_index"))
       if (!is.null(secondline))
         varsfinal = unique(c(varsfinal, "stringency_index", secondline))
-      if ((rollw() ))
-        varsfinal = c(varsfinal, "WeeklyAvg")
-      df_out <- data %>% .[,varsfinal] %>%
-        bind_cols(data[,reactSelectVar()] %>% setNames("Value")) %>%
+      if (rollw())
+        varsfinal = c(varsfinal, "WeeklyAvgVal")
+
+      out <- data %>% .[,varsfinal] %>%
+        bind_cols(data[,reactSelectVar()] %>% setNames("Points")) %>%
         rename(Status = Country.Region ) %>%
         #rename(Date = contagion_day ) %>%
         select(-reactSelectVar())
-
+      out
       # filter dates with 0 contagions
       #  df_out = df_tmp
       #}
-
-      df_out
     })
 
     log <- reactive({
@@ -419,24 +445,27 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       #if (!(input$radio_indicator %in% get_aggrvars()) || (input$time_frame != "sincestart"))
       # if  (!(input$radio_indicator %in% get_aggrvars()) )
       #   rollw = reactiveVal(FALSE)
-      p <- plot_all_highlight(df_data(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
+      p <- plot_all_highlight(df_out(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
                               date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw(), keeporder = keeporder, barplot = barp())
+
 
       tooltips = tooltip = c("text", "x_tooltip", "y_tooltip")
       if (rollw())
         tooltips = c(tooltips, "z_tooltip")
+
+      tooltips = "text"
       p <- p %>%
         plotly::ggplotly(tooltip = tooltips)
 
-      if (length(unique(df_data()$Status)) == 1)
+      if (length(unique(df_out()$Status)) == 1)
         p <- p %>%
-          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom",
+                                       itemsizing = "constant", hovermode = 'closest', clickmode = "event"))
 
       p
 
     })
-
-  }
+  } # end calc_line_plot
   if (!areasearch) {
     keeporder = FALSE
     calc_line_plot(df, .vars_nthcases_plot, cum_vars)
