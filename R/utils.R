@@ -728,7 +728,9 @@ oneM_pop_calc = function(x, pop) {
 #' @param x numeric numerator
 #' @param y numeric denominator
 #' @param cap numeric cap, 1 or Inf for no cap
+#' @param floor numeric floor, 0 or -Inf for no floor
 #' @param digits numeric digits for rounding
+#' @param nawith0 if TRUE then NAs are replaced with 0s
 #'
 #' @return x numeric rate
 #'
