@@ -459,8 +459,10 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
     active_hosp = TRUE
   }
 
-  df_area_2 = purrr::map(unique(data_area$Country.Region),
+  relevant_countries = unique(data_area$Country.Region[data_area$confirmed>n2])
+  df_area_2 = purrr::map(relevant_countries,
     function(un) {
+      message(un)
       dat = tsdata_areplot(data_area[data_area$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
       dat$Country.Region = rep(un, nrow(dat))
       dat
@@ -476,9 +478,11 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # Area plot hospitalised ----
   levs <- areaplot_hospvars()
 
-  df_area_2 = purrr::map(unique(data$Country.Region),
+  relevant_countries = unique(data_area$Country.Region[data_area$confirmed>1])
+
+  df_area_2 = purrr::map(relevant_countries,
                          function(un) {
-                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot
+                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot hosp, do not filter
                            dat$Country.Region = rep(un, nrow(dat))
                            dat
                          })
