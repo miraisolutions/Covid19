@@ -14,56 +14,66 @@ mod_map_ui <- function(id){
   vars = setdiff(names(.case_colors), c("hosp","recovered")) # remove hosp for now
   choices_map <- c(vars, paste0("lw",vars), "stringency_index") %>%
     setNames(gsub("_", " ",c(vars, paste0("lw_",vars), "stringency_index"))) %>% as.list()
-  div(
-    #fluidPage(
-
-    style = "position: relative;",
-    # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-    #withSpinner(
-      leafletOutput(ns("map"), width = "100%", height = "800")
-      #)
-    ,
-    #leafletOutput(ns("map")),
-    #plotOutput(ns("map_poly")),
-    tags$head(tags$style(
-      HTML('
-             #input_show_map {position: absolute; margin: auto;}'
+  fluidPage(
+    fixedRow(
+      column(12,
+             offset = 5,
+             actionButton(ns("goButton"), "Show Map", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
       )
-    )),
-    absolutePanel(
-        id = "input_show_map",
-        top = 0, right = 0, left = 0, width = "8.5vw", height = "2.5vw", draggable = FALSE, class = "panel panel-default", #height = "auto",
-        #div(style = "margin:10px;",
-          actionButton(ns("goButton"), "Show Map", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
+
+    ),
+    div(
+
+      style = "position: relative;",
+
+      # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
+      #withSpinner(
+        leafletOutput(ns("map"), width = "100%", height = "800")
         #)
-      )
-  ,
-    tags$head(tags$style(
-      HTML('
-             #input_date_control {background-color: rgba(192,192,192,0.6);}
-             #sel_date {background-color: rgba(0,0,255,1);}
-             #help-block a {color: #ff0000 !important;}'
-      )
-    )),
-    absolutePanel(
-      #id = ns("input_date_control"), class = "panel panel-default",
-      id = "input_date_control", class = "panel panel-default",
-      width = "27.5vw",
-      #height = "20vh",
-      top = 10, left = 10, draggable = FALSE,
-      #fixed = TRUE,
-      div(style = "margin:10px;",
-          uiOutput(ns("title_map")),
-          radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
-          radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
-          #uiOutput(ns("slider_ui")),
-          helpText("Click on the country to obtain its details."),
-          div(uiOutput(ns("caption")), align = "center")
+      ,
+      #leafletOutput(ns("map")),
+      #plotOutput(ns("map_poly")),
+      # tags$head(tags$style(
+      #   HTML('
+      #          #input_show_map {position: absolute; margin: auto;}'
+      #   )
+      # )),
+      # absolutePanel(
+      #     id = "input_show_map",
+      #     top = 0, right = 0, left = 0, width = "8.5vw", height = "2.5vw", draggable = FALSE, class = "panel panel-default", #height = "auto",
+      #     #div(style = "margin:10px;",
+      #       actionButton(ns("goButton"), "Show Map", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
+      #     #)
+      #   )
 
+      tags$head(tags$style(
+        HTML('
+               #input_date_control {background-color: rgba(192,192,192,0.6);}
+               #sel_date {background-color: rgba(0,0,255,1);}
+               #help-block a {color: #ff0000 !important;}'
+        )
+      )),
+      absolutePanel(
+        #id = ns("input_date_control"), class = "panel panel-default",
+        id = "input_date_control", class = "panel panel-default",
+        width = "27.5vw",
+        #height = "20vh",
+        top = 10, left = 10, draggable = FALSE,
+        #fixed = TRUE,
+        div(style = "margin:10px;",
+            uiOutput(ns("title_map")),
+            radioButtons(inputId = ns("radio_choices"), label = "", choices = choices_map, selected = "confirmed", inline = T),
+            radioButtons(inputId = ns("radio_pop"), label = "", choices = c("total", "per 1M pop"), selected = "total", inline = T),
+            #uiOutput(ns("slider_ui")),
+            helpText("Click on the country to obtain its details."),
+            div(uiOutput(ns("caption")), align = "center")
+
+        )
       )
+
+    )
     )
 
-  )
 }
 
 #' map Server Function
