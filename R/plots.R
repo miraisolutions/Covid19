@@ -50,10 +50,12 @@ lab_num = function(x) {
 #' @return x breaks values
 breaks_lab = function(x, breaks = .breaks.xaxis) {
   x.d.lim = range(x, na.rm = TRUE)
-  if (is.numeric(x))
-    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
-  else
-    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+  # if (is.numeric(x))
+  #   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+  # else
+  #   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+
   x.d.breaks
 }
 
@@ -728,7 +730,7 @@ funformat <- function(x, perc, digits = NULL) {
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , barplot = FALSE, secondline = NULL, keeporder = FALSE, dateformat = "%d-%m-%y") {
+plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , barplot = FALSE, secondline = NULL, keeporder = FALSE, formatdate = "%d-%m-%y") {
   if (nrow(df) == 0) {
     p = ggplot()
     return(p)
@@ -870,7 +872,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
       scale_x_date(breaks = breaks_lab(df$Date, .breaks.xaxis),
                    #limits = range(df$Date, na.rm = TRUE),
                    date_minor_breaks = "1 week",
-                   date_labels = dateformat) #+
+                   date_labels = formatdate) #+
   }
   if (length(unique(df$Status)) == 1) {
     p = p+
@@ -896,7 +898,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 #' @return ggplot plot
 #' @export
 plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize = 8.5, labangle = 30) {
-  if (nrow(df) == 0) {
+  if (nrow(df) == 0 || all(is.na(df$Value))) {
     p = ggplot()
     return(p)
   }
@@ -913,8 +915,13 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     labsize = labsize - min(length(unique(df$Country))/14-1,3.2)
     labangle = labangle + min(length(unique(df$Country))-16,30)
   }
+  if(missing(y_min)) {
+    minv = min(df$Value, na.rm = TRUE)
+    ylim_bottom = ifelse(minv < 0 , minv*1.05, 0)
+    y_min = c(ifelse(percent, 0, ylim_bottom))
+  }
 
-  ylim = c(ifelse(percent, 0, y_min), max(df$Value, na.rm = TRUE)*1.05)
+  ylim = c(y_min, max(df$Value, na.rm = TRUE)*1.05)
 
   .popuptext = function(asofdate,  xvarexpr, percent, digits = NULL){
     paste(

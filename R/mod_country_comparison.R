@@ -190,7 +190,7 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       callModule(mod_barplot_server, "barplot_vax_index", countries_data_today,
                  n_highlight = length(input$select_countries), istop = FALSE,
                  plottitle = c("Vaccination Status"),
-                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],#barplots_colors[["vaccines"]],
+                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],
                                   calc = FALSE),
                  sortbyvar = FALSE)
 

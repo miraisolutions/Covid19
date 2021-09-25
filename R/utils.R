@@ -64,7 +64,10 @@ capitalize_first_letter <- function(x) {
 #'
 #' @export
 prefix_var <- function(cc = .case_colors,  prefix = c("lw","pw","new")) {
-  as.character(t(outer(prefix, cc, FUN = paste, sep = "_")))
+  x = as.character(t(outer(prefix, cc, FUN = paste, sep = "_")))
+  if (any(prefix == ""))
+    x = gsub("^_","",x)
+  x
 }
 
 #' Variables where negative values are allowed in map plot
@@ -255,17 +258,6 @@ getTableOptions <- function(scrollX = TRUE,
     pageLength = maxrowsperpage
   )
 }
-
-#' Color Palette for simple barplots
-#'
-#' @export
-barplots_colors <- list(
-  #"growth_factor" = "#dd4b39",
-  "growth_factor" = "chocolate3",
-  "death_rate" = "grey30",
-  "stringency" = c(col = "Greys", rev = TRUE, skip = 2),
-  "vaccines" = c(col = "Blues", rev = TRUE, skip = 2)
-)
 
 #' Color Palette
 #'
@@ -1096,3 +1088,35 @@ message_missing_recovered = function(what = "Recovered", where = "Some countries
 message_hosp_data = function(what = "Hospitalised, Vaccinated and Test", where = "some countries and areas", suffix = "where available") {
   paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
 }
+#' Color Palette for simple barplots
+#'
+#' @export
+barplots_colors <- list(
+  #"growth_factor" = "#dd4b39",
+  "growth_factor" = list("uniform" = "chocolate3",
+                         "calc" = c(col = "Oranges", rev = TRUE, skip = 2)
+  ),
+  "death_rate" = list("uniform" = "grey30",
+                      "calc" = c(col = "Greys", rev = TRUE, skip = 2)
+  ),
+  "stringency" = list("uniform" = "grey30",
+                      "calc" = c(col = "Greys", rev = TRUE, skip = 2)
+  ),
+  #"stringency" = c(col = "Greys", rev = TRUE, skip = 2),
+  #"vaccines" = c(col = "Blues", rev = TRUE, skip = 2),
+  "vaccines" = list("uniform" = .case_colors["vaccines"] ,
+                    "calc" = c(col = "Blues", rev = TRUE, skip = 2)
+  ),
+  #"tests" = c(col = "Greens", rev = TRUE, skip = 2),
+  "tests" = list("uniform" = "green" ,
+                 "calc" = c(col = "Greens", rev = TRUE, skip = 2)
+  ),
+  #"hosp" = c(col = "Blues", rev = TRUE, skip = 2),
+  "hosp" = list("uniform" = .case_colors["hosp"] ,
+                "calc" = c(col = "Blues", rev = TRUE, skip = 2)
+  ),
+  #"confirmed" = c(col = "Reds", rev = TRUE, skip = 2)
+  "confirmed" = list("uniform" = .case_colors["confirmed"] ,
+                     "calc" = c(col = "Reds", rev = TRUE, skip = 2)
+  )
+)

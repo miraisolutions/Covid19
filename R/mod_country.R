@@ -114,11 +114,21 @@ areaUI = function(id, tab = TRUE, stringency = TRUE, vaxflag = TRUE, n2 = 100){
           div(
             htmlOutput(ns("ind_missing_days_area"))
           ),
+          hr(),
+          fluidRow(
+            column(12,
+                   #mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2"))
+                   withSpinner(
+                     mod_barplot_ui(ns("plot_barplot_confirmed_area2"), plot1 = "ui_confirmed", plot2 = "ui_hosp")
+                   )
+            )
+          ),
            hr(),
            fluidRow(
              column(6,
                     div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-                    withSpinner(uiOutput(ns("plot_area_area2")))
+                    #withSpinner(uiOutput(ns("plot_area_area2")))
+                    withSpinner( mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE))
              ),
              # column(6,
              #        div(h4("Confirmed cases for top 5 Areas"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -143,15 +153,20 @@ areaUI = function(id, tab = TRUE, stringency = TRUE, vaxflag = TRUE, n2 = 100){
            hr(),
            fluidRow(
               column(12,
-                     withSpinner(uiOutput(ns("plot_growth_death_rate_area2")))
+                     #withSpinner(uiOutput(ns("plot_growth_death_rate_area2")))
+                     withSpinner(mod_barplot_ui(ns("plot_growth_death_rate_area2")))
+
               )
             ),
-           hr(),
-           fluidRow(
-             column(12,
-                    mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2"))
-             )
-           ),
+           # hr(),
+           # fluidRow(
+           #   column(12,
+           #          #mod_stackedbarplot_ui(ns("plot_stackedbarplot_status_area2"))
+           #          withSpinner(
+           #            mod_barplot_ui(ns("plot_barplot_confirmed_area2"), plot1 = "ui_confirmed", plot2 = "ui_hosp")
+           #          )
+           #    )
+           # ),
            #hr(),
            # fluidRow(
            #  column(12,
@@ -462,7 +477,6 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   relevant_countries = unique(data_area$Country.Region[data_area$confirmed>n2])
   df_area_2 = purrr::map(relevant_countries,
     function(un) {
-      message(un)
       dat = tsdata_areplot(data_area[data_area$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
       dat$Country.Region = rep(un, nrow(dat))
       dat
@@ -470,9 +484,9 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   df_area_2 = Reduce("rbind",df_area_2)
 
 
-  output[["plot_area_area2"]] <- renderUI({
-    mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE)
-  })
+  # output[["plot_area_area2"]] <- renderUI({
+  #   mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE)
+  # })
   callModule(mod_plot_log_linear_server, "plot_area2_area2", df = df_area_2, type = "area" , countries = reactive(areas), active_hosp = active_hosp)
 
   # Area plot hospitalised ----
@@ -543,10 +557,10 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
              n_highlight = length(unique(data$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE)
 
   # growth_death_rate,
-  output[["plot_growth_death_rate_area2"]] <- renderUI({
-    mod_barplot_ui(ns("rate_plots_area2"))
-  })
-  callModule(mod_barplot_server, "rate_plots_area2", df = data_today, istop = FALSE,
+  # output[["plot_growth_death_rate_area2"]] <- renderUI({
+  #   mod_barplot_ui(ns("rate_plots_area2"))
+  # })
+  callModule(mod_barplot_server, "plot_growth_death_rate_area2", df = data_today, istop = FALSE,
              n_highlight = length(unique(data_today$Country.Region)))
 
 
@@ -574,7 +588,17 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   # reconsider hosp flag as of today, hosp data may have been removed or not updated as of today
   # > stacked barplot with status split, use data_2_filtered_today
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_today, istop = FALSE, n_highlight = length(unique(data_today$Country.Region)), active_hosp = active_hosp)
+  #callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status_area2", df = data_today, istop = FALSE, n_highlight = length(unique(data_today$Country.Region)), active_hosp = active_hosp)
+  # output[["plot_barplot_confirmed_area2"]] <- renderUI({
+  #   mod_barplot_ui(ns("confirmed_barplot_area2"))
+  # })
+  callModule(mod_barplot_server, "plot_barplot_confirmed_area2", df = data_today, istop = FALSE,
+             g_palette = list("plot_1" = barplots_colors$confirmed$uniform,
+                              "plot_2" = barplots_colors$hosp$uniform,
+                              calc = FALSE),
+             pickvariable = list("plot_1" = "confirmed_rate_1M_pop","plot_2" = "hosp_rate_1M_pop"),
+             plottitle =  c("Confirmed positive cases per area", "Hospitalised and Intensive Care per area"),
+             n_highlight = length(unique(data_today$Country.Region)))
 
 
   ######################
@@ -617,7 +641,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       # > barplot stringency
       callModule(mod_barplot_server, id, data_today, n_highlight = length(unique(data_today$Country.Region)), istop = FALSE,
                  plottitle = c("Stringency Index"),
-                 g_palette = list("plot_1" = barplots_colors$stringency,
+                 g_palette = list("plot_1" = barplots_colors$stringency$calc,
                                   calc = TRUE),
                  pickvariable = list("plot_1" = "confirmed_rate_1M_pop")) # pick top 10 confirmed countries
     } else{
@@ -675,7 +699,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       # > barplot stringency
       callModule(mod_barplot_server, id, data_today, n_highlight = length(unique(data_today$Country.Region)), istop = FALSE,
                  plottitle = c("Vaccinations"),
-                 g_palette = list("plot_1" = barplots_colors$vaccines,
+                 g_palette = list("plot_1" = barplots_colors$vaccines$calc,
                                   calc = TRUE),
                  pickvariable = list("plot_1" = "confirmed_rate_1M_pop")) # pick top 10 confirmed countries
     } else{

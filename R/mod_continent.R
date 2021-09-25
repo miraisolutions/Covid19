@@ -92,11 +92,9 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
    fluidRow(
      column(6,
             withSpinner(mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL))
-            #withSpinner(uiOutput(ns(paste("barplot_vax_countries", uicont , sep = "_"))))
      ),
      column(6,
             withSpinner(mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE))
-            #withSpinner(uiOutput(ns(paste("scatterplot_vax_vars_countries", uicont , sep = "_"))))
      )
    ),
    hr(),
@@ -346,7 +344,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
              n_highlight = length(data_cont_maps$Country.Region), istop = FALSE,
              plottitle = c("Vaccination Status"),
-             g_palette = list("plot_1" = barplots_colors[["vaccines"]],
+             g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
                               calc = TRUE)#,
              #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
              )

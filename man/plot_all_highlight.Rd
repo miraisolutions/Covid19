@@ -15,7 +15,7 @@ plot_all_highlight(
   barplot = FALSE,
   secondline = NULL,
   keeporder = FALSE,
-  dateformat = "\%d-\%m-\%y"
+  formatdate = "\%d-\%m-\%y"
 )
 }
 \arguments{
