@@ -17,7 +17,7 @@ mod_vaccines_text_ui <- function(id) {
     div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     fluidRow(
       column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
-                             value = 70,
+                             value = 90,
                              min = 0,
                              max = 100,
                              step = 1)),
@@ -28,7 +28,7 @@ mod_vaccines_text_ui <- function(id) {
                             choices = c(0,1,2),
                             selected = 1)),
       column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
-                          value = "2021-10-01",
+                          value = "2021-11-01",
                           min = Sys.Date()
       ))
     ),
