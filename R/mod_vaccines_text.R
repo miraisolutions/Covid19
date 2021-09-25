@@ -140,22 +140,22 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
 
   plotdata = df %>%
     select(date, new_vaccines) %>%
-    rename(Date = date, Value = new_vaccines) %>%
+    rename(Date = date, Points = new_vaccines) %>%
     mutate(Status = "New Vaccinated")
 
-  if (sum(plotdata$Value)>0) {
+  if (sum(plotdata$Points)>0) {
     #make plot if there are vaccine data
     output$vax_line <- renderPlot({
       #secondline = NULL
       message("compute rolling average")
       plotdata = plotdata %>%
-        #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
-        mutate(WeeklyAvg := rollAvg(Value,Date))
+        #mutate(WeeklyAvg = zoo::rollapplyr(Points, 7, mean, partial=TRUE, align = "right")) %>%
+        mutate(WeeklyAvgVal := rollAvg(Points,Date))
       p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
                               date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE, barplot = FALSE)
-      if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE)) {
+      if (data()$target_vaccines_per_day > max(plotdata$Points, na.rm = TRUE)) {
         p = p + expand_limits(y = data()$target_vaccines_per_day*1.05) +
-               scale_y_continuous(labels = lab_num, breaks = breaks_lab(c(plotdata$Value, data()$target_vaccines_per_day), .breaks.yaxis)) # add label
+               scale_y_continuous(labels = lab_num, breaks = breaks_lab(c(plotdata$Points, data()$target_vaccines_per_day), .breaks.yaxis)) # add label
 
       }
       p = p + geom_line(size = 1.35)
