@@ -288,9 +288,12 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     textvar = c("new_confirmed","lw_confirmed","confirmed","lw_active")
 
   } else if (FALSE && grepl("(prevalence|rate)(?:.+)(prevalence|rate)",var)) {
-    mapvar = grep("(confirmed|rate)(?:.+)(confirmed|rate)", varsNames(), value = T)
+    #mapvar = grep("(confirmed|rate)(?:.+)(confirmed|rate)", varsNames(), value = T)
+    mapvar = unlist(varsNames(
+        prefix_var("confirmed_rate_1M_pop", c("","lw","new"))
+    ))
     #mapvar = c(grep("^confirmed", mapvar, value = TRUE), grep("^lm", mapvar, value = TRUE),grep("^lw", mapvar, value = TRUE),grep("^new", mapvar, value = TRUE))
-    mapvar = mapvar[!grepl("^lm", mapvar)]
+    #mapvar = mapvar[!grepl("^lm", mapvar)]
     namesmapvar = c("Total",# "Last Month",
                     "Last Week",
                     "Last Day")
@@ -300,12 +303,14 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
                        choices = mapvar, selected = mapvar["Last Week"])
     caption <- caption_prevalence()
     graph_title = "Prevalence of contagion over 1M"
-    textvar = c("new_confirmed","lw_confirmed","confirmed","population", "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop", "lm_confirmed_rate_1M_pop", "confirmed_rate_1M_pop")
+    textvar = c("new_confirmed","lw_confirmed","confirmed","population", "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop", "pw_confirmed_rate_1M_pop", "lm_confirmed_rate_1M_pop", "confirmed_rate_1M_pop")
 
   } else if (grepl("death", var) || grepl("mortality", var)) {
-    #mapvar = c("Lethality Rate", "Mortality Rate")
-    #mapvar = varsNames()[grepl("(Lethality|Mortality)*rate$", names(varsNames()))]
-    mapvar = unlist(varsNames(c("lethality_rate","lw_lethality_rate","deaths_rate_1M_pop","lw_deaths_rate_1M_pop")))
+    #mapvar = unlist(varsNames(c("lethality_rate","lw_lethality_rate","deaths_rate_1M_pop","lw_deaths_rate_1M_pop")))
+    mapvar = unlist(varsNames(c(
+      prefix_var("lethality_rate", c("","lw")),
+      prefix_var("deaths_rate_1M_pop", c("","lw"))
+    )))
 
     #names(mapvar) = c("Lethality Rate", "Mortality over 1M pop")
     new_buttons = list(name = list("radio"),
@@ -315,7 +320,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption_mrt_rate <- paste("Mortality Rate:", caption_death_fun("deaths_rate_1M_pop"))
     caption = HTML(paste(c(caption_leth_rate,caption_mrt_rate), collapse = '<br/>'))
     graph_title = "Death Rate"
-    textvar = c("new_deaths", "lw_deaths", "deaths", "lw_lethality_rate","population")
+    textvar = c("new_deaths", "lw_deaths", "deaths", "lw_lethality_rate","pw_lethality_rate","population")
     if(global) {
       textvar = c(textvar, c("lethality_rate","deaths_rate_1M_pop"))
       #textvar = textvar[!grepl("deaths",textvar)]
@@ -334,7 +339,11 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     textvar = c(as.vector(grep("^growth_factor", unlist(varsNames()), value = TRUE)), "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop", "confirmed_rate_1M_pop")
 
   } else if (grepl("active", var)) {
-    mapvar = paste0(c("", "lw_","new_"),"active")
+    #mapvar = paste0(c("", "lw_","new_"),"active")
+    mapvar = unlist(varsNames(c(
+        prefix_var("active", c("","lw","new"))
+      )))
+
     #mapvar = varsNames()[mapvar]
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
@@ -346,10 +355,13 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption =HTML(paste(c(caption_active()), collapse = '<br/>'))
 
     graph_title = "Active cases"
-    textvar = c("new_active","lw_active","active", "new_confirmed", "confirmed","new_recovered","recovered")
+    textvar = c("new_active","lw_active","pw_active","active", "new_confirmed", "confirmed","new_recovered","recovered")
 
   } else if (grepl("confirmed", var)) {
-    mapvar = grep("confirmed$", varsNames(), value = T)
+    #mapvar = grep("confirmed$", varsNames(), value = T)
+    mapvar = unlist(varsNames(c(
+        prefix_var("confirmed", c("","lw","new"))
+      )))
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
     # new_buttons = list(name = "radio",
@@ -359,7 +371,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     caption <- "Total, Last Week, New and Over 1 Million peope Confirmed Positive cases"
     graph_title = "Confirmed positive cases"
-    textvar = c(c(rev(prefix_var("confirmed")), "confirmed"),c(rev(prefix_var("confirmed_rate_1M_pop")), "confirmed_rate_1M_pop"),
+    textvar = c(c(rev(prefix_var("confirmed")), "confirmed"),c(rev(prefix_var("confirmed_rate_1M_pop")),"confirmed_rate_1M_pop"),
                 "growth_factor_3","vaccines",
                 "tests", "population")
     if (global) {
@@ -386,12 +398,14 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption_stringency <- caption_stringency()
     caption =HTML(paste(c(caption_growth_factor,caption_stringency), collapse = '<br/>'))
     graph_title = "Growth vs Current Stringency Lock-Down Index"
-    textvar = c(as.vector(grep("^growth_factor", unlist(varsNames()), value = TRUE)), "stringency_index", "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop")
+    textvar = c(as.vector(grep("^growth_factor", unlist(varsNames()), value = TRUE)), "stringency_index", "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop","pw_confirmed_rate_1M_pop")
 
-  #} else if (grepl("tests", var) && grepl("1M", var)) {
   } else if (var == "tests") {
 
-    mapvar = grep("tests$", varsNames(), value = T)
+    #mapvar = grep("tests$", varsNames(), value = T)
+    mapvar = unlist(varsNames(c(
+          prefix_var("tests", c("","lw","new"))
+        )))
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
     # new_buttons = list(name = "radio",
@@ -405,10 +419,13 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     graph_title = "Tests per Population size"
     textvar = c(c(rev(prefix_var("tests")), "tests"),c(rev(prefix_var("tests_rate_1M_pop")), "tests_rate_1M_pop"),
-                "population", "lw_positive_tests_rate", "positive_tests_rate")
+                "population", "lw_positive_tests_rate", "pw_positive_tests_rate","positive_tests_rate")
 
   } else if (grepl("positive", var)) {
-    mapvar = grep("positive_tests_rate", varsNames(), value = T)
+    #mapvar = grep("positive_tests_rate", varsNames(), value = T)
+    mapvar = unlist(varsNames(c(
+          prefix_var("positive_tests_rate", c("","lw","new"))
+        )))
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
     new_buttons = list(name = list("radio"),
@@ -418,10 +435,12 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption =HTML(paste(c(caption,caption_tests), collapse = '<br/>'))
 
     graph_title = "Positive Tests rate"
-    textvar = c("lw_tests","tests", "lw_confirmed","confirmed", "lw_confirmed_rate_1M_pop", "confirmed_rate_1M_pop")
+    textvar = c("lw_tests","tests", "lw_confirmed","confirmed", "lw_confirmed_rate_1M_pop", "pw_confirmed_rate_1M_pop","confirmed_rate_1M_pop")
   }  else if (FALSE && grepl("hospitalised", var) && grepl("1M", var)) {
     hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
     mapvar = unlist(varsNames(hospvars_1M_pop))
+    #mapvar = prefix_var("hosp_rate_1M_pop", c("","lw","new"))
+
     new_buttons = list(name = "radio",
                        choices = mapvar, selected = mapvar[mapvar == "hosp_rate_1M_pop" ])
     caption <- "Current status of Hospitalisation over 1 M people."
@@ -445,10 +464,13 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
       graph_title = "Hospitalisation"
       #textvar = c("active",c(as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))), "icuvent_rate_hosp"))
-      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "icuvent_rate_hosp", "vaccines"))
+      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "lw_hosp", "pw_hosp","icuvent_rate_hosp", "vaccines"))
 
-  }  else if (grepl("vaccines", var)) {
-    mapvar = grep("vaccines$", varsNames(), value = T)
+  } else if (grepl("vaccines", var)) {
+    #mapvar = grep("vaccines$", varsNames(), value = T)
+    mapvar = unlist(varsNames(c(
+          prefix_var("vaccines", c("","lw","new"))
+        )))
     names(mapvar) = c("Total", "Last Week",
                       "Last Day")
     new_buttons = list(name = list("radio","oneMpop"),
@@ -462,7 +484,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption =HTML(paste(c(caption,caption_vax,caption_vaccines()), collapse = '<br/>'))
 
     graph_title = "Vaccination"
-    textvar = c("new_vaccines","lw_vaccines","vaccines", "population", "lw_vaccines_rate_pop", "vaccines_rate_pop")
+    textvar = c("new_vaccines","lw_vaccines","pw_vaccines", "vaccines", "population", "lw_vaccines_rate_pop", "vaccines_rate_pop")
 
   } else  {
       new_buttons = NULL
@@ -470,7 +492,9 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
   }
   textvar = c("AsOfDate", textvar)
   if (global) {
-    textvar = textvar[!grepl("^lw",textvar )]
+    textvar = textvar[!grepl("^new",textvar )]
+    textvar = textvar[!grepl("^pw",textvar )]
+
     textvar = c(textvar, "population")
     textvar = unique(textvar)
   }

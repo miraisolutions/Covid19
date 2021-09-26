@@ -63,8 +63,11 @@ capitalize_first_letter <- function(x) {
 #' @param prefix character, new or lw or both
 #'
 #' @export
-prefix_var <- function(cc = .case_colors,  prefix = c("lw","new")) {
-  as.character(t(outer(prefix, cc, FUN = paste, sep = "_")))
+prefix_var <- function(cc = .case_colors,  prefix = c("lw","pw","new")) {
+  x = as.character(t(outer(prefix, cc, FUN = paste, sep = "_")))
+  if (any(prefix == ""))
+    x = gsub("^_","",x)
+  x
 }
 
 #' Variables where negative values are allowed in map plot
@@ -145,6 +148,8 @@ varsNames = function(vars) {
 
   names(allvars)  = sapply(gsub("1M pop", "1M people", names(allvars)), capitalize_first_letter)
   names(allvars)  = gsub("^Lw", "Last Week", names(allvars))
+  names(allvars)  = gsub("^Pw", "Past Week", names(allvars))
+
   names(allvars)  = gsub("^Lm", "Last Month", names(allvars))
   names(allvars)  = gsub("Rate ", "Over ", names(allvars))
   names(allvars)  = gsub("Over Pop$", "Over Population size", names(allvars))
@@ -207,12 +212,12 @@ basic_plot_theme <- function() {
     line = element_line(size = 2.2),
     axis.line.x = element_line(color = "grey45", size = 0.5),
     axis.line.y = element_line(color = "grey45", size = 0.5),
-    axis.text.x = element_text(size = 10),
-    axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 8.5, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 8.5),
     axis.title.x = element_blank(),
     axis.title.y = element_blank(),
     legend.title =  element_blank(),
-    legend.text = element_text(size = 10),
+    legend.text = element_text(size = 8.5),
     legend.key = element_rect(fill = alpha("white", 0.0))
   )
 }
@@ -253,17 +258,6 @@ getTableOptions <- function(scrollX = TRUE,
     pageLength = maxrowsperpage
   )
 }
-
-#' Color Palette for simple barplots
-#'
-#' @export
-barplots_colors <- list(
-  #"growth_factor" = "#dd4b39",
-  "growth_factor" = "chocolate3",
-  "death_rate" = "grey30",
-  "stringency" = c(col = "Greys", rev = TRUE, skip = 2),
-  "vaccines" = c(col = "Blues", rev = TRUE, skip = 2)
-)
 
 #' Color Palette
 #'
@@ -529,14 +523,22 @@ aggr_to_cont = function(data, group, time,
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            ##tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            ##new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 3),1)),
-           new_positive_tests_rate = ifelse(tests == 0, NA, pmin(round(new_confirmed/new_tests, digits = 3),1)),
-           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
-           #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3), # not making much sense
-           hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
-           icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
-           #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
-           vaccines_rate_pop =  round(vaccines/population, digits = 5),# do not cap to 1
+            positive_tests_rate = rate_calc(confirmed, tests),
+            new_positive_tests_rate = rate_calc(new_confirmed, new_tests),
+            lethality_rate = rate_calc(deaths, tests, nawith0 = TRUE),
+            hosp_rate_active = rate_calc(hosp, active),
+            icuvent_rate_hosp = rate_calc(icuvent, hosp),
+            vaccines_rate_pop = rate_calc(vaccines, population,cap = Inf),
+
+
+           # positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 3),1)),
+           # new_positive_tests_rate = ifelse(tests == 0, NA, pmin(round(new_confirmed/new_tests, digits = 3),1)),
+           # lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
+           # #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3), # not making much sense
+           # hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
+           # icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
+           # #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3), # no need for other hosp var
+           # vaccines_rate_pop =  round(vaccines/population, digits = 5),# do not cap to 1
            #hosp_rate_1M_pop = round(10^6*hosp/population, digits = 3),
            #new_hosp_rate_1M_pop = round(10^6*new_hosp/population, digits = 3)
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
@@ -570,8 +572,17 @@ aggr_to_cont = function(data, group, time,
 #' @import tidyr
 tsdata_areplot <- function(data, levs, nn = 1000) {
 
+  # assumption, there are data with
+  if (all(!data$confirmed>nn))
+    warning("there are not enough cases")
   mindate = min(data$date[data$confirmed>nn], na.rm = TRUE)
+
   data = data %>% filter(date >= mindate)
+
+  # data are in descending order, first dates at the end
+  idx = rowSums(data[, levs] > 0) == length(levs)
+
+  data = data[idx, , drop = FALSE] # remove also in the middles and at th end, no problem
 
   data %>%
     select( date,!!levs) %>% #rename vars with labels
@@ -709,13 +720,36 @@ oneM_pop_calc = function(x, pop) {
   round(10^6*x/pop, digits = 3)
 }
 
-#' Calculates positive test rate
+#' Calculates rates between variables
+#' @param x numeric numerator
+#' @param y numeric denominator
+#' @param cap numeric cap, 1 or Inf for no cap
+#' @param floor numeric floor, 0 or -Inf for no floor
+#' @param digits numeric digits for rounding
+#' @param nawith0 if TRUE then NAs are replaced with 0s
+#'
+#' @return x numeric rate
+#'
+rate_calc = function(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE) {
+  # if (length(x) != length(pop))
+  #   stop("different length x and pop")
+  # remove latest NAs
+  res = x/y
+  res[is.infinite(res)] = NA
+  res = round(pmax(pmin(res,cap), floor),digits)
+  if (nawith0)
+    res = replace_na(res, 0)
+ res
+}
+
+#' Calculates positive test rate for weekly data
 #' @param conf numeric confirmed data last week
 #' @param tests numeric tests data last week
+#' @param digits numeric digits for rounding
 #'
 #' @return x numeric positive tests rate
 #'
-lw_positive_test_rate_calc = function(conf, tests) {
+lw_positive_test_rate_calc = function(conf, tests, digits = 4) {
   # if (length(x) != length(pop))
   #   stop("different length x and pop")
   # remove latest NAs
@@ -750,6 +784,11 @@ build_data_aggr <- function(data, popdata) {
   # select variables that can be devided by population
   aggrvars = setdiff(intersect(get_aggrvars(), names(orig_data_aggregate)), "population")
 
+
+  # orig_data_aggregate$positive_tests_rate = ifelse(orig_data_aggregate$tests == 0, NA,
+  #                                                  pmin(round(orig_data_aggregate$confirmed/orig_data_aggregate$tests, digits = 4),1))
+  # orig_data_aggregate$new_positive_tests_rate = ifelse(orig_data_aggregate$new_tests == 0, NA,
+  #                                                      pmin(round(orig_data_aggregate$new_confirmed/orig_data_aggregate$new_tests, digits = 4),1))
   orig_data_aggregate = orig_data_aggregate %>%   mutate(
               across(all_of(as.vector(aggrvars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
           ) %>%
@@ -760,15 +799,26 @@ build_data_aggr <- function(data, popdata) {
            ##new_confirmed_rate_1M_pop = round(10^6*new_confirmed/population, digits = 3),
            # tests_rate_1M_pop = round(10^6*tests/population, digits = 3),
            # new_tests_rate_1M_pop = round(10^6*new_tests/population, digits = 3),
-           positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 4),1)),
+           #positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 4),1)),
+           positive_tests_rate = rate_calc(confirmed, tests),
            #positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-           new_positive_tests_rate = ifelse(tests == 0, NA, pmin(round(new_confirmed/new_tests, digits = 4),1)),
+           #new_positive_tests_rate = ifelse(tests == 0 , NA, pmin(round(new_confirmed/new_tests, digits = 4),1)),
+           new_positive_tests_rate = rate_calc(new_confirmed, new_tests),
+
            #new_positive_tests_rate = positive_test_rate_calc(confirmed, tests),
-           lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
+           #lethality_rate = round(pmax(0, replace_na(deaths / confirmed, 0)), digits = 4),
+           lethality_rate = rate_calc(deaths, confirmed, nawith0 = TRUE),
+           #new_lethality_rate = rate_calc(new_deaths, new_confirmed, nawith0 = TRUE),
+
            #new_lethality_rate = round(pmax(0, replace_na(new_deaths / new_confirmed, 0)), digits = 3),
-           hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
-           icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
-           vaccines_rate_pop =  round(vaccines/population, digits = 5), # do not cap to 1
+           # hosp_rate_active =  pmin(round(hosp/active, digits = 5), 1),
+           # icuvent_rate_hosp =  pmin(round(icuvent/hosp, digits = 4), 1),
+           hosp_rate_active = rate_calc(hosp, active), # do not cap to 1
+           icuvent_rate_hosp = rate_calc(icuvent, hosp), # do not cap to 1
+
+           #vaccines_rate_pop =  round(vaccines/population, digits = 5), # do not cap to 1
+           vaccines_rate_pop = rate_calc(vaccines, population, cap = Inf), # do not cap to 1
+
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
            )  %>%   #mutate(
            #   across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
@@ -781,10 +831,11 @@ build_data_aggr <- function(data, popdata) {
   whichc = which(classd == "character")
   whichn = which(classd == "numeric")
   whichd = which(classd == "Date")
-  if (sum(sort(c(whichd, whichc, whichn))) != sum(1:ncol(orig_data_aggregate)))
+  whichl = which(classd == "logical") # for all NAs
+  if (sum(sort(c(whichd, whichc, whichn, whichl))) != sum(1:ncol(orig_data_aggregate)))
     stop("Some columns are not character numeric and Date")
 
-  orig_data_aggregate[, c(whichd, whichc, whichn)]
+  orig_data_aggregate[, c(whichd, whichc, whichn, whichl)]
 }
 
 #' Computes last week variables from \code{build_data_aggr}
@@ -815,8 +866,8 @@ lw_vars_calc <- function(data, days = 7) {
       filter(AsOfDate > (LastDate-7))
 
   n.days = ifelse(days == 30, 30, 7)
-  data7 = data %>% filter(date > (max(date)-days))# last week
-  data7 = data7 %>% filter(date < (min(date)+n.days))# if days are 14 then select the previous week
+  data7 = data %>% filter(date > (max(date, na.rm = TRUE)-days))# last week
+  data7 = data7 %>% filter(date < (min(date, na.rm = TRUE)+n.days))# if days are 14 then select the previous week
 
   # check population:
   if(nrow(unique(data7[,c("Country.Region","population")]))> length(unique(data7$Country.Region))) {
@@ -857,9 +908,13 @@ lw_vars_calc <- function(data, days = 7) {
            #lw_confirmed_rate_1M_pop = round(10^6*lw_confirmed/population, digits = 3),
            # lw_tests_rate_1M_pop = round(10^6*lw_tests/population, digits = 3),
            #lw_positive_tests_rate = round(lw_confirmed/lw_tests, digits = 3), replaced by lw_positive_test_rate_calc
-           lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
-           lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 4),
-           lw_vaccines_rate_pop =  round(pmax(0, replace_na(lw_vaccines / population, 0)), digits = 5),
+            lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
+
+            lw_lethality_rate = rate_calc(lw_deaths, lw_confirmed, nawith0 = TRUE),
+            lw_vaccines_rate_pop = rate_calc(lw_vaccines, population, cap = Inf),
+
+           # lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 4),
+           # lw_vaccines_rate_pop =  round(pmax(0, replace_na(lw_vaccines / population, 0)), digits = 5),
            #lw_mortality_rate = round(pmax(0, replace_na(lw_deaths / population, 0)), digits = 5)
            #lw_hosp_rate_active =  pmin(round(lw_hosp/lw_active, digits = 5), 1),
            #lw_icuvent_rate_hosp =  pmin(round(lw_icuvent/lw_hosp, digits = 4), 1),
@@ -1033,3 +1088,35 @@ message_missing_recovered = function(what = "Recovered", where = "Some countries
 message_hosp_data = function(what = "Hospitalised, Vaccinated and Test", where = "some countries and areas", suffix = "where available") {
   paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
 }
+#' Color Palette for simple barplots
+#'
+#' @export
+barplots_colors <- list(
+  #"growth_factor" = "#dd4b39",
+  "growth_factor" = list("uniform" = "chocolate3",
+                         "calc" = c(col = "Oranges", rev = TRUE, skip = 2)
+  ),
+  "death_rate" = list("uniform" = "grey30",
+                      "calc" = c(col = "Greys", rev = TRUE, skip = 2)
+  ),
+  "stringency" = list("uniform" = "grey30",
+                      "calc" = c(col = "Greys", rev = TRUE, skip = 2)
+  ),
+  #"stringency" = c(col = "Greys", rev = TRUE, skip = 2),
+  #"vaccines" = c(col = "Blues", rev = TRUE, skip = 2),
+  "vaccines" = list("uniform" = .case_colors["vaccines"] ,
+                    "calc" = c(col = "Blues", rev = TRUE, skip = 2)
+  ),
+  #"tests" = c(col = "Greens", rev = TRUE, skip = 2),
+  "tests" = list("uniform" = "green" ,
+                 "calc" = c(col = "Greens", rev = TRUE, skip = 2)
+  ),
+  #"hosp" = c(col = "Blues", rev = TRUE, skip = 2),
+  "hosp" = list("uniform" = .case_colors["hosp"] ,
+                "calc" = c(col = "Blues", rev = TRUE, skip = 2)
+  ),
+  #"confirmed" = c(col = "Reds", rev = TRUE, skip = 2)
+  "confirmed" = list("uniform" = .case_colors["confirmed"] ,
+                     "calc" = c(col = "Reds", rev = TRUE, skip = 2)
+  )
+)

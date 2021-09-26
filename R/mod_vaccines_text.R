@@ -17,7 +17,7 @@ mod_vaccines_text_ui <- function(id) {
     div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     fluidRow(
       column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
-                             value = 70,
+                             value = 90,
                              min = 0,
                              max = 100,
                              step = 1)),
@@ -28,7 +28,7 @@ mod_vaccines_text_ui <- function(id) {
                             choices = c(0,1,2),
                             selected = 1)),
       column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
-                          value = "2021-10-01",
+                          value = "2021-11-01",
                           min = Sys.Date()
       ))
     ),
@@ -120,7 +120,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
     div( class = "count-box",
          style = "color: white; max-width: 100%; background-color: #3c8dbc; overflow-x: scroll; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
          HTML(
-           paste0("  ",strong(dftday$Country.Region), ". Population: ", .format_num(dftday$population)," <br/>",
+           paste0("  ",strong(dftday$Country.Region), ". Population: ", .format_num(dftday$population),". Doses per population: ",paste(round(dftday$vaccines_rate_pop*100,1), "%"),"<br/>",
                   "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
                   "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
                   "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
@@ -140,17 +140,24 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
 
   plotdata = df %>%
     select(date, new_vaccines) %>%
-    rename(Date = date, Value = new_vaccines) %>%
+    rename(Date = date, Points = new_vaccines) %>%
     mutate(Status = "New Vaccinated")
 
-  if (sum(plotdata$Value)>0) {
+  if (sum(plotdata$Points)>0) {
     #make plot if there are vaccine data
     output$vax_line <- renderPlot({
       #secondline = NULL
+      message("compute rolling average")
+      plotdata = plotdata %>%
+        #mutate(WeeklyAvg = zoo::rollapplyr(Points, 7, mean, partial=TRUE, align = "right")) %>%
+        mutate(WeeklyAvgVal := rollAvg(Points,Date))
       p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
-                              date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE)
-      if (data()$target_vaccines_per_day > max(plotdata$Value, na.rm = TRUE))
-        p = p + expand_limits(y = data()$target_vaccines_per_day*1.05)
+                              date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE, barplot = FALSE)
+      if (data()$target_vaccines_per_day > max(plotdata$Points, na.rm = TRUE)) {
+        p = p + expand_limits(y = data()$target_vaccines_per_day*1.05) +
+               scale_y_continuous(labels = lab_num, breaks = breaks_lab(c(plotdata$Points, data()$target_vaccines_per_day), .breaks.yaxis)) # add label
+
+      }
       p = p + geom_line(size = 1.35)
       #p$theme$line$size = p$theme$line$size * 3
       # add line with target vaccination
@@ -162,7 +169,6 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
                  hjust = 0) +
         labs(caption = caption_vaccines(), hjust = 0.5#, #size = 2.5
         )
-
       # no legend no interactivity
       p
 

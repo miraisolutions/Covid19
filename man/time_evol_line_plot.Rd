@@ -4,7 +4,13 @@
 \alias{time_evol_line_plot}
 \title{Time evolution as line plot}
 \usage{
-time_evol_line_plot(df, log = FALSE, text = "", g_palette = graph_palette)
+time_evol_line_plot(
+  df,
+  log = FALSE,
+  text = "",
+  g_palette = graph_palette,
+  formatdate = "\%d-\%m-\%y"
+)
 }
 \arguments{
 \item{df}{data.frame with column called Date and x column to plot}
@@ -14,6 +20,8 @@ time_evol_line_plot(df, log = FALSE, text = "", g_palette = graph_palette)
 \item{text}{element for tooltip}
 
 \item{g_palette}{character vector of colors for the graph and legend}
+
+\item{formatdate}{character a valid date format, used to remove years, default dd-mm-yyyy}
 }
 \value{
 line plot of given variable by date

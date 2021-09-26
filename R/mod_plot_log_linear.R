@@ -102,8 +102,8 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
         #p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
         p <- p %>%
-          ggplotly(tooltip = c("x", "y", "text")) %>%
-          #ggplotly(tooltip = c("text")) %>%
+          #ggplotly(tooltip = c("x", "y", "text")) %>%
+          ggplotly(tooltip = c("text")) %>%
           layout(legend = list(orientation = "h", y = legend.y, yanchor = "bottom", itemsizing = "constant"))
 
         p
@@ -122,9 +122,8 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
        # p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
 
         p <- p %>%
-          ggplotly(tooltip = c("x", "y", "text")) %>%
-          #ggplotly(tooltip = c("text")) %>%
-
+          #ggplotly(tooltip = c("x", "y", "text")) %>%
+          ggplotly(tooltip = c("text")) %>%
           layout(legend = list(orientation = "h", y = legend.y, yanchor = "bottom", itemsizing = "constant"))
 
         p
@@ -139,12 +138,10 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
     output$plot_area <- renderPlotly({
       p <- df %>%
           time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp, active_hosp = active_hosp) #%>%
-
      # p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
       p <- p %>%
-        ggplotly(tooltip = c("x", "y", "text")) %>%
-        #ggplotly(tooltip = c("text")) %>%
-
+        #ggplotly(tooltip = c("x", "y", "text")) %>%
+        ggplotly(tooltip = c("text")) %>%
         layout(legend = list(orientation = "h", y = legend.y, yanchor = "bottom", itemsizing = "constant"))
       p
     })

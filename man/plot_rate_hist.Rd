@@ -9,7 +9,7 @@ plot_rate_hist(
   percent = FALSE,
   y_min = 0,
   g_palette,
-  labsize = 10,
+  labsize = 8.5,
   labangle = 30
 )
 }

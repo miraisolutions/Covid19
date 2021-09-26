@@ -243,10 +243,12 @@ Count Boxes
 */
 
 .count-box {
+  display:block;
   padding: 10px;
   margin: 20px auto;
   max-width: 300px;
-  max-height: 300px;
+ /*  max-height: 300px;*/
+  min-height: 145px;
 }
 
 .count-box h3 {
