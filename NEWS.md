@@ -1,4 +1,8 @@
 ### Covid19Mirai 2.5.8-9000
+- Improved lineplot, adding time frame and barplot option (#191)
+- Axis labels shortened using K and M for thousands and millions
+- Added button to open global map
+- Added figures over bars in barplot
 
 ### Covid19Mirai 2.5.8 (2021-09-01)
 - Improved speed UI and map (#188) 
