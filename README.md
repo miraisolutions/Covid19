@@ -10,7 +10,7 @@ status](https://github.com/miraisolutions/Covid19/workflows/CI-CD/badge.svg)](ht
 [![eRum2020::CovidR](https://badgen.net/https/runkit.io/erum2020-covidr/badge/branches/master/vitalini-covid19?cache=300)](https://milano-r.github.io/erum2020-covidr-contest/vitalini-covid19.html)
 <!-- badges: end -->
 
-The goal of Covid19Mirai is to provide an insight on coronavirus data
+The goal of Covid19Mirai is to provide an insight on corona virus data
 taken from public and reliable resources.
 
 ## Data Source history
@@ -43,25 +43,25 @@ Bumbeishvili](https://github.com/bumbeishvili) for his great
 
 It consists of 5 main pages:
 
-  - **Global**: Summarizing top 5 countries in the world in each
+-   **Global**: Summarizing top 5 countries in the world in each
     variable.  
-  - **Continents**: Summarizing world data per continent (defined
+-   **Continents**: Summarizing world data per continent (defined
     according to UN), underneath sub-tabs with insight within continent:
-      - **Europe**: European data split by macro-areas with heat-maps
+    -   **Europe**: European data split by macro-areas with heat-maps
         per country.  
-      - **Asia**: Asia data split by macro-areas with heat-maps per
+    -   **Asia**: Asia data split by macro-areas with heat-maps per
         country.  
-      - **Africa**: African data split by macro-areas with heat-maps per
+    -   **Africa**: African data split by macro-areas with heat-maps per
         country.  
-      - **Latin America & Carib.**: South and Central American with
+    -   **Latin America & Carib.**: South and Central American with
         Caribbean Isles by macro-areas with heat-maps per country.  
-      - **Northern America**: Northern America (USA and Canada) data
+    -   **Northern America**: Northern America (USA and Canada) data
         split by macro-areas with heat-maps per country.  
-  - **Switzerland**: Single country report of Switzerland.
-      - Maps and graphs of Cantonal data displayed.
-  - **Country**: Single country report.
-      - If available regional graphs and data will be displayed.
-  - **Country Comparison**: Comparison report between N countries from
+-   **Switzerland**: Single country report of Switzerland.
+    -   Maps and graphs of Cantonal data displayed.
+-   **Country**: Single country report.
+    -   If available regional graphs and data will be displayed.
+-   **Country Comparison**: Comparison report between N countries from
     all over the world.
 
 Macro areas of Continents are defined following United Nations
@@ -75,46 +75,48 @@ countries when the date is updated with the new one.
 
 The Covid19datahub project can allow us to use the following variables:
 
-  - *confirmed*: number of confirmed cases. Usually tested positive.  
-  - *recovered*: number of healed or tested negative cases. Some
+-   *confirmed*: number of confirmed cases. Usually tested positive.  
+-   *recovered*: number of healed or tested negative cases. Some
     countries have stopped reporting recovered cases.  
-  - *deaths*: number of dead confirmed cases.  
-  - *tests*: number of tests. Not available for all countries.  
-  - *hosp*: number of currently hospitalised confirmed cases. Not
+-   *deaths*: number of dead confirmed cases.  
+-   *tests*: number of tests. Not available for all countries.  
+-   *hosp*: number of currently hospitalised confirmed cases. Not
     available for all countries.  
-  - *icuvent*: number of currently hospitalised Ventilated or in
+-   *icuvent*: number of currently hospitalised Ventilated or in
     Intensive Care. Not available for all countries. Categorization
     differed from countries to country therefore Ventilated and
     Intensive Care variables have been aggregated.
-  - *stringency index*: Lock Down stringency index from 0 to 100.  
-  - *vaccines*: number of vaccined people.  
-  - *population*: population size.
+-   *stringency index*: Lock Down stringency index from 0 to 100.  
+-   *vaccines*: number of vaccine doses given to the population.  
+-   *population*: population size.
 
 The following variables are computed by the application:
 
-  - *active*: number of active cases, usually tested positive.
+-   *active*: number of active cases, usually tested positive.
     *confirmed* - *recovered* - *deaths*.  
-  - *prevalence over 1M*: number of confirmed cases per 1 Million
+-   *prevalence over 1M*: number of confirmed cases per 1 Million
     inhabitants.  
-  - *growth factors (3 7 14)*: number of confirmed cases today divided
+-   *growth factors (3 7 14)*: number of confirmed cases today divided
     by the number of confirmed cases 3 7 14 days ago over the previous 2
     months.
-  - *lethality rate*: number of *deaths* divided by the number of
+-   *lethality rate*: number of *deaths* divided by the number of
     *confirmed* cases.  
-  - *mortality rate*: number of *deaths* divided by the *population*
+-   *mortality rate*: number of *deaths* divided by the *population*
     size.  
-  - *positive test rate*: number of positive tests, i.e. *confirmed*
+-   *positive test rate*: number of positive tests, i.e. *confirmed*
     divided by the *tests* carried in the day.  
-  - *int care hospitalised rate*: number of patients currently in
+-   *int care hospitalised rate*: number of patients currently in
     Intensive Care / Ventilated status, divided by the number of
     currently *hospitalised* patients.  
-  - *vaccines rate*: number of *vaccines* divided by the *population*
+-   *vaccines rate*: number of *vaccines* divided by the *population*
     size.  
-  - *new (variable)*: all variables labeled “new” are the delta of day X
-    value - day X-1.  
-  - *last week (variable)*: all variables labeled “last week” are the
+-   *new (variable)*: all variables labelled “new” are the delta of day
+    X value - day X-1.  
+-   *last week (variable)*: all variables labelled “last week” are the
     totals of the last 7 days.  
-  - *last month (variable)*: all variables labeled “last month” are the
+-   *past week (variable)*: all variables labelled “past week” are the
+    totals of the previous 14 days to the last 7 days.  
+-   *last month (variable)*: all variables labelled “last month” are the
     totals of the last 30 days.
 
 The results are visualized as a shiny app.
