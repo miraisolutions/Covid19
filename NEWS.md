@@ -1,3 +1,5 @@
+### Covid19Mirai 2.5.9-9000
+
 ### Covid19Mirai 2.5.9 (2021-09-26)
 - Improved lineplot, adding time frame and barplot option (#191)
 - Axis labels shortened using K and M for thousands and millions
