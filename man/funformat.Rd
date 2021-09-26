@@ -4,12 +4,14 @@
 \alias{funformat}
 \title{Format in ggplotly}
 \usage{
-funformat(x, perc)
+funformat(x, perc, digits = NULL)
 }
 \arguments{
 \item{x}{numeric vector of data}
 
 \item{perc}{logical data are percentage if TRUE}
+
+\item{digits}{numeric, digits for the case where perc = TRUE}
 }
 \value{
 x formatted x

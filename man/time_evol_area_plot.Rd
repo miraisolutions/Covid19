@@ -10,7 +10,8 @@ time_evol_area_plot(
   log = F,
   text = "",
   hosp = FALSE,
-  active_hosp
+  active_hosp,
+  formatdate = "\%d-\%m-\%y"
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ time_evol_area_plot(
 \item{hosp}{logical, if TRUE hosp variables are in status. Default FALSE}
 
 \item{active_hosp}{logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE}
+
+\item{formatdate}{character a valid date format, used to remove years, default dd-mm-yyyy}
 }
 \value{
 area plot of given variable by date

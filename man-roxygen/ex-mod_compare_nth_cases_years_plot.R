@@ -31,7 +31,7 @@ if (interactive()) {
     ui <- fluidPage(
       tagList(
         Covid19Mirai:::golem_add_external_resources(),
-        mod_compare_timeline_plot_ui("plot_compare_nth")
+        mod_compare_timeline_plot_ui("plot_compare_nth", actives = TRUE, tests = TRUE, hosp = TRUE, strindx = TRUE, vax = TRUE)
       )
     )
     server <- function(input, output, session) {
@@ -47,7 +47,7 @@ if (interactive()) {
       df = country_data
 
 
-      callModule(mod_compare_timeline_plot_server, "plot_compare_nth", country_data)
+      callModule(mod_compare_timeline_plot_server, "plot_compare_nth", country_data, actives = TRUE, tests = TRUE, hosp = TRUE, strindx = TRUE, vax = TRUE)
     }
     runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
   }

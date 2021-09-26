@@ -51,7 +51,9 @@ mod_global_ui <- function(id){
              mod_scatterplot_ui(ns("plot_scatterplot_glob"))
              ),
       column(6,
-             mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
+             #mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
+             mod_barplot_ui(ns("barplot_hosp"), plot1 = "ui_hosp", plot2 = NULL)
+
       )
     ),
     fluidRow(
@@ -126,9 +128,11 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
     add_growth_death_rate()
 
   lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
+  pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate, 14)
 
   orig_data_aggregate_today = orig_data_aggregate_today  %>%
-    left_join(lw_orig_data_aggregate %>% select(-population))
+    left_join(lw_orig_data_aggregate %>% select(-population)) %>%
+    left_join(pw_orig_data_aggregate %>% select(-population))
   # TODO: REVIEW!
   world <-
     orig_data_aggregate_today %>%
@@ -154,7 +158,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   #   left_join(data7_orig_data_aggregate %>% select(-population))
 
 
-  callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
+  callModule(mod_map_server, "map_ui", orig_data_aggregate_today, countries_data_map)
 
   # plots ----
   levs <- areaplot_vars()
@@ -200,7 +204,15 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highlight = 10)
 
   # > stacked barplot with status split
-  callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highlight = 10, istop = TRUE)
+  #callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highlight = 10, istop = TRUE)
+
+  # > barplot stringency
+  callModule(mod_barplot_server, "barplot_hosp", orig_data_aggregate_today, n_highlight = 10, istop = TRUE,
+             g_palette = list("plot_1" = barplots_colors$hosp$calc,
+                              calc = TRUE)#,
+             #pickvariable = list("plot_1" = "hosp")
+             )
+
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
   callModule(mod_scatterplot_server, "plot_scatterplot_stringency_glob", orig_data_aggregate_today, n_highlight = 10, growth = FALSE, xvar = "stringency_index",
@@ -208,7 +220,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   # > barplot stringency
   callModule(mod_barplot_server, "barplot_stringency_index", orig_data_aggregate_today, n_highlight = 10, plottitle = c("Stringency Index"), istop = TRUE,
-             g_palette = list("plot_1" = barplots_colors$stringency,
+             g_palette = list("plot_1" = barplots_colors$stringency$calc,
                               calc = TRUE),
              pickvariable = list("plot_1" = "confirmed")) # pick top 10 confirmed countries
 
@@ -223,7 +235,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   callModule(mod_barplot_server, "barplot_vax_index", orig_data_aggregate_today,
              n_highlight = 10, istop = TRUE,
              plottitle = c("Vaccination Status"),
-             g_palette = list("plot_1" = barplots_colors[["vaccines"]],
+             g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
                               calc = TRUE)#,
              #pickvariable = list("plot_1" = "vaccines")
              )

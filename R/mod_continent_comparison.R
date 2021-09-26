@@ -55,6 +55,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
   ns <- session$ns
 
   # aggregate data to continent
+  message("start mod_continent_comparison_server")
   continent_data <- aggr_to_cont(orig_data_aggregate, "continent", "date")
 
   continents = unique(continent_data$Country.Region)

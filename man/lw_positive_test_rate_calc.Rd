@@ -2,18 +2,20 @@
 % Please edit documentation in R/utils.R
 \name{lw_positive_test_rate_calc}
 \alias{lw_positive_test_rate_calc}
-\title{Calculates positive test rate}
+\title{Calculates positive test rate for weekly data}
 \usage{
-lw_positive_test_rate_calc(conf, tests)
+lw_positive_test_rate_calc(conf, tests, digits = 4)
 }
 \arguments{
 \item{conf}{numeric confirmed data last week}
 
 \item{tests}{numeric tests data last week}
+
+\item{digits}{numeric digits for rounding}
 }
 \value{
 x numeric positive tests rate
 }
 \description{
-Calculates positive test rate
+Calculates positive test rate for weekly data
 }

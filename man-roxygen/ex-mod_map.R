@@ -25,14 +25,16 @@ if (interactive()) {
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     # map ----
-    # data7_orig_data_aggregate = lw_vars_calc(orig_data_aggregate)
-    #
-    # # create datasets for maps merging today with data7
-    # orig_data_aggregate_maps = orig_data_aggregate %>%
-    #   left_join(data7_orig_data_aggregate %>% select(-population))
+    data7_orig_data_aggregate = lw_vars_calc(orig_data_aggregate)
+    data14_orig_data_aggregate = lw_vars_calc(orig_data_aggregate, 14)
 
 
-    callModule(mod_map_server, "map_ui", orig_data_aggregate, countries_data_map)
+    # create datasets for maps merging today with data7
+    orig_data_aggregate_maps = orig_data_aggregate %>%
+      right_join(data7_orig_data_aggregate %>% select(-population)) %>%
+      right_join(data14_orig_data_aggregate %>% select(-population))
+
+    callModule(mod_map_server, "map_ui", orig_data_aggregate_maps, countries_data_map)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

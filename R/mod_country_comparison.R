@@ -29,7 +29,7 @@ mod_country_comparison_ui <- function(id, nn = 1000){
         #uiOutput(ns("from_nth_case"))
       ),
       hr(),
-      selectInput(label = "Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
+      selectInput(label = div(style = "font-size:10px","Select Countries"), inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
     ),
     #tagList(
       div(h4("Countries Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -190,7 +190,7 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       callModule(mod_barplot_server, "barplot_vax_index", countries_data_today,
                  n_highlight = length(input$select_countries), istop = FALSE,
                  plottitle = c("Vaccination Status"),
-                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],#barplots_colors[["vaccines"]],
+                 g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],
                                   calc = FALSE),
                  sortbyvar = FALSE)
 

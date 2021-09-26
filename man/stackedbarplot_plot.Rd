@@ -4,7 +4,7 @@
 \alias{stackedbarplot_plot}
 \title{stacked barplot status}
 \usage{
-stackedbarplot_plot(df, percent = TRUE, labsize = 10, labangle = 30)
+stackedbarplot_plot(df, percent = TRUE, labsize = 8.5, labangle = 30)
 }
 \arguments{
 \item{df}{data.frame}

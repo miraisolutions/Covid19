@@ -1,3 +1,84 @@
+#' length breaks of x axis
+.breaks.xaxis = 6
+#' length breaks of y axis
+.breaks.yaxis = 6
+
+#' Utility for Y labels in plots
+#'
+#' @param x vector of data
+#'
+#' @importFrom scales label_number
+#'
+#' @return x labelled values
+lab_num = function(x) {
+
+  mx = median(x, na.rm = TRUE)
+  thausands = ifelse(mx > 7500 & mx <= 750000, TRUE, FALSE)
+  millions = ifelse(mx > 750000, TRUE, FALSE)
+
+  if (millions) {
+    x = round(x / 1000000,2)
+    suffix = "M"
+  } else if (thausands) {
+    x = round(x / 1000,2)
+    suffix = "K"
+  }
+
+  accy = ifelse(diff(range(x, na.rm = TRUE))<0.05, 0.001,
+                ifelse(diff(range(x, na.rm = TRUE))<1, 0.01,
+                       ifelse(max(x, na.rm = TRUE) <= 10, 0.1,
+                              ifelse(max(x, na.rm = TRUE) <= 100, 1,
+                                     ifelse(max(x, na.rm = TRUE) <= 1000, 10,
+                                            ifelse(max(x, na.rm = TRUE) <= 10000, 100, 1000))))))
+
+  .labnumfun = label_number(accuracy = accy, big.mark = "'")
+
+  #scales::label_number_si()(x) # in the end it is better to customize
+  if (thausands || millions) {
+    #x = round(x / 1000,2)
+    x = paste(.labnumfun(x),suffix)
+  } else {
+    x = .labnumfun(x)
+  }
+  x
+}
+#' Utility for labels breaks in plots
+#'
+#' @param x vector of data
+#' @param breaks integer number of breaks in label, default = .breaks.xaxis
+#'
+#' @return x breaks values
+breaks_lab = function(x, breaks = .breaks.xaxis) {
+  x.d.lim = range(x, na.rm = TRUE)
+  # if (is.numeric(x))
+  #   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+  # else
+  #   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+
+  x.d.breaks
+}
+
+
+#' Utility for Y labels in plots percentage
+#'
+#' @param x vector of data
+#'
+#' @importFrom scales label_number
+#'
+#' @return x labelled values
+#' @export
+lab_percent = function(x) {
+  maxx = max(x, na.rm = TRUE)
+  dg = nchar(as.character(round(maxx)))
+  digit = 1
+  if (dg == 1)
+     digit = 2
+  if (diff(range(x, na.rm = TRUE)) > 20)
+    digit = 0
+   paste0(round(x, digit), "%")
+}
+
 #' stacked barplot status
 #'
 #' @param df data.frame
@@ -9,7 +90,7 @@
 #'
 #' @return ggplot plot
 #' @export
-stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30) {
+stackedbarplot_plot <- function(df, percent = TRUE, labsize = 8.5, labangle = 30) {
   if (nrow(df) == 0) {
     p = ggplot()
     return(p)
@@ -31,13 +112,11 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30)
     basic_plot_theme() +
     geom_col(position = position_stack(reverse = TRUE)) +
     theme(
-      axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
+      axis.text.x = element_text(angle = labangle, size = labsize)
     )
-  if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
-  } else {
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.breaks = 6) # add label
-  }
+
+  .ylabfun = ifelse(percent, lab_percent, lab_num)
+  p <- p + scale_y_continuous(labels = .ylabfun, n.breaks = .breaks.yaxis) # add label
 
   # p = p %>%
   #   fix_colors()
@@ -52,6 +131,7 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30)
 #' @param log logical for applying log scale
 #' @param text element for tooltip
 #' @param g_palette character vector of colors for the graph and legend
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @return line plot of given variable by date
 #'
@@ -94,7 +174,7 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 10, labangle = 30)
 #' }
 #'
 #' @export
-time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_palette) {
+time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_palette, formatdate = "%d-%m-%y") {
   if (log) {
     df <- df %>%
       mutate(Value = case_when(
@@ -102,24 +182,33 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
         TRUE ~ Value
       ))
   }
-  x.d.lim = range(df$Date)
-  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
 
-  p <- ggplot(df, aes(x = Date, y = Value, colour = Status,
-                      text = paste0(text, ": ", Status)#, label = funformat(Value,FALSE))
+  #df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
+
+  .popuptext = function(Date, Value, status, txt = text){
+    paste(
+      paste("Date",": ",Date,"<br>"),
+      paste("Value",": ",funformat(Value,FALSE),"<br>"),
+      paste(txt,": ",status,"<br>"),
+      sep = ""
+    )
+  }
+  p <- ggplot(df, aes(x = Date, y = Value, colour = Status, group = Status,
+                      #text = paste0(text, ": ", Status)#, label = funformat(Value,FALSE))
+                      text= .popuptext(Date, Value, Status)
                       )) +
     geom_line() +
     basic_plot_theme() +
     scale_color_manual(values = g_palette) +
-    scale_x_date(breaks = x.d.breaks,
+    scale_x_date(breaks = breaks_lab(df$Date, .breaks.xaxis),
                  date_minor_breaks = "1 week",
-                 limits = x.d.lim,
-                 date_labels = "%d-%m") +
-    scale_y_continuous(labels = label_number(big.mark = "'")) +
+                 #limits = range(df$Date, na.rm = TRUE),
+                 date_labels = formatdate) +
+    scale_y_continuous(labels = lab_num, breaks = breaks_lab(df$Value, .breaks.yaxis)) +
 
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1)
-    )
+    # theme(
+    #   axis.text.x = element_text(angle = 45, hjust = 1)
+    # )
 
   if (log) {
     p <- p %>%
@@ -140,6 +229,7 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' @param text element for tooltip
 #' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
 #' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @return area plot of given variable by date
 #'
@@ -186,11 +276,12 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' }
 #'
 #' @export
-time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE, active_hosp) {
+time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE, active_hosp, formatdate = "%d-%m-%y") {
+
+  # remove days with all 0s
 
   if (stack) {
     if (hosp) {
-      #df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "vent"] -  df$Value[df$Status == "icu"], 0)
       df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0, na.rm = TRUE)
     }
     if (active_hosp) {
@@ -229,19 +320,23 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
       ungroup()
   }
 
+  ylim = range(df[, c("ValueMin", "ValueMax")], na.rm = TRUE)
   df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
 
-  x.d.lim = range(df$Date)
-  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-  p <- ggplot(df, aes(x = Date, y = Value, #label = paste("Value:",funformat(Value,FALSE)),
-                      text = paste0(text, ": ", statuslabel)
+  .popuptext = function(Date, Value, status, txt = text){
+    paste(
+      paste("Date",": ",Date,"<br>"),
+      paste("Value",": ",funformat(Value,FALSE),"<br>"),
+      paste(txt,": ", as.character(status),"<br>"),
+      sep = ""
+    )
+  }
 
-                      # text = paste0(
-                      #   "<b> Date: </b>", Date,"<br>",
-                      #   "<b> Value: </b>", scales::comma(Value, 1, big.mark = "'"), "<br>",
-                      #   "<b> Status: </b>", statuslabel,"<br>"
-                      # )
-
+  # x.d.lim = range(df$Date)
+  # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = .breaks.xaxis) # changed to 6 like th other timeline plots
+  p <- ggplot(df, aes(x = Date, y = Value, group = statuslabel, #label = paste("Value:",funformat(Value,FALSE)),
+                      #text = paste0(text, ": ", statuslabel)
+                      text= .popuptext(Date, Value, statuslabel)
               )) +
     geom_ribbon(aes(ymin = ValueMin, ymax = ValueMax, colour = statuslabel, fill = statuslabel), alpha = 0.5, position = 'identity') +
 
@@ -249,14 +344,14 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
     # geom_crossbar(aes(ymin = ValueMin, ymax = ValueMax, colour = Status, fill = Status, width = 1.1), size = 0, alpha = 1, position = 'identity') +
     basic_plot_theme() +
     #scale_x_date(date_breaks = "2 weeks", date_minor_breaks = "1 day", date_labels = "%d-%m") +
-    scale_x_date(breaks = x.d.breaks,
-                 date_minor_breaks = "1 week", limits = x.d.lim,
-                  date_labels = "%d-%m") +
-    scale_y_continuous(labels = label_number(big.mark = "'")) + # add label
+    scale_x_date(breaks = breaks_lab(df$Date, .breaks.xaxis),
+                 date_minor_breaks = "1 week", #limits = range(df$Date, na.rm = TRUE),
+                  date_labels = formatdate) +
+    scale_y_continuous(labels = lab_num, breaks = breaks_lab(ylim, .breaks.yaxis)) #+ # add label
 
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1)
-    )
+    # theme(
+    #   axis.text.x = element_text(angle = 45, hjust = 1)
+    # )
   p <- p %>%
     fix_colors(labs = TRUE, hosp = hosp)
 
@@ -287,14 +382,14 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
 #' @param df data.frame with column called Date and x column to plot
 #' @param log character string log or linear
 #' @param g_palette character vector of colors for the graph and legend
-#'
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #' @return area plot by date
 #'
 #' @import ggplot2
 #' @importFrom scales label_number
 #'
 #' @export
-time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
+time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette, formatdate = "%d-%m-%y") {
 
   if (log == "log") {
     df <- df %>%
@@ -313,7 +408,7 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     select(-mindate)
 
   # x.d.lim = range(df$date)
-  # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+  # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = .breaks.xaxis)
   p <-  ggplot(df, aes(x = date, y = value)) +
     geom_line(aes(colour = Country.Region), size = 1.7) + # size must be specified again being facet it is smaller
     #geom_line(aes(colour = Country.Region)) +
@@ -321,15 +416,14 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
     # geom_area(aes(colour = Country.Region, fill = Country.Region), size = 1, alpha = 0.5, position = 'dodge') +
     basic_plot_theme() +
     #theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    scale_color_manual(values = g_palette) +
-    scale_y_continuous(labels = label_number(big.mark = "'")) +# add label
+    scale_color_manual(values = g_palette) #+# add label
     #scale_x_date(date_breaks = "1 week", date_minor_breaks = "1 day", date_labels = "%d-%m") +
     # scale_x_date(#breaks = x.d.breaks,
     #              date_minor_breaks = "1 week", #limits = x.d.lim,
     #              date_labels = "%d-%m") +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1)
-    )
+    # theme(
+    #   axis.text.x = element_text(angle = 45, hjust = 1)
+    # )
 
   p <- p %>%
     fix_legend_position()
@@ -341,14 +435,16 @@ time_evol_line_facet_plot <- function(df, log, g_palette = graph_palette) {
 
   p <- p +
     facet_wrap( ~ status, scales = "free", nrow = 1, ncol = 4) +
-    theme(strip.text = element_text(colour = 'white'))
+    theme(strip.text = element_text(colour = 'white'))  +
+    scale_y_continuous(labels = lab_num, breaks = breaks_lab)
 
-  p <- p + scale_x_date(#breaks = x.d.breaks,
+  p <- p + scale_x_date(breaks = breaks_lab,
     date_minor_breaks = "1 week", #limits = x.d.lim,
-    date_labels = "%d-%m") +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1)
-    )
+    date_labels = formatdate) +
+    # theme(
+    #   axis.text.x = element_text(angle = 45, hjust = 1)
+    # )
+    basic_plot_theme()
 
   # color top strip based on status
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
@@ -434,6 +530,7 @@ from_contagion_day_bar_plot <- function(df){
 #'
 #' @param df data.frame to plot
 #' @param xdate character variable for x axis
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @return barplot facet
 #'
@@ -441,7 +538,7 @@ from_contagion_day_bar_plot <- function(df){
 #' @importFrom grid grid.draw
 #'
 #' @export
-from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
+from_contagion_day_bar_facet_plot <- function(df, xdate = "date", formatdate = "%d-%m-%y"){
   df$Date = df[[xdate]]
   # dfmindate = df %>% filter(bool_new == "new") %>%
   #   filter(value >0) %>%
@@ -466,24 +563,26 @@ from_contagion_day_bar_facet_plot <- function(df, xdate = "date"){
     scale_fill_manual(values = new_total_colors) + #c("total" = "#C8C8C8", "new" = "#ea8b5b")) +
     basic_plot_theme() +
     facet_wrap( ~ status, scales = "free", nrow = 1, ncol = 4) +
-    theme(strip.text = element_text(colour = 'white'))
+    theme(strip.text = element_text(colour = 'white')) +
+    scale_y_continuous(labels = lab_num, breaks = breaks_lab) # add label
 
   if (xdate == "date") {
     # date x axis
-    #x.d.lim = range(df$Date)
-   # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
-    p <- p + scale_x_date(#breaks = x.d.breaks,
+    # x.d.lim = range(df$Date)
+    # x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = .breaks.xaxis)
+    p <- p + scale_x_date(breaks = breaks_lab,
                           date_minor_breaks = "1 week", #limits = x.d.lim,
-                          date_labels = "%d-%m") +
-      theme(
-        axis.text.x = element_text(angle = 45, hjust = 1)
-      )
+                          date_labels = formatdate) #+
+      # theme(
+      #   axis.text.x = element_text(angle = 45, hjust = 1)
+      # )
+  } else {
+    p <- p + scale_x_discrete(breaks = breaks_lab) # add label
   }
 
 
   p <- p %>%
     fix_legend_position()
-
   # color top strip based on status
   # reference: https://github.com/tidyverse/ggplot2/issues/2096
   g <- ggplot_gtable(ggplot_build(p))
@@ -550,7 +649,7 @@ fix_colors <- function(p, labs = FALSE, hosp = FALSE) {
   } else {
     varcolors = .case_colors
   }
-  varlabs = c(names(varcolors),prefix_var(names(varcolors)))
+  varlabs = c(names(varcolors),prefix_var(names(varcolors), c("lw","new")))
   cc_vect  = rep(varcolors, times = 3)
   names(cc_vect) = varlabs
   if (labs) {
@@ -585,18 +684,23 @@ fix_legend_position <- function(p){
 #' Format in ggplotly
 #' @param x numeric vector of data
 #' @param perc logical data are percentage if TRUE
+#' @param digits numeric, digits for the case where perc = TRUE
 #'
 #' @return x formatted x
-funformat <- function(x, perc) {
+funformat <- function(x, perc, digits = NULL) {
+
   if (!perc) {
     maxy = max(x, na.rm = T)
     minxy = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxy),maxy))))
     dglab = getdg_lab(dg, maxy, minxy)
-    formatC(roundlab(x), format = "f", big.mark = "'", digits = dglab)
+    formatC(roundlab(x), format = "f", big.mark = "'", digits = dglab
+            #ifelse(is.null(digits), dglab, digits)
+            )
+    # use label_number
   }
   else
-    paste0( round(x,3), "%")
+    paste0( round(x,ifelse(is.null(digits), 3, digits)), "%")
 }
 
 #' plot all countries but highlight first 10
@@ -607,19 +711,20 @@ funformat <- function(x, perc) {
 #' @param percent logical to make the y axis in percent
 #' @param date_x logical to convert x-axis labels to dates
 #' @param g_palette character vector of colors for the graph and legend
-#' @param rollw logical, if TRUE then rolling weekly averages are computed
+#' @param rollw logical, if TRUE then rolling Weekly averages are computed
+#' @param barplot logical, if TRUE barplot of Points is done
 #' @param secondline character, variable name to be added with new line and axis
 #' @param keeporder logical, if TRUE then lines order is kept according to df
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
-#' @note secondline argument not working, ggplotly removes secon axis. Not being used at the moment.
+#' @note secondline argument not working, ggplotly removes secons axis. Not being used at the moment.
 #'
 #' @import ggplot2
 #' @import zoo
 #' @importFrom scales label_number
 #'
 #' @export
-plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , secondline = NULL, keeporder = FALSE) {
-
+plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, date_x = FALSE, g_palette = graph_palette, rollw = TRUE , barplot = FALSE, secondline = NULL, keeporder = FALSE, formatdate = "%d-%m-%y") {
   if (nrow(df) == 0) {
     p = ggplot()
     return(p)
@@ -634,20 +739,11 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
       ))
   }
 
-
   # if percentage, multiply by 100
   if (percent) {
-    df$Value <- 100*df$Value
+    df$Points <- 100*df$Points
   }
-
   df_highlight = df
-  if (rollw) {
-    df = df %>%
-      group_by(Status) %>%
-      mutate(ValueRoll = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
-      ungroup()
-  }
-
 
   #TODO y_tooltip should be wrapped with gentext(Value), not so nice below, it does not seem to work
   # df = df %>% rename(Variable = Value)
@@ -655,23 +751,88 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   #
   # df$Value = gen_text(df$Variable)
   # df_highlight$Value = gen_text(df_highlight$Variable)
-  varChoice = ifelse(rollw, "ValueRoll", "Value")
+  varChoice = ifelse(rollw, "WeeklyAvgVal", "Points")
   #df$ValueVar = funformat(df[[varChoice]], percent) # not working
 
   if (keeporder)
     df$Status = factor(df$Status , levels = unique(df$Status ))
 
-  p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value)) +
-    geom_line() +
-    basic_plot_theme() +
-    #noaxislab_theme() +
-    theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
-    scale_color_manual(values = g_palette)
+  .ylabfun = ifelse(percent, lab_percent, lab_num)
 
-  if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
-  } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'"), n.breaks = 6) # add label
+  if (rollw)
+    df$WeeklyAvg = funformat(df$WeeklyAvgVal, percent)
+  #df$Points= df$Value
+  df$Value= funformat(df$Points, percent)
+
+  .popuptext = function(Status, Value, WeeklyAvg, txt = text){
+    txt = paste(
+      paste(txt,": ",Status,"<br>"),
+      paste("Value",": ",Value,"<br>"),
+      sep = ""
+    )
+    if (!missing(WeeklyAvg))
+      txt = paste(txt, paste("WeeklyAvg",": ",WeeklyAvg,"<br>"), sep = "")
+    txt
+  }
+  #df$labs =  .popuptext(df$Status, df$WeeklyAvg, df$Value)
+  # p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), group = Status,
+  #                     colour = Status, text = .popuptext(Status, Value, WeeklyAvg)
+  #                     ))
+  # p +
+  #   geom_line() +
+  #   basic_plot_theme() +
+  #   #noaxislab_theme() +
+  #   theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
+  #   scale_color_manual(values = g_palette) +
+  #   scale_y_continuous(labels = .ylabfun, breaks = breaks_lab(df[[varChoice]], .breaks.yaxis))
+
+
+  if (barplot) {
+    varChoice = "Points"
+    #rollw = TRUE # always
+    # if (rollw)
+    #   p <- ggplot(df, aes(x = Date, y = Points, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value, z_tooltip = WeeklyAvg ))
+    # else
+    #   p <- ggplot(df, aes(x = Date, y = Points, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value ))
+
+    if (rollw)
+      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Value, WeeklyAvg)))
+    else
+      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Value)))
+
+
+    p = p + geom_bar(aes(x = Date, y = Points, colour = Status), stat = "identity")
+    if (rollw)
+      p = p +
+            geom_line(aes(x = Date, y = WeeklyAvgVal, colour = Status) , size = 1.25)
+    p = p+
+      basic_plot_theme() +
+      #noaxislab_theme() +
+      theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
+      scale_color_manual(values = g_palette) +
+      scale_y_continuous(labels = .ylabfun, breaks = breaks_lab(c(0,df[[varChoice]]), .breaks.yaxis))
+
+  } else{
+    # if (rollw)
+    #   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value, z_tooltip = WeeklyAvg))
+    # else
+    #   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value ))
+
+    if (rollw)
+      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Value, WeeklyAvg)))
+    else
+      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Value)))
+
+   p = p +
+      geom_line() +
+      basic_plot_theme() +
+      #noaxislab_theme() +
+      theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
+      scale_color_manual(values = g_palette) +
+      scale_y_continuous(labels = .ylabfun, breaks = breaks_lab(df[[varChoice]], .breaks.yaxis))
+  }
+
+  # add label
 
   if (log) {
     p <- p %>%
@@ -689,6 +850,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
       geom_line(aes(y = !!sym(secondline)), linetype = "dashed") +
       #basic_plot_theme() +
       scale_y_continuous(
+        n.breaks = .breaks.yaxis,
         # Add a second axis and specify its features
         #label_number(big.mark = "'"),
         sec.axis = sec_axis( trans= function(x){ x / ratiorescale},
@@ -699,15 +861,12 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 
   }
   if (date_x) { # mutate x axis to a date format
-    x.d.lim = range(df$Date, na.rm = TRUE)
-    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = 10)
+
     p <- p +
-      scale_x_date(breaks = x.d.breaks,
-                   limits = x.d.lim,
-                   date_minor_breaks = "1 week", date_labels = "%d-%m") +
-      theme(
-        axis.text.x = element_text(angle = 45, hjust = 1)
-      )
+      scale_x_date(breaks = breaks_lab(df$Date, .breaks.xaxis),
+                   #limits = range(df$Date, na.rm = TRUE),
+                   date_minor_breaks = "1 week",
+                   date_labels = formatdate) #+
   }
   if (length(unique(df$Status)) == 1) {
     p = p+
@@ -728,11 +887,12 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 #' @param labangle numeric, x axis label angle
 #'
 #' @import ggplot2
+#' @importFrom plotly style ggplotly layout
 #'
 #' @return ggplot plot
 #' @export
-plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize = 10, labangle = 30) {
-  if (nrow(df) == 0) {
+plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize = 8.5, labangle = 30) {
+  if (nrow(df) == 0 || all(is.na(df$Value))) {
     p = ggplot()
     return(p)
   }
@@ -749,37 +909,73 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     labsize = labsize - min(length(unique(df$Country))/14-1,3.2)
     labangle = labangle + min(length(unique(df$Country))-16,30)
   }
+  if(missing(y_min)) {
+    minv = min(df$Value, na.rm = TRUE)
+    ylim_bottom = ifelse(minv < 0 , minv*1.05, 0)
+    y_min = c(ifelse(percent, 0, ylim_bottom))
+  }
 
-  ylim = c(ifelse(percent, 0, y_min), max(df$Value, na.rm = TRUE)*1.05)
+  ylim = c(y_min, max(df$Value, na.rm = TRUE)*1.05)
 
-  accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
-
-  popuptext = function(asofdate,  xvarexpr, percent){
+  .popuptext = function(asofdate,  xvarexpr, percent, digits = NULL){
     paste(
       paste("AsOfDate: ",asofdate,"<br>"),
-      paste0("Value: ",funformat(xvarexpr, percent), "<br>"),
+      paste0("Value: ",funformat(xvarexpr, percent, digits), "<br>"),
       sep = ""
     )
   }
-  # p <- ggplot(df, aes(x = Country, y = Value,
-  #                     text = paste0("Value: ",funformat(Value, percent)))) +
-  p <- ggplot(df, aes(x = Country, y = Value,
-                        text = popuptext(AsOfDate,Value,percent))) +
+
+  avgVal = mean(df$Value)
+  # df$text = .popuptext(df$AsOfDate, df$Value, percent)
+  # df$ValText = funformat(df$Value, percent, switch(percent, NULL, 2))
+  #
+  p <- ggplot(df, aes(x = Country, y = Value, group = 1,
+                        text = .popuptext(AsOfDate,Value,percent, switch(percent, NULL, 2)))) +
     geom_bar(stat = "identity", fill = pal) +
     basic_plot_theme() +
     theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
     coord_cartesian(ylim = ylim) +
     theme(
-      axis.text.x = element_text(angle = labangle, size = labsize, hjust = 1)
+      axis.text.x = element_text(angle = labangle, size = labsize)
     )
+  labfun = ifelse(percent, lab_percent, lab_num)
+  p <- p + scale_y_continuous(labels = labfun, breaks = breaks_lab(ylim, .breaks.yaxis)) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
 
-  if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6) #scale_y_continuous(labels = scales::label_percent(accuracy = 1))#scale_y_continuous(labels = scales::percent_format(accuracy = 1))
-  } else {
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.breaks = 6) # add label
+  deltaIncr = diff(ylim) / 40
+  p = p +
+    annotate("segment", x = 0.5, xend= nrow(df)+0.5, y = avgVal, yend = avgVal, linetype = "dotted", size = 0.3) +
+    annotate("text", x = nrow(df), y = avgVal + deltaIncr, label = "Avg", size = 1.5,group = 3, hjust = 1)
+
+  traces = 2:3
+  if (length(unique(df$Country)) < 10) {# add text if there is space, not working due to plotly
+    p = p +
+        annotate("text", x = df$Country, y = df$Value + deltaIncr, label = funformat(df$Value, percent, switch(percent, NULL, 2)), size = 2.2, vjust = -1, group = 2)
+    traces = c(2,traces+1)
   }
+  if(length(pal)>1)
+    traces = seq(length(pal)+1, length(pal)+max(traces)-1)
+  # p = p +
+  #   geom_text(label = funformat(df$Value, percent, switch(percent, NULL, 2)), size = 2.25, position = position_dodge(width = 0.8), vjust = -2)
+  pply = p %>% plotly::ggplotly(tooltip = c("x","text"),
+                                layerData = 1,
+                               #textposition = 'outside'
+                               originalData = FALSE
+                               ) %>%
+    plotly::style(hoverinfo = "skip", traces = traces) %>%
+    #style(hoverinfo = "skip", traces = 6:8) %>%
 
-  p
+    #style(text = .popuptext(df$AsOfDate,df$Value,percent, switch(percent, NULL, 2)), traces = 2) %>%
+      plotly::layout(title = "",
+                        hovermode = 'closest', clickmode = "event",
+                         #legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
+                         #plot_bgcolor = I(pal),
+                        #xaxis = list(title = "", size = labsize, textangle = labangle, tickangle = labangle),
+                        #yaxis = list(title = "", range = ylim,zeroline = FALSE),
+                        showlegend = FALSE
+                        )
+
+
+  pply
 }
 
 #' scatterplot between prevalence and growth rate
@@ -839,10 +1035,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
 
   ylim = c(ylimbot-diff(c(ylimbot,ylimtop))*(1-y.min[1]), ylimtop + diff(c(ylimbot,ylimtop))*(y.min[2]-1))
 
-  accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
+  #accy = ifelse(diff(ylim)<0.05, 0.001, 0.01)
 
 
-  popuptext = function(area, asofdate, yvarexpr, xvarexpr){
+  .popuptext = function(area, asofdate, yvarexpr, xvarexpr){
     paste(
       paste("Area: ",area,"<br>"),
       paste("AsOfDate: ",asofdate,"<br>"),
@@ -852,12 +1048,11 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
     )
   }
   p <- ggplot(df, aes(x = !! sym(xvar), y = !! sym(yvar),
-                      text = popuptext(Country.Region, AsOfDate, !! sym(yvar), !! sym(xvar)),
+                      text = .popuptext(Country.Region, AsOfDate, !! sym(yvar), !! sym(xvar)),
                       group = 1
-                      #text = popuptext,
+                      #text = .popuptext,
                       #text = paste(names(varsNames("confirmed_rate_1M_pop")), formatC(confirmed_rate_1M_pop, format = "f", big.mark = "'", digits  = 1), "</br>")
   )) +
-    #basic_plot_theme() +
     labs(x= paste("(x)",names(varsNames(xvar))), y = paste("(y)",names(varsNames(xvar)))) +
     geom_point(color = color_cntry, size = 1.3)   +
     geom_vline(xintercept = med$x, colour = "darkblue", linetype="dotted", size = 0.3) +
@@ -874,26 +1069,12 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
     coord_cartesian(ylim = ylim,
                     xlim = xlim) +
     basic_plot_theme()
-    # scale_x_continuous(labels = label_number(
-    #   big.mark = "'",
-    #   #suffix = "K"
-    #   n.breaks = 5
-    # )) #+
 
-  # p +
-  #   labs(caption= paste("(x)",names(varsNames(xvar))), y = paste("(y)",names(varsNames(xvar))))
 
   percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
-  if (percent) {
-    p <- p + scale_y_continuous(labels = function(x) paste0(x, "%"), n.breaks = 6)
-  } else
-    p <- p + scale_y_continuous(labels = label_number(big.mark = "'", accuracy = accy), n.breaks = 6) # add label
-
-  percent = ifelse(xvar %in% .rate_vars, TRUE, FALSE)
-  if (percent) {
-    p <- p + scale_x_continuous(labels = function(x) paste0(x, "%"), n.breaks = 8)
-  } else
-    p <- p + scale_x_continuous(labels = label_number(big.mark = "'"), n.breaks = 8) # add label
+  labfun = ifelse(percent, lab_percent, lab_num)
+  p <- p + scale_y_continuous(labels = labfun, breaks = breaks_lab(ylim, .breaks.yaxis)) +
+            scale_x_continuous(labels = labfun, breaks = breaks_lab(xlim, .breaks.xaxis)) # add label
 
   p
 }
@@ -972,4 +1153,22 @@ caption_active <- function() {
 #' @return character text for caption
 caption_fitted <- function(col = "Grey", type = "dashed")
   paste(col, type, "line: predicted values from Linear Model (y vs x)")
+
+#' compute rolling Weekly average
+#' @param x numeric vector of values
+#' @param date Date vector of dates
+#' @param days number of days over which average to be computed
+#' @return x as partial rolling average
+#'
+rollAvg = function(x, date, days = 7) {
+  # check if desc or asc
+  if (date[1] > tail(date, 1)) {
+    align = "left"
+    x[cumsum(x) == 0] = NA # set to NA if it starts with 0s so that the average does not get computed
+  } else {
+    align = "right"
+    x[rev(cumsum(rev(x)) == 0)] = NA # set to NA if it starts with 0s so that the average does not get computed
+  }
+  round(zoo::rollapplyr(x, days, mean, partial=TRUE, align = align),3)
+}
 

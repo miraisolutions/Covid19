@@ -299,10 +299,12 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
   # Compute Last week variables
 
   data7_aggregate = lw_vars_calc(data)
+  data14_aggregate = lw_vars_calc(data, 14)
 
   # create datasets for maps merging today with data7
   data_maps = country_data_today %>% #filter(date == max(date)) %>%
-    left_join(data7_aggregate %>% select(-population))
+    right_join(data7_aggregate %>% select(-population)) %>%
+    right_join(data14_aggregate %>% select(-population))
   # #maps confirmed
 
   callModule(mod_map_area_calc_server, "map_ind_confirmed", df = data_maps,  area2_map,
