@@ -587,14 +587,15 @@ legend_fun <- function(x, var){
   if (is.numeric(x)) { # if variable is numeric
     maxv = max(x, na.rm =T)
     minxv = min(x, na.rm =T)
-    dg = nchar(as.character(round(max(abs(minxv),maxv))))
+    dg = nchar(as.character(round(max(abs(minxv),maxv, na.rm =T))))
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x, var)
     cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
     #if (dg < 6 || (var %in% domainlin_vars()) || cvx<1){
+    bin = domain(x)
+
     if ((grepl("growth",var) && grepl("fact",var)) || (var %in% .rate_vars) || (var %in% domainlin_vars()) || cvx<1){
 
-      bin = domain(x)
       bin = seq(bin[1],bin[2], length = 4)
       val = seq(min(bin),max(bin), length = 5000)
       dat = val
@@ -615,7 +616,6 @@ legend_fun <- function(x, var){
                          suffix = suf, digits = getdg_lab(dg, maxv, minxv), big.mark = "'")
     }  else { # high values, like total
 
-      bin = domain(x)
       bin = seq(bin[1],bin[2], length = 5)
       if (F & any(x<0, na.rm = TRUE)) {
         #add 0, not possible
@@ -623,9 +623,10 @@ legend_fun <- function(x, var){
       }
 
       if(any(x<0, na.rm = TRUE))
-        val = c(-log(1:exp(-min(bin))),log(1:exp(max(bin))))
+        #val = c(-log(1:exp(-min(bin))),log(1:exp(max(bin))))
+        val = c(-log(seq(1,exp(-min(bin)), length = 5000)),log(seq(1,exp(max(bin)), length = 5000)))
       else
-        val = log(1:exp(max(bin)))
+        val = log(seq(1,exp(max(bin)), length = 5000))
       dat = val
       suf = ifelse(grepl("1M", var)," over 1M", " cases")
       .round_val = function(x){
