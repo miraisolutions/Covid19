@@ -27,7 +27,7 @@ time_evol_area_plot(
 
 \item{active_hosp}{logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE}
 
-\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
+\item{formatdate}{character a valid date format, used to remove years, default dd-mm-yyyy}
 }
 \value{
 area plot of given variable by date

@@ -131,7 +131,7 @@ stackedbarplot_plot <- function(df, percent = TRUE, labsize = 8.5, labangle = 30
 #' @param log logical for applying log scale
 #' @param text element for tooltip
 #' @param g_palette character vector of colors for the graph and legend
-#' @param formatdate character a valid date format, used to remove years, default = '%d-%m-%y'
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @return line plot of given variable by date
 #'
@@ -229,7 +229,7 @@ time_evol_line_plot <- function(df, log = FALSE, text = "", g_palette = graph_pa
 #' @param text element for tooltip
 #' @param hosp logical, if TRUE hosp variables are in status. Default FALSE
 #' @param active_hosp logical, if TRUE hosp and active are in status, active to be adjusted. Default FALSE
-#' @param formatdate character a valid date format, used to remove years, default = '%d-%m-%y'
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @return area plot of given variable by date
 #'
@@ -382,7 +382,7 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
 #' @param df data.frame with column called Date and x column to plot
 #' @param log character string log or linear
 #' @param g_palette character vector of colors for the graph and legend
-#' @param formatdate character a valid date format, used to remove years, default = '%d-%m-%y'
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #' @return area plot by date
 #'
 #' @import ggplot2
@@ -530,7 +530,7 @@ from_contagion_day_bar_plot <- function(df){
 #'
 #' @param df data.frame to plot
 #' @param xdate character variable for x axis
-#' @param formatdate character a valid date format, used to remove years, default = '%d-%m-%y'
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @return barplot facet
 #'
@@ -715,7 +715,7 @@ funformat <- function(x, perc, digits = NULL) {
 #' @param barplot logical, if TRUE barplot of Points is done
 #' @param secondline character, variable name to be added with new line and axis
 #' @param keeporder logical, if TRUE then lines order is kept according to df
-#' @param formatdate character a valid date format, used to remove years, default = '%d-%m-%y'
+#' @param formatdate character a valid date format, used to remove years, default dd-mm-yyyy
 #'
 #' @note secondline argument not working, ggplotly removes secons axis. Not being used at the moment.
 #'

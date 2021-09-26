@@ -15,7 +15,7 @@ from_contagion_day_bar_facet_plot(
 
 \item{xdate}{character variable for x axis}
 
-\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
+\item{formatdate}{character a valid date format, used to remove years, default dd-mm-yyyy}
 }
 \value{
 barplot facet

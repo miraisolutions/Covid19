@@ -21,7 +21,7 @@ time_evol_line_plot(
 
 \item{g_palette}{character vector of colors for the graph and legend}
 
-\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
+\item{formatdate}{character a valid date format, used to remove years, default dd-mm-yyyy}
 }
 \value{
 line plot of given variable by date

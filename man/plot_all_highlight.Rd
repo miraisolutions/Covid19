@@ -39,7 +39,7 @@ plot_all_highlight(
 
 \item{keeporder}{logical, if TRUE then lines order is kept according to df}
 
-\item{formatdate}{character a valid date format, used to remove years, default = '%d-%m-%y'}
+\item{formatdate}{character a valid date format, used to remove years, default dd-mm-yyyy}
 }
 \description{
 plot all countries but highlight first 10
