@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![eRum2020::CovidR](https://badgen.net/https/runkit.io/erum2020-covidr/badge/branches/master/vitalini-covid19?cache=300)](https://milano-r.github.io/erum2020-covidr-contest/vitalini-covid19.html)
 <!-- badges: end -->
 
-The goal of Covid19Mirai is to provide an insight on coronavirus data taken from public and reliable resources.
+The goal of Covid19Mirai is to provide an insight on corona virus data taken from public and reliable resources.
 
 ## Data Source history
 
@@ -67,7 +67,7 @@ The Covid19datahub project can allow us to use the following variables:
 * _hosp_: number of currently hospitalised confirmed cases. Not available for all countries.  
 * _icuvent_: number of currently hospitalised Ventilated or in Intensive Care. Not available for all countries. Categorization differed from countries to country therefore Ventilated and Intensive Care variables have been aggregated.
 * _stringency index_: Lock Down stringency index from 0 to 100.  
-* _vaccines_: number of vaccined people.   
+* _vaccines_: number of vaccine doses given to the population.   
 * _population_: population size.  
 
 The following variables are computed by the application:   
@@ -80,9 +80,10 @@ The following variables are computed by the application:
 * _positive test rate_: number of positive tests, i.e. _confirmed_ divided by the _tests_ carried in the day.   
 * _int care hospitalised rate_: number of patients currently in Intensive Care / Ventilated status, divided by the number of currently _hospitalised_ patients.   
 * _vaccines rate_: number of _vaccines_ divided by the _population_ size.   
-* _new (variable)_: all variables labeled "new" are the delta of day X value - day X-1.  
-* _last week (variable)_: all variables labeled "last week" are the totals of the last 7 days.  
-* _last month (variable)_: all variables labeled "last month" are the totals of the last 30 days. 
+* _new (variable)_: all variables labelled "new" are the delta of day X value - day X-1.  
+* _last week (variable)_: all variables labelled "last week" are the totals of the last 7 days.  
+* _past week (variable)_: all variables labelled "past week" are the totals of the previous 14 days to the last 7 days.  
+* _last month (variable)_: all variables labelled "last month" are the totals of the last 30 days. 
 
 The results are visualized as a shiny app.
 
