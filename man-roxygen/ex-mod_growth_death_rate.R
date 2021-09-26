@@ -203,9 +203,9 @@ if (interactive()) {
       left_join(pw_orig_data_aggregate %>% select(-population))
 
 
-    inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
+    #inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
 
-    orig_data_aggregate_today = orig_data_aggregate_today %>% filter(Country.Region %in% inputcountries)
+    #orig_data_aggregate_today = orig_data_aggregate_today %>% filter(Country.Region %in% inputcountries)
 
     com_palette = c(col = "Reds", rev = TRUE, skip = 3)
 
