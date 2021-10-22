@@ -1071,10 +1071,10 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
     basic_plot_theme()
 
 
-  percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
-  labfun = ifelse(percent, lab_percent, lab_num)
-  p <- p + scale_y_continuous(labels = labfun, breaks = breaks_lab(ylim, .breaks.yaxis)) +
-            scale_x_continuous(labels = labfun, breaks = breaks_lab(xlim, .breaks.xaxis)) # add label
+  labfuny = ifelse(percenty, lab_percent, lab_num)
+  labfunx = ifelse(percentx, lab_percent, lab_num)
+  p <- p + scale_y_continuous(labels = labfuny, breaks = breaks_lab(ylim, .breaks.yaxis)) +
+            scale_x_continuous(labels = labfunx, breaks = breaks_lab(xlim, .breaks.xaxis)) # add label
 
   p
 }

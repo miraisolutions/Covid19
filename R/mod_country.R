@@ -643,7 +643,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
                  plottitle = c("Stringency Index"),
                  g_palette = list("plot_1" = barplots_colors$stringency$calc,
                                   calc = TRUE),
-                 pickvariable = list("plot_1" = "confirmed_rate_1M_pop")) # pick top 10 confirmed countries
+                 pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
     } else{
       if (exists("stridx2id")) {
         message("remove level 2 Stringency Index UI barplot")
@@ -701,7 +701,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
                  plottitle = c("Vaccinations"),
                  g_palette = list("plot_1" = barplots_colors$vaccines$calc,
                                   calc = TRUE),
-                 pickvariable = list("plot_1" = "confirmed_rate_1M_pop")) # pick top 10 confirmed countries
+                 pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")) # pick top 10 confirmed countries
     } else{
       if (exists("vaxidx2id")) {
         message("remove vaccines id = ", vaxidx2id )

@@ -11,7 +11,12 @@
 
 #' @rdname mod_vaccines_text
 #' @import shiny
+#' @importFrom lubridate day
 mod_vaccines_text_ui <- function(id) {
+  targetdate = Sys.Date()+50
+  targetdate_day = lubridate::day(targetdate)
+  targetdate = targetdate - targetdate_day + 1
+
   ns <- NS(id)
   tagList(
     div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -28,7 +33,7 @@ mod_vaccines_text_ui <- function(id) {
                             choices = c(0,1,2),
                             selected = 1)),
       column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
-                          value = "2021-11-01",
+                          value = targetdate,
                           min = Sys.Date()
       ))
     ),
@@ -93,10 +98,12 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   dftday$vaccines_per_day = dftday$vaccines/dftday$vaccines_days
 
   data = reactive({
-
     dftday %>% # if target already reached then 0
-      mutate(vaccines_left_to_target = max(0, input$target/100 * (as.integer(req(input$doses)) * (population- round(vaccines/as.integer(req(input$doses))) - (confirmed-deaths)) +
-                                                             as.integer(req(input$confdoses)) * (confirmed-deaths)))) %>%
+      mutate(vaccinated_people = (round(vaccines/as.integer(req(input$doses))) - (confirmed-deaths)) +
+                as.integer(req(input$confdoses)) * (confirmed-deaths)) %>%
+      mutate(target_pop = input$target/100* population) %>%
+      #  target*population -   (doses * ((population - vaccines/doses - (confirmed - deaths)) +
+      mutate(vaccines_left_to_target = max(0, target_pop - vaccinated_people)) %>%
       # achieved_date = today + (target% * (targetdose * (population- round(vaccines/targetdose) - (confirmed-deaths)) + targetdoseconf * (confirmed-deaths))) / (lw_vaccines/7)
       mutate(lw_achieved_date = date + ceiling((vaccines_left_to_target) / (lw_vaccines_per_day)),
              # achieved_date = today + (target% * targetdose * (population- vaccines- (confirmed-deaths))) + targetdoseconf * (confirmed-deaths)) / (vaccines/(today-startdate))
@@ -121,7 +128,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
          style = "color: white; max-width: 100%; background-color: #3c8dbc; overflow-x: scroll; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
          HTML(
            paste0("  ",strong(dftday$Country.Region), ". Population: ", .format_num(dftday$population),". Doses per population: ",paste(round(dftday$vaccines_rate_pop*100,1), "%"),"<br/>",
-                  "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Vaccines left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
+                  "  Target Date: <b>", input$tdate,"</b>. <b>", .format_num(data()$days_to_target), "</b> days remaining. Doses left to target: <b>", .format_num(data()$vaccines_left_to_target), "</b>.<br/>",
                   "  Target Coverage: <b>", input$target,"%</b>. Target Doses: <b>", req(input$doses),"</b>. Doses for already infected: <b>", req(input$confdoses),"</b>.<br/>",
                   "  Required vaccines per day to cover ",input$target," % of the population by <b>", input$tdate,"</b>: <b>",
                   .format_num(data()$target_vaccines_per_day),"</b>.<br/>",
