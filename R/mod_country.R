@@ -331,7 +331,6 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     levs <- areaplot_hospvars()
     # for country plot start from the beginning
     df_hosp = tsdata_areplot(country_data,levs, 1) # start from day with >nn
-
     callModule(mod_plot_log_linear_server, "plot_areahosp_tot", df = df_hosp, type = "area", hosp = TRUE)
 
 
@@ -382,13 +381,12 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       if (exists("area2id") && lev2id() == 1) {
 
         message("remove level 2 UI for ", req(input$select_country))
-
-        id <<- area2id
+        #id <<- area2id
 
         # remove the ui generated previously
-        message("remove id = ", id )
+        message("remove id = ", area2id )
         removeUI(
-          selector = paste0("#",ns(id)),
+          selector = paste0("#",ns(area2id)),
           #selector = paste0("#area",lev2id()), # it works
           immediate = TRUE
         )
@@ -679,7 +677,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
         }
 
         vaxid_arg(vaxid_arg()+1)
-        id = paste0("area_vaccines",strid_arg())
+        id = paste0("area_vaccines",vaxid_arg())
         message("id vaccines insert = ", id)
 
         message('Level 2 Vaccines data present: insertUI for barplot ', vaxid_arg())
