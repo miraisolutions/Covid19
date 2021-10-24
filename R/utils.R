@@ -580,7 +580,8 @@ tsdata_areplot <- function(data, levs, nn = 1000) {
   data = data %>% filter(date >= mindate)
 
   # data are in descending order, first dates at the end
-  idx = rowSums(data[, levs] > 0) == length(levs)
+  #idx = rowSums(data[, levs] > 0) == length(levs)
+  idx = rowSums(data[, levs] > 0) >0
 
   data = data[idx, , drop = FALSE] # remove also in the middles and at th end, no problem
 

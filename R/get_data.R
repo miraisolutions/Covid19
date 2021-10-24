@@ -183,23 +183,6 @@ combine_hospvars_lev2 <- function(data1, data2, country = "Switzerland") {
 
   # aggregate hosp data at country level
   data2 <- data2 %>% select(Country.Region, date, as.character(.hosp_vars))
-  #maxdate1 = max(data1$date[data1$Country.Region == country])
-
-  # datC = data1 %>% dplyr::filter(Country.Region == country) %>% select(date)
-  # stackhosp = function(dat, datC) {
-  #   if (!identical(dat$date, datC$date)) {
-  #     dat = datC %>% left_join(dat, by = "date") %>% fill()
-  #     dat[, .hosp_vars][is.na(dat[, .hosp_vars])] = 0
-  #   }
-  #   # if(max(dat$date) < maxd) {
-  #   #   dat = rbind(dat,
-  #   #               data.frame(date = seq(max(dat$date)+1, maxd, 1), hosp = tail(dat$hosp, 1), icuvent = tail(dat$icuvent, 1), stringsAsFactors = FALSE)
-  #   #   )
-  #   # }
-  #   dat
-  # }
-  # # impute last days hosp data
-  # data2 = data2 %>% group_by(Country.Region) %>% group_modify(~stackhosp(.x, datC))
 
   data2_1 = data2 %>%
     select(date, all_of(as.vector(.hosp_vars))) %>%
@@ -854,6 +837,10 @@ get_pop_datahub <- function(){
   population$populationOLD = population$PopulationUN # hwere when we need to change population with new data
   # populationOLD to be used for checks vs new DF
   population = population[, c("Country.Region", "continent", "subcontinent")]
+
+  noCont = sum(is.na(population$continent))
+  if (noCont > 0)
+    warning(noCont, " countries have unknown continent")
 
   population
 }

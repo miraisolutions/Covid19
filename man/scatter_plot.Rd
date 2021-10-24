@@ -2,7 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{scatter_plot}
 \alias{scatter_plot}
-\title{scatterplot between prevalence and growth rate}
+\title{scatter plot between prevalence and growth rate}
 \usage{
 scatter_plot(
   df,
@@ -11,7 +11,8 @@ scatter_plot(
   y.min = c(0.99, 1.01),
   xvar = "confirmed_rate_1M_pop",
   yvar = "growth_factor_3",
-  coefflm = NULL
+  coefflm = NULL,
+  addLabels = TRUE
 )
 }
 \arguments{
@@ -19,19 +20,21 @@ scatter_plot(
 
 \item{med}{list with median values for x and y}
 
-\item{x.min}{numeric adjustment for cartesian x axis}
+\item{x.min}{numeric adjustment for Cartesian x axis}
 
-\item{y.min}{numeric adjustment for cartesian y axis}
+\item{y.min}{numeric adjustment for Cartesian y axis}
 
 \item{xvar}{character variable name for x axis}
 
 \item{yvar}{character variable name for y axis}
 
 \item{coefflm}{numeric, intercept and slop of simple lm model}
+
+\item{addLabels}{logical,if TRUE then labels are added to points}
 }
 \value{
 ggplot plot
 }
 \description{
-scatterplot between prevalence and growth rate
+scatter plot between prevalence and growth rate
 }
