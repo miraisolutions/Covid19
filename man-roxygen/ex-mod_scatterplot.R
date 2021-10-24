@@ -192,9 +192,11 @@ if (interactive()) {
       left_join(lw_orig_data_aggregate %>% select(-population))
 
     #inputcountries = c("Italy","Germany", "Switzerland", "Sweden", "UK", "France", "Spain", "Russia") # example with countries
-    orig_data_aggregate_today = orig_data_aggregate_today %>% filter(continent == "Africa")
+    orig_data_aggregate_today = orig_data_aggregate_today %>% filter(continent == "Europe" & population > 1000000)
 
-    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highlight = 10, istop = TRUE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+    inputcountries = unique(orig_data_aggregate_today$Country.Region)
+
+    callModule(mod_scatterplot_server, "plot", orig_data_aggregate_today, countries = inputcountries, nmed = 10000, wmed = 7, n_highlight = 10, istop = FALSE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = TRUE)
 
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)

@@ -68,9 +68,11 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
     add_growth_death_rate()
 
   lw_continent_data_filtered =  lw_vars_calc(continent_data_filtered)
+  pw_continent_data_filtered =  lw_vars_calc(continent_data_filtered, 14)
 
   continent_data_filtered_today = continent_data_filtered_today  %>%
-    left_join(lw_continent_data_filtered %>% select(-population))
+    left_join(lw_continent_data_filtered %>% select(-population))  %>%
+    left_join(pw_continent_data_filtered %>% select(-population))
 
   callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 

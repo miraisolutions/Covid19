@@ -1,4 +1,5 @@
 ### Covid19Mirai 2.5.9-9000
+- Fixed some small issues in labels (#197)
 
 ### Covid19Mirai 2.5.9 (2021-09-26)
 - Improved lineplot, adding time frame and barplot option (#191)

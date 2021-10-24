@@ -231,7 +231,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
     build_data_aggr(area_data_2)
 
   output$ind_subarea <- renderUI({
-    areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE)
+    areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE, vaxflag = FALSE)
     #areaUI("ind_country_subarea")
   })
   callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")

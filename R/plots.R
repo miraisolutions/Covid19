@@ -978,22 +978,23 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
   pply
 }
 
-#' scatterplot between prevalence and growth rate
+#' scatter plot between prevalence and growth rate
 #'
 #' @param df data.frame
 #' @param med list with median values for x and y
-#' @param x.min numeric adjustment for cartesian x axis
-#' @param y.min numeric adjustment for cartesian y axis
+#' @param x.min numeric adjustment for Cartesian x axis
+#' @param y.min numeric adjustment for Cartesian y axis
 #' @param xvar character variable name for x axis
 #' @param yvar character variable name for y axis
 #' @param coefflm numeric, intercept and slop of simple lm model
+#' @param addLabels logical,if TRUE then labels are added to points
 #'
 #' @import ggplot2
 #' @importFrom scales label_number
 #'
 #' @return ggplot plot
 #' @export
-scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01), xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", coefflm = NULL) {
+scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01), xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", coefflm = NULL, addLabels = TRUE) {
 
   if (nrow(df) == 0) {
     p = ggplot()
@@ -1063,18 +1064,21 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
     #p <- p +   geom_line(aes(y = predlm, x = !! sym(xvar)), size = 1)
     #p <- p +   geom_smooth(method = "lm", se = FALSE)
   }
+  if (addLabels) {
+    p <- p +
+      geom_text(aes(x = !! sym(xvar), y = !! sym(yvar), label= Country.Region),
+                check_overlap = TRUE, color = color_cntry, size = 2.8)
+  }
   p <- p +
-    geom_text(aes(x = !! sym(xvar), y = !! sym(yvar), label= Country.Region),
-              check_overlap = TRUE, color = color_cntry, size = 3.3) +
     coord_cartesian(ylim = ylim,
                     xlim = xlim) +
     basic_plot_theme()
 
 
-  percent = ifelse(yvar %in% .rate_vars, TRUE, FALSE)
-  labfun = ifelse(percent, lab_percent, lab_num)
-  p <- p + scale_y_continuous(labels = labfun, breaks = breaks_lab(ylim, .breaks.yaxis)) +
-            scale_x_continuous(labels = labfun, breaks = breaks_lab(xlim, .breaks.xaxis)) # add label
+  labfuny = ifelse(percenty, lab_percent, lab_num)
+  labfunx = ifelse(percentx, lab_percent, lab_num)
+  p <- p + scale_y_continuous(labels = labfuny, breaks = breaks_lab(ylim, .breaks.yaxis)) +
+            scale_x_continuous(labels = labfunx, breaks = breaks_lab(xlim, .breaks.xaxis)) # add label
 
   p
 }
