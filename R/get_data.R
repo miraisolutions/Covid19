@@ -838,6 +838,10 @@ get_pop_datahub <- function(){
   # populationOLD to be used for checks vs new DF
   population = population[, c("Country.Region", "continent", "subcontinent")]
 
+  noCont = sum(is.na(population$continent))
+  if (noCont > 0)
+    warning(noCont, " countries have unknown continent")
+
   population
 }
 
