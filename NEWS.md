@@ -1,4 +1,4 @@
-### Covid19Mirai 2.5.9-9000
+### Covid19Mirai 2.5.10
 - Fixed some small issues in labels (#197)
 
 ### Covid19Mirai 2.5.9 (2021-09-26)
