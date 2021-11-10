@@ -1,4 +1,5 @@
 ### Covid19Mirai 2.5.10-9000
+- updated and replaced plots in multiple pages
 
 ### Covid19Mirai 2.5.10 (2021-10-25)
 - Fixed some small issues in labels (#197)

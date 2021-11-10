@@ -738,12 +738,12 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
         TRUE ~ Value
       ))
   }
-
   # if percentage, multiply by 100
   if (percent) {
-    df$Points <- 100*df$Points
+    #df$Points <- 100*df$Points
+    df[, !names(df) %in% c("Status", "Date")] <- 100 * df[, !names(df) %in% c("Status", "Date")]
   }
-  df_highlight = df
+  #df_highlight = df
 
   #TODO y_tooltip should be wrapped with gentext(Value), not so nice below, it does not seem to work
   # df = df %>% rename(Variable = Value)
@@ -764,8 +764,9 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   #df$Points= df$Value
   df$Value= funformat(df$Points, percent)
 
-  .popuptext = function(Status, Value, WeeklyAvg, txt = text){
+  .popuptext = function(Status, Date, Value, WeeklyAvg, txt = text){
     txt = paste(
+      paste("Date",": ",Date,"<br>"),
       paste(txt,": ",Status,"<br>"),
       paste("Value",": ",Value,"<br>"),
       sep = ""
@@ -794,11 +795,10 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
     #   p <- ggplot(df, aes(x = Date, y = Points, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value, z_tooltip = WeeklyAvg ))
     # else
     #   p <- ggplot(df, aes(x = Date, y = Points, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value ))
-
     if (rollw)
-      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Value, WeeklyAvg)))
+      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg)))
     else
-      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Value)))
+      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value)))
 
 
     p = p + geom_bar(aes(x = Date, y = Points, colour = Status), stat = "identity")
@@ -817,11 +817,10 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
     #   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value, z_tooltip = WeeklyAvg))
     # else
     #   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value ))
-
     if (rollw)
-      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Value, WeeklyAvg)))
+      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg)))
     else
-      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Value)))
+      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value)))
 
    p = p +
       geom_line() +
