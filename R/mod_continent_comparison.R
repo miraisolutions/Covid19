@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -18,6 +18,17 @@ mod_continent_comparison_ui <- function(id){
     div(h4("Continents Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont")),
     fluidRow(
+      # column(6,
+      #        withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
+      # ),
+      # column(6,
+      #        withSpinner(mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL))
+      # )
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("cmp_confirmed_cont"), type = "confirmed"))
+      )
+    ),
+    fluidRow(
       column(5,
              #withSpinner(uiOutput(ns("rateplots_cont")))
              withSpinner(mod_barplot_ui(ns("rate_plots_cont")))
@@ -29,11 +40,8 @@ mod_continent_comparison_ui <- function(id){
       )
     ),
     fluidRow(
-      column(6,
-             withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
-      ),
-      column(6,
-             withSpinner(mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL))
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("cmp_vax_cont"), type = "vaccines"))
       )
     ),
     mod_add_table_ui(ns("add_table_cont"))
@@ -91,16 +99,27 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   # scatterplot
 
-  callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highlight = length(continents), istop = FALSE, countries = continents)
+  #callModule(mod_scatterplot_server, "scatterplot_plots_cont", continent_data_filtered_today, nmed = nn, n_highlight = length(continents), istop = FALSE, countries = continents)
 
+  callModule(mod_group_plot_server, "cmp_confirmed_cont", data_today = continent_data_filtered_today, type = "confirmed", istop = FALSE,
+             scatterplotargs = list(countries = continents, nmed = nn),
+             barplotargs = list(g_palette = list("plot_1" = graph_palette[1:length(continents)], calc = FALSE))
 
-  callModule(mod_barplot_server, "barplot_vax_index_cont", continent_data_filtered_today,
-             n_highlight = length(continents), istop = FALSE,
-             plottitle = c("Vaccination Status"),
-             g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
-                              calc = FALSE),
-             sortbyvar = FALSE
-             )
+  )
+
+  # callModule(mod_barplot_server, "barplot_vax_index_cont", continent_data_filtered_today,
+  #            n_highlight = length(continents), istop = FALSE,
+  #            plottitle = c("Vaccination Status"),
+  #            g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
+  #                             calc = FALSE),
+  #            sortbyvar = FALSE
+  #            )
+  callModule(mod_group_plot_server, "cmp_vax_cont", data_today = continent_data_filtered_today, type = "vaccines", istop = FALSE,
+             scatterplotargs = list(countries = continents, nmed = nn),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"),
+                                g_palette = list("plot_1" = graph_palette[1:length(continents)], calc = FALSE),
+                                sortbyvar = FALSE)
+  )
 
   # tables ----
   callModule(mod_add_table_server, "add_table_cont", continent_data_filtered, maxrowsperpage = 10)

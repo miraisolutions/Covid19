@@ -319,7 +319,6 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
       ) %>%
       ungroup()
   }
-
   ylim = range(df[, c("ValueMin", "ValueMax")], na.rm = TRUE)
   df$statuslabel = factor(names(varsNames(df$Status)), levels = names(varsNames(levels(df$Status))))
 
@@ -741,7 +740,7 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   # if percentage, multiply by 100
   if (percent) {
     #df$Points <- 100*df$Points
-    df[, !names(df) %in% c("Status", "Date")] <- 100 * df[, !names(df) %in% c("Status", "Date")]
+    df[, names(df) %in% c("WeeklyAvgVal", "Points")] <- 100 * df[, names(df) %in% c("WeeklyAvgVal", "Points")]
   }
   #df_highlight = df
 
@@ -790,11 +789,6 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 
   if (barplot) {
     varChoice = "Points"
-    #rollw = TRUE # always
-    # if (rollw)
-    #   p <- ggplot(df, aes(x = Date, y = Points, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value, z_tooltip = WeeklyAvg ))
-    # else
-    #   p <- ggplot(df, aes(x = Date, y = Points, colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value ))
     if (rollw)
       p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg)))
     else
@@ -813,10 +807,6 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
       scale_y_continuous(labels = .ylabfun, breaks = breaks_lab(c(0,df[[varChoice]]), .breaks.yaxis))
 
   } else{
-    # if (rollw)
-    #   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value, z_tooltip = WeeklyAvg))
-    # else
-    #   p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, text = paste0(text, ": ", Status), x_tooltip = Date, y_tooltip = Value ))
     if (rollw)
       p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg)))
     else
@@ -908,11 +898,10 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
     labsize = labsize - min(length(unique(df$Country))/14-1,3.2)
     labangle = labangle + min(length(unique(df$Country))-16,30)
   }
-  if(missing(y_min)) {
-    minv = min(df$Value, na.rm = TRUE)
-    ylim_bottom = ifelse(minv < 0 , minv*1.05, 0)
-    y_min = c(ifelse(percent, 0, ylim_bottom))
-  }
+  minv = min(df$Value, na.rm = TRUE)
+  rangemin = y_min + diff(range(c(y_min,minv)))/2
+  ylim_bottom = ifelse(minv < 0 , minv*1.05, rangemin)
+  y_min = c(ifelse(percent, rangemin, ylim_bottom))
 
   ylim = c(y_min, max(df$Value, na.rm = TRUE)*1.05)
 
@@ -943,10 +932,16 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
   deltaIncr = diff(ylim) / 40
   p = p +
     annotate("segment", x = 0.5, xend= nrow(df)+0.5, y = avgVal, yend = avgVal, linetype = "dotted", size = 0.3) +
-    annotate("text", x = nrow(df), y = avgVal + deltaIncr, label = "Avg", size = 1.5,group = 3, hjust = 1)
+    annotate("text", x = nrow(df), y = avgVal + deltaIncr, label = "Avg", size = 1.5,group = 3, hjust = 1)  +
+    annotate("segment", x = 0.5, xend= nrow(df)+0.5, y = 0, yend = 0, size = 0.15)
 
-  traces = 2:3
-  if (length(unique(df$Country)) < 10) {# add text if there is space, not working due to plotly
+  if(any(df$Value != 0)) {
+    traces = 2:4
+  } else {
+    traces = 2:3
+  }
+
+  if (length(unique(df$Country)) < 15 && any(df$Value != 0)) {# add text if there is space, not working due to plotly
     p = p +
         annotate("text", x = df$Country, y = df$Value + deltaIncr, label = funformat(df$Value, percent, switch(percent, NULL, 2)), size = 2.2, vjust = -1, group = 2)
     traces = c(2,traces+1)
@@ -961,19 +956,10 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
                                originalData = FALSE
                                ) %>%
     plotly::style(hoverinfo = "skip", traces = traces) %>%
-    #style(hoverinfo = "skip", traces = 6:8) %>%
-
-    #style(text = .popuptext(df$AsOfDate,df$Value,percent, switch(percent, NULL, 2)), traces = 2) %>%
-      plotly::layout(title = "",
-                        hovermode = 'closest', clickmode = "event",
-                         #legend = list(orientation = "h", y = 1.1, yanchor = "bottom"),
-                         #plot_bgcolor = I(pal),
-                        #xaxis = list(title = "", size = labsize, textangle = labangle, tickangle = labangle),
-                        #yaxis = list(title = "", range = ylim,zeroline = FALSE),
-                        showlegend = FALSE
-                        )
-
-
+    plotly::layout(title = "",
+                        hovermode = 'closest', clickmode = "event", showlegend = FALSE,
+                   yaxis = list(fixedrange = TRUE),
+                   xaxis = list(fixedrange = TRUE))
   pply
 }
 
@@ -992,8 +978,7 @@ plot_rate_hist <- function(df, percent =  FALSE, y_min = 0, g_palette, labsize =
 #' @importFrom scales label_number
 #'
 #' @return ggplot plot
-#' @export
-scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01), xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", coefflm = NULL, addLabels = TRUE) {
+scatter_plot <- function(df, med, x.min = c(0.9, 1.1), y.min = c(0.99,1.01), xvar = "confirmed_rate_1M_pop", yvar = "growth_factor_3", coefflm = NULL, addLabels = TRUE) {
 
   if (nrow(df) == 0) {
     p = ggplot()
@@ -1082,6 +1067,30 @@ scatter_plot <- function(df, med, x.min = c(0.875, 1.125), y.min = c(0.99,1.01),
   p
 }
 
+#' draw a blank plot with message
+#'
+#' @param where character where data are missing
+#' @param what character variable name, "" if unknown
+#' @param add character additional text message
+#'
+#' @import ggplot2
+#'
+#' @return ggplot plot
+blank_plot <- function(where = "", what = "", add = "") {
+  msg = paste0("  No ", what ,"data for ",where, ".", add)
+  ggplot() +
+    annotate("text", x = 0, y = 0.5, label = msg, size = 4, group = 1, hjust = 0.5)  +
+    basic_plot_theme() +
+    theme(
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank(),
+      axis.line.x = element_blank(),
+      axis.line.y = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.ticks.y = element_blank()
+    )
+}
+
 #' default palette for graph pages
 #' @import RColorBrewer
 graph_palette = c(brewer.pal(12, "Paired"), brewer.pal(8, "Set2"), brewer.pal(8, "Dark2"))
@@ -1118,22 +1127,27 @@ caption_stringency <- function()
 #' caption prevalence
 #' @return character text for caption
 caption_prevalence <- function()
-  "Prevalence: confirmed cases over 1 M people."
+  "Prevalence:"
+
+#' caption vaccination source
+#' @return character text for caption
+caption_source_vaccines <- function() {
+  c("Source ourworldindata.org.")
+}
 
 #' caption vaccination
 #' @return character text for caption
 caption_vaccines <- function() {
-  c("Simple count of number of vaccines. Source ourworldindata.org.")
+  paste("Simple count of number of vaccines.", caption_source_vaccines(), collapse = " ")
 }
-
-
 
 #' caption tests
 #' @param text character text of variable
+#' @param area character text of area
 #' @return character text for caption
-caption_tests <- function(text = "Tests") {
+caption_tests <- function(text = "Tests", area = "countries") {
   caption_tests1 <- paste("Over 1 Million people", text)
-  caption_tests2 <- paste("Updated",text,"figures could be unavailable for some countries")
+  caption_tests2 <- paste("Updated",text,"figures could be unavailable for some", area)
   c(caption_tests1, caption_tests2)
 }
 

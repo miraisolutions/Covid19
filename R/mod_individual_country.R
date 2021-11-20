@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -17,11 +17,11 @@ mod_ind_country_ui <- function(id){
     mod_caseBoxes_ui(ns("ind_count-boxes_hosp"), hosp = TRUE),
     hr(),
     div(
-      htmlOutput(ns("ind_from_nth_case"))
+      htmlOutput(ns("ind_from_nth_case")), class = "bodytext"
     ),
     hr(),
     div(
-      htmlOutput(ns("ind_missing_days"))
+      htmlOutput(ns("ind_missing_days")), class = "bodytext"
     ),
     hr(),
     fluidRow(
@@ -61,6 +61,22 @@ mod_ind_country_ui <- function(id){
     hr(),
     withSpinner(uiOutput(ns("ind_subarea"))),
     hr(),
+    # fluidRow(
+    #   column(6,
+    #          withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_canton"), growth = FALSE))
+    #   ),
+    #   column(6,
+    #          withSpinner(
+    #            mod_barplot_ui(ns("barplot_vax_index_canton"), plot1 = "ui_vaccines", plot2 = NULL)
+    #          )
+    #   )
+    # ),
+    fluidRow(
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("ind_country_vax"), type = "vaccines"))
+      )
+    ),
+    hr(),
     withSpinner(uiOutput(ns("maps_ind_subarea"))),
     hr(),
     mod_add_table_ui(ns("add_table_subarea")),
@@ -71,7 +87,8 @@ mod_ind_country_ui <- function(id){
 #' Level 2 areas UI function for maps
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
+#' @param country, character name of main country
 #'
 #' @noRd
 #'
@@ -83,7 +100,7 @@ areamapUI = function(id, country){
   tagList(
     div(id = id,
         hr(),
-        div(h3(paste("Country Heat Maps within", country)), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+        div(paste("Country Heat Maps within", country), align = "center", style = "sectiontitle"),
         hr(),
         fluidRow(
           column(6,
@@ -91,7 +108,8 @@ areamapUI = function(id, country){
                  #withSpinner(uiOutput(ns("map_countries_confirmed")))
           ),
           column(6,
-                 withSpinner(mod_map_area_calc_ui(ns("map_ind_active")))
+                 #withSpinner(mod_map_area_calc_ui(ns("map_ind_active")))
+                 withSpinner(mod_map_area_calc_ui(ns("map_ind_vaccines")))
                  #withSpinner(uiOutput(ns("map_countries_active")))
           )
         ),
@@ -230,11 +248,46 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   area_data_2_aggregate <-
     build_data_aggr(area_data_2)
 
+  area_data_2_aggregate_today = area_data_2_aggregate %>%
+    add_growth_death_rate()
+
+  lw_data_2 =  lw_vars_calc(area_data_2_aggregate)
+  pw_data_2 =  lw_vars_calc(area_data_2_aggregate, 14)
+
+  area_data_2_aggregate_today = area_data_2_aggregate_today  %>%
+    left_join(lw_data_2 %>% select(-population)) %>%
+    left_join(pw_data_2 %>% select(-population))
+
+  areas <- #reactive({
+    area_data_2_aggregate_today %>%
+    filter(confirmed > 10) %>%
+    select(Country.Region) %>%
+    distinct() %>% .$Country.Region
+
   output$ind_subarea <- renderUI({
     areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE, vaxflag = FALSE)
     #areaUI("ind_country_subarea")
   })
+
+
   callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
+
+
+  # callModule(mod_scatterplot_server, "scatterplot_plots_canton",
+  #            area_data_2_aggregate_today, nmed = 10, n_highlight = length(areas),
+  #            istop = FALSE, countries = areas, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+  #
+  # callModule(mod_barplot_server, "barplot_vax_index_canton", area_data_2_aggregate_today,
+  #            n_highlight = length(areas), istop = FALSE,
+  #            plottitle = c("Vaccinations"),
+  #            g_palette = list("plot_1" = barplots_colors$vaccines$calc,
+  #                             calc = TRUE),
+  #            pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+
+  callModule(mod_group_plot_server, "ind_country_vax", data_today = area_data_2_aggregate_today, nn = 10, type = "vaccines", istop = FALSE,
+             scatterplotargs = list(nmed = 10),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+
 
   output$maps_ind_subarea <- renderUI({
     areamapUI(ns("maps_subarea"), country)
@@ -311,8 +364,10 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
              area = country, variable = "confirmed", max.pop = 0, countrymap = TRUE)
 
   #maps active
-  callModule(mod_map_area_calc_server, "map_ind_active", df = data_maps,  area2_map,
-             area = country, variable = "active", max.pop = 0, countrymap = TRUE)
+  # callModule(mod_map_area_calc_server, "map_ind_active", df = data_maps,  area2_map,
+  #            area = country, variable = "active", max.pop = 0, countrymap = TRUE)
+  callModule(mod_map_area_calc_server, "map_ind_vaccines", df = data_maps,  area2_map,
+             area = country, variable = "vaccines", max.pop = 0, countrymap = TRUE)
 
   #maps growth vs prev
   callModule(mod_map_area_calc_server, "map_ind_growthvsprev", df = data_maps,  area2_map,

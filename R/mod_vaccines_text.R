@@ -4,12 +4,6 @@
 #'
 #' @param id, Internal parameters for {shiny}.
 #'
-#' @example man-roxygen/ex-mod_vaccines_text.R
-#'
-#' @name mod_vaccines_text
-#' @keywords internal
-
-#' @rdname mod_vaccines_text
 #' @import shiny
 #' @importFrom lubridate day
 mod_vaccines_text_ui <- function(id) {
@@ -19,23 +13,27 @@ mod_vaccines_text_ui <- function(id) {
 
   ns <- NS(id)
   tagList(
-    div(h4("Vaccination Pace"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    div("Vaccination Pace", align = "center", class = "plottitle"),
     fluidRow(
-      column(3, numericInput(inputId = ns("target"), label = div(style = "font-size:10px","% Target coverage"),
+      column(3, div(class = "plottext",
+                    numericInput(inputId = ns("target"), label = "% Target coverage",
                              value = 90,
                              min = 0,
                              max = 100,
-                             step = 1)),
-      column(3, selectInput(inputId = ns("doses"), label = div(style = "font-size:10px","Number of doses"),
+                             step = 1))),
+      column(3, div(class = "plottext",
+                    selectInput(inputId = ns("doses"), label = "Number of doses",
                             choices = c(1,2),
-                            selected = 2)),
-      column(3, selectInput(inputId = ns("confdoses"), label = div(style = "font-size:10px","Doses for already infected"),
+                            selected = 2))),
+      column(3, div(class = "plottext",
+                    selectInput(inputId = ns("confdoses"), label = "Doses for already infected",
                             choices = c(0,1,2),
-                            selected = 1)),
-      column(3, dateInput(inputId = ns("tdate"), label = div(style = "font-size:10px","Target date"),
+                            selected = 1))),
+      column(3, div(class = "plottext",
+                    dateInput(inputId = ns("tdate"), label = "Target date",
                           value = targetdate,
                           min = Sys.Date()
-      ))
+      )))
     ),
     verticalLayout(
       fluidRow(
@@ -57,17 +55,19 @@ mod_vaccines_text_ui <- function(id) {
   #tg
 }
 
-#' No Vaccines text Server Function
+#' No data in variable text Server Function
+#' @param input,output,session Internal parameters for {shiny}.
+#' @param country character country name
+#' @param what variable name
 #'
-#'
-#' @rdname mod_vaccines_text
-mod_novaccines_text_server <- function(input, output, session, country) {
+#' @importFrom graphics plot.new
+mod_novaccines_text_server <- function(input, output, session, country, what = "Vaccines") {
 
   output$vax_text = renderUI({
     div( class = "count-box",
          style = "color: white; max-width: 100%; background-color: #3c8dbc; margin-left: 20px; margin-right: 20px; font-style: italic; white-space: nowrap; word-wrap: break-word",
          HTML(
-           paste0("  No Vaccines data for ",strong(country), ".")
+           paste0("  No ",what," data for ",strong(country), ".")
          ), align = "left")
   })
   output$vax_line <- renderPlot({
@@ -148,7 +148,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
   plotdata = df %>%
     select(date, new_vaccines) %>%
     rename(Date = date, Points = new_vaccines) %>%
-    mutate(Status = "New Vaccinated")
+    mutate(Status = "New Vaccine doses")
 
   if (sum(plotdata$Points)>0) {
     #make plot if there are vaccine data

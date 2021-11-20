@@ -37,6 +37,10 @@ get_timeseries_data <- function() {
     recovered = read.csv(file = recovered_timeseries_csv_url, stringsAsFactors = FALSE)
   )
 }
+#' determine latest date by subtracting from today the below computation
+delay_date <- function(){
+  40*60*60
+}
 
 #' Get daily data
 #' @rdname get_daily_data
@@ -239,6 +243,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     )
   }
   dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg, cache = TRUE) # select level2 to add states
+  #dataHub <- covid19(country = country, level = lev) #
+
   # raw = FALSE then NAs replaced with 0s
 
   vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "vaccines", "stringency_index","population")
@@ -313,7 +319,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # take yesterday, data are updated hourly and they are complete around mid day, 40h later
     # regardless of the timezone, select the day 40h ago
     now = as.POSIXct(Sys.time()) # given time zone
-    AsOfDate =  as.character(as.Date(now - 40*60*60))
+    AsOfDate =  as.character(as.Date(now - delay_date()))
 
     message("Maximum date set to: ", AsOfDate)
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
@@ -333,9 +339,12 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
       # set to NA so that it can be imputed later
       dataHub[, cumvars][dataHub[, cumvars] <0] = NA
 
-      daterange = data.frame(date = unique(dataHub$date), stringsAsFactors = FALSE)
+      # add NAs for those without last days, problem of 17/11
+
       #varsimpute = intersect(c(get_aggrvars(),.hosp_vars_datahub ), names(dataHub))
-      dataHub = dataHub %>%  group_by(Country.Region) %>% right_join(daterange) %>% # extend data to all missing
+      dataHub = dataHub %>%
+        tidyr::complete(date, nesting(Country.Region)) %>%
+        group_by(Country.Region) %>%
         mutate(
           across(all_of(as.vector(c(cumvars, "population","stringency_index", .hosp_vars_datahub))), ~zoo::na.locf(.x, na.rm = FALSE)) # use all_of
         ) %>% ungroup()
@@ -408,9 +417,9 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 #' @export
 get_timeseries_by_contagion_day_data <- function(data) {
 
-  if (!("tests" %in% names(data))) {
-    data$tests = data$hosp = rep(0,nrow(data))
-  }
+  # if (!("tests" %in% names(data))) {
+  #   data$tests = data$hosp = rep(0,nrow(data))
+  # }
   # Select column names for which new_vars to be created
   new_vars = intersect(setdiff(get_aggrvars(), "population"), names(data))
 
@@ -572,7 +581,7 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   lm30 = max(df$date) - 30
 
   now = as.POSIXct(Sys.time()) # given time zone
-  LastDate =  as.Date(now - 40*60*60)
+  LastDate =  as.Date(now - delay_date())
 
   res = df %>% #ungroup() %>%
     filter(date >= validdates) %>%

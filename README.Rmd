@@ -64,9 +64,9 @@ The Covid19datahub project can allow us to use the following variables:
 * _recovered_: number of healed or tested negative cases. Some countries have stopped reporting recovered cases.   
 * _deaths_: number of dead confirmed cases.   
 * _tests_: number of tests. Not available for all countries.    
-* _hosp_: number of currently hospitalised confirmed cases. Not available for all countries.  
-* _icuvent_: number of currently hospitalised Ventilated or in Intensive Care. Not available for all countries. Categorization differed from countries to country therefore Ventilated and Intensive Care variables have been aggregated.
-* _stringency index_: Lock Down stringency index from 0 to 100.  
+* _hosp_: number of currently hospitalized confirmed cases. Not available for all countries.  
+* _icuvent_: number of currently hospitalized Ventilated or in Intensive Care. Not available for all countries. Categorization differed from countries to country therefore Ventilated and Intensive Care variables have been aggregated.
+* _stringency index_: Lock Down stringency index from 0 to 100. Green Pass measures comtribute to strningency.  
 * _vaccines_: number of vaccine doses given to the population.   
 * _population_: population size.  
 
@@ -78,7 +78,7 @@ The following variables are computed by the application:
 * _lethality rate_: number of _deaths_ divided by the number of _confirmed_ cases.   
 * _mortality rate_: number of _deaths_ divided by the _population_ size.   
 * _positive test rate_: number of positive tests, i.e. _confirmed_ divided by the _tests_ carried in the day.   
-* _int care hospitalised rate_: number of patients currently in Intensive Care / Ventilated status, divided by the number of currently _hospitalised_ patients.   
+* _int care hospitalized rate_: number of patients currently in Intensive Care / Ventilated status, divided by the number of currently _hospitalized_ patients.   
 * _vaccines rate_: number of _vaccines_ divided by the _population_ size.   
 * _new (variable)_: all variables labelled "new" are the delta of day X value - day X-1.  
 * _last week (variable)_: all variables labelled "last week" are the totals of the last 7 days.  

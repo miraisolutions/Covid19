@@ -7,7 +7,7 @@
 scatter_plot(
   df,
   med,
-  x.min = c(0.875, 1.125),
+  x.min = c(0.9, 1.1),
   y.min = c(0.99, 1.01),
   xvar = "confirmed_rate_1M_pop",
   yvar = "growth_factor_3",

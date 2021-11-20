@@ -4,10 +4,12 @@
 \alias{caption_tests}
 \title{caption tests}
 \usage{
-caption_tests(text = "Tests")
+caption_tests(text = "Tests", area = "countries")
 }
 \arguments{
 \item{text}{character text of variable}
+
+\item{area}{character text of area}
 }
 \value{
 character text for caption

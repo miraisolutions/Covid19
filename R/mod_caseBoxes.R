@@ -7,12 +7,8 @@
 #' @param hosp logical, if TRUE hospitalised box variables is added.
 #' @param outputui logical, if TRUE shiny::uiOutput is used
 #'
-#' @example man-roxygen/ex-mod_caseBoxes.R
 #'
-#' @name mod_caseBoxes
 #' @keywords internal
-
-#' @rdname mod_caseBoxes
 #' @import shiny
 mod_caseBoxes_ui <- function(id, hosp = FALSE, outputui = FALSE) {
   ns <- NS(id)
@@ -81,12 +77,12 @@ mod_caseBoxes_ui <- function(id, hosp = FALSE, outputui = FALSE) {
 
 #' caseBoxes Server Function
 #'
+#' @param input,output,session Internal parameters for {shiny}.
+#'
 #' @param counts Reactive expression yielding the named vector of cases by type.
 #' @param hosp logical, if TRUE hospitalised box variables is added.
 #' @param vax character, output id for the vaccination box
 #' @param renderui logical, if TRUE shiny::renderUI is used
-#'
-#' @rdname mod_caseBoxes
 mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, vax = NULL, renderui = FALSE) {
 
   ns <- session$ns
@@ -179,10 +175,10 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
 
     }
     if (!is.null(vax)) {
-      message("Vaccinated box")
+      message("Vaccine doses box")
       if(!renderui)
         insertUI(paste0("#",ns(vax)),
-                 ui = countBox3(title1 = "Vaccinated: ",
+                 ui = countBox3(title1 = "Vaccine doses: ",
                                 subtitle1 = counts[["vaccines"]],
                                 title2 = "Last Week: ",
                                 subtitle2 =  counts[["lw_vaccines"]],
@@ -195,7 +191,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
         )
       else {
         output[[vax]]  <- renderUI({
-          countBox3(title1 = "Vaccinated: ",
+          countBox3(title1 = "Vaccine doses: ",
                    subtitle1 = counts[["vaccines"]],
                    title2 = "Last Week: ",
                    subtitle2 =  counts[["lw_vaccines"]],

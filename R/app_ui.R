@@ -12,7 +12,7 @@ app_ui <- function(request) {
   # to be used in Global and Comparison
   w <- 7 # number of days of outbreak. Default 7
   now = as.POSIXct(Sys.time()) # given time zone
-  AsOfDate =  as.character(as.Date(now - 40*60*60))
+  AsOfDate =  as.character(as.Date(now - delay_date()))
 
   message("app_ui")
   tagList(
@@ -77,7 +77,7 @@ app_ui <- function(request) {
 
       ), # end Header fluidRow
       modalDialog(title = "Covid19Mirai loading message",
-                  p("Data is growing, allow 30 seconds for the first page to load."),
+                  p("Data is growing. Allow 30 seconds for the first page to load."),
                   p("Load first page fully before navigating to others.")),
 
       # body ----

@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -20,6 +20,8 @@ mod_global_ui <- function(id){
       mod_map_ui(ns("map_ui"))
     ),
     hr(),
+    div(timeline_info(hosp = FALSE), class = "bodytext"),
+    br(),
     fluidRow(
       column(6,
              div(h4("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
@@ -33,7 +35,7 @@ mod_global_ui <- function(id){
     hr(),
     fluidRow(
       column(12,
-             withSpinner(mod_barplot_ui(ns("plot_growth_death_rate")))
+             mod_group_plot_ui(ns("plot_conf_glob"), type = "confirmed")
       )
     ),
     fluidRow(
@@ -42,34 +44,49 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, n_highlight = 5, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
       )
     ),
     hr(),
     fluidRow(
-      column(6,
-             mod_scatterplot_ui(ns("plot_scatterplot_glob"))
-             ),
-      column(6,
-             #mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
-             mod_barplot_ui(ns("barplot_hosp"), plot1 = "ui_hosp", plot2 = NULL)
-
+      column(12,
+             withSpinner(mod_barplot_ui(ns("plot_growth_death_rate")))
+      )
+    ),
+    hr(),
+    fluidRow(
+      # column(6,
+      #        mod_scatterplot_ui(ns("plot_scatterplot_glob"))
+      #        ),
+      # column(6,
+      #        #mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
+      #        mod_barplot_ui(ns("barplot_hosp"), plot1 = "ui_hosp", plot2 = NULL)
+      #
+      # )
+      column(12,
+             mod_group_plot_ui(ns("plot_hosp_glob"), type = "hosp")
       )
     ),
     fluidRow(
-      column(6,
-             mod_scatterplot_ui(ns("plot_scatterplot_stringency_glob"), growth = FALSE)
-      ),
-      column(6,
-             mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
+      # column(6,
+      #        mod_scatterplot_ui(ns("plot_scatterplot_stringency_glob"), growth = FALSE)
+      # ),
+      # column(6,
+      #        mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
+      # )
+      column(12,
+             mod_group_plot_ui(ns("plot_str_glob"), type = "stringency")
       )
     ),
     fluidRow(
-      column(6,
-             mod_scatterplot_ui(ns("plot_scatterplot_vax_glob"), growth = FALSE)
-      ),
-      column(6,
-             mod_barplot_ui(ns("barplot_vax_index"), plot1 = "ui_vaccines", plot2 = NULL)
+      # column(6,
+      #        mod_scatterplot_ui(ns("plot_scatterplot_vax_glob"), growth = FALSE)
+      # ),
+      # column(6,
+      #        mod_barplot_ui(ns("barplot_vax_index"), plot1 = "ui_vaccines", plot2 = NULL)
+      # )
+      column(12,
+             mod_group_plot_ui(ns("plot_vax_glob"), type = "vaccines")
       )
     ),
     hr(),
@@ -106,9 +123,14 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
      get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%
      get_timeseries_by_contagion_day_data()
 
-
    total_aggregate <- total %>%  # add additional vars
      build_data_aggr()
+
+   # total_aggregate_plot <-  total_aggregate %>%# filter last dates which may be incomplete
+   #   mutate(diffconf = confirmed - lag(confirmed)) %>%
+   #   filter(diffconf > 0 | date < tail(date, 5)) %>%
+   #   select(-diffconf)
+   #arrange(desc(date))
 
    total_today <-
      total_aggregate %>%
@@ -165,7 +187,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   n = 1000 # define areaplot start
   df_global =
-    tsdata_areplot(total,levs, nn = n) # start from day with >1000
+    tsdata_areplot(total_aggregate,levs, nn = n) # start from day with >1000
 
   callModule(mod_plot_log_linear_server, "plot_area_global", df = df_global, type = "area")
 
@@ -187,6 +209,8 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
     mutate(value = confirmed) %>%
     capitalize_names_df()
 
+  callModule(mod_group_plot_server, "plot_conf_glob", data_today = orig_data_aggregate_today, type = "confirmed", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+
 
   # lineplot of top 5 countries confirmed cases with date x axis
   callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
@@ -194,51 +218,59 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # > comparison plot from day of nth contagion
 
   # remove countries with few cases nn = 10000
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE, istop = TRUE, n_highlight = 5)
 
   # > growth_death_rate
   callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highlight = 10)
 
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
-  callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highlight = 10)
+  # callModule(mod_scatterplot_server, "plot_scatterplot_glob", orig_data_aggregate_today, n_highlight = 10)
+  #
+  # # > stacked barplot with status split
+  # #callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highlight = 10, istop = TRUE)
+  #
+  # # > barplot stringency
+  # callModule(mod_barplot_server, "barplot_hosp", orig_data_aggregate_today, n_highlight = 10, istop = TRUE,
+  #            plottitle = "Hospitalizations by variable",
+  #            g_palette = list("plot_1" = barplots_colors$hosp$calc,
+  #                             calc = TRUE)#,
+  #            #pickvariable = list("plot_1" = "hosp")
+  #            )
 
-  # > stacked barplot with status split
-  #callModule(mod_stackedbarplot_status_server, "plot_stackedbarplot_status", orig_data_aggregate_today, n_highlight = 10, istop = TRUE)
-
-  # > barplot stringency
-  callModule(mod_barplot_server, "barplot_hosp", orig_data_aggregate_today, n_highlight = 10, istop = TRUE,
-             g_palette = list("plot_1" = barplots_colors$hosp$calc,
-                              calc = TRUE)#,
-             #pickvariable = list("plot_1" = "hosp")
-             )
+  callModule(mod_group_plot_server, "plot_hosp_glob", data_today = orig_data_aggregate_today, type = "hosp", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
-  callModule(mod_scatterplot_server, "plot_scatterplot_stringency_glob", orig_data_aggregate_today, n_highlight = 10, growth = FALSE, xvar = "stringency_index",
-             istop = TRUE, fitted = FALSE)
+  # callModule(mod_scatterplot_server, "plot_scatterplot_stringency_glob", orig_data_aggregate_today, n_highlight = 10, growth = FALSE, xvar = "stringency_index",
+  #            istop = TRUE, fitted = FALSE)
+  #
+  # # > barplot stringency
+  # callModule(mod_barplot_server, "barplot_stringency_index", orig_data_aggregate_today, n_highlight = 10, plottitle = c("Stringency Index"), istop = TRUE,
+  #            g_palette = list("plot_1" = barplots_colors$stringency$calc,
+  #                             calc = TRUE)#,
+  #            #pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+  #            ) # pick top 10 confirmed countries
 
-  # > barplot stringency
-  callModule(mod_barplot_server, "barplot_stringency_index", orig_data_aggregate_today, n_highlight = 10, plottitle = c("Stringency Index"), istop = TRUE,
-             g_palette = list("plot_1" = barplots_colors$stringency$calc,
-                              calc = TRUE),
-             pickvariable = list("plot_1" = "confirmed")) # pick top 10 confirmed countries
+  callModule(mod_group_plot_server, "plot_str_glob", data_today = orig_data_aggregate_today, type = "stringency", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
+  # #scatterplot vax versus vars
+  # callModule(mod_scatterplot_server, "plot_scatterplot_vax_glob",
+  #            orig_data_aggregate_today, n_highlight = 10,
+  #            istop = TRUE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+  #
+  # #barplot vax
+  #
+  # callModule(mod_barplot_server, "barplot_vax_index", orig_data_aggregate_today,
+  #            n_highlight = 10, istop = TRUE,
+  #            plottitle = c("Vaccination Status"),
+  #            g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
+  #                             calc = TRUE)#,
+  #            #pickvariable = list("plot_1" = "vaccines")
+  #            )
 
-  #scatterplot vax versus vars
-  callModule(mod_scatterplot_server, "plot_scatterplot_vax_glob",
-             orig_data_aggregate_today, n_highlight = 10,
-             istop = TRUE, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+  callModule(mod_group_plot_server, "plot_vax_glob", orig_data_aggregate_today, type = "vaccines", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
-  #barplot vax
-
-  callModule(mod_barplot_server, "barplot_vax_index", orig_data_aggregate_today,
-             n_highlight = 10, istop = TRUE,
-             plottitle = c("Vaccination Status"),
-             g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
-                              calc = TRUE)#,
-             #pickvariable = list("plot_1" = "vaccines")
-             )
 
 
   # tables ----

@@ -46,7 +46,7 @@ choice_nthcases_plot = function(vars = .vars_nthcases_plot, actives = TRUE, test
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
 #' @param vars variable names in the drop down option.
 #' @param n_highlight number of countries to highlight
 #' @param nn min number of cases for used
@@ -74,12 +74,12 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
   #   stop("oneMpop is F but selectvar is ", selectvar)
   choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices
   if (istop) {
-    plottitle = paste0("Top ",n_highlight," countries from day with ", nn ," contagions")
+    plottitle = paste0("Top ",n_highlight," countries for the chosen variable")
   } else {
     plottitle = paste0("Timeline from day with ", nn ," contagions")
   }
   # UI ----
-  divtitle =  switch(writetitle,div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),NULL)
+  divtitle =  switch(writetitle ,div(class = "plottitle", plottitle, align = "center"),NULL)
   if (!oneMpop) {
     if (!areasearch) {
       tagList(
@@ -89,21 +89,22 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
         fluidRow(
           column(7,
                  offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Choose Variable"),
-                             choices = choices_plot, selected = selectvar)
+                 div(class = "plottext",selectInput(inputId = ns("radio_indicator"), label = "Choose Variable",
+                             choices = choices_plot, selected = selectvar))
           ),
           # column(4,
           #        selectInput(inputId = ns("radio_log_linear"), label = div(style = "font-size:10px","Log or Linear"),
           #                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
           # )
           column(4,
-                 selectInput(inputId = ns("time_frame"), label = div(style = "font-size:10px","Choose time-frame"),
-                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"), selected = "lstmonth")
+                 div(class = "plottext", selectInput(inputId = ns("time_frame"), label = "Choose time-frame",
+                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"),
+                             selected = "lstmonth"))
           )
         ),
         withSpinner(plotlyOutput(ns("plot"), height = 400)),
         #div(uiOutput(ns("caption")), align = "center")
-        div(htmlOutput(ns("caption")), align = "center", height = 10)
+        div(htmlOutput(ns("caption")), align = "center", class = "plottext")
 
       )
     } else {
@@ -114,27 +115,28 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
         fluidRow(
           column(3,
                  offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Choose Variable"),
-                             choices = choices_plot, selected = selectvar)
+                 div(class = "plottext", selectInput(inputId = ns("radio_indicator"), label = ,"Choose Variable",
+                             choices = choices_plot, selected = selectvar))
           ),
           # column(3, offset = 1,
           #        selectInput(inputId = ns("radio_log_linear"), label = div(style = "font-size:10px","Log or Linear"),
           #                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
           # ),
           column(3, offset = 1,
-                 selectInput(inputId = ns("time_frame"), label = div(style = "font-size:10px","Choose time-frame"),
-                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"), selected = "lstmonth")
+                 div(class = "plottext", selectInput(inputId = ns("time_frame"), label = "Choose time-frame",
+                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"),
+                             selected = "lstmonth"))
           ),
           column(3, offset = 1,
-                 selectInput(label = div(style = "font-size:10px","Select Countries"),
+                 div(class = "plottext", selectInput(label = "Select Countries",
                              inputId = ns("select_areas"), choices = NULL, selected = NULL,
-                             multiple = TRUE)
+                             multiple = TRUE))
 
           )
         ),
         withSpinner(plotlyOutput(ns("plot"), height = 400)),
         #div(uiOutput(ns("caption")), align = "center")
-        div(htmlOutput(ns("caption")), align = "center", height = 10)
+        div(htmlOutput(ns("caption")), align = "center", class = "plottext", height = 10) # TODO: check why height = 10
 
       )
 
@@ -150,25 +152,25 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
         fluidRow(
           column(3,
                  offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Choose Variable"),
-                             choices = choices_plot, selected = selectvar)
+                 div(class = "plottext", selectInput(inputId = ns("radio_indicator"), label = "Choose Variable",
+                             choices = choices_plot, selected = selectvar))
           ),
           column(3, offset = 1,
-                 selectInput(inputId = ns("radio_1Mpop"), label = div(style = "font-size:10px","Total or Over 1M People"),
-                             choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop")
+                 div(class = "plottext", selectInput(inputId = ns("radio_1Mpop"), label = "Total or Over 1M People",
+                             choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop"))
           ),
           # column(3, offset = 1,
           #        selectInput(inputId = ns("radio_log_linear"), label = div(style = "font-size:10px","Log or Linear"),
           #                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear")
           # )
           column(3, offset = 1,
-                 selectInput(inputId = ns("time_frame"), label = div(style = "font-size:10px","Choose time-frame"),
-                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"), selected = "lstmonth")
+                 div(class = "plottext", selectInput(inputId = ns("time_frame"), label = "Choose time-frame",
+                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"), selected = "lstmonth"))
           ),
         ),
         withSpinner(plotlyOutput(ns("plot"), height = 400)),
         #div(uiOutput(ns("caption")), align = "center")
-        div(htmlOutput(ns("caption")), align = "center", height = 10)
+        div(htmlOutput(ns("caption")), align = "center", class = "plottext", height = 10)
 
       )
     } else {
@@ -180,25 +182,26 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
         fluidRow(
           column(3,
                  #offset = 1,
-                 selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Choose Variable"),
-                             choices = choices_plot, selected = selectvar)
+                 div(class = "plottext", selectInput(inputId = ns("radio_indicator"), label = "Choose Variable",
+                             choices = choices_plot, selected = selectvar))
           ),
           column(3, #offset = 1,
-                 selectInput(inputId = ns("radio_1Mpop"), label = div(style = "font-size:10px","Total or Over 1M People"),
-                             choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop")
+                 div(class = "plottext", selectInput(inputId = ns("radio_1Mpop"), label = "Total or Over 1M People",
+                             choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop"))
           ),
           column(3, #offset = 1,
-                 selectInput(inputId = ns("time_frame"), label = div(style = "font-size:10px","Choose time-frame"),
-                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"), selected = "lstmonth")
+                 div(class = "plottext", selectInput(inputId = ns("time_frame"), label = "Choose time-frame",
+                             choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"),
+                             selected = "lstmonth"))
           ),
           column(3, #offset = 1,
-                 selectInput(label = div(style = "font-size:10px","Select Countries"), inputId = ns("select_areas"), choices = NULL, selected = NULL,
-                             multiple = TRUE)
+                 div(class = "plottext", selectInput(label = "Select Countries", inputId = ns("select_areas"), choices = NULL, selected = NULL,
+                             multiple = TRUE))
           )
         ),
         withSpinner(plotlyOutput(ns("plot"), height = 400)),
         #div(uiOutput(ns("caption")), align = "center")
-        div(htmlOutput(ns("caption")), align = "center", height = 10)
+        div(htmlOutput(ns("caption")), align = "center", class = "plottext", height = 10)
 
       )
     }
@@ -350,6 +353,10 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
           ungroup()
       } else
         data = df_data_1Mpop()
+      if (FALSE) #TODO
+        data = data %>%
+                  mutate(CasesPerWeekVal = WeeklyAvgVal * 7 / 10) # cases per 100 k
+
       # date_first_var = min(data$date[data[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
       # data = data[data$date >= date_first_var, , drop = FALSE]
       #date_first_var = min(data$date[data[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
@@ -447,20 +454,15 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       #   rollw = reactiveVal(FALSE)
       p <- plot_all_highlight(df_out(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
                               date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw(), keeporder = keeporder, barplot = barp())
-
-
-      tooltips = tooltip = c("text", "x_tooltip", "y_tooltip")
-      if (rollw())
-        tooltips = c(tooltips, "z_tooltip")
-
       tooltips = "text"
       p <- p %>%
         plotly::ggplotly(tooltip = tooltips)
 
-      if (length(unique(df_out()$Status)) == 1)
-        p <- p %>%
-          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom",
-                                       itemsizing = "constant", hovermode = 'closest', clickmode = "event"))
+      p <- p %>%
+            plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
+                                         itemwidth = 10, itemsizing = "constant",
+                                         hovermode = 'closest', clickmode = "event", title = ""),
+                           yaxis = list(autorange = TRUE, fixedrange = TRUE))
 
       p
 

@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -29,7 +29,6 @@ mod_bar_plot_day_contagion_ui <- function(id){
 mod_bar_plot_day_contagion_server <- function(input, output, session, country_data, datevar = "date", nn = 1000, statuses = c("confirmed", "deaths", "recovered", "active")){
   ns <- session$ns
 
-  #statuses <- c("confirmed", "deaths", "recovered", "active")
   # select all variables
   allstatuses = c(statuses, paste0("new_", statuses))
 
