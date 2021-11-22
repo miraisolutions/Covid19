@@ -1,5 +1,7 @@
-### Covid19Mirai 2.5.10-9000
-- updated and replaced plots in multiple pages
+### Covid19Mirai 2.6.1 (2021-11-22)
+- Updated and replaced plots in multiple pages (#200)
+- Added text info in pages
+- Correction due to missing data in Canada
 
 ### Covid19Mirai 2.5.10 (2021-10-25)
 - Fixed some small issues in labels (#197)
