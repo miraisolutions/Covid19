@@ -5,7 +5,7 @@ if (interactive()) {
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   cont = "Europe"
-  uicont = "europe"
+  uicont = tolower(cont)
   ui <- fluidPage(
     tabPanel("Continents",
              tabsetPanel(

@@ -2,8 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
-#' @param variable character variable name
+#' @param id Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -15,11 +14,11 @@ mod_map_area_calc_ui <- function(id){
   tagList(
     tags$style(type = "text/css", " .leaflet .legend {font-size: 10px; line-height: 15px;font-family: 'Arial', sans-serif;}"),
 
-    uiOutput(ns("title_map")),
-    uiOutput(ns("controls")), # radio buttons to be updated in server
+    div(class = "plotitle",uiOutput(ns("title_map")), align = "center"),
+    div(class = "plottext",uiOutput(ns("controls"))), # radio buttons to be updated in server
     # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
     withSpinner(leafletOutput(ns("map_area_calc"), width = "100%", height = "500")),
-    div(htmlOutput(ns("caption")), align = "center")
+    div(htmlOutput(ns("caption")), align = "center",class = "plottext")
 )
  # )
 }
@@ -301,7 +300,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     names(mapvar) = namesmapvar
     new_buttons = list(name = "radio",
                        choices = mapvar, selected = mapvar["Last Week"])
-    caption <- caption_prevalence()
+    caption <- paste(caption_prevalence(), names(varsNames("confirmed_rate_1M_pop")))
     graph_title = "Prevalence of contagion over 1M"
     textvar = c("new_confirmed","lw_confirmed","confirmed","population", "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop", "pw_confirmed_rate_1M_pop", "lm_confirmed_rate_1M_pop", "confirmed_rate_1M_pop")
 
@@ -333,7 +332,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     caption_growth_factor <- caption_growth_factor_fun("(3 7 14)")
 
-    caption_prevalence <- caption_prevalence()
+    caption_prevalence <- paste(caption_prevalence(), names(varsNames("confirmed_rate_1M_pop")))
     caption =HTML(paste(c(caption_growth_factor,caption_prevalence), collapse = '<br/>'))
     graph_title = "Growth versus Prevalence"
     textvar = c(as.vector(grep("^growth_factor", unlist(varsNames()), value = TRUE)), "new_confirmed_rate_1M_pop", "lw_confirmed_rate_1M_pop", "confirmed_rate_1M_pop")
@@ -478,7 +477,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     # caption <- paste("Total, Last Week and New", caption_tests("Vaccines")[1])
     # caption = c(caption, caption_tests()[2])
-    caption <- paste("Total, Last Week New and", caption_tests()[1])
+    caption <- paste("Total, Last Week New and", caption_tests("Vaccines")[1])
     caption_vax <- caption_tests("Vaccines")[2]
 
     caption =HTML(paste(c(caption,caption_vax,caption_vaccines()), collapse = '<br/>'))
@@ -779,7 +778,7 @@ pal_fun = function(var,x){
   }  else if ((grepl("growth",var) && grepl("prev",var))) {
     colorFactor(palette = c("darkgreen", "yellow3", "#E69F00","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   } else if ((grepl("growth",var) && grepl("stringency",var))) {
-    colorFactor(palette = c("darkgreen", "#dd4b39", "#3c8dbc","gray3"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
+    colorFactor(palette = c("darkgreen", "#3c8dbc", "#dd4b39","gray3"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   } else if (var %in% c(hospvars_1M_pop, .hosp_vars, prefix_var(.hosp_vars), prefix_var(hospvars_1M_pop))) {
     if (grepl("hosp", var)) {
       colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")

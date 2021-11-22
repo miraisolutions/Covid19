@@ -2,21 +2,22 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
 #'
 #' @example man-roxygen/ex-mod_stackedbarplot_status.R
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner
+#' @noRd
 mod_stackedbarplot_ui <- function(id){
   ns <- NS(id)
   caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
 
   tagList(
-          div(htmlOutput(ns("title_stackedbarplot_status")), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+          div(htmlOutput(ns("title_stackedbarplot_status")), align = "center", class = "plottitle"),
 
           withSpinner(plotlyOutput(ns("plot_stackedbarplot_status"), height = 500)),
-          div(caption_explain, align = "center", height = 10)
+          div(caption_explain, align = "center", height = 10, class = "plottext")
       )
 }
 #' stackedbarplot_status Server Function
@@ -112,7 +113,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
   # })
 
   output$plot_stackedbarplot_status <- renderPlotly({
-    p = stackedbarplot_plot(df_status_stack, perc = TRUE) %>% fix_colors(labs = TRUE)
+    p = stackedbarplot_plot(df_status_stack, percent = TRUE) %>% fix_colors(labs = TRUE)
     if (active_hosp) {
       # add back hospitalized and recompute
       p$data$countstatus[p$data$status == names(varsNames("active"))] =

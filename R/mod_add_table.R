@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -27,6 +27,12 @@ mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5)
   # Add Labels
   df = df %>% .[,c("date","AsOfDate",setdiff(names(df), c("date","AsOfDate")))] # place as of date in first place
 
+  perccol = names(df) %in% .rate_vars
+  numcol_thous = (!perccol & sapply(df, is.numeric))
+  numcol_small = sapply(df[, numcol_thous], max, na.rm = TRUE) < 1000
+  numcol = numcol_thous
+  numcol[numcol_thous] = numcol_small
+  numcol_thous[numcol_thous] = !numcol_small
 
   vars = intersect(names(df), unlist(varsNames()))
   names(df)[names(df) %in% vars] = names(varsNames(vars))
@@ -35,10 +41,13 @@ mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5)
     datatable(df %>% capitalize_names_df(),
               rownames = FALSE,
               selection = "single",
-              #filter = 'bottom',
+              filter = 'top',
               escape = FALSE,
               plugins = 'natural',
-              options = getTableOptions(maxrowsperpage = maxrowsperpage))
+              options = getTableOptions(maxrowsperpage = maxrowsperpage)) %>%
+      DT::formatRound(numcol_small, 2, mark = "'") %>%
+      DT::formatRound(numcol_thous, 0, mark = "'") %>%
+      DT::formatPercentage(perccol, 2, mark = "'")
   )
 
   # generate output report

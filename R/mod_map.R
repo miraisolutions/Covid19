@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -27,7 +27,7 @@ mod_map_ui <- function(id){
 
     ),
     div(
-
+      id = "map_ui",
       style = "position: relative;",
 
       # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
@@ -74,10 +74,8 @@ mod_map_ui <- function(id){
 
         )
       )
-
     )
-    )
-
+  )
 }
 
 #' map Server Function
@@ -132,6 +130,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
     data_date
  # })
   observeEvent(input$goButton, {
+
     data_plot <- reactive({
       data_selected <- data_date %>%
         bind_cols(data_date[,input$radio_choices] %>%

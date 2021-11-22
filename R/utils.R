@@ -139,7 +139,7 @@ varsNames = function(vars) {
   names(allvars)[grepl("confirmed_rate_1M_pop", allvars)] = gsub("confirmed","prevalence",names(allvars)[grepl("confirmed_rate_1M_pop", allvars)])
   names(allvars)[grepl("deaths_rate", allvars)] = gsub("deaths","mortality",names(allvars)[grepl("deaths_rate", allvars)])
 
-  names(allvars)[grepl("vaccines", allvars)] = gsub("vaccines","vaccinated",names(allvars)[grepl("vaccines", allvars)])
+  names(allvars)[grepl("vaccines", allvars)] = gsub("vaccines","vaccine doses",names(allvars)[grepl("vaccines", allvars)])
 
   for(hospvar in .hosp_vars) {
     names(allvars)[grepl(paste0(hospvar), unlist(allvars))] = gsub(hospvar, names(.hosp_vars)[.hosp_vars == hospvar], names(allvars)[grepl(paste0(hospvar), unlist(allvars))] )
@@ -737,6 +737,8 @@ rate_calc = function(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE) {
   # remove latest NAs
   res = x/y
   res[is.infinite(res)] = NA
+  res[is.nan(res)] = NA
+
   res = round(pmax(pmin(res,cap), floor),digits)
   if (nawith0)
     res = replace_na(res, 0)
@@ -860,7 +862,7 @@ lw_vars_calc <- function(data, days = 7) {
     stop("Allow 7 14 and 30 as last days in lw_vars_calc")
 
   now = as.POSIXct(Sys.time()) # given time zone
-  LastDate =  as.Date(now - 40*60*60)
+  LastDate =  as.Date(now - delay_date())
 
   # remove all countries without updates in the last week
   data = data %>%
@@ -876,7 +878,6 @@ lw_vars_calc <- function(data, days = 7) {
 
     data7 = data7 %>% group_by(Country.Region) %>% mutate(maxpop = max(population)) %>% ungroup()
 
-
     data7$population =  data7$maxpop
     data7 = data7 %>%
       select(-maxpop)
@@ -891,18 +892,29 @@ lw_vars_calc <- function(data, days = 7) {
   # rename columns
   colnames(data7vars) = gsub("new","lw",colnames(data7vars))
   # calculate for hosp vars
-  lwcalc = function(x) {
-    x[1] - x[length(x)]
+  lwcalc_hosp = function(x, date) {
+    tdy <- max(date)
+    startday <- min(date)
+    x[date == tdy] - x[date == startday]
   }
   data7extra = data7 %>% group_by(Country.Region) %>%
     summarize(lw_positive_tests_rate = lw_positive_test_rate_calc(new_confirmed, new_tests),
-              across(all_of(as.vector(.hosp_vars)), ~lwcalc(.x), .names= "lw_{col}")) # last week of hospitalised
+              across(all_of(as.vector(.hosp_vars)), ~lwcalc_hosp(.x, date), .names= "lw_{col}")) # last week of hospitalised
 
   # add back population
   data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population"), drop = FALSE])) %>%
     right_join(data7extra) # right join simply to have them on the right
+  # save value for
+  data7today <- data7 %>%
+    filter( date == (AsOfDate - days +7))
 
-  aggrvars = setdiff(intersect(get_aggrvars(), names(data7vars)), "population")
+  if (!identical(sort(data7today$Country.Region), sort(data7vars$Country.Region)))
+    warning("Missing some countries in active lw calculation")
+  data7vars <- data7vars %>%
+    left_join(data7today[, c("Country.Region","active", "hosp")],
+              by = c(c("Country.Region")))
+
+  aggrvars = setdiff(intersect(get_aggrvars(), names(data7vars)), c("population", "active", "hosp"))
   # compute rates
   data7vars = data7vars %>%
     mutate(
@@ -913,6 +925,7 @@ lw_vars_calc <- function(data, days = 7) {
 
             lw_lethality_rate = rate_calc(lw_deaths, lw_confirmed, nawith0 = TRUE),
             lw_vaccines_rate_pop = rate_calc(lw_vaccines, population, cap = Inf),
+            lw_hosp_rate_active = rate_calc(hosp, active, cap = Inf), # use current var
 
            # lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 4),
            # lw_vaccines_rate_pop =  round(pmax(0, replace_na(lw_vaccines / population, 0)), digits = 5),
@@ -920,7 +933,9 @@ lw_vars_calc <- function(data, days = 7) {
            #lw_hosp_rate_active =  pmin(round(lw_hosp/lw_active, digits = 5), 1),
            #lw_icuvent_rate_hosp =  pmin(round(lw_icuvent/lw_hosp, digits = 4), 1),
            #lw_hosp_rate_1M_pop = round(10^6*lw_hosp/population, digits = 3)
-    ) %>% mutate(
+    ) %>%
+    select(- active, - hosp) %>% # remove active and hosp, required forlw_hosp_rate_active
+    mutate(
       across(all_of(as.vector(aggrvars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
     ) %>%
     mutate_if(is.numeric, list(function(x) {
@@ -964,8 +979,10 @@ get_aggrvars = function() {
   continents = c("Europe", "Asia", "Africa", "LatAm & Carib.", "Northern America", "Oceania")
   mainuicontinents = c("Europe", "Asia", "Africa", "LatAm", "NorthernAmerica", "Oceania")
   uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
+  adjective = c("europian", "asian", "african", "latin american", "northern america", "oceanian")
 
-  res = data.frame(tab = tabuicontinents, names = continents, mainui = mainuicontinents, ui = uicontinents, stringsAsFactors = FALSE)
+  res = data.frame(tab = tabuicontinents, names = continents, mainui = mainuicontinents, ui = uicontinents,
+                   adjective = adjective, stringsAsFactors = FALSE)
   if (!missing(idx)) {
     res = res[idx,, drop = FALSE]
   }
@@ -1033,7 +1050,8 @@ message_missing_country_days = function(data, sep = "<br/>") {
   missdays[[as.character(max(data$date))]] = unique(c(countries_notinlast, missdays[[as.character(max(data$date))]]))
 
   countries = unique(unlist(missdays))
-  msg = c("Numbers in the latest days can be understimated for multiple reasons,  for example cases can be revised and updated with delay after few days.")
+  #msg = tags$li("Numbers in the latest days can be understimated for multiple reasons,  for example cases can be revised and updated with delay after few days.")
+  msg = c("Latest Figures can be understimated for multiple reasons, for example cases can be revised and updated with delay after few days.")
 
   if (length(countries)>1) {
     country_miss = apply(sapply(countries, function(cc) {
@@ -1058,14 +1076,17 @@ message_missing_country_days = function(data, sep = "<br/>") {
     daysstr[ddays == ""] = "day."
     msgdays = paste("last", ddays, daysstr, sep = " ")
     textcountries = sapply(country, paste, collapse = ",")
-    msg1 = paste(textcountries, "have no data updates since",msgdays)
+    msg1 = paste(textcountries, "have no data updates in",msgdays)
     n.countrys = as.vector(sapply(country, length))
     msg1[n.countrys == 1] = sapply(msg1[n.countrys == 1],function(x){
       gsub("have","has",x)
     })
+
     msg = c(msg,"In our dataset the following areas miss the most recent data:",
-                msg1)
+            paste("<li>", msg1, "</li>"))
+
   }
+
   msg = paste(msg, collapse = sep)
   msg
 
@@ -1086,7 +1107,7 @@ message_missing_recovered = function(what = "Recovered", where = "Some countries
 #'
 #' @return character vector
 #'
-message_hosp_data = function(what = "Hospitalised, Vaccinated and Test", where = "some countries and areas", suffix = "where available") {
+message_hosp_data = function(what = "Hospitalised, Vaccine doses and Test", where = "some countries and areas", suffix = "where available") {
   paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
 }
 #' Color Palette for simple barplots

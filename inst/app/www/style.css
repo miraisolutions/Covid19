@@ -1,8 +1,8 @@
 
 body {
-  background-color: #fff;
+  background-color: #FFFFFF;
   font-family: Arial, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   color: black;
 }
 
@@ -143,11 +143,73 @@ small {
   color: #737373;
 }
 
-
 label {
   font-weight: normal;
 }
 
+ul.bodytext {
+  padding: 0px;
+  margin: 0;
+  text-align: left;
+  display: table;
+}
+li.bodytext {
+  padding: 0px;
+  margin: 0;
+}
+ul.bodytextplot {
+  padding: 0px;
+  margin: 0;
+  text-align: left;
+  display: table;
+}
+
+.bodytextplot {
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: black;
+  margin-left:10px;
+  margin-right:10px;
+  padding: 10px 30px 10px 30px";
+}
+
+.bodytext {
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: black;
+  margin-left: 50px;
+  margin-right:50px;
+  padding: 10px 50px 10px 50px";
+  align-content: center;
+}
+
+.sectiontitle {
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  color: black;
+  align-content: center;
+}
+
+.plottext {
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  color: black;<
+}
+
+.plottitle {
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: black;
+  margin-top:20px;
+  margin-bottom:20px;
+  align-content: center;
+  font-weight: bold;
+}
 /* fix inline radio multiline spacing */
 .form-control, .selectize-input {
   padding: 7px 10px;

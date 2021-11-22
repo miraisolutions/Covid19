@@ -2,7 +2,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for {shiny}.
 #'
 #' @noRd
 #'
@@ -12,10 +12,10 @@ mod_lineplots_day_contagion_ui <- function(id){
   tagList(
     splitLayout(
       cellWidths = c("50%", "50%"),
-      radioButtons(inputId = ns("radio_log_linear"), label = "",
-                   choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE),
-      radioButtons(inputId = ns("radio_1Mpop"), label = "",
-                 choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop", inline = TRUE)
+      div(class = "plottext",radioButtons(inputId = ns("radio_log_linear"), label = "",
+                   choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)),
+      div(class = "plottext", radioButtons(inputId = ns("radio_1Mpop"), label = "",
+                 choices = c("Total" = "tot", "Over 1M people" = "oneMpop"), selected = "oneMpop", inline = TRUE))
     ),
     plotOutput(ns("line_plot_day_contagion"))
   )
