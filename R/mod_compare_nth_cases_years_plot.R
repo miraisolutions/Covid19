@@ -105,8 +105,8 @@ mod_compare_timeline_plot_ui <- function(id, titles = 1:3,
     fluidRow(
       column(7,
              offset = 4,
-             selectInput(inputId = ns("plot_indicator"), label = "Select view",
-                         choices = alltitles, selected = alltitles[1])
+             div(class = "plottext", selectInput(inputId = ns("plot_indicator"), label = "Select view",
+                         choices = alltitles, selected = alltitles[1]))
       )#,
     ),
     tabPanel("Panel plot",
@@ -179,7 +179,7 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id, Internal parameters for {shiny}.
 #' @param vars variable names in the drop down option.
 #' @param istop logical to choose title, if top n_highlight countries are selected
 #' @param n_highlight number of countries to highlight
@@ -207,7 +207,7 @@ mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
 
   plottitle = paste0("Timeline per calendar year")
 
-  divtitle =  switch(writetitle,div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),NULL)
+  divtitle =  switch(writetitle,div(class = "plottitle", plottitle, align = "center"),NULL)
 
   # UI ----
   tagList(
@@ -217,17 +217,17 @@ mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
     fluidRow(
       column(4,
              offset = 1,
-             selectInput(inputId = ns("radio_indicator"), label = div(style = "font-size:10px","Choose Variable"),
-                         choices = choices_plot, selected = selectvar)
+             div(class = "plottext",selectInput(inputId = ns("radio_indicator"), label = "Choose Variable",
+                         choices = choices_plot, selected = selectvar))
       ),
       column(4, offset = 1,
-             selectInput(inputId = ns("time_frame"), label = div(style = "font-size:10px","Choose time-frame"),
-                         choices = c("Last Month" = "lstmonth", "Full year" = "sincestart"), selected = "lstmonth")
+             div(class = "plottext",selectInput(inputId = ns("time_frame"), label = "Choose time-frame",
+                         choices = c("Last Month" = "lstmonth", "Full year" = "sincestart"), selected = "lstmonth"))
       ),
     ),
     withSpinner(plotlyOutput(ns("plot"), height = 400)),
     #div(uiOutput(ns("caption")), align = "center")
-    div(htmlOutput(ns("caption")), align = "center", height = 10)
+    div(htmlOutput(ns("caption")), align = "center", height = 10, class = "plottext")
   )
 
 
@@ -384,7 +384,9 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       # rollw = FALSE because Value has been rolled
       p <- plot_all_highlight(df_out(), log = FALSE, text = "Year", percent = ifelse(input$radio_indicator %in% .rate_vars, TRUE, FALSE),
                               date_x = TRUE, g_palette,  secondline = FALSE, rollw = rollw(), keeporder = TRUE, formatdate = "%d-%m", barplot = FALSE)
-      tooltips = tooltip = c("text", "x_tooltip", "y_tooltip")
+      #tooltips = tooltip = c("text", "x_tooltip", "y_tooltip")
+      tooltips = tooltip = c("text")
+
       if (rollw())
         tooltips = c(tooltips, "z_tooltip")
       p <- p %>%
@@ -395,9 +397,10 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
         dat
       })
 
-      if (length(unique(df_out()$Status)) == 1)
-        p <- p %>%
-        plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant"))
+      #if (length(unique(df_out()$Status)) == 1)
+      p <- p %>%
+          #plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", itemsizing = "constant", title = ""))
+          plotly::layout(legend = list(itemsizing = "constant", title = ""))
 
       p
 

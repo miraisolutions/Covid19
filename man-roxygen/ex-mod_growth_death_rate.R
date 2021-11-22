@@ -186,7 +186,7 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- get_datahub(country = "France", lev = 2) %>%
+    orig_data <- get_datahub(country = "India", lev = 2) %>%
       get_timeseries_by_contagion_day_data()
 
 
@@ -210,13 +210,14 @@ if (interactive()) {
     com_palette = c(col = "Reds", rev = TRUE, skip = 3)
 
     callModule(mod_barplot_server, "plot", orig_data_aggregate_today, #plottitle = c("Confirmed status"),
+               istop = FALSE, n_highlight = length(orig_data_aggregate_today$Country.Region),
                # g_palette = list("plot_1" = barplots_colors$confirmed,
                #                  calc = FALSE),
                g_palette = list("plot_1" = barplots_colors$confirmed$uniform,
                                 "plot_2" = barplots_colors$hosp$uniform,
                                 calc = FALSE),
-               pickvariable = list("plot_1" = "confirmed_rate_1M_pop","plot_2" = "hosp_rate_1M_pop"),
-               plottitle =  c("Confirmed positive cases per area", "Hospitalised and Intensive Care per area"),
+               #pickvariable = list("plot_1" = "confirmed_rate_1M_pop","plot_2" = "hosp_rate_1M_pop"),
+               plottitle =  c("Confirmed positive cases per area", "Hospitalised and Intensive Care per area")
 
                #pickvariable = list("plot_1" = "confirmed")
                )

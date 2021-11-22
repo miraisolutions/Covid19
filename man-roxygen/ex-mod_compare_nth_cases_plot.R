@@ -33,7 +33,7 @@ if (interactive()) {
   ui <- fluidPage(
     tagList(
       Covid19Mirai:::golem_add_external_resources(),
-      mod_compare_nth_cases_plot_ui("lines_points_plots", istop = FALSE, oneMpop = FALSE)
+      mod_compare_nth_cases_plot_ui("lines_points_plots", istop = FALSE, oneMpop = TRUE, tests = TRUE)
     )
   )
   server <- function(input, output, session) {
@@ -54,7 +54,7 @@ if (interactive()) {
         filter(Country.Region %in% countries)
     #})
     callModule(mod_compare_nth_cases_plot_server, "lines_points_plots", countries_data,
-               nn = n, n_highlight = length(countries), istop = FALSE, oneMpop = FALSE)
+               nn = n, n_highlight = length(countries), istop = FALSE, oneMpop = TRUE, tests = TRUE)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

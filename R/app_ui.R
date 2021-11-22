@@ -12,7 +12,7 @@ app_ui <- function(request) {
   # to be used in Global and Comparison
   w <- 7 # number of days of outbreak. Default 7
   now = as.POSIXct(Sys.time()) # given time zone
-  AsOfDate =  as.character(as.Date(now - 40*60*60))
+  AsOfDate =  as.character(as.Date(now - delay_date()))
 
   message("app_ui")
   tagList(
@@ -77,10 +77,20 @@ app_ui <- function(request) {
 
       ), # end Header fluidRow
       modalDialog(title = "Covid19Mirai loading message",
-                  p("Data is growing, allow 30 seconds for the first page to load."),
-                  p("Load first page fully before navigating to others.")),
+                  tags$p("Data is growing. Allow 30 seconds for the first page to load."),
+                  tags$p("Load first page fully before navigating to others.")),
 
       # body ----
+      #' tags$head(
+      #'   # Note the wrapping of the string in HTML()
+      #'   tags$style(HTML("
+                #@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+      #'           body {
+      #'             background-color: #FFEBCD;
+      #'             color: white;
+      #'           }"
+      #'   ))
+      #' ),
       #tabsetPanel(
       navbarPage(
         "",

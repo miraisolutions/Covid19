@@ -10,12 +10,15 @@
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom stringr str_to_title
 mod_continent_ui <- function(id, uicont, nn = 1000){
 
   contInfo = .getContinents()
 
-  continent.name = contInfo$names[contInfo$ui == uicont]
-  message("Continent in UI: ", continent.name)
+  continent.name = stringr::str_to_title(contInfo$name[contInfo$ui == uicont])
+  continent.adj = stringr::str_to_title(contInfo$adjective[contInfo$ui == uicont])
+
+  message("Continent in UI: ", continent.adj)
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
@@ -31,74 +34,71 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
          ),
      ),
     hr(),
+    div(h4(continent.name, "page"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    hr(),
     div(
       HTML(paste(
-        paste0(continent.name, " countries are grouped in Macro Areas as defined by United Nations."),
-        paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
-        message_conf_case("Areas", nn, "are included"),
+        paste0(continent.adj, " countries are grouped in Macro Areas as defined by United Nations.",
+        " The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
+        #message_conf_case("Areas", nn, "are included"),
         # paste0("Only Areas with more than ", nn, " confirmed cases, and outbreaks longer than ", w, " days considered."),
         #paste0("Contagion day 0 is the first day with more than ", nn ," cases."),
-        sep = "<br/>"))
-
-    ),
+        sep = "<br/>")), class = "bodytext"),
     hr(),
     div(
-      htmlOutput(ns(paste("ind_missing_days_countries", uicont , sep = "_")))
-    )
-    ,
+      htmlOutput(ns(paste("ind_missing_days_countries", uicont , sep = "_"))), class = "bodytext"),
     hr(),
     div(
-      htmlOutput(ns(paste("subcontinents_countries", uicont , sep = "_")))
-    )
-    ,
+      htmlOutput(ns(paste("subcontinents_countries", uicont , sep = "_"))), class = "bodytext"),
     hr(),
     div(h4("Macro Area Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     withSpinner(mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))),
     hr(),
-    fluidRow(
-      column(5,
-             #withSpinner(uiOutput(ns(paste("rateplots_cont", uicont , sep = "_"))))
-             withSpinner(mod_barplot_ui(ns("rate_plots_cont")))
-
-      ),
-      column(7,
-             withSpinner(#uiOutput(ns(paste("lines_points_plots_cont", uicont , sep = "_"))))
-                mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", istop = FALSE, nn = 1000, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
-             )
+    fluidPage(
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("cmp_withincont_confirmed"), type = "confirmed"))
       )
     ),
+    hr(),
     fluidRow(
-      column(6,
-             withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
-      ),
       column(6,
              withSpinner(
-               mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
-                  )
+               mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", istop = FALSE, nn = 1000, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
+             )
+      ),
+      column(6,
+             withSpinner(mod_barplot_ui(ns("rate_plots_cont"), text = FALSE))
+
+      )
+    ),
+    hr(),
+    fluidPage(
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("cmp_withincont_vax"), type = "vaccines"))
       )
     ),
    hr(),
-   div(h3("Country Plots within Continent"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+   div(h4("Country Plots within Continent"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
    hr(),
-   fluidRow(
-     column(6,
-            withSpinner(mod_scatterplot_ui(ns("scatterplot_prev_countries")))
-     ),
-     column(6,
-            withSpinner(mod_scatterplot_ui(ns("scatterplot_stringency_vars_countries"), growth = FALSE))
+   column(12,
+          withSpinner(mod_group_plot_ui(ns("cmp_confirmed_countries"), type = "confirmed", infotext = FALSE))
+   ),
+   hr(),
+   column(12,
+          withSpinner(mod_group_plot_ui(ns("cmp_hosp_countries"), type = "hosp", infotext = TRUE))
+   ),
+   hr(),
+   column(12,
+          withSpinner(mod_group_plot_ui(ns("cmp_stringency_countries"), type = "stringency", infotext = TRUE))
+   ),
+   hr(),
+   fluidPage(
+     column(12,
+            withSpinner(mod_group_plot_ui(ns("cmp_cont_countries_vax"), type = "vaccines", infotext = FALSE))
      )
    ),
    hr(),
-   fluidRow(
-     column(6,
-            withSpinner(mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL))
-     ),
-     column(6,
-            withSpinner(mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE))
-     )
-   ),
-   hr(),
-   div(h3("Country Heat Maps within Continent"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+   div("Country Heat Maps within Continent", align = "center", class = "sectiontitle"),
    hr(),
    fluidRow(
      column(6,
@@ -106,8 +106,7 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
             #withSpinner(uiOutput(ns(paste("map_countries_confirmed", uicont , sep = "_"))))
      ),
      column(6,
-            withSpinner(mod_map_area_calc_ui(ns("map_countries_active")))
-            #withSpinner(uiOutput(ns(paste("map_countries_active", uicont , sep = "_"))))
+            withSpinner(mod_map_area_calc_ui(ns("map_countries_hosp")))
      )
    ),
    fluidRow(
@@ -205,9 +204,11 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     add_growth_death_rate()
 
   lw_subcontinent_data_filtered =  lw_vars_calc(subcontinent_data_filtered)
+  pw_subcontinent_data_filtered =  lw_vars_calc(subcontinent_data_filtered, 14)
 
   subcontinent_data_filtered_today = subcontinent_data_filtered_today  %>%
-    left_join(lw_subcontinent_data_filtered %>% select(-population))
+    left_join(lw_subcontinent_data_filtered %>% select(-population))  %>%
+    left_join(pw_subcontinent_data_filtered %>% select(-population))
 
 
   continent_data_today <-
@@ -289,18 +290,27 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   # scatterplot
 
-  callModule(mod_scatterplot_server, "scatterplot_plots_cont",
-             subcontinent_data_filtered_today, nmed = nn, n_highlight = length(subcontinents),
-             istop = FALSE, countries = subcontinents)
+  callModule(mod_group_plot_server, "cmp_withincont_confirmed", data_today = subcontinent_data_filtered_today, type = "confirmed", istop = FALSE,
+             scatterplotargs = list(countries = subcontinents, nmed = nn),
+             barplotargs = list(g_palette = list("plot_1" = subcont_palette, calc = FALSE), sortbyvar = FALSE), tests = FALSE)
 
 
-  callModule(mod_barplot_server, "barplot_vax_index_cont", subcontinent_data_filtered_today,
-             n_highlight = length(subcontinents), istop = FALSE,
-             plottitle = c("Vaccination Status"),
-             g_palette = list("plot_1" = subcont_palette,
-                              calc = FALSE),
-             sortbyvar = FALSE
-             )
+  # callModule(mod_scatterplot_server, "scatterplot_plots_cont",
+  #            subcontinent_data_filtered_today, nmed = nn, n_highlight = length(subcontinents),
+  #            istop = FALSE, countries = subcontinents)
+  #
+  #
+  # callModule(mod_barplot_server, "barplot_vax_index_cont", subcontinent_data_filtered_today,
+  #            n_highlight = length(subcontinents), istop = FALSE,
+  #            plottitle = c("Vaccination Status"),
+  #            g_palette = list("plot_1" = subcont_palette,
+  #                             calc = FALSE),
+  #            sortbyvar = FALSE
+  #            )
+  callModule(mod_group_plot_server, "cmp_withincont_vax", data_today = subcontinent_data_filtered_today, type = "vaccines", istop = FALSE,
+             scatterplotargs = list(countries = subcontinents, nmed = nn),
+             barplotargs = list(g_palette = list("plot_1" = subcont_palette, calc = FALSE), sortbyvar = FALSE))
+
 
   # Compute Last week variables
   data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
@@ -329,40 +339,69 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
     )
     })
 
-  callModule(mod_scatterplot_server, "scatterplot_prev_countries",
-             data_cont_maps, nmed = nn, n_highlight = length(countries200000),
-             istop = FALSE, countries = countries200000)
+  callModule(mod_group_plot_server, "cmp_confirmed_countries", data_today = data_cont_maps, type = "confirmed", istop = FALSE,
+             scatterplotargs = list(countries = countries200000, nmed = nn),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+      )
 
+  callModule(mod_group_plot_server, "cmp_hosp_countries", data_today = data_cont_maps, type = "hosp", istop = FALSE,
+             scatterplotargs = list(countries = countries200000, nmed = nn),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+  )
 
-  callModule(mod_scatterplot_server, "scatterplot_stringency_vars_countries",
-             data_cont_maps, nmed = nn, n_highlight = length(countries200000),
-             istop = FALSE, countries = countries200000, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
+  callModule(mod_group_plot_server, "cmp_stringency_countries", data_today = data_cont_maps, type = "stringency", istop = FALSE,
+             scatterplotargs = list(countries = countries200000, nmed = nn),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+  )
+  # callModule(mod_barplot_server, "confirmed_hosp_plot_countries", data_cont_maps, #plottitle = c("Confirmed status"),
+  #            istop = FALSE, n_highlight = length(countries200000),
+  #            g_palette = list("plot_1" = barplots_colors$confirmed$uniform,
+  #                             "plot_2" = barplots_colors$hosp$uniform,
+  #                             calc = FALSE),
+  #            pickvariable = list("plot_1" = "confirmed_rate_1M_pop","plot_2" = "hosp_rate_1M_pop"),
+  #            plottitle =  c("Confirmed positive cases per Country", "Hospitalised and Intensive Care per Country")
+  # )
 
+  # callModule(mod_scatterplot_server, "scatterplot_prev_countries",
+  #            data_cont_maps, nmed = nn, n_highlight = length(countries200000),
+  #            istop = FALSE, countries = countries200000)
+  #
+  #
+  # callModule(mod_scatterplot_server, "scatterplot_stringency_vars_countries",
+  #            data_cont_maps, nmed = nn, n_highlight = length(countries200000),
+  #            istop = FALSE, countries = countries200000, xvar = "stringency_index", growth = FALSE, fitted = FALSE)
+  #
 
   # Rate plots ----
+  # Vaccination
 
-  callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
-             n_highlight = length(data_cont_maps$Country.Region), istop = FALSE,
-             plottitle = c("Vaccination Status"),
-             g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
-                              calc = TRUE)#,
-             #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
-             )
-
-
-  callModule(mod_scatterplot_server, "scatterplot_vax_vars_countries",
-             data_cont_maps, nmed = nn, n_highlight = length(countries200000),
-             istop = FALSE, countries = countries200000, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
-
+  # callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
+  #            n_highlight = length(data_cont_maps$Country.Region), istop = FALSE,
+  #            plottitle = c("Vaccination Status"),
+  #            g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
+  #                             calc = TRUE)#,
+  #            #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
+  #            )
+  #
+  #
+  # callModule(mod_scatterplot_server, "scatterplot_vax_vars_countries",
+  #            data_cont_maps, nmed = nn, n_highlight = length(countries200000),
+  #            istop = FALSE, countries = countries200000, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
+  callModule(mod_group_plot_server, "cmp_cont_countries_vax", data_today = data_cont_maps, type = "vaccines", istop = FALSE,
+             scatterplotargs = list(countries = countries200000, nmed = nn),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+  )
   #############################################
   #maps confirmed
   callModule(mod_map_area_calc_server, "map_countries_confirmed", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "confirmed")
 
   #maps active
-  callModule(mod_map_area_calc_server, "map_countries_active", df = data_cont_maps,  countries_data_map_cont,
-             area = cont, variable = "active")
-
+  # callModule(mod_map_area_calc_server, "map_countries_active", df = data_cont_maps,  countries_data_map_cont,
+  #            area = cont, variable = "active")
+  #maps active
+  callModule(mod_map_area_calc_server, "map_countries_hosp", df = data_cont_maps,  countries_data_map_cont,
+             area = cont, variable = "hospitalised")
   #maps growth vs prev
   callModule(mod_map_area_calc_server, "map_countries_growthvsprev", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "growth vs prev")
