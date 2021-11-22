@@ -240,14 +240,14 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
 mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               nn = 1000,
                                               n_highlight = min(5,length(unique(df$Country.Region))), istop = TRUE, g_palette = graph_palette, datevar = "date",
-                                              actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, oneMpop = TRUE, secondline = NULL, areasearch = FALSE){
+                                              actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, vax = FALSE, oneMpop = TRUE, secondline = NULL, areasearch = FALSE,
+                                              vars = .vars_nthcases_plot){
   ns <- session$ns
   df$Date = df[[datevar]]
   barp = reactive(length(unique(df$Country.Region)) ==1 &&  req(input$time_frame) != "sincestart")
 
   if (oneMpop || areasearch ) {
     if (areasearch) {
-
       countries =   df %>%
         select(date,AsOfDate, Country.Region,confirmed) %>%
         filter(date == AsOfDate) %>%
@@ -255,14 +255,11 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       selected_countries = head(countries$Country.Region,3)
 
     }
-    # stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
-    # choices_plot = choice_nthcases_plot(.vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
-    #varselect = input$radio_indicator
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
 
       stridxvars = ifelse(strindx && is.null(secondline), TRUE, FALSE)
-      choices_plot = choice_nthcases_plot(.vars_nthcases_plot, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
+      choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = stridxvars, vax = vax) # do not add stringency_index in possible choices
       #varselect = input$radio_indicator
 
       if (oneMpop) {
@@ -282,14 +279,14 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         updateSelectInput(
           session,
           inputId = "radio_indicator",
-          label = "",
+          label = "Choose Variable",
           choices = choices_plot, selected = varselect
         )
       }
 
       if ( areasearch) {
         # Update select_areas
-        areaselect = if (is.null(input$select_areas) )
+        areaselect = if (is.null(input$select_areas) || (!input$select_areas %in% df$Country.Region))
           selected_countries
         else
           input$select_areas
@@ -304,7 +301,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   cum_vars = intersect(get_cumvars(), names(df))
   rollw = reactive(!req(input$radio_indicator) %in% cum_vars) # do not roll if cumulativ var
 
-  calc_line_plot = function(dat, .vars_nthcases_plot, cum_vars) {
+  calc_line_plot = function(dat, vars, cum_vars) {
 
     reactSelectVar = reactive({
 
@@ -315,7 +312,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       varname
     })
     # select only needed variables
-    dat = dat %>% .[, c("Country.Region", "date","AsOfDate","Date", "population", intersect(.vars_nthcases_plot, names(dat)))]
+    dat = dat %>% .[, c("Country.Region", "date","AsOfDate","Date", "population",intersect(c(vars,"confirmed"), names(dat)))]
 
     # filter off x before nn
     date_first_contagion = min(dat$date[dat$confirmed >= nn], na.rm = TRUE)
@@ -325,8 +322,10 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       message("df_data_1Mpop:")
       data = dat
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
-        if (all(is.na(data$population)))
+        if (all(is.na(data$population))) {
+          browser()
           stop("Missing population data")
+        }
         #if (!(paste(req(input$radio_indicator),"rate_1M_pop", sep = "_") %in% names(data))) {
         #varname = gsub("rate_1M_pop$","",reactSelectVar$radio_indicator)
         #reactSelectVar$radio_indicator = gsub("rate_1M_pop$","",reactSelectVar())
@@ -448,29 +447,33 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     #rollw = TRUE
     # Plot -----
     output$plot <- renderPlotly({
-      #secondline = NULL
-      #if (!(input$radio_indicator %in% get_aggrvars()) || (input$time_frame != "sincestart"))
-      # if  (!(input$radio_indicator %in% get_aggrvars()) )
-      #   rollw = reactiveVal(FALSE)
-      p <- plot_all_highlight(df_out(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
-                              date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw(), keeporder = keeporder, barplot = barp())
-      tooltips = "text"
-      p <- p %>%
-        plotly::ggplotly(tooltip = tooltips)
 
-      p <- p %>%
-            plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
-                                         itemwidth = 10, itemsizing = "constant",
-                                         hovermode = 'closest', clickmode = "event", title = ""),
-                           yaxis = list(autorange = TRUE, fixedrange = TRUE))
+      if (length(reactSelectVar()) == 0) {
+        p <- blank_plot(where = "selected area", add = " All data missing")
+      } else {
+        #secondline = NULL
+        #if (!(input$radio_indicator %in% get_aggrvars()) || (input$time_frame != "sincestart"))
+        # if  (!(input$radio_indicator %in% get_aggrvars()) )
+        #   rollw = reactiveVal(FALSE)
+        p <- plot_all_highlight(df_out(), log = log(), text = "Area", percent = ifelse(reactSelectVar() %in% .rate_vars, TRUE, FALSE),
+                                date_x = ifelse(datevar == "date", TRUE,FALSE), g_palette,  secondline = secondline, rollw = rollw(), keeporder = keeporder, barplot = barp())
+        tooltips = "text"
+        p <- p %>%
+          plotly::ggplotly(tooltip = tooltips)
 
+        p <- p %>%
+          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
+                                       itemwidth = 10, itemsizing = "constant",
+                                       hovermode = 'closest', clickmode = "event", title = ""),
+                         yaxis = list(autorange = TRUE, fixedrange = TRUE))
+      }
       p
 
     })
   } # end calc_line_plot
   if (!areasearch) {
     keeporder = FALSE
-    calc_line_plot(df, .vars_nthcases_plot, cum_vars)
+    calc_line_plot(df, vars, cum_vars)
   } else {
     keeporder = TRUE
 
@@ -480,7 +483,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         df_select = df %>% filter(Country.Region %in% input$select_areas)
         idx = order(match(df_select$Country.Region, input$select_areas))
         df_select = df_select[idx,]
-        calc_line_plot(df_select, .vars_nthcases_plot, cum_vars)
+        calc_line_plot(df_select, vars, cum_vars)
      # }
     })
   }
@@ -489,8 +492,8 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     #if  (!(input$radio_indicator %in% get_aggrvars()) || (input$time_frame != "sincestart"))
     # if  (!(input$radio_indicator %in% get_aggrvars()) )
     #   rollw = reactiveVal(FALSE)
-    message("barp = ", barp())
-    message("rollw = ", rollw())
+    # message("barp = ", barp())
+    # message("rollw = ", rollw())
 
     caption_explain = paste0(ifelse(rollw(),
                                     "Line computed as rolling weekly average. ", ""))
