@@ -1051,7 +1051,7 @@ message_missing_country_days = function(data, sep = "<br/>") {
 
   countries = unique(unlist(missdays))
   #msg = tags$li("Numbers in the latest days can be understimated for multiple reasons,  for example cases can be revised and updated with delay after few days.")
-  msg = c("Numbers in the latest days can be understimated for multiple reasons,  for example cases can be revised and updated with delay after few days.")
+  msg = c("Latest Figures can be understimated for multiple reasons, for example cases can be revised and updated with delay after few days.")
 
   if (length(countries)>1) {
     country_miss = apply(sapply(countries, function(cc) {
@@ -1076,7 +1076,7 @@ message_missing_country_days = function(data, sep = "<br/>") {
     daysstr[ddays == ""] = "day."
     msgdays = paste("last", ddays, daysstr, sep = " ")
     textcountries = sapply(country, paste, collapse = ",")
-    msg1 = paste(textcountries, "have no data updates since",msgdays)
+    msg1 = paste(textcountries, "have no data updates in",msgdays)
     n.countrys = as.vector(sapply(country, length))
     msg1[n.countrys == 1] = sapply(msg1[n.countrys == 1],function(x){
       gsub("have","has",x)

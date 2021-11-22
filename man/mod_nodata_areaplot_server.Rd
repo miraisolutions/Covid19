@@ -7,11 +7,11 @@
 mod_nodata_areaplot_server(input, output, session, country, what = "Vaccines")
 }
 \arguments{
+\item{input, output, session}{Internal parameters for {shiny}.}
+
 \item{country}{character country name}
 
 \item{what}{variable name}
-
-\item{id, input, output, session}{Internal parameters for {shiny}.}
 }
 \description{
 No data in variable text Server Function

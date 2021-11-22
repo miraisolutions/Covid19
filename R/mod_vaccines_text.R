@@ -6,6 +6,8 @@
 #'
 #' @import shiny
 #' @importFrom lubridate day
+#'
+#' @rdname mod_vaccines_text
 mod_vaccines_text_ui <- function(id) {
   targetdate = Sys.Date()+50
   targetdate_day = lubridate::day(targetdate)
@@ -61,6 +63,7 @@ mod_vaccines_text_ui <- function(id) {
 #' @param what variable name
 #'
 #' @importFrom graphics plot.new
+#' @rdname mod_vaccines_text
 mod_novaccines_text_server <- function(input, output, session, country, what = "Vaccines") {
 
   output$vax_text = renderUI({
@@ -76,6 +79,7 @@ mod_novaccines_text_server <- function(input, output, session, country, what = "
 }
 #' Vaccines text Server Function
 #'
+#' @param input,output,session Internal parameters for {shiny}.
 #' @param df dataset whole time series.
 #' @param dftoday dataset with today and weekly data.
 #'

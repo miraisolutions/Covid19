@@ -282,10 +282,12 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
 
   if (stack) {
     if (hosp) {
-      df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0, na.rm = TRUE)
+      if (sum(df$Status == "icuvent") > 0)
+        df$Value[df$Status == "hosp"] = pmax(df$Value[df$Status == "hosp"] -  df$Value[df$Status == "icuvent"], 0, na.rm = TRUE)
     }
     if (active_hosp) {
-      df$Value[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0, na.rm = TRUE)
+      if (sum(df$Status == "hosp") > 0)
+        df$Value[df$Status == "active"] = pmax(df$Value[df$Status == "active"] -  df$Value[df$Status == "hosp"], 0, na.rm = TRUE)
     }
 
     df <- df %>%
@@ -361,14 +363,15 @@ time_evol_area_plot <- function(df, stack = F, log = F, text = "", hosp = FALSE,
   if (stack) {
     if (hosp) {
       # adjust hosp data here
-      p$data$Value[p$data$Status == "hosp"] =
-        #p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "vent"] +  p$data$Value[p$data$Status == "icu"]
-        p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "icuvent"]
+      if (sum(p$data$Status == "icuvent")>1)
+        p$data$Value[p$data$Status == "hosp"] =
+                    p$data$Value[p$data$Status == "hosp"] +  p$data$Value[p$data$Status == "icuvent"]
 
     }
     if (active_hosp) {
-      p$data$Value[p$data$Status == "active"] =
-        p$data$Value[p$data$Status == "active"] +  p$data$Value[p$data$Status == "hosp"]
+      if (sum(p$data$Status == "hosp")>1)
+        p$data$Value[p$data$Status == "active"] =
+                    p$data$Value[p$data$Status == "active"] +  p$data$Value[p$data$Status == "hosp"]
     }
   }
   p
@@ -988,9 +991,11 @@ scatter_plot <- function(df, med, x.min = c(0.9, 1.1), y.min = c(0.99,1.01), xva
   if (grepl("confirmed", xvar) && grepl("^growth", yvar)) {
     color_cases = c("yellow3", "darkgreen", "#dd4b39", "#E69F00")
   } else if (grepl("stringency", xvar)) {
-    color_cases = c("#dd4b39","darkgreen", "gray3","#3c8dbc")
+    color_cases = c("#3c8dbc","darkgreen", "gray3","#dd4b39")
   } else if (grepl("vaccines", xvar)) {
     color_cases = c("darkgreen","deepskyblue1", "deepskyblue4","gray3")
+  } else if (grepl("confirmed", xvar) && grepl("^hosp", yvar)) {
+    color_cases = c("deepskyblue1","darkgreen", "gray3","deepskyblue4")
   } else
     color_cases = c("#dd4b39","darkgreen", "gray3","#3c8dbc")
 

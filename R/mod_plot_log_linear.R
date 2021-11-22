@@ -104,7 +104,6 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
         select(-Country.Region)
 
       output$plot_area_select <- renderPlotly({
-
         p <- area_data %>%
           time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp,active_hosp = active_hosp)
         #p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label

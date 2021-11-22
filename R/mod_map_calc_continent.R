@@ -778,7 +778,7 @@ pal_fun = function(var,x){
   }  else if ((grepl("growth",var) && grepl("prev",var))) {
     colorFactor(palette = c("darkgreen", "yellow3", "#E69F00","#dd4b39"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   } else if ((grepl("growth",var) && grepl("stringency",var))) {
-    colorFactor(palette = c("darkgreen", "#dd4b39", "#3c8dbc","gray3"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
+    colorFactor(palette = c("darkgreen", "#3c8dbc", "#dd4b39","gray3"), domain = domain(x), ordered = TRUE, na.color = "lightgray")
   } else if (var %in% c(hospvars_1M_pop, .hosp_vars, prefix_var(.hosp_vars), prefix_var(hospvars_1M_pop))) {
     if (grepl("hosp", var)) {
       colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")

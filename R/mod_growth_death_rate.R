@@ -39,7 +39,9 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
                    ui_confirmed =  list(
                           var = list(label = "Choose Variable",
                                     choices = varsNames(c(prefix_var("confirmed", c("")),
-                                                          prefix_var("confirmed_rate_1M_pop", c("")))),
+                                                          prefix_var("confirmed_rate_1M_pop", c("")),
+                                                          prefix_var("tests_rate_1M_pop", c("")),
+                                                          prefix_var("positive_tests_rate", c("")))),
                                     selected = "confirmed_rate_1M_pop"),
                           time = list(label = "Time-line",
                                       choices = list("Total" = "total", "Last Week" = "lw", "Past Week" = "pw"),

@@ -18,25 +18,19 @@ mod_continent_comparison_ui <- function(id){
     div(h4("Continents Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont")),
     fluidRow(
-      # column(6,
-      #        withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
-      # ),
-      # column(6,
-      #        withSpinner(mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL))
-      # )
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_confirmed_cont"), type = "confirmed"))
       )
     ),
     fluidRow(
-      column(5,
-             #withSpinner(uiOutput(ns("rateplots_cont")))
-             withSpinner(mod_barplot_ui(ns("rate_plots_cont")))
-      ),
-      column(7,
+      column(6,
              # withSpinner(uiOutput(ns("lines_points_plots_cont")))
              # )
-      withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), istop = FALSE, nn = 1000, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE))
+             withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), istop = FALSE, nn = 1000, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE))
+      ),
+      column(6,
+             #withSpinner(uiOutput(ns("rateplots_cont")))
+             withSpinner(mod_barplot_ui(ns("rate_plots_cont"), text = FALSE))
       )
     ),
     fluidRow(
@@ -103,7 +97,8 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   callModule(mod_group_plot_server, "cmp_confirmed_cont", data_today = continent_data_filtered_today, type = "confirmed", istop = FALSE,
              scatterplotargs = list(countries = continents, nmed = nn),
-             barplotargs = list(g_palette = list("plot_1" = graph_palette[1:length(continents)], calc = FALSE))
+             barplotargs = list(g_palette = list("plot_1" = graph_palette[1:length(continents)], calc = FALSE)),
+             tests = FALSE
 
   )
 

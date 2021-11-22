@@ -36,44 +36,30 @@ mod_country_comparison_ui <- function(id, nn = 1000){
       mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion")),
     #),
     fluidRow(
-      column(5,
-             withSpinner(mod_barplot_ui(ns("rate_plots")))
-
-      ),
-      column(7,
+      column(6,
              withSpinner(uiOutput(ns("lines_points_plots")))
-             )
+      ),
+      column(6,
+             withSpinner(mod_barplot_ui(ns("rate_plots"), text = FALSE))
+
+      )
     ),
     fluidRow(
-      # column(6,
-      #        withSpinner(mod_scatterplot_ui(ns("scatterplot_plots")))
-      # ),
-      # column(6,
-      #        withSpinner(mod_stackedbarplot_ui(ns("status_stackedbarplot")))
-      # )
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_countries_conf"), type = "confirmed"))
       )
     ),
     fluidRow(
-      # column(6,
-      #        withSpinner(mod_scatterplot_ui(ns("scatterplot_stringency"), growth = FALSE))
-      #
-      # ),
-      # column(6,
-      #        withSpinner(mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL))
-      # )
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("cmp_countries_hosp"), type = "hosp"))
+      )
+    ),
+    fluidRow(
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_countries_str"), type = "stringency"))
       )
     ),
     fluidRow(
-      # column(6,
-      #        withSpinner(mod_scatterplot_ui(ns("scatterplot_vax_vars"), growth = FALSE))
-      # ),
-      # column(6,
-      #        withSpinner( mod_barplot_ui(ns("barplot_vax_index"), plot1 = "ui_vaccines", plot2 = NULL))
-      # )
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_countries_vax"), type = "vaccines"))
       )
@@ -187,7 +173,12 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
                                     g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],                                                      calc = FALSE),
                                     sortbyvar = FALSE)
       )
-
+      callModule(mod_group_plot_server, "cmp_countries_hosp", data_today = countries_data_today, type = "hosp", istop = FALSE,
+                 scatterplotargs = list(countries = inputcountries(), nmed = nn),
+                 barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"),
+                                    g_palette = list("plot_1" = graph_palette[1:length(input$select_countries)],                                                      calc = FALSE),
+                                    sortbyvar = FALSE)
+      )
       # set nmed to 10000 like in global page, istop == FALSE
       #callModule(mod_scatterplot_server, "scatterplot_stringency", all_countries_data_today, nmed = 10000, n_highlight = length(input$select_countries), istop = FALSE, countries = inputcountries(), xvar = "stringency_index", growth = FALSE, fitted = FALSE)
 

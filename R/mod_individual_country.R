@@ -16,6 +16,8 @@ mod_ind_country_ui <- function(id){
     mod_caseBoxes_ui(ns("ind_count-boxes")),
     mod_caseBoxes_ui(ns("ind_count-boxes_hosp"), hosp = TRUE),
     hr(),
+    div( h4("Covid 19 Swiss Dashboard"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    hr(),
     div(
       htmlOutput(ns("ind_from_nth_case")), class = "bodytext"
     ),
@@ -47,7 +49,6 @@ mod_ind_country_ui <- function(id){
       )
     ),
     fluidRow(
-
       column(6,
              #withSpinner(mod_compare_nth_cases_plot_ui(ns("ind_lines_points_plots_tot"),istop = FALSE,nn = 1, tests = TRUE, hosp = TRUE, strindx = FALSE, oneMpop = FALSE, vax = TRUE))
              withSpinner(mod_compare_timeline_plot_ui(ns("ind_lines_points_plots_tot"), titles = 1:2, istop = FALSE, tests = TRUE, hosp = TRUE, strindx = TRUE, oneMpop = FALSE, vax = TRUE, nn = 100))
@@ -71,6 +72,11 @@ mod_ind_country_ui <- function(id){
     #          )
     #   )
     # ),
+    fluidRow(
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
+      )
+    ),
     fluidRow(
       column(12,
              withSpinner(mod_group_plot_ui(ns("ind_country_vax"), type = "vaccines"))
@@ -269,8 +275,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
     #areaUI("ind_country_subarea")
   })
 
-
-  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
+  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, hospitalFlag = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
 
 
   # callModule(mod_scatterplot_server, "scatterplot_plots_canton",
@@ -283,6 +288,10 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   #            g_palette = list("plot_1" = barplots_colors$vaccines$calc,
   #                             calc = TRUE),
   #            pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+
+  callModule(mod_group_plot_server, "ind_country_hosp", data_today = area_data_2_aggregate_today, nn = 10, type = "hosp", istop = FALSE,
+             scatterplotargs = list(nmed = 10),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
 
   callModule(mod_group_plot_server, "ind_country_vax", data_today = area_data_2_aggregate_today, nn = 10, type = "vaccines", istop = FALSE,
              scatterplotargs = list(nmed = 10),

@@ -15,8 +15,10 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
 
   contInfo = .getContinents()
 
-  continent.name = stringr::str_to_title(contInfo$adjective[contInfo$ui == uicont])
-  message("Continent in UI: ", continent.name)
+  continent.name = stringr::str_to_title(contInfo$name[contInfo$ui == uicont])
+  continent.adj = stringr::str_to_title(contInfo$adjective[contInfo$ui == uicont])
+
+  message("Continent in UI: ", continent.adj)
   ns <- NS(id)
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
@@ -32,10 +34,12 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
          ),
      ),
     hr(),
+    div(h4(continent.name, "page"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    hr(),
     div(
       HTML(paste(
-        paste0(continent.name, " countries are grouped in Macro Areas as defined by United Nations."),
-        paste0("The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
+        paste0(continent.adj, " countries are grouped in Macro Areas as defined by United Nations.",
+        " The Areas are represented by the colors in the heatmap above, used also in the graphs of this page."),
         #message_conf_case("Areas", nn, "are included"),
         # paste0("Only Areas with more than ", nn, " confirmed cases, and outbreaks longer than ", w, " days considered."),
         #paste0("Contagion day 0 is the first day with more than ", nn ," cases."),
@@ -51,29 +55,20 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
     withSpinner(mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))),
     hr(),
     fluidPage(
-      # column(6,
-      #        withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_cont")))
-      # ),
-      # column(6,
-      #        withSpinner(
-      #          mod_barplot_ui(ns("barplot_vax_index_cont"), plot1 = "ui_vaccines", plot2 = NULL)
-      #             )
-      # )
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_withincont_confirmed"), type = "confirmed"))
       )
     ),
     hr(),
     fluidRow(
-      column(5,
-             #withSpinner(uiOutput(ns(paste("rateplots_cont", uicont , sep = "_"))))
-             withSpinner(mod_barplot_ui(ns("rate_plots_cont")))
-
-      ),
-      column(7,
-             withSpinner(#uiOutput(ns(paste("lines_points_plots_cont", uicont , sep = "_"))))
-                mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", istop = FALSE, nn = 1000, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
+      column(6,
+             withSpinner(
+               mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), selectvar = "new_confirmed", istop = FALSE, nn = 1000, hosp = FALSE, tests = FALSE, oneMpop = TRUE, vax = TRUE)
              )
+      ),
+      column(6,
+             withSpinner(mod_barplot_ui(ns("rate_plots_cont"), text = FALSE))
+
       )
     ),
     hr(),
@@ -96,29 +91,8 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
    column(12,
           withSpinner(mod_group_plot_ui(ns("cmp_stringency_countries"), type = "stringency", infotext = TRUE))
    ),
-   # hr(),
-   # fluidRow(
-   #   column(12,
-   #          withSpinner(mod_barplot_ui(ns("confirmed_hosp_plot_countries"), plot1 = "ui_confirmed", plot2  = "ui_hosp"))
-   #   )
-   # ),
-   # hr(),
-   # fluidRow(
-   #   column(6,
-   #          withSpinner(mod_scatterplot_ui(ns("scatterplot_prev_countries")))
-   #   ),
-   #   column(6,
-   #          withSpinner(mod_scatterplot_ui(ns("scatterplot_stringency_vars_countries"), growth = FALSE))
-   #   )
-   # ),
    hr(),
    fluidPage(
-   #   column(6,
-   #          withSpinner(mod_barplot_ui(ns("barplot_vax_countries"), plot1 = "ui_vaccines", plot2  = NULL))
-   #   ),
-   #   column(6,
-   #          withSpinner(mod_scatterplot_ui(ns("scatterplot_vax_vars_countries"), growth = FALSE))
-   #   )
      column(12,
             withSpinner(mod_group_plot_ui(ns("cmp_cont_countries_vax"), type = "vaccines", infotext = FALSE))
      )
@@ -131,13 +105,8 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
             withSpinner(mod_map_area_calc_ui(ns("map_countries_confirmed")))
             #withSpinner(uiOutput(ns(paste("map_countries_confirmed", uicont , sep = "_"))))
      ),
-     # column(6,
-     #        withSpinner(mod_map_area_calc_ui(ns("map_countries_active")))
-     #        #withSpinner(uiOutput(ns(paste("map_countries_active", uicont , sep = "_"))))
-     # )
      column(6,
             withSpinner(mod_map_area_calc_ui(ns("map_countries_hosp")))
-            #withSpinner(uiOutput(ns(paste("map_countries_active", uicont , sep = "_"))))
      )
    ),
    fluidRow(
@@ -323,7 +292,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   callModule(mod_group_plot_server, "cmp_withincont_confirmed", data_today = subcontinent_data_filtered_today, type = "confirmed", istop = FALSE,
              scatterplotargs = list(countries = subcontinents, nmed = nn),
-             barplotargs = list(g_palette = list("plot_1" = subcont_palette, calc = FALSE), sortbyvar = FALSE))
+             barplotargs = list(g_palette = list("plot_1" = subcont_palette, calc = FALSE), sortbyvar = FALSE), tests = FALSE)
 
 
   # callModule(mod_scatterplot_server, "scatterplot_plots_cont",

@@ -1,5 +1,5 @@
 #' No data in variable text Server Function
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param input,output,session Internal parameters for {shiny}.
 #' @param country character country name
 #' @param what variable name
 #'

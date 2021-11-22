@@ -19,6 +19,7 @@ mod_global_ui <- function(id){
     fluidRow(
       mod_map_ui(ns("map_ui"))
     ),
+    div(h4("Global view of the pandemic"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     hr(),
     div(timeline_info(hosp = FALSE), class = "bodytext"),
     br(),
@@ -44,7 +45,7 @@ mod_global_ui <- function(id){
              mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
       ),
       column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, n_highlight = 5, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE)
+             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, n_highlight = 5, nn = 10000, hosp = TRUE, oneMpop = TRUE, vax = TRUE)
       )
     ),
     hr(),
@@ -55,36 +56,16 @@ mod_global_ui <- function(id){
     ),
     hr(),
     fluidRow(
-      # column(6,
-      #        mod_scatterplot_ui(ns("plot_scatterplot_glob"))
-      #        ),
-      # column(6,
-      #        #mod_stackedbarplot_ui(ns("plot_stackedbarplot_status"))
-      #        mod_barplot_ui(ns("barplot_hosp"), plot1 = "ui_hosp", plot2 = NULL)
-      #
-      # )
       column(12,
              mod_group_plot_ui(ns("plot_hosp_glob"), type = "hosp")
       )
     ),
     fluidRow(
-      # column(6,
-      #        mod_scatterplot_ui(ns("plot_scatterplot_stringency_glob"), growth = FALSE)
-      # ),
-      # column(6,
-      #        mod_barplot_ui(ns("barplot_stringency_index"), plot1 = "ui_stringency", plot2 = NULL)
-      # )
       column(12,
              mod_group_plot_ui(ns("plot_str_glob"), type = "stringency")
       )
     ),
     fluidRow(
-      # column(6,
-      #        mod_scatterplot_ui(ns("plot_scatterplot_vax_glob"), growth = FALSE)
-      # ),
-      # column(6,
-      #        mod_barplot_ui(ns("barplot_vax_index"), plot1 = "ui_vaccines", plot2 = NULL)
-      # )
       column(12,
              mod_group_plot_ui(ns("plot_vax_glob"), type = "vaccines")
       )
@@ -218,7 +199,7 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
   # > comparison plot from day of nth contagion
 
   # remove countries with few cases nn = 10000
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = FALSE, oneMpop = TRUE, vax = TRUE, istop = TRUE, n_highlight = 5)
+  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = TRUE, oneMpop = TRUE, vax = TRUE, istop = TRUE, n_highlight = 5)
 
   # > growth_death_rate
   callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highlight = 10)
