@@ -77,10 +77,20 @@ app_ui <- function(request) {
 
       ), # end Header fluidRow
       modalDialog(title = "Covid19Mirai loading message",
-                  p("Data is growing. Allow 30 seconds for the first page to load."),
-                  p("Load first page fully before navigating to others.")),
+                  tags$p("Data is growing. Allow 30 seconds for the first page to load."),
+                  tags$p("Load first page fully before navigating to others.")),
 
       # body ----
+      #' tags$head(
+      #'   # Note the wrapping of the string in HTML()
+      #'   tags$style(HTML("
+                #@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+      #'           body {
+      #'             background-color: #FFEBCD;
+      #'             color: white;
+      #'           }"
+      #'   ))
+      #' ),
       #tabsetPanel(
       navbarPage(
         "",
