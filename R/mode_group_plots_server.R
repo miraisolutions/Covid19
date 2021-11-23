@@ -270,7 +270,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
     }
     for (var.i in var) {
       msgtop = ifelse(all(topN[[var.i]] == ""), "",
-                      paste0(" Top ",n," areas with the highest values (from left): \"", paste(topN[[var.i]], collapse = "\",\""), "\".") )
+                      paste0(" Top ",n," areas with the highest values (from left): \"", paste(topN[[var.i]], collapse = "\", \""), "\".") )
       msgdiff = switch(as.character(is.na(diffwv[[var.i]]$diffMaxv)),
                        "TRUE" = tags$p(msgtop),
                        "FALSE" = tags$p("Highest increase from past week: ", strong(.paste_name(diffwv[[var.i]]$diffMaxC))," ",
