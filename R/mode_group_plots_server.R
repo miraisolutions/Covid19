@@ -120,7 +120,7 @@ mod_group_plot_ui <- function(id, type = c("vaccines", "stringency", "confirmed"
            "keep")
   }
 
-  fluidPage(
+  tagList(
     section_title(type, titlesection),
     br(),
     # conditionalPanel(
