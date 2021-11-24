@@ -1,5 +1,3 @@
-### Covid19Mirai 2.6.1-9000
-
 ### Covid19Mirai 2.6.1 (2021-11-22)
 - Updated and replaced plots in multiple pages (#200)
 - Added text info in pages
