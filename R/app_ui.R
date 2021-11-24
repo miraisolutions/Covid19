@@ -78,7 +78,8 @@ app_ui <- function(request) {
       ), # end Header fluidRow
       modalDialog(title = "Covid19Mirai loading message",
                   tags$p("Data is growing. Allow 30 seconds for the first page to load."),
-                  tags$p("Load first page fully before navigating to others.")),
+                  tags$p("Load first page fully before navigating to others."),
+                  tags$p("Dashboard designed for  desktop view.")),
 
       # body ----
       #' tags$head(
