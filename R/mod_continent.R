@@ -54,7 +54,7 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
     div(h4("Macro Area Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     withSpinner(mod_lineplots_day_contagion_ui(ns("lineplots_day_contagion_cont"))),
     hr(),
-    fluidPage(
+    fluidRow(
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_withincont_confirmed"), type = "confirmed"))
       )
@@ -72,7 +72,7 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
       )
     ),
     hr(),
-    fluidPage(
+    fluidRow(
       column(12,
              withSpinner(mod_group_plot_ui(ns("cmp_withincont_vax"), type = "vaccines"))
       )
@@ -92,7 +92,7 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
           withSpinner(mod_group_plot_ui(ns("cmp_stringency_countries"), type = "stringency", infotext = TRUE))
    ),
    hr(),
-   fluidPage(
+   fluidRow(
      column(12,
             withSpinner(mod_group_plot_ui(ns("cmp_cont_countries_vax"), type = "vaccines", infotext = FALSE))
      )

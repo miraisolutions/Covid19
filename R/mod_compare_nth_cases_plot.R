@@ -70,6 +70,7 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
                                           actives = TRUE, tests = FALSE, hosp = FALSE, strindx = FALSE, oneMpop = TRUE, vax = FALSE, selectvar = "new_confirmed", areasearch = FALSE,
                                           writetitle = TRUE){
   ns <- NS(id)
+  # TODO: fix height depending on numbe of widgets
   # if(!oneMpop && grepl("1M_pop$", selectvar))
   #   stop("oneMpop is F but selectvar is ", selectvar)
   choices_plot = choice_nthcases_plot(vars, actives, tests, hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices

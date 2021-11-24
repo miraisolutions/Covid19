@@ -111,7 +111,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
         p <- p %>%
           #ggplotly(tooltip = c("x", "y", "text")) %>%
           ggplotly(tooltip = c("text")) %>%
-          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
+          plotly::layout(legend = list(orientation = "h", y = 1.05, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
                                itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
                          yaxis = list(autorange = TRUE, fixedrange = TRUE))
 
@@ -132,7 +132,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
         p <- p %>%
           #ggplotly(tooltip = c("x", "y", "text")) %>%
           ggplotly(tooltip = c("text")) %>%
-          plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
+          plotly::layout(legend = list(orientation = "h", y = 1.05, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
                                itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
                          yaxis = list(autorange = TRUE, fixedrange = TRUE))
 
@@ -153,7 +153,7 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
           p <- p %>%
             #ggplotly(tooltip = c("x", "y", "text")) %>%
             ggplotly(tooltip = c("text")) %>%
-            plotly::layout(legend = list(orientation = "h", y = 1.1, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
+            plotly::layout(legend = list(orientation = "h", y = 1.05, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
                                  itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
                            yaxis = list(autorange = TRUE, fixedrange = TRUE))
           p

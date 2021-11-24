@@ -126,7 +126,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     p <- p %>%
       ggplotly(tooltip = c("text", "fill"))   %>%
       #layout(legend = list(orientation = "v", y = 1, yanchor = "left"))
-      layout(legend = list(orientation = "h", y = 1.1, yanchor = "top", xanchor = "middle", x = 0))
+      layout(legend = list(orientation = "h", y = 1.05, yanchor = "top", xanchor = "middle", x = 0))
 
 
     p$x$data <-

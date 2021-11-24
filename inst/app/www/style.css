@@ -169,9 +169,9 @@ ul.bodytextplot {
   font-family: Arial, sans-serif;
   font-size: 11px;
   color: black;
-  margin-left:10px;
-  margin-right:10px;
-  padding: 10px 30px 10px 30px";
+  margin-left: 2em;
+  margin-right:2em;
+  padding: 1em 2em 1em 2px";
 }
 
 .bodytext {
@@ -179,9 +179,9 @@ ul.bodytextplot {
   font-family: Arial, sans-serif;
   font-size: 12px;
   color: black;
-  margin-left: 50px;
-  margin-right:50px;
-  padding: 10px 50px 10px 50px";
+  margin-left: 1.5em;
+  margin-right:1.5em;
+  padding: 1em 2em 1em 2px";
   align-content: center;
 }
 
@@ -239,8 +239,11 @@ input[type=checkbox], input[type=radio] {
   margin: 0;
 }
 
-
-
+/* navbar style */
+.navbar {
+  margin-left: 0em;
+  margin-right: 0em;
+}
 /* tabsetPanel style */
 .nav-tabs {
   border-bottom: 1px solid #FF9966;
