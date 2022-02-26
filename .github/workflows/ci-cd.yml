@@ -4,7 +4,7 @@ on:
   pull_request:
   schedule:
     # every day at 16 UTC
-    - cron: "0 16 * * *"
+    - cron: "0 08,16,21 * * *"
 name: CI-CD
 
 # renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions

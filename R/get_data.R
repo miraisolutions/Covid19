@@ -972,15 +972,21 @@ rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
 
 #' get as Of date, i.e. latest day in the data
 #' @param char logical, convert date to character
+#' @importFrom lubridate hour with_tz
 #' @noRd
 get_asofdate <- function(char = TRUE) {
   if (exists("AsOfDateBuildData")) {
     AsOfDate = get("AsOfDateBuildData")
   } else {
-    now = as.POSIXct(Sys.time()) # given time zone
-    # Building happens at 16 UTC.
+
+    now_day_UTC = lubridate::with_tz(as.POSIXct(Sys.time()), tzone = "UTC") # given time zone
+    now_hour_UTC = lubridate::hour(now_day_UTC)
+    # Building happens at 08,16,21  UTC.
     #It is sufficient to take always yesterday
-    AsOfDate =  as.Date(now - delay_date(24))
+    remove_hour_UTC <- ifelse(now_hour_UTC < 16, 48, 24)
+    now_day_UTC <- as.Date(now_day_UTC)
+
+    AsOfDate =  as.Date(now - delay_date(remove_hour_UTC))
   }
   if (char)
     AsOfDate = as.character(AsOfDate)
