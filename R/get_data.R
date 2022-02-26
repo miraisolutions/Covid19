@@ -38,8 +38,10 @@ get_timeseries_data <- function() {
   )
 }
 #' determine latest date by subtracting from today the below computation
-delay_date <- function(){
-  40*60*60
+#' @param n.hours integer, number of hours to be delayed, default = 40
+#' @noRd
+delay_date <- function(n.hours = 40){
+  n.hours*60*60
 }
 
 #' Get daily data
@@ -969,7 +971,9 @@ get_asofdate <- function(char = TRUE) {
     AsOfDate = get("AsOfDateBuildData")
   } else {
     now = as.POSIXct(Sys.time()) # given time zone
-    AsOfDate =  as.Date(now - delay_date())
+    # Building happens at 16 UTC.
+    #It is sufficient to take always yesterday
+    AsOfDate =  as.Date(now - delay_date(24))
   }
   if (char)
     AsOfDate = as.character(AsOfDate)

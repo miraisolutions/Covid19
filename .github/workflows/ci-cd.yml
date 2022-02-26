@@ -3,8 +3,8 @@ on:
   push:
   pull_request:
   schedule:
-    # every day at 13:00 UTC excluding Saturday and Sunday
-    - cron: "0 18 * * *"
+    # every day at 16 UTC
+    - cron: "0 16 * * *"
 name: CI-CD
 
 # renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions
