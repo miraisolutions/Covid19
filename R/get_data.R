@@ -187,7 +187,7 @@ build_data <- function() {
     get_timeseries_by_contagion_day_data()
 
   message("** Save data as DATA.rds **")
-  saveRDS(orig_data_with_ch, "inst/datahub/DATA.rds")
+  saveRDS(list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2), "inst/datahub/DATA.rds")
 
   NULL
 }

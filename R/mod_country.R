@@ -252,7 +252,10 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     area_data_2 = get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
 
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
-     # adjust hospitalised data if we have better in lev 2
+      # Align AsOfDate with level 1
+      Lev1AsOfDate <- max(country_data$AsOfDate)
+      area_data_2 <- area_data_2 %>% filter(date <= Lev1AsOfDate)
+     # adjust hospitalized data if we have better in lev 2
       if (sum(area_data_2$hosp, na.rm = TRUE) > sum(country_data$hosp, na.rm = TRUE)*1.5) {
         message("Update Lev 1 hospitalised data based on lev2 fo country ", req(input$select_country))
 
