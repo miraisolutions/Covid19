@@ -332,8 +332,11 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 
     # take yesterday, data are updated hourly and they are complete around mid day, 40h later
     # regardless of the timezone, select the day 40h ago
-    now = as.POSIXct(Sys.time()) # given time zone
-    AsOfDate =  as.character(as.Date(now - delay_date()))
+    # at 17pm CEST the new day is triggered
+    # now = as.POSIXct(Sys.time()) # given time zone
+    # AsOfDate =  as.character(as.Date(now - delay_date()))
+    AsOfDate <- get_asofdate()
+
 
     message("Maximum date set to: ", AsOfDate)
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
@@ -594,8 +597,9 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   lm60 = max(df$date) - 60
   lm30 = max(df$date) - 30
 
-  now = as.POSIXct(Sys.time()) # given time zone
-  LastDate =  as.Date(now - delay_date())
+  # now = as.POSIXct(Sys.time()) # given time zone
+  # LastDate =  as.Date(now - delay_date())
+  LastDate <- get_asofdate()
 
   res = df %>% #ungroup() %>%
     filter(date >= validdates) %>%
@@ -947,3 +951,20 @@ rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
 
   df_rescaled
 }
+
+#' get as Of date, i.e. latest day in the data
+#' @param char logical, convert date to character
+#' @noRd
+get_asofdate <- function(char = TRUE) {
+  if (exists("AsOfDateBuildData")) {
+    AsOfDate = get("AsOfDateBuildData")
+  } else {
+    now = as.POSIXct(Sys.time()) # given time zone
+    AsOfDate =  as.Date(now - delay_date())
+  }
+  if (char)
+    AsOfDate = as.character(AsOfDate)
+  AsOfDate
+}
+
+

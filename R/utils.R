@@ -861,9 +861,9 @@ lw_vars_calc <- function(data, days = 7) {
   if (!days %in% c(7,14,30))
     stop("Allow 7 14 and 30 as last days in lw_vars_calc")
 
-  now = as.POSIXct(Sys.time()) # given time zone
-  LastDate =  as.Date(now - delay_date())
-
+  # now = as.POSIXct(Sys.time()) # given time zone
+  # LastDate =  as.Date(now - delay_date())
+  LastDate <- get_asofdate(char = FALSE)
   # remove all countries without updates in the last week
   data = data %>%
       filter(AsOfDate > (LastDate-7))

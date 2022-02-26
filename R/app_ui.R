@@ -11,8 +11,10 @@ app_ui <- function(request) {
   n <- 1000 #  min number of cases for a country to be considered. Default 1000
   # to be used in Global and Comparison
   w <- 7 # number of days of outbreak. Default 7
-  now = as.POSIXct(Sys.time()) # given time zone
-  AsOfDate =  as.character(as.Date(now - delay_date()))
+  # now = as.POSIXct(Sys.time()) # given time zone
+  # AsOfDate =  as.character(as.Date(now - delay_date()))
+  AsOfDate <- get_asofdate()
+
 
   message("app_ui")
   tagList(

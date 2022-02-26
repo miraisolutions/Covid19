@@ -324,7 +324,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       data = dat
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
         if (all(is.na(data$population))) {
-          browser()
           stop("Missing population data")
         }
         #if (!(paste(req(input$radio_indicator),"rate_1M_pop", sep = "_") %in% names(data))) {
