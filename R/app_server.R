@@ -29,13 +29,13 @@ app_server <- function(input, output, session) {
   orig_data       = orig_data_with_ch$orig_data
   orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
 
-  orig_data = orig_data %>%
-    get_timeseries_by_contagion_day_data()
+  # orig_data = orig_data %>%
+  #   get_timeseries_by_contagion_day_data()
+  #
+  # orig_data_ch_2 = orig_data_ch_2 %>%
+  #     get_timeseries_by_contagion_day_data()
 
-  orig_data_ch_2 = orig_data_ch_2 %>%
-      get_timeseries_by_contagion_day_data()
-
-  pop_data = get_pop_datahub()
+  pop_data <- get_pop_datahub()
 
   #align continents from map with pop
   #country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(pop_data$Country.Region, unique(as.character(countries_data_map$NAME)))])
@@ -61,13 +61,6 @@ app_server <- function(input, output, session) {
 
   orig_data_aggregate <-
     build_data_aggr(orig_data, pop_data)
-
-  # output$last_update <- renderText({
-  #   paste0("Latest updated: ",
-  #          max(orig_data$date)
-  #   )
-  # })
-
 
   glob_var = reactiveVal(0)
   summary_var = reactiveVal(0)

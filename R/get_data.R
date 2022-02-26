@@ -164,7 +164,13 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 
   message("replace hosp data (",paste(.hosp_vars, collapse = ","), ") in lev1 dataset with lev2 swiss data")
 
-  orig_data = combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
+  orig_data <- combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
+
+  orig_data <- orig_data %>%
+    get_timeseries_by_contagion_day_data()
+
+  orig_data_ch_2 <- orig_data_ch_2 %>%
+    get_timeseries_by_contagion_day_data()
 
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
