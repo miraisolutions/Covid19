@@ -4,7 +4,7 @@ on:
   pull_request:
   schedule:
     # every day at 16 UTC
-    - cron: "0 08,16,21 * * *"
+    - cron: "0 8,16,21 * * *"
 name: CI-CD
 
 # renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions
@@ -47,7 +47,7 @@ jobs:
       - name: Fetch and rebuild latest data
         #if: github.event_name == 'schedule'
         run: |
-          pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE)
+          pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
           build_data()
         shell: Rscript {0}
 
