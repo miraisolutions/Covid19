@@ -169,6 +169,20 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
 
+#' Build data in GutHub action yml and save as RDS
+#' @rdname get_datahub
+#'
+#'
+#' @export
+build_data <- function() {
+
+  orig_data_with_ch <- get_datahub_fix_ch()
+  message("** Save data as DATA.rds **")
+  saveRDS(orig_data_with_ch, "inst/datahub/DATA.rds")
+
+  NULL
+}
+
 
 #' replace hospital data of level1 with level2 data
 #'

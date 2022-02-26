@@ -20,9 +20,12 @@ app_server <- function(input, output, session) {
   # map
   rds_map = "WorldMap_sp_spl.rds"
   message("read map from RDS ", rds_map)
-  countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
+  countries_data_map <- readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-  orig_data_with_ch <- get_datahub_fix_ch()
+  # orig_data_with_ch <- get_datahub_fix_ch()
+  rds_data = "DATA.rds"
+  orig_data_with_ch = readRDS(file =  file.path(system.file("./datahub", package = "Covid19Mirai"),rds_data))
+
   orig_data       = orig_data_with_ch$orig_data
   orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
 
