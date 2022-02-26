@@ -166,12 +166,6 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 
   orig_data <- combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
 
-  orig_data <- orig_data %>%
-    get_timeseries_by_contagion_day_data()
-
-  orig_data_ch_2 <- orig_data_ch_2 %>%
-    get_timeseries_by_contagion_day_data()
-
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
 
@@ -183,6 +177,15 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 build_data <- function() {
 
   orig_data_with_ch <- get_datahub_fix_ch()
+  orig_data <- orig_data_with_ch$orig_data
+  orig_data_ch_2 <- orig_data_with_ch$orig_data_ch_2
+
+  orig_data <- orig_data %>%
+    get_timeseries_by_contagion_day_data()
+
+  orig_data_ch_2 <- orig_data_ch_2 %>%
+    get_timeseries_by_contagion_day_data()
+
   message("** Save data as DATA.rds **")
   saveRDS(orig_data_with_ch, "inst/datahub/DATA.rds")
 
