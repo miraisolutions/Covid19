@@ -191,6 +191,13 @@ build_data <- function() {
   message("** Save data as DATA.rds **")
   saveRDS(list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2), "inst/datahub/DATA.rds")
 
+  # read data for default country at level 2
+  area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)
+
+  message("** Save data as DATA.rds **")
+
+  saveRDS(list(area_data_2 = area_data_2), "inst/datahub/Selected_Country.rds")
+
   NULL
 }
 

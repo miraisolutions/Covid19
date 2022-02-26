@@ -1,5 +1,27 @@
 #' mod_compare_timeline_plot_ui UI Function
 #'
+#' @description selects dates from last months of different years.
+#'
+#' @param yy years
+#' @param dd dates
+#' @param nmonth length of month
+#' @param ylength lenth of year
+#'
+#' @noRd
+#'
+lmonth_dates_calc <- function(yy,dd, nmonth = 31, ylength = 365) {
+  calyears = unique(yy)
+
+  dates_lst_month = max(dd) - nmonth- ylength * seq(along = calyears) # TODO: to be changed
+  dates_today = max(dd) - ylength * seq(along = calyears) # TODO: to be changed
+
+  dates_keep <- lapply(seq(along = calyears), function(i) {
+    seq.Date(dates_lst_month[i], dates_today[i], by = 1)
+  }) %>% unlist()
+  dates_keep
+}
+#' mod_compare_timeline_plot_ui UI Function
+#'
 #' @description A shiny Module.
 #'
 #' @param varInternal numeric variable vector.
@@ -13,16 +35,20 @@ rescale_from_start = function(var, category, lstmonth = FALSE, desc = FALSE) {
 
   if (lstmonth) {
     fromLast = ifelse(desc, TRUE, FALSE)
-    reptimes = unique(table(category)[as.character(unique(category))])
+    # reptimes = unique(table(category)[as.character(unique(category))])
+    reptimes = as.integer(table(category)[as.character(unique(category))])
+
     # if(length(unique(reptimes)) == 1) # if countries all have same lengths then rep behaves differently
     #   reptimes = unique(reptimes)
     idx_first_day = which(!duplicated(category, fromLast = fromLast))
     # use each or times depending on the order of categories
-    reparg = "each"
-    if (identical(tail(category, length(unique(category))), unique(category) ))
+    # reparg = "each"
+    # if (identical(tail(category, length(unique(category))), unique(category) ))
       reparg = "times"
 
-    last_day_of_prev_cat = rep(var[idx_first_day], each = reptimes)
+    #last_day_of_prev_cat = rep(var[idx_first_day], each = reptimes)
+    last_day_of_prev_cat = rep(var[idx_first_day], times = reptimes)
+
     argsrep = list(var[idx_first_day], reptimes)
     names(argsrep) = c("x",reparg)
     last_day_of_prev_cat = do.call("rep", argsrep)
@@ -88,7 +114,7 @@ mod_compare_timeline_plot_ui <- function(id, titles = 1:3,
                                         selectvar = "new_confirmed", writetitle = FALSE)
     ),
     tabPanel("Timeline per calendar year",
-             mod_compare_nth_cases_years_plot_ui(ns("lines_plot"), vars = .vars_nthcases_plot,
+             mod_compare_nth_cases_years_plot_ui(ns("cmp_lines_plot"), vars = .vars_nthcases_plot,
                                                  n_highlight = n_highlight,
                                                  istop = istop, tests = tests, hosp = hosp, strindx = strindx, vax = vax,
                                                  selectvar = "new_deaths", writetitle = FALSE)
@@ -151,7 +177,7 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
 
     switch(req(input$plot_indicator),
            "Timeline per calendar year" = {
-             callModule(mod_compare_nth_cases_years_plot_server, "lines_plot",df,
+             callModule(mod_compare_nth_cases_years_plot_server, "cmp_lines_plot",df,
                         nn = nn,
                         n_highlight = n_highlight, istop = istop, g_palette = graph_palette, datevar = datevar,
                         secondline = NULL)#, secondline = "stringency_index")
@@ -267,7 +293,6 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
                                                     secondline = NULL){
   ns <- session$ns
   df$Date = df[[datevar]]
-
   cum_vars = intersect(get_cumvars(), names(df))
   rollw = reactive(!req(input$radio_indicator) %in% cum_vars) # do not roll if cumulative var
 
@@ -304,27 +329,32 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
     #     dat
     #
     # })
+    .date_first_var = function(d, var, datevar = "date") {
+      min(d[[datevar]][d[[var]] > 0], na.rm = TRUE)-1 # remove one day
+    }
     df_roll <- reactive({
       data = dat
+      # current_year <- year(Sys.time())
+      # filter off other days
+      data = data[data$date >= .date_first_var(data, input$radio_indicator), , drop = FALSE]
+
       if (rollw()) {
+
         message("compute rolling average")
         # override variable.
         data = data %>%
-          #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
+          #mutate(WeeklyAvg = zoo::rollapplyr(Value, 2, mean, partial=TRUE, align = "right")) %>%
           #mutate(!!sym(input$radio_indicator) := rollAvg(!!sym(input$radio_indicator),date))
           mutate(WeeklyAvgVal := rollAvg(!!sym(input$radio_indicator),date))
 
       }
-      data = data[data$date >= date_first_var(), , drop = FALSE]
+
       data
     })
 
-      # filter off x before nn
-    date_first_var = reactive({
-      min(dat$date[dat[[input$radio_indicator]] > 0], na.rm = TRUE)-1 # remove one day
-    })
+    # filter off x before nn
 
-    lstmonth = reactive({ifelse(!is.null(input$time_frame) && (input$time_frame != "sincestart"), TRUE, FALSE)})
+    # lstmonth = reactive({ifelse(!is.null(input$time_frame) && (input$time_frame != "sincestart"), TRUE, FALSE)})
 
     df_data_timeframe <- reactive({
       message("df_data_timeframe")
@@ -332,18 +362,50 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       #data = data[data$datae >= datae_first_var, , drop = FALSE]
       #lstmonth = FALSE
       if (!is.null(input$time_frame)) {
-        if (input$time_frame == "sincestart") {
-          #data = data[data$datae >= datae_first_var, , drop = FALSE]
-          #lstmonth = FALSE
-          # } else if (input$time_frame == "lst6month") {
-          #   datae_lst_6month = max(max(data$datae) - 30*6,datae_first_var) # TODO: to be changed
-          #   data = data[data$date >= date_lst_6month, , drop = FALSE]
-        } else if (input$time_frame == "lstmonth") {
+
+        startm = month(as.Date(max(data$date)- 31))
+
+        lstmonth = ifelse(!is.null(input$time_frame) && (input$time_frame != "sincestart"), TRUE, FALSE)
+
+
+        # if (input$time_frame == "sincestart") {
+        #   #data = data[data$datae >= datae_first_var, , drop = FALSE]
+        #   #lstmonth = FALSE
+        #   # } else if (input$time_frame == "lst6month") {
+        #   #   datae_lst_6month = max(max(data$datae) - 30*6,datae_first_var) # TODO: to be changed
+        #   #   data = data[data$date >= date_lst_6month, , drop = FALSE]
+        # } else
+        if (lstmonth) {
           #rollw = reactiveVal(FALSE)
 
-          date_lst_month = max(data$date) - 31-365 # TODO: to be changed
-          data = data[data$Date >= date_lst_month & data$Date <= max(data$date) -365, , drop = FALSE]
-          #lstmonth = TRUE
+          # lmonth_dates_calc <- function(yy,dd, nmonth = 31, ylength = 365) {
+          #   calyears = unique(yy)
+          #   dates_lst_month = max(dd) - nmonth- ylength * seq(along = calyears) # TODO: to be changed
+          #   dates_today = max(data$date) - ylength * seq(along = calyears) # TODO: to be changed
+          #
+          #   dates_keep <- lapply(seq(along = calyears), function(i) {
+          #     seq.Date(dates_lst_month[i], dates_today[i], by = 1)
+          #   }) %>% unlist()
+          #   dates_keep
+          # }
+          dates_keep <- lmonth_dates_calc(data$year, data$date)
+
+          # calyears = unique(data$year)
+          # dates_lst_month = max(data$date) - 31- 365 * seq(along = calyears) # TODO: to be changed
+          # dates_today = max(data$date) - 365 * seq(along = calyears) # TODO: to be changed
+          #
+          #
+          # dates_keep <- lapply(seq(along = calyears), function(i) {
+          #   seq.Date(dates_lst_month[i], dates_today[i], by = 1)
+          # }) %>% unlist()
+          # dates_keep is numeric but it works for Date class
+          data = data[data$Date %in% dates_keep, , drop = FALSE]
+
+          # seq.Date(dates_lst_month, dates_today, by = 1)
+          # date_lst_month = data$date - 31-365 # TODO: to be changed, leap year
+          #
+          # data = data[data$Date >= date_lst_month & data$Date <= max(data$date) -365, , drop = FALSE]
+          # #lstmonth = TRUE
         }
       }
       if (any(data$d.year>0) && (input$radio_indicator %in% cum_vars)) {
@@ -353,7 +415,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
         data = data %>%
           mutate( # add aggregated vars
             #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(data = .x, years = years)) # use all_of
-            across(all_of(as.vector(input$radio_indicator)), ~rescale_from_start(var = .x, category = d.year, lstmonth = lstmonth(), desc = desc)) # use all_of
+            across(all_of(as.vector(input$radio_indicator)), ~rescale_from_start(var = .x, category = d.year, lstmonth = lstmonth, desc = desc)) # use all_of
           )
       }
       data
@@ -362,6 +424,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       message("df_out")
       data = df_data_timeframe()
 
+      #data$Date = format(data$Date, "%m-%d")
       varsfinal = c("Country.Region", "year", input$radio_indicator, "Date")
       if (rollw())
         varsfinal = c(varsfinal, "WeeklyAvgVal")

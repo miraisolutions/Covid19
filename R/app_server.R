@@ -29,11 +29,6 @@ app_server <- function(input, output, session) {
   orig_data       = orig_data_with_ch$orig_data
   orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
 
-  # orig_data = orig_data %>%
-  #   get_timeseries_by_contagion_day_data()
-  #
-  # orig_data_ch_2 = orig_data_ch_2 %>%
-  #     get_timeseries_by_contagion_day_data()
 
   pop_data <- get_pop_datahub()
 

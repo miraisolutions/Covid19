@@ -16,16 +16,10 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- #reactive({
-      get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    #})
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = #reactive({
-      build_data_aggr(orig_data, pop_data)
-      #})
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
 

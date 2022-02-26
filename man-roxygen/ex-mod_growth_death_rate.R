@@ -12,9 +12,7 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
-
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
@@ -52,9 +50,7 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
-
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
@@ -96,9 +92,7 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
-
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
@@ -140,9 +134,7 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
-
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)

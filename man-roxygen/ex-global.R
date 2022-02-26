@@ -14,8 +14,8 @@ if (interactive()) {
     message("read map from RDS ", rds_map)
     countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)

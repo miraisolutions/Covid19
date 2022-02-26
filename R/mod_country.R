@@ -214,6 +214,11 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
    tg
 
 }
+
+#' Default country, to open first in the page
+.Selected_Country <- "USA"
+
+
 #' country Server Function
 #'
 #' @param data data.frame
@@ -229,9 +234,10 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
 #' @noRd
 mod_country_server <- function(input, output, session, data, countries, nn = 1000, w = 7, n.select = 1000){
   ns <- session$ns
+
   message("mod_country_server")
   observe(
-    updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = "USA")
+    updateSelectInput(session, "select_country", choices = sort(countries()$Country.Region), selected = .Selected_Country)
   )
   lev2id <- reactiveVal(0) # for removeUI
 
@@ -249,7 +255,11 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         arrange(desc(date))
 
     #   # Data ----
-    area_data_2 = get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
+    if (req(input$select_country) == .Selected_Country) {
+      message("read from RDS dump Selected_Country.rds")
+      area_data_2 <- readRDS(system.file("datahub/Selected_Country.rds", package = "Covid19Mirai"))$area_data_2
+    } else
+      area_data_2 <- get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
 
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # Align AsOfDate with level 1
