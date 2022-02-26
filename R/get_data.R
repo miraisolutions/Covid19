@@ -194,7 +194,7 @@ build_data <- function() {
   # read data for default country at level 2
   area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)
 
-  message("** Save data as DATA.rds **")
+  message("** Save data as Selected_Country.rds **")
 
   saveRDS(list(area_data_2 = area_data_2), "inst/datahub/Selected_Country.rds")
 
@@ -354,7 +354,6 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     # now = as.POSIXct(Sys.time()) # given time zone
     # AsOfDate =  as.character(as.Date(now - delay_date()))
     AsOfDate <- get_asofdate()
-
 
     message("Maximum date set to: ", AsOfDate)
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
@@ -984,9 +983,8 @@ get_asofdate <- function(char = TRUE) {
     # Building happens at 08,16,21  UTC.
     #It is sufficient to take always yesterday
     remove_hour_UTC <- ifelse(now_hour_UTC < 16, 48, 24)
-    now_day_UTC <- as.Date(now_day_UTC)
 
-    AsOfDate =  as.Date(now - delay_date(remove_hour_UTC))
+    AsOfDate =  as.Date(now_day_UTC - delay_date(remove_hour_UTC))
   }
   if (char)
     AsOfDate = as.character(AsOfDate)
