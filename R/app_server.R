@@ -20,19 +20,17 @@ app_server <- function(input, output, session) {
   # map
   rds_map = "WorldMap_sp_spl.rds"
   message("read map from RDS ", rds_map)
-  countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
+  countries_data_map <- readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
-  orig_data_with_ch <- get_datahub_fix_ch()
+  # orig_data_with_ch <- get_datahub_fix_ch()
+  rds_data = "DATA.rds"
+  orig_data_with_ch = readRDS(file =  file.path(system.file("./datahub", package = "Covid19Mirai"),rds_data))
+
   orig_data       = orig_data_with_ch$orig_data
   orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
 
-  orig_data = orig_data %>%
-    get_timeseries_by_contagion_day_data()
 
-  orig_data_ch_2 = orig_data_ch_2 %>%
-      get_timeseries_by_contagion_day_data()
-
-  pop_data = get_pop_datahub()
+  pop_data <- get_pop_datahub()
 
   #align continents from map with pop
   #country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(pop_data$Country.Region, unique(as.character(countries_data_map$NAME)))])
@@ -58,13 +56,6 @@ app_server <- function(input, output, session) {
 
   orig_data_aggregate <-
     build_data_aggr(orig_data, pop_data)
-
-  # output$last_update <- renderText({
-  #   paste0("Latest updated: ",
-  #          max(orig_data$date)
-  #   )
-  # })
-
 
   glob_var = reactiveVal(0)
   summary_var = reactiveVal(0)

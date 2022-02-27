@@ -766,9 +766,9 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   #df$Points= df$Value
   df$Value= funformat(df$Points, percent)
 
-  .popuptext = function(Status, Date, Value, WeeklyAvg, txt = text){
+  .popuptext = function(Status, Date, Value, WeeklyAvg, txt = text, formatdate){
     txt = paste(
-      paste("Date",": ",Date,"<br>"),
+      paste("Date",": ",format(Date, formatdate),"<br>"),
       paste(txt,": ",Status,"<br>"),
       paste("Value",": ",Value,"<br>"),
       sep = ""
@@ -793,9 +793,9 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   if (barplot) {
     varChoice = "Points"
     if (rollw)
-      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg)))
+      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg, formatdate = formatdate)))
     else
-      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value)))
+      p <- ggplot(df, aes(x = Date, y = Points, colour = Status, group = Status, text = .popuptext(Status, Date, Value, formatdate = formatdate)))
 
 
     p = p + geom_bar(aes(x = Date, y = Points, colour = Status), stat = "identity")
@@ -811,9 +811,9 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
 
   } else{
     if (rollw)
-      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg)))
+      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value, WeeklyAvg, formatdate = formatdate)))
     else
-      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value)))
+      p <- ggplot(df, aes(x = Date, y = !!sym(varChoice), colour = Status, group = Status, text = .popuptext(Status, Date, Value, formatdate = formatdate)))
 
    p = p +
       geom_line() +

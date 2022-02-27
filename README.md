@@ -39,6 +39,16 @@ Ardia](https://ardiad.github.io/). We are very thankful to [David
 Bumbeishvili](https://github.com/bumbeishvili) for his great
 [work](https://github.com/bumbeishvili/covid19-daily-data)
 
+
+## Data Storage
+
+Data are updated with a delay of 40h, i.e. at 4pm CEST the Last date is
+updated taking the yesterday date. This allows having data for about all
+countries when the date is updated with the new one.
+
+The data are stored as RDS file in folder `inst/datahub` of the package.
+A script `build_data` runs in **GitHub Actions** every day at 5pm UCT to update the data in the package.
+
 ## The dashboard
 
 It consists of 5 main pages:
@@ -66,10 +76,6 @@ It consists of 5 main pages:
 
 Macro areas of Continents are defined following United Nations
 indications.
-
-Data are updated with a delay of 40h, i.e. at 4pm the Last date is
-updated taking the yesterday date. This allows having data for about all
-countries when the date is updated with the new one.
 
 ## The Variables
 

@@ -10,9 +10,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
-
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
@@ -53,8 +51,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
 
     pop_data = get_pop_datahub()
@@ -93,8 +90,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
 
     pop_data = get_pop_datahub()
@@ -129,13 +125,11 @@ if (interactive()) {
     )
   )
   server <- function(input, output, session) {
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
-    orig_data <- reactive({ get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
-    })
 
     pop_data = get_pop_datahub()
-    orig_data_aggregate = reactive({ build_data_aggr(orig_data(), pop_data)})
+    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     cont = "Oceania"
 
@@ -177,8 +171,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
 
     pop_data = get_pop_datahub()
@@ -221,9 +214,7 @@ if (interactive()) {
   server <- function(input, output, session) {
 
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
-
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)

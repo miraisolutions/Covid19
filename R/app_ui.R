@@ -11,8 +11,10 @@ app_ui <- function(request) {
   n <- 1000 #  min number of cases for a country to be considered. Default 1000
   # to be used in Global and Comparison
   w <- 7 # number of days of outbreak. Default 7
-  now = as.POSIXct(Sys.time()) # given time zone
-  AsOfDate =  as.character(as.Date(now - delay_date()))
+  # now = as.POSIXct(Sys.time()) # given time zone
+  # AsOfDate =  as.character(as.Date(now - delay_date()))
+  AsOfDate <- get_asofdate()
+
 
   message("app_ui")
   tagList(
@@ -77,9 +79,9 @@ app_ui <- function(request) {
 
       ), # end Header fluidRow
       modalDialog(title = "Covid19Mirai loading message",
-                  tags$p("Data is growing. Allow 30 seconds for the first page to load."),
+                  tags$p("Data is growing, allow 15 seconds for the first page to load."),
                   tags$p("Load first page fully before navigating to others."),
-                  tags$p("Dashboard designed for  desktop view.")),
+                  tags$p("Dashboard designed for desktop view.")),
 
       # body ----
       #' tags$head(

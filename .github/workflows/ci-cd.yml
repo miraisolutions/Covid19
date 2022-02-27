@@ -1,6 +1,10 @@
 # Triggered on push and pull request events
-on: [push, pull_request]
-
+on:
+  push:
+  pull_request:
+  schedule:
+    # every day at 16 UTC
+    - cron: "0 8,16,21 * * *"
 name: CI-CD
 
 # renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions
@@ -40,11 +44,28 @@ jobs:
         shell: Rscript {0}
         run: renv::restore()
 
+      - name: Fetch and rebuild latest data
+        if: github.event_name == 'schedule'
+        run: |
+          pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
+          build_data()
+        shell: Rscript {0}
+
       - name: Check package
         shell: Rscript {0}
         run: |
           install.packages("rcmdcheck")
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
+
+      - name: Commit and push updated data
+        if: github.event_name == 'schedule'
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add inst/datahub/\*
+          git commit -m "Update DataHub data" || echo "No changes to commit"
+          git pull --ff-only
+          git push origin
 
       - name: Deploy to shinyapps.io
         if: github.ref == 'refs/heads/master'
