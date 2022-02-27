@@ -47,7 +47,7 @@ jobs:
       - name: Fetch and rebuild latest data
         #if: github.event_name == 'schedule'
         run: |
-          # pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
+          pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
           build_data()
         shell: Rscript {0}
 
