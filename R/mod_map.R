@@ -19,37 +19,20 @@ mod_map_ui <- function(id){
 
 
   fluidPage(
-    fixedRow(
-      column(12,
-             offset = 5,
-             actionButton(ns("goButton"), "Show World heat map for the main indicators", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
-      )
-
-    ),
+    # fixedRow(
+    #   column(12,
+    #          offset = 5,
+    #          actionButton(ns("goButton"), "Show World heat map for the main indicators", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
+    #   )
+    #
+    # ),
     div(
       id = "map_ui",
       style = "position: relative;",
 
       # Height needs to be in pixels. Ref https://stackoverflow.com/questions/39085719/shiny-leaflet-map-not-rendering
-      #withSpinner(
-        leafletOutput(ns("map"), width = "100%", height = "800")
-        #)
+      leafletOutput(ns("map"), width = "100%", height = "800")
       ,
-      #leafletOutput(ns("map")),
-      #plotOutput(ns("map_poly")),
-      # tags$head(tags$style(
-      #   HTML('
-      #          #input_show_map {position: absolute; margin: auto;}'
-      #   )
-      # )),
-      # absolutePanel(
-      #     id = "input_show_map",
-      #     top = 0, right = 0, left = 0, width = "8.5vw", height = "2.5vw", draggable = FALSE, class = "panel panel-default", #height = "auto",
-      #     #div(style = "margin:10px;",
-      #       actionButton(ns("goButton"), "Show Map", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
-      #     #)
-      #   )
-
       tags$head(tags$style(
         HTML('
                #input_date_control {background-color: rgba(192,192,192,0.6);}
@@ -115,21 +98,12 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
   # Map ----
 
   # Data for a given date
-  #data_date <- r#eactive({
-    #vars_aggr = intersect(get_aggrvars(), names(data_clean))
-    #maxdate = req(input$slider_day)
-    data_date <- data_clean %>%
+
+  data_date <- data_clean %>%
       filter(date == AsOfDate) %>%
-      #filter(date == max(date)) %>%
-      #select(-c(Country.Region, date, contagion_day)) #%>%
       select(-c(Country.Region, contagion_day)) #%>%
-      # group_by(country_name) %>%
-      # summarise_each(sum, na.rm = TRUE) %>% # no need to sum after selecting 1 date
-      # ungroup() %>%
-      #mutate(date = maxdate)
-    data_date
  # })
-  observeEvent(input$goButton, {
+  # observeEvent(input$goButton, {
 
     data_plot <- reactive({
       data_selected <- data_date %>%
@@ -249,7 +223,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
 
     })
- })
+ #})
 
 
 

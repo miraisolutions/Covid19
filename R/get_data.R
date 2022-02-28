@@ -38,8 +38,10 @@ get_timeseries_data <- function() {
   )
 }
 #' determine latest date by subtracting from today the below computation
-delay_date <- function(){
-  40*60*60
+#' @param n.hours integer, number of hours to be delayed, default = 40
+#' @noRd
+delay_date <- function(n.hours = 40){
+  n.hours*60*60
 }
 
 #' Get daily data
@@ -164,9 +166,39 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
 
   message("replace hosp data (",paste(.hosp_vars, collapse = ","), ") in lev1 dataset with lev2 swiss data")
 
-  orig_data = combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
+  orig_data <- combine_hospvars_lev2(orig_data, orig_data_ch_2, "Switzerland")
 
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
+}
+
+#' Build data in GutHub action yml and save as RDS
+#' @rdname get_datahub
+#'
+#'
+#' @export
+build_data <- function() {
+
+  orig_data_with_ch <- get_datahub_fix_ch()
+  orig_data <- orig_data_with_ch$orig_data
+  orig_data_ch_2 <- orig_data_with_ch$orig_data_ch_2
+
+  orig_data <- orig_data %>%
+    get_timeseries_by_contagion_day_data()
+
+  orig_data_ch_2 <- orig_data_ch_2 %>%
+    get_timeseries_by_contagion_day_data()
+
+  message("** Save data as DATA.rds **")
+  saveRDS(list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2), "inst/datahub/DATA.rds")
+
+  # read data for default country at level 2
+  area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)
+
+  message("** Save data as Selected_Country.rds **")
+
+  saveRDS(list(area_data_2 = area_data_2), "inst/datahub/Selected_Country.rds")
+
+  NULL
 }
 
 
@@ -318,8 +350,10 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 
     # take yesterday, data are updated hourly and they are complete around mid day, 40h later
     # regardless of the timezone, select the day 40h ago
-    now = as.POSIXct(Sys.time()) # given time zone
-    AsOfDate =  as.character(as.Date(now - delay_date()))
+    # at 17pm CEST the new day is triggered
+    # now = as.POSIXct(Sys.time()) # given time zone
+    # AsOfDate =  as.character(as.Date(now - delay_date()))
+    AsOfDate <- get_asofdate()
 
     message("Maximum date set to: ", AsOfDate)
     #TODO: arrange should go descending, many rows could be filtered out for many countries#
@@ -580,8 +614,9 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   lm60 = max(df$date) - 60
   lm30 = max(df$date) - 30
 
-  now = as.POSIXct(Sys.time()) # given time zone
-  LastDate =  as.Date(now - delay_date())
+  # now = as.POSIXct(Sys.time()) # given time zone
+  # LastDate =  as.Date(now - delay_date())
+  LastDate <- get_asofdate()
 
   res = df %>% #ungroup() %>%
     filter(date >= validdates) %>%
@@ -933,3 +968,27 @@ rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
 
   df_rescaled
 }
+
+#' get as Of date, i.e. latest day in the data
+#' @param char logical, convert date to character
+#' @importFrom lubridate hour with_tz
+#' @noRd
+get_asofdate <- function(char = TRUE) {
+  if (exists("AsOfDateBuildData")) {
+    AsOfDate = get("AsOfDateBuildData")
+  } else {
+
+    now_day_UTC = lubridate::with_tz(as.POSIXct(Sys.time()), tzone = "UTC") # given time zone
+    now_hour_UTC = lubridate::hour(now_day_UTC)
+    # Building happens at 08,16,21  UTC.
+    #It is sufficient to take always yesterday
+    remove_hour_UTC <- ifelse(now_hour_UTC < 16, 48, 24)
+
+    AsOfDate =  as.Date(now_day_UTC - delay_date(remove_hour_UTC))
+  }
+  if (char)
+    AsOfDate = as.character(AsOfDate)
+  AsOfDate
+}
+
+

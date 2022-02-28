@@ -31,8 +31,8 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+
     # orig_data = readRDS("orig_data.rds")
     pop_data = get_pop_datahub()
     orig_data_aggregate =  build_data_aggr(orig_data, pop_data)

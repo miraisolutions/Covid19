@@ -1,3 +1,6 @@
+### Covid19Mirai 2.7.1 (2022-02-28)
+- Build data in package, updated with github action (#207)
+
 ### Covid19Mirai 2.6.1 (2021-11-22)
 - Updated and replaced plots in multiple pages (#200)
 - Added text info in pages

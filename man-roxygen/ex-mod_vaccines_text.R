@@ -13,7 +13,6 @@ if (interactive()) {
     orig_data <- get_datahub(country = "Switzerland") %>%
       get_timeseries_by_contagion_day_data()
 
-
     pop_data = get_pop_datahub()
     orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 

@@ -304,6 +304,10 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
   calc_line_plot = function(dat, vars, cum_vars) {
 
+    .date_first_var = function(d, var, datevar = "date") {
+      min(d[[datevar]][d[[var]] > 0], na.rm = TRUE)-1 # remove one day
+    }
+
     reactSelectVar = reactive({
 
       if (grepl("rate_1M_pop$", req(input$radio_indicator)) && (!(req(input$radio_indicator) %in% names(dat)))) {
@@ -324,7 +328,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       data = dat
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
         if (all(is.na(data$population))) {
-          browser()
           stop("Missing population data")
         }
         #if (!(paste(req(input$radio_indicator),"rate_1M_pop", sep = "_") %in% names(data))) {
@@ -338,7 +341,8 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     })
 
     date_first_var = reactive(
-        min(dat$date[dat[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
+      .date_first_var(dat, reactSelectVar())
+        # min(dat$date[dat[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
       )
 
     df_data_roll <- reactive({
@@ -361,6 +365,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       # data = data[data$date >= date_first_var, , drop = FALSE]
       #date_first_var = min(data$date[data[[reactSelectVar()]] > 0], na.rm = TRUE)-1 # remove one day
       data = data[data$date >= date_first_var(), , drop = FALSE]
+
       data
     })
     df_data_timeframe <- reactive({
@@ -372,12 +377,20 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
           #data = data[data$date >= date_first_var, , drop = FALSE]
           data = df_data_roll()
         } else {
+          df_year = as.integer(format(data$date, "%Y"))
 
           if (input$time_frame == "lst6month") {
+            # n_days <- max()
+            # dates_keep <- lmonth_dates_calc(df_year, data$date, nmonth = 30*6+1)
+            # data = data[data$Date %in% dates_keep, , drop = FALSE]
+
             date_lst_6month = max(max(data$date) - 30*6+1,date_first_var()) # TODO: to be changed
             data = data[data$date >= date_lst_6month, , drop = FALSE]
 
           } else if (input$time_frame == "lstmonth") {
+            # dates_keep <- lmonth_dates_calc(df_year, data$date)
+            # data = data[data$Date %in% dates_keep, , drop = FALSE]
+
             date_lst_month = max(max(data$date) - 31,date_first_var()) # TODO: to be changed
             data = data[data$date >= date_lst_month, , drop = FALSE]
           }

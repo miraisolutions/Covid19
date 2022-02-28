@@ -8,8 +8,8 @@ if (interactive()) {
   server <- function(input, output) {
 
     # Data ----
-    orig_data <- get_datahub() %>%
-      get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+
 
     n = 100
     w = 7
@@ -48,8 +48,7 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- get_datahub() %>%
-        get_timeseries_by_contagion_day_data()
+    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     n = 100
     w = 7
