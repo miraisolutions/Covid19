@@ -3,7 +3,7 @@ on:
   push:
   pull_request:
   schedule:
-    # every day at 16 UTC
+    # every day at 8,16,21 UTC
     - cron: "0 8,16,21 * * *"
 name: CI-CD
 
