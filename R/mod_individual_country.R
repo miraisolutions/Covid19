@@ -10,13 +10,14 @@
 #' @importFrom shinycssloaders withSpinner
 mod_ind_country_ui <- function(id){
   ns <- NS(id)
+  n2 <- 10
   tagList(
     hr(),
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("ind_count-boxes")),
     mod_caseBoxes_ui(ns("ind_count-boxes_hosp"), hosp = TRUE),
     hr(),
-    div( h4("Covid 19 Swiss Dashboard"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    div( h4("COVID-19 Dashboard Switzerland"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     hr(),
     div(
       htmlOutput(ns("ind_from_nth_case")), class = "bodytext"
@@ -35,14 +36,14 @@ mod_ind_country_ui <- function(id){
     fluidRow(
       column(6,
              br(),
-             div( h4("Covid-19 time evolution"), align = "center",
+             div( h4("COVID-19 evolution over time"), align = "center",
              div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
              withSpinner(mod_plot_log_linear_ui(ns("ind_plot_area_tot"), area = TRUE))
              )
       ),
       column(6,
              br(),
-             div( h4("Time evolution of Hospitalised cases"), align = "center",
+             div( h4("Evolution over time of Hospitalizations"), align = "center",
                   div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
                   withSpinner(mod_plot_log_linear_ui(ns("ind_plot_areahosp_tot"), area = TRUE))
              )
@@ -60,8 +61,8 @@ mod_ind_country_ui <- function(id){
     # hr(),
     # mod_add_table_ui(ns("ind_add_table_country")), # table at country level
     hr(),
-    withSpinner(uiOutput(ns("ind_subarea"))),
-    hr(),
+    # withSpinner(uiOutput(ns("ind_subarea"))),
+    # hr(),
     # fluidRow(
     #   column(6,
     #          withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_canton"), growth = FALSE))
@@ -72,14 +73,54 @@ mod_ind_country_ui <- function(id){
     #          )
     #   )
     # ),
+    hr(),
+    div("Country Report at Cantonal level", align = "center", class = "sectiontitle"),
+    hr(),
+    div(
+      HTML(from_nth_case_area2_msg(n2)), class = "bodytext"
+    ),
+    hr(),
+    div(
+      htmlOutput(ns("ind_missing_days_area2")), class = "bodytext"
+    ),
     fluidRow(
       column(12,
-             withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
+             #withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
+             withSpinner(mod_group_plot_ui(ns("ind_country_confirmed_2"), type = "confirmed"))
+      )
+    ),
+    hr(),
+    fluidRow(
+      column(6,
+             div(h4("COVID-19 evolution over time"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             #withSpinner(uiOutput(ns("plot_area_area2")))
+             withSpinner( mod_plot_log_linear_ui(ns("plot_ind_area2"), select = TRUE, area = TRUE))
+      ),
+      column(6,
+             withSpinner(uiOutput(ns("plot_compare_nth_ind_area2")))
+
       )
     ),
     fluidRow(
       column(12,
-             withSpinner(mod_group_plot_ui(ns("ind_country_vax"), type = "vaccines"))
+             #withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
+             withSpinner(mod_group_plot_ui(ns("ind_country_hosp_2"), type = "hosp", infotext = TRUE, titlesection = TRUE))
+
+      )
+    ),
+    fluidRow(
+      column(6,
+             div(h4("Evolution over time of Hospitalizations"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             #withSpinner(uiOutput(ns("plot_areahosp_area2")))
+             withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp2_ind_area2"), select = TRUE, area = TRUE))
+      ),
+      column(6,
+             withSpinner(uiOutput(ns("plot_compare_hosp_nth_ind_area2")))
+      ),
+    ),
+    fluidRow(
+      column(12,
+             withSpinner(mod_group_plot_ui(ns("ind_country_vax_2"), type = "vaccines"))
       )
     ),
     hr(),
@@ -100,7 +141,7 @@ mod_ind_country_ui <- function(id){
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
-areamapUI = function(id, country){
+areamapUI <- function(id, country){
   ns = shiny::NS(id)
   message("areamapUI")
   tagList(
@@ -188,7 +229,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   # country_data_today <- country_data %>%
   #     filter(date == max(date))
-  vaxflag = sum(country_data_today$vaccines, na.rm = TRUE) > 0
+  vaxflag = check_flag(country_data, "vaccines")
   message("vaxflag = ", vaxflag)
   vaxarg = NULL
   if (vaxflag)
@@ -270,31 +311,107 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
     select(Country.Region) %>%
     distinct() %>% .$Country.Region
 
-  output$ind_subarea <- renderUI({
-    areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE, vaxflag = FALSE)
-    #areaUI("ind_country_subarea")
-  })
+  # output$ind_subarea <- renderUI({
+  #   areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE, vaxflag = FALSE)
+  #   #areaUI("ind_country_subarea")
+  # })
+  output$ind_missing_days_area2 <- renderText({
+    HTML(
+      message_missing_country_days(area_data_2)
+    )})
 
-  callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = 10, tab = FALSE, hospitalFlag = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
+  n2 <- 10
 
+  # callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = n2, tab = FALSE, hospitalFlag = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
+  testsflag = check_flag(area_data_2_aggregate, "tests")
 
-  # callModule(mod_scatterplot_server, "scatterplot_plots_canton",
-  #            area_data_2_aggregate_today, nmed = 10, n_highlight = length(areas),
-  #            istop = FALSE, countries = areas, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
-  #
-  # callModule(mod_barplot_server, "barplot_vax_index_canton", area_data_2_aggregate_today,
-  #            n_highlight = length(areas), istop = FALSE,
-  #            plottitle = c("Vaccinations"),
-  #            g_palette = list("plot_1" = barplots_colors$vaccines$calc,
-  #                             calc = TRUE),
-  #            pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+  # confirmed session
+  relevant_countries = unique(area_data_2_aggregate_today$Country.Region[area_data_2_aggregate_today$confirmed>n2])
 
-  callModule(mod_group_plot_server, "ind_country_hosp", data_today = area_data_2_aggregate_today, nn = 10, type = "hosp", istop = FALSE,
+  callModule(mod_group_plot_server, "ind_country_confirmed_2", area_data_2_aggregate_today, type = "confirmed", istop = FALSE,
+             # scatterplotargs = list(nmed = n2, countries = relevant_countries),
+             tests = testsflag,
              scatterplotargs = list(nmed = 10),
              barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
 
-  callModule(mod_group_plot_server, "ind_country_vax", data_today = area_data_2_aggregate_today, nn = 10, type = "vaccines", istop = FALSE,
-             scatterplotargs = list(nmed = 10),
+  levs <- areaplot_vars()
+  data_area = area_data_2
+  active_hosp = FALSE
+  hospflag = FALSE
+  if (sum(data$hosp, na.rm = TRUE)>0) {
+    message("Adding hospitalised data for areaplot")
+    levs = c(levs, "hosp")
+    active_hosp = TRUE
+    hospflag = TRUE
+  }
+  oneMpopflag = check_flag(area_data_2, "population")
+
+  # relevant_countries = unique(data_area$Country.Region[data_area$confirmed>n2])
+  df_area_2 = purrr::map(relevant_countries,
+                         function(un) {
+                           dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
+                           dat$Country.Region = rep(un, nrow(dat))
+                           dat
+                         })
+  df_area_2 = Reduce("rbind",df_area_2)
+
+
+  areas <- #reactive({
+    area_data_2 %>%
+    select(Country.Region) %>%
+    distinct() #%>% .$Country.Region
+
+  callModule(mod_plot_log_linear_server, "plot_ind_area2", df = df_area_2, type = "area" , countries = reactive(areas), active_hosp = active_hosp)
+
+
+  levs <- areaplot_hospvars()
+  #
+  #relevant_countries = unique(data_area$Country.Region[data_area$confirmed>1])
+  #
+  df_area_2 = purrr::map(relevant_countries,
+                         function(un) {
+                           dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot hosp, do not filter
+                           dat$Country.Region = rep(un, nrow(dat))
+                           dat
+                         })
+  df_area_2 = Reduce("rbind",df_area_2)
+
+  callModule(mod_plot_log_linear_server, "plot_areahosp2_ind_area2", df = df_area_2, type = "area" , countries = reactive(areas), hosp = TRUE)
+
+
+
+  strFlag = check_flag(area_data_2_aggregate, "stringency_index")
+  # # do not use stringency v is the same for all areas
+
+  vaxFlag = check_flag(area_data_2_aggregate, "vaccines")
+  # do not use vax is the same for all areas
+
+  message("hospflag: ", hospflag, "/ oneMpopflag: ", oneMpopflag,"/ strFlag: ", strFlag,"/ testsflag: ", testsflag, "/ vaxFlag: ", vaxFlag)
+
+  # paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
+  output[["plot_compare_nth_ind_area2"]] <- renderUI({
+    mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_ind_area2_",country)), vars = setdiff(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))),
+                                  nn = n2, istop = FALSE, tests = testsflag, hosp = FALSE, strindx = strFlag,vax = vaxFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
+  })
+
+  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_ind_area2_",country), df = area_data_2_aggregate, nn = n2,  istop = FALSE, tests = testsflag, hosp = FALSE, strindx = strFlag ,vax = vaxFlag,
+             n_highlight = length(unique(area_data_2_aggregate$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE,
+             vars = setdiff(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))))
+
+  output[["plot_compare_hosp_nth_ind_area2"]] <- renderUI({
+    mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_hosp_ind_area2_",country)), vars = intersect(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))),
+                                  nn = n2, istop = FALSE, tests = FALSE, hosp = hospflag, strindx = FALSE,vax = vaxFlag, selectvar = "new_hosp", oneMpop = oneMpopflag, areasearch = TRUE)
+  })
+  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_hosp_ind_area2_",country), df = area_data_2_aggregate, nn = n2,  istop = FALSE, tests = FALSE, hosp = hospflag, strindx = FALSE ,vax = vaxFlag,
+             n_highlight = length(unique(area_data_2_aggregate$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE,
+             vars = intersect(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))))
+
+  callModule(mod_group_plot_server, "ind_country_hosp_2", data_today = area_data_2_aggregate_today, nn = n2, type = "hosp", istop = FALSE,
+             scatterplotargs = list(nmed = n2),
+             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+
+  callModule(mod_group_plot_server, "ind_country_vax_2", data_today = area_data_2_aggregate_today, nn = n2, type = "vaccines", istop = FALSE,
+             scatterplotargs = list(nmed = n2),
              barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
 
 
@@ -341,14 +458,14 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
     }
     spmap
   }
-  getmap <- function(country) {
+  .getmap <- function(country) {
     if (country == "Switzerland")
       area2_data_map = leaflet::gadmCHE
     else
       stop("Map for ", country, " not available")
     .adjustmap(area2_data_map, country)
   }
-  area2_map = getmap(country)
+  area2_map = .getmap(country)
 
   message("process at level 2 individual country ", country)
   # Data ----
@@ -372,9 +489,7 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
   callModule(mod_map_area_calc_server, "map_ind_confirmed", df = data_maps,  area2_map,
              area = country, variable = "confirmed", max.pop = 0, countrymap = TRUE)
 
-  #maps active
-  # callModule(mod_map_area_calc_server, "map_ind_active", df = data_maps,  area2_map,
-  #            area = country, variable = "active", max.pop = 0, countrymap = TRUE)
+  #maps vaccines
   callModule(mod_map_area_calc_server, "map_ind_vaccines", df = data_maps,  area2_map,
              area = country, variable = "vaccines", max.pop = 0, countrymap = TRUE)
 
@@ -383,8 +498,6 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
              area = country, variable = "growth vs prev", max.pop = 0, countrymap = TRUE)
 
   #maps prevalence
-  # callModule(mod_map_area_calc_server, "map_ind_prev", df = data_maps,  area2_map,
-  #            area = country, variable = "prevalence rate", max.pop = 0, countrymap = TRUE)
   callModule(mod_map_area_calc_server, "map_ind_growth", df = data_maps,  area2_map,
              area = country, variable = "growth factor", max.pop = 0, countrymap = TRUE)
 
