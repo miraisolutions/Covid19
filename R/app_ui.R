@@ -104,7 +104,11 @@ app_ui <- function(request) {
                  mod_global_ui("global")),
         tabPanel("Continents",
                  #tabsetPanel(
+
                  navbarPage(
+                   collapsible = TRUE,
+                   fluid = TRUE,
+                   #position = "fixed-bottom",
                    "",
                    id = "continents_ui",
                    tabPanel("Summary",

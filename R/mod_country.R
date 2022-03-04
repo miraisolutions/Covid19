@@ -80,8 +80,8 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
 #' @param id, Internal parameters for {shiny}.
 #' @param tab logical, if TRUE then also the data table ui is called
 #' @param stringency logical, if TRUE then also the group plot stringency ui is called
-#' @param vaxflag logical, if TRUE then also the group plot  of vaccines ui is called
-#' @param hospflag logical, if TRUE then also the group plot  of hosppitalization ui is called
+#' @param vaxflag logical, if TRUE then also the group plot of vaccines ui is called
+#' @param hospflag logical, if TRUE then also the group plot of hospitalization ui is called
 #' @param n2 min number of cases for a country to be considered. Default n
 #'
 #' @noRd
@@ -170,6 +170,7 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
        )
   )
    if(hospflag) {
+     message("hospflag = TRUE, add hosp_index_area2 UI id")
      tg = tagList(
        div(id = id,
            tg,
@@ -241,6 +242,13 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
   )
   lev2id <- reactiveVal(0) # for removeUI
 
+  message("read from RDS dump Selected_Country.rds")
+
+  selected_country_data <- readRDS(system.file("datahub/Selected_Country.rds", package = "Covid19Mirai"))$area_data_2
+  top_data_2 <- readRDS(system.file("datahub/Top_Countries.rds", package = "Covid19Mirai"))
+  all_countries <- top_data_2$all_countries
+  top_data_2 <- top_data_2$all_lev2_data
+
   observeEvent(input$select_country, {
 
     message("process country page ", req(input$select_country))
@@ -255,11 +263,18 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         arrange(desc(date))
 
     #   # Data ----
+
     if (req(input$select_country) == .Selected_Country) {
-      message("read from RDS dump Selected_Country.rds")
-      area_data_2 <- readRDS(system.file("datahub/Selected_Country.rds", package = "Covid19Mirai"))$area_data_2
+      message("take dump Selected_Country.rds")
+      area_data_2 <- selected_country_data
+    } else if (req(input$select_country) %in% all_countries) {
+      # use all_countries because if in this list then it was already excluded in build_data
+      message("take from dump top_data_2")
+      area_data_2 <- top_data_2[[req(input$select_country)]]
+    } else if (!req(input$select_country) %in% all_countries){
+      area_data_2 <- get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE, cache = TRUE)
     } else
-      area_data_2 <- get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE)
+      area_data_2 <- NULL
 
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # Align AsOfDate with level 1

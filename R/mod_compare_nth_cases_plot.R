@@ -59,6 +59,7 @@ choice_nthcases_plot = function(vars = .vars_nthcases_plot, actives = TRUE, test
 #' @param oneMpop if TRUE then rescaled vars over 1M pop are available.
 #' @param selectvar character variable selected in ui.
 #' @param areasearch logical if TRUE replace with Country.Region selectInput
+#' @param writetitle logical if TRUE title id is set
 #'
 #' @noRd
 #'
@@ -103,7 +104,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
                              selected = "lstmonth"))
           )
         ),
-        withSpinner(plotlyOutput(ns("plot"), height = 400)),
+        fluidRow(
+          withSpinner(plotlyOutput(ns("plot"), height = 400))
+        ),
         #div(uiOutput(ns("caption")), align = "center")
         div(htmlOutput(ns("caption")), align = "center", class = "plottext")
 
@@ -135,7 +138,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
 
           )
         ),
-        withSpinner(plotlyOutput(ns("plot"), height = 400)),
+        fluidRow(
+          withSpinner(plotlyOutput(ns("plot"), height = 400))
+        ),
         #div(uiOutput(ns("caption")), align = "center")
         div(htmlOutput(ns("caption")), align = "center", class = "plottext", height = 10) # TODO: check why height = 10
 
@@ -169,8 +174,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
                              choices = c("Last Month" = "lstmonth", "Last 6 Months" = "lst6month","Since Start" = "sincestart"), selected = "lstmonth"))
           ),
         ),
-        withSpinner(plotlyOutput(ns("plot"), height = 400)),
-        #div(uiOutput(ns("caption")), align = "center")
+        fluidRow(
+          withSpinner(plotlyOutput(ns("plot"), height = 400))
+        ),        #div(uiOutput(ns("caption")), align = "center")
         div(htmlOutput(ns("caption")), align = "center", class = "plottext", height = 10)
 
       )
@@ -200,8 +206,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
                              multiple = TRUE))
           )
         ),
-        withSpinner(plotlyOutput(ns("plot"), height = 400)),
-        #div(uiOutput(ns("caption")), align = "center")
+        fluidRow(
+          withSpinner(plotlyOutput(ns("plot"), height = 400))
+        ),        #div(uiOutput(ns("caption")), align = "center")
         div(htmlOutput(ns("caption")), align = "center", class = "plottext", height = 10)
 
       )

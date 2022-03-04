@@ -71,8 +71,8 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL, ho
     } else
       varsx = varsx
     tagList(
-      div(HTML(test_sc), class = "bodytextplot"),
       div(htmlOutput(ns("title_scatterplot")), class = "plottitle", align = "center"),
+      div(HTML(test_sc), class = "bodytextplot"),
       fluidRow(
         column(6,
                div(selectInput(inputId = ns("yvar"), label = varsy$label,
@@ -83,8 +83,9 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL, ho
                            choices = varsx$choices,
                            selected = varsx$selected), class = "plottext"))
       ),
-
-      withSpinner(plotlyOutput(ns("plot_scatterplot_xy"), height = 400)),
+      fluidRow(
+        withSpinner(plotlyOutput(ns("plot_scatterplot_xy"), height = 400)),
+      ),
       div(htmlOutput(ns("caption")), align = "center", height = 10, class = "plottext")
     )
 
@@ -100,21 +101,23 @@ mod_scatterplot_ui <- function(id, growth = TRUE, varsx = NULL, varsy = NULL, ho
     } else
       varsy = varsy
     tagList(
-      div(HTML(test_sc), class = "bodytextplot"),
       div(htmlOutput(ns("title_scatterplot")), class = "plottitle", align = "center"),
+      div(HTML(test_sc), class = "bodytextplot"),
       fluidRow(
         column(6, #offset = 6,
                div(selectInput(inputId = ns("yvar"), label = varsy$label,
                            choices = varsy$choices,
                            selected = varsy$selected), class = "plottext"))
       ),
-      withSpinner(plotlyOutput(ns("plot_scatterplot_xy"), height = 400)),
+      fluidRow(
+        withSpinner(plotlyOutput(ns("plot_scatterplot_xy"), height = 400)),
+      ),
       div(htmlOutput(ns("caption")), align = "center", height = 10, class = "plottext")
     )
   }
 
 }
-#' Scatterplot prevalence vs growth
+#' Scatter plot prevalence vs growth
 #'
 #' @param df data.frame for multiple countries
 #' @param nmed number of cases of countries to be used for median computation

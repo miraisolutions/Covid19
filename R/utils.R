@@ -607,7 +607,7 @@ message_subcountries <- function(data, area, region) {
     group_by(.dots = area) %>% group_split()
   list.message = lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
-           paste(x[[region]], collapse = ",")))
+           paste(x[[region]], collapse = ", ")))
   c("Continent Area composition: ", list.message)
 }
 #' Calculates growth vs prevalence, growth vs stringency factors

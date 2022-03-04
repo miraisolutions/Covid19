@@ -73,7 +73,9 @@ app_server <- function(input, output, session) {
       callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
                  countries_data_map)
       glob_var(1)
-    }
+    } else
+      message("Current SubTab: ", req(input$continents_ui) )
+
 
     orig_data_aggregate = orig_data_aggregate %>%
                 filter(!is.na(continent))
@@ -83,8 +85,6 @@ app_server <- function(input, output, session) {
       callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
       summary_var(1)
     }
-
-    message("Current SubTab: ", req(input$continents_ui) )
 
     # select continents in tabs
     # tabuicontinents = c("Europe", "Asia", "Africa", "Lat. America & Carib.", "Northern America", "Oceania")
@@ -125,7 +125,7 @@ app_server <- function(input, output, session) {
     })
 
     # country choice, remove Switzerland
-   # orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
+    # orig_data_aggregate_noswiss = orig_data_aggregate %>% filter(Country.Region != "Switzerland")
     countriesnoswiss = reactive({
       countries()[countries()[,1] != "Switzerland",]
     })

@@ -68,7 +68,7 @@ hosp_info <- function(sep = "<br/>") {
 #' @param tit logical, print title
 section_title <- function(type, tit) {
   text = switch(type,
-                "confirmed" = "Confirmed infections",
+                "confirmed" = "COVID-19 main variables",
                 "stringency" = "Stringency Lock-Down Index",
                 "vaccines" = "Vaccination status",
                 "hosp" = "Hospitalization",
@@ -120,21 +120,22 @@ mod_group_plot_ui <- function(id, type = c("vaccines", "stringency", "confirmed"
            "keep")
   }
 
-  tagList(
+  fluidPage(
     section_title(type, titlesection),
     br(),
     # conditionalPanel(
     #   condition = "infotext == 'TRUE'",
       fluidRow(
-        column(12,
+        # column(12,
                div(
-                 HTML(section_info(type, infotext)), class = "bodytext"),
-                 htmlOutput(ns(paste0("text_report_", type))),
-
-        )
-      #)
+                 HTML(section_info(type, infotext)), class = "bodytext")#,
+                 #htmlOutput(ns(paste0("text_report_", type))), class = "bodytext")#,
+      ),
+      fluidRow(
+        #div(
+          htmlOutput(ns(paste0("text_report_", type)))#, class = "bodytext")
     ),
-    br(),
+    #br(),
     fluidRow(
       column(6,
              mod_scatterplot_ui(ns(paste0("scatterplot_", type)), growth = growth, hospvars = hosp_vars(type), text = TRUE)
@@ -218,7 +219,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
     report_var = gsub("_rate_1M_pop$","", report_var)
   }
 
-  text_lw_report_fun <- function(data, var, n = 5) {
+  .text_lw_report_fun <- function(data, var, n = 5) {
     aod = max(data$AsOfDate)
     n.countries = length(unique(data$Country.Region))
     if (n < n.countries) {
@@ -286,7 +287,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
   }
   output[[paste0("text_report_", type)]] <- #renderUI({
     renderUI({
-        text_lw_report_fun(data_today, report_var)
+        .text_lw_report_fun(data_today, report_var)
   })
 
   callModule(mod_scatterplot_server, paste0("scatterplot_", type),
@@ -295,8 +296,8 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
 
   barplottitle <- ifelse(type == "vaccines", "Vaccine Doses",
                          ifelse(type == "stringency","Stringency Index",
-                                ifelse(type == "confirmed", "Confirmed Cases",
-                                       ifelse(type == "hosp", "Hospitalised / ICU Cases",
+                                ifelse(type == "confirmed", "Confirmed Infections and Tests",
+                                       ifelse(type == "hosp", "Hospitalised / ICU",
                                        stop("wrong type argument")))))
 
   sortbyvar = ifelse(is.null(barplotargs[["sortbyvar"]]), TRUE, barplotargs[["sortbyvar"]])

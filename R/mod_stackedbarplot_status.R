@@ -13,7 +13,7 @@ mod_stackedbarplot_ui <- function(id){
   ns <- NS(id)
   caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
 
-  tagList(
+  fluidRow(
           div(htmlOutput(ns("title_stackedbarplot_status")), align = "center", class = "plottitle"),
 
           withSpinner(plotlyOutput(ns("plot_stackedbarplot_status"), height = 500)),

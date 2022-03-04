@@ -41,7 +41,10 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
                                     choices = varsNames(c(prefix_var("confirmed", c("")),
                                                           prefix_var("confirmed_rate_1M_pop", c("")),
                                                           prefix_var("tests_rate_1M_pop", c("")),
-                                                          prefix_var("positive_tests_rate", c("")))),
+                                                          prefix_var("positive_tests_rate", c(""))
+                                                          # prefix_var("deaths_rate_1M_pop", c("")),
+                                                          # prefix_var("lethality_rate", c(""))
+                                                          )),
                                     selected = "confirmed_rate_1M_pop"),
                           time = list(label = "Time-line",
                                       choices = list("Total" = "total", "Last Week" = "lw", "Past Week" = "pw"),
@@ -92,8 +95,8 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
 
   barplot_info <- function(sep = "<br/>"){
     #tags$p(
-    paste("Units with no data for the selected variable will not appear in the 'barplot'.",
-          "Select the variable, if avaialble, to see different views. Compare using rescaled data over population size using <over 1M people> variables.
+    paste("Units or variables with no data will not appear in the 'barplot'.",
+          "Select the variable to see different views. Use rescaled data <over 1M people> to compare.
           If all data are missing for the chosen variable the plot will display a message.", sep = sep)
     #)
   }
@@ -106,8 +109,8 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
       fluidRow(
         column(6,
                tagList(
-                 div(HTML(test_bp), class = "bodytextplot"),
                  div(uiOutput(ns("title_plot_1")),class = "plottitle", align = "center"),
+                 div(HTML(test_bp), class = "bodytextplot"),
                  fluidRow(
                    #shinyjs::useShinyjs(),
                    column(width = 5,
@@ -118,13 +121,15 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
                          div(class = "plottext",selectInput(inputId = ns("plot_1_time"), label = uichoice1$time$label,
                                        choices = uichoice1$time$choices ,
                                        selected = uichoice1$time$selected)))),
-                 withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400)),
+                 fluidRow(
+                   withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400))
+                 ),
                  div(htmlOutput(ns("caption1")), align = "center", class = "plottext"))
         ),
         column(6,
                tagList(
-                 div(HTML(test_bp), class = "bodytextplot"),
                  div(class = "plottitle", align = "center", uiOutput(ns("title_plot_2"))),
+                 div(HTML(test_bp), class = "bodytextplot"),
                  fluidRow(
                    #shinyjs::useShinyjs(),
 
@@ -135,8 +140,11 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
                    column(width = 5,offset = 1,
                           div(class = "plottext",selectInput(inputId = ns("plot_2_time"), label = uichoice2$time$label,
                                  choices = uichoice2$time$choices ,
-                                 selected = uichoice2$time$selected)))),
-                 withSpinner(plotlyOutput(ns("plot_plot_2_hist"), height = 400)),
+                                 selected = uichoice2$time$selected)))
+                 ),
+                 fluidRow(
+                  withSpinner(plotlyOutput(ns("plot_plot_2_hist"), height = 400))
+                 ),
                  div(htmlOutput(ns("caption2")), align = "center", class = "plottext")
                )
           )
@@ -155,8 +163,8 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
         div(id = id,
 
         fluidRow(
-          div(HTML(test_bp), class = "bodytextplot"),
           div(class = "plottitle", align = "center", uiOutput(ns("title_plot_1"))),
+          div(HTML(test_bp), class = "bodytextplot"),
           fluidRow(
             #shinyjs::useShinyjs(),
             column(width = 4,
@@ -166,8 +174,11 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
             column(width = 4,offset = 1,
                    div(class = "plottext",selectInput(inputId = ns("plot_1_time"), label = uichoice1$time$label,
                             choices = uichoice1$time$choices ,
-                            selected = uichoice1$time$selected)))),
-          withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400)),
+                            selected = uichoice1$time$selected)))
+          ),
+          fluidRow(
+            withSpinner(plotlyOutput(ns("plot_plot_1_hist"), height = 400))
+          ),
           div(htmlOutput(ns("caption1")), align = "center", class = "plottext")
         )
       )
@@ -175,8 +186,6 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
   } else {
     stop("If only one plot to be done then use plot1")
   }
-
-
 }
 
 #' growth_death_rate Server Function
