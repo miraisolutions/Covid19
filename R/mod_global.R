@@ -28,7 +28,7 @@ mod_global_ui <- function(id){
     br(),
     fluidRow(
       column(6,
-             div(h4("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Global Covid-19 evolution over time"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              withSpinner(mod_plot_log_linear_ui(ns("plot_area_global")))
       ),
       column(6,

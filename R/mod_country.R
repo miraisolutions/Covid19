@@ -21,7 +21,7 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
 
   tagList(
     hr(),
-    div( h4("Covid 19 Single Country Dashboard"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+    div( h4("COVID-19 Single Country Dashboard"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     hr(),
     div(
       HTML(from_nth_case_msg), class = "bodytext"
@@ -46,13 +46,13 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
     fluidRow(
       column(6,
              br(),
-             div( h4("Covid-19 time evolution"), align = "center",
+             div( h4("COVID-19 evolution over time"), align = "center",
              div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
              withSpinner(mod_plot_log_linear_ui(ns("plot_area_tot"), area = TRUE))
              )
       ),
       column(6,
-             div( h4("Time evolution of Hospitalised cases"), align = "center",
+             div( h4("Evolution over time of Hospitalizations"), align = "center",
                   div(style = "visibility: hidden", radioButtons("dummy1", "", choices = "dummy")),
                   withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp_tot"), area = TRUE))
              )
@@ -74,6 +74,24 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
   )
 }
 
+#' Level 2 top messages
+#'
+#' @param n2 min number of cases for a country to be considered. Default n
+#'
+#' @noRd
+from_nth_case_area2_msg <- function(n2){
+  paste(
+    "Some countries have unreliable or inconsistent data at regional level in our data source.",
+    "They may not match those at Country Level or they may miss information.",
+    #paste0("Some countries or some regions within countries are not providing Recovered data."),
+    message_missing_data(),
+    message_firstday(n2),
+    #paste0("1st day is the day when ", n2 ," confirmed cases are reached."),
+    message_hosp_data(where = "some areas"),
+    sep = "<br/>")
+}
+
+
 #' Level 2 areas UI function
 #' @description A shiny Module.
 #'
@@ -88,30 +106,20 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
 #'
 #' @import shiny
 #' @importFrom shinycssloaders withSpinner
-areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = TRUE, n2 = 100){
+areaUI <- function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = TRUE, n2 = 100){
   ns = shiny::NS(id)
-  from_nth_case_area2_msg = paste(
-    "Some countries have unreliable or inconsistent data at regional level in our data source.",
-    "They may not match those at Country Level or they may miss information.",
-    #paste0("Some countries or some regions within countries are not providing Recovered data."),
-    message_missing_data(),
-    message_firstday(n2),
-    #paste0("1st day is the day when ", n2 ," confirmed cases are reached."),
-    message_hosp_data(where = "some areas"),
-    sep = "<br/>")
 
-
-   tg = tagList(
+   tg <- tagList(
       div(id = id,
            hr(),
-           div("Country split at level 2", align = "center", class = "sectiontitle"),
+           div("Country Report at 2nd administrative level", align = "center", class = "sectiontitle"),
            hr(),
            div(
-             HTML(from_nth_case_area2_msg), class = "bodytext"
+             HTML(from_nth_case_area2_msg(n2)), class = "bodytext"
            ),
           hr(),
           div(
-            htmlOutput(ns("ind_missing_days_area")), class = "bodytext"
+            htmlOutput(ns("country_missing_days_area2")), class = "bodytext"
           ),
          # hr(),
           fluidRow(
@@ -122,18 +130,13 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
            hr(),
            fluidRow(
              column(6,
-                    div(h4("Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                    div(h4("COVID-19 evolution over time"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
                     #withSpinner(uiOutput(ns("plot_area_area2")))
                     withSpinner( mod_plot_log_linear_ui(ns("plot_area2_area2"), select = TRUE, area = TRUE))
              ),
              column(6,
                     withSpinner(uiOutput(ns("plot_compare_nth_area2")))
-
-             )#,
-             # column(6,
-             #        div(h4("Confirmed cases for top 5 Areas"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             #        withSpinner(uiOutput(ns("plot_log_linear_top_n_area2")))
-             #     )
+             )
            ),
            hr(),
            fluidRow(
@@ -155,15 +158,13 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
           div(HTML(section_info("hosp", infotext = TRUE)), class = "bodytext"),
           hr(),
           fluidRow(
-
             column(6,
-                   withSpinner(uiOutput(ns("plot_compare_hosp_nth_area2")))
-
-            ),
-            column(6,
-                   div(h4("Time evolution of Hospitalised cases"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                   div(h4("Evolution over time of Hospitalizations"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
                    #withSpinner(uiOutput(ns("plot_areahosp_area2")))
                    withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp2_area2"), select = TRUE, area = TRUE))
+            ),
+            column(6,
+                   withSpinner(uiOutput(ns("plot_compare_hosp_nth_area2")))
             )
           ),
           #tags$div(id = "plot_barplot_stringency_area2"),
@@ -182,6 +183,7 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
      )
    }
   if(stringency) {
+    message("stringency = TRUE, add stringency_index_area2 UI id")
     tg = tagList(
       div(id = id,
           tg,
@@ -193,6 +195,7 @@ areaUI = function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag = 
     )
   }
   if(vaxflag) {
+    message("stringency = TRUE, add vax_index_area2 UI id")
      tg = tagList(
        div(id = id,
            tg,
@@ -305,10 +308,15 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
           build_data_aggr() # recompute other variables
         }
     }
-    hospflag = sum(country_data$hosp, na.rm = TRUE) > 0
-    vaxflag = sum(country_data$vaccines, na.rm = TRUE) > 0
+
+
+    hospflag = check_flag(country_data, "hosp")
+    strflag = check_flag(country_data, "stringency_index")
+
+    vaxflag = check_flag(country_data, "vaccines")
     message("hospflag = ", hospflag)
     message("vaxflag = ", vaxflag)
+
     last10days = max(country_data$date) - 0:9
     country_data[, c("Country.Region","date", get_cumvars())] %>%
       filter(date %in% last10days) %>% # take
@@ -396,8 +404,9 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 
         insertUI(paste0("#","subarea"),
                  'afterEnd',
-                 #ui = areaUI(ns(paste0("area",lev2id()))),#,  good for example
                  ui = areaUI(ns(id), n2 = max(1,nn/10)),#,  good for example
+                 # ui = areaUI(ns(id), n2 = max(1,nn/10), hospflag = hospflag,
+                 #             stringency = strflag, vaxflag = vaxflag),#, better not to add anything
                  session = session,
                   immediate = TRUE
                  )
@@ -457,7 +466,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
 mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7, tab = TRUE, hospitalFlag = TRUE, stringencyFlag = TRUE, vaccinesFlag = TRUE, hospid_arg, strid_arg, vaxid_arg, country = NULL) {
   ns <- session$ns
 
-  message("mod_country_area_server n2 = ", n2, " Country = " ,country)
+  message("** mod_country_area_server n2 = ", n2, " Country = " ,country, " hospitalFlag = ", hospitalFlag, " **")
 
   data_2_filtered <-
     data %>%
@@ -466,11 +475,11 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   data_2_filtered_today = data_2_filtered %>%
       filter(date == AsOfDate)
 
-  data_today = data %>%
+  data_today <- data %>%
     add_growth_death_rate()
 
-  lw_data =  lw_vars_calc(data)
-  pw_data =  lw_vars_calc(data, 14)
+  lw_data = lw_vars_calc(data)
+  pw_data = lw_vars_calc(data, 14)
 
   data_today = data_today  %>%
     left_join(lw_data %>% select(-population)) %>%
@@ -478,7 +487,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   #TODO? to be filtered with date == AsOfDate?
 
-  output$ind_missing_days_area <- renderText({
+  output$country_missing_days_area2 <- renderText({
     HTML(
       message_missing_country_days(data)
     )})
@@ -489,28 +498,11 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       distinct() #%>% .$Country.Region
   #})
 
-  if (FALSE) {
-    area_data_2_aggregate_today <-
-      data %>%
-      filter( date == AsOfDate) #??
-
-    area_2_top_5_today <-
-      area_data_2_aggregate_today %>%
-      arrange(desc(confirmed)) %>%
-      head(5)
-
-    area_2_top_5_confirmed <-
-      data %>%
-      filter(Country.Region %in% area_2_top_5_today$Country.Region) %>%
-      select(Country.Region, date, confirmed)
-  }
-
 
   # plots ----
 
-  testsflag = TRUE
-  if (all(is.na(data_today$tests)) || all(data_today$tests == 0, na.rm = TRUE) || length(table(data_today$tests)) == 1)
-    testsflag = FALSE
+  testsflag = check_flag(data_today, "tests")
+
   # confirmed session
   relevant_countries = unique(data_today$Country.Region[data_today$confirmed>n2])
 
@@ -557,58 +549,29 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   #
   df_area_2 = purrr::map(relevant_countries,
                          function(un) {
-                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot hosp, do not filter
+                           dat = tsdata_areplot(data[data$Country.Region == un, ], levs, nn = 1) #n = 1 for area plot hosp, do not filter
                            dat$Country.Region = rep(un, nrow(dat))
                            dat
                          })
   df_area_2 = Reduce("rbind",df_area_2)
   #
-  hospflag = sum(data$hosp, na.rm = TRUE) > 0
-  oneMpopflag = TRUE
-  if (all(is.na(data_today$population)))
-    oneMpopflag = FALSE
+  hospflag = check_flag(data, "hosp")
+  oneMpopflag = check_flag(data, "population")
 
-  # # some have no data here
-  # output[["plot_areahosp_area2"]] <- renderUI({
-  #   mod_plot_log_linear_ui(ns("plot_areahosp2_area2"), select = TRUE, area = TRUE)
-  # })
-  # #if (hospflag)
-    callModule(mod_plot_log_linear_server, "plot_areahosp2_area2", df = df_area_2, type = "area" , countries = reactive(areas), hosp = TRUE)
-  #else
-  #  callModule(mod_nodata_areaplot_server,"plot_areahosp2_area2", country = country, what = "Hospital")
+  callModule(mod_plot_log_linear_server, "plot_areahosp2_area2", df = df_area_2, type = "area" , countries = reactive(areas), hosp = TRUE)
 
-
-  # > line plot top 5
-
-  if (FALSE) {
-    mindate = min(area_2_top_5_confirmed$date[area_2_top_5_confirmed$confirmed>n2], na.rm = TRUE)
-
-    # create factors with first top confirmed
-    countries_order =  area_2_top_5_confirmed %>% filter(date == AsOfDate) %>%
-      arrange(desc(confirmed)) %>%
-      .[,"Country.Region"] %>% as.vector()
-    df_top_n = area_2_top_5_confirmed %>% filter(date >= mindate) %>% # take only starting point where greater than n
-      mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
-      mutate(value = confirmed) %>%
-      capitalize_names_df()
-    output[["plot_log_linear_top_n_area2"]] <- renderUI({
-      mod_plot_log_linear_ui(ns("log_linear_top_n_area2"), area = FALSE)
-    })
-    callModule(mod_plot_log_linear_server, "log_linear_top_n_area2", df = df_top_n, type = "line")
-
-  }
 
   # > comparison plot from day of nth contagion
 
-  strFlag = TRUE
+  strFlag = check_flag(data_today, "stringency_index") # use data_today
   # do not use stringency v is the same for all areas
-  if (all(is.na(data_today$stringency_index)) || all(data_today$stringency_index == 0, na.rm = TRUE) || length(table(data_today$stringency_index)) == 1)
-    strFlag = FALSE
+  # if (all(is.na(data_today$stringency_index)) || all(data_today$stringency_index == 0, na.rm = TRUE) || length(table(data_today$stringency_index)) == 1)
+  #   strFlag = FALSE
 
-  vaxFlag = TRUE
-  # do not use stringency v is the same for all areas
-  if (all(is.na(data_today$vaccines)) || all(data_today$vaccines == 0, na.rm = TRUE) || length(table(data_today$vaccines)) == 1)
-    vaxFlag = FALSE
+  vaxFlag = check_flag(data, "vaccines")
+  # # do not use stringency v is the same for all areas
+  # if (all(is.na(data_today$vaccines)) || all(data_today$vaccines == 0, na.rm = TRUE) || length(table(data_today$vaccines)) == 1)
+  #   vaxFlag = FALSE
 
   message("hospflag: ", hospflag, "/ oneMpopflag: ", oneMpopflag,"/ strFlag: ", strFlag,"/ testsflag: ", testsflag, "/ vaxFlag: ", vaxFlag)
  # paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
@@ -661,7 +624,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
         id = paste0("area_hosp",hospid_arg())
         message("id hosp insert = ", id)
 
-        message('Level 2 Stringency Index present: insertUI for barplot ', hospid_arg())
+        message('Level 2 Hosp present: insertUI for barplot ', hospid_arg())
 
         insertUI(paste0("#","hosp_index_area2"),
                  'afterEnd',

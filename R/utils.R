@@ -1142,3 +1142,17 @@ barplots_colors <- list(
                      "calc" = c(col = "Reds", rev = TRUE, skip = 2)
   )
 )
+
+#' Check whether data are available
+#' @param data data.frame
+#' @param var character string, variable name
+#'
+#' @return logical
+#' @noRd
+check_flag <- function(data, var) {
+  Flag = TRUE
+  # do not use stringency v is the same for all areas
+  if (all(is.na(data[[var]])) || all(data[[var]] == 0, na.rm = TRUE) || length(table(data[[var]])) == 1)
+    Flag = FALSE
+  Flag
+}
