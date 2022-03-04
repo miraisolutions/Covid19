@@ -125,15 +125,15 @@ mod_group_plot_ui <- function(id, type = c("vaccines", "stringency", "confirmed"
     br(),
     # conditionalPanel(
     #   condition = "infotext == 'TRUE'",
-      fluidRow(
-        # column(12,
-               div(
-                 HTML(section_info(type, infotext)), class = "bodytext")#,
-                 #htmlOutput(ns(paste0("text_report_", type))), class = "bodytext")#,
-      ),
-      fluidRow(
-        #div(
-          htmlOutput(ns(paste0("text_report_", type)))#, class = "bodytext")
+    fluidRow(
+      # column(12,
+             div(
+               HTML(section_info(type, infotext)), class = "bodytext")#,
+               #htmlOutput(ns(paste0("text_report_", type))), class = "bodytext")#,
+    ),
+    fluidRow(
+      #div(
+        htmlOutput(ns(paste0("text_report_", type)))#, class = "bodytext")
     ),
     #br(),
     fluidRow(

@@ -14,7 +14,6 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
   ns <- NS(id)
   if (!select && (!area)) {
     # linear plot
-    message("here")
     fluidRow(
       div(class = "plottext", align = "center", radioButtons(inputId = ns("radio_log_linear"), label = "",
                    choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)),

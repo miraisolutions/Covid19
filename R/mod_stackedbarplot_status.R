@@ -11,7 +11,7 @@
 #' @noRd
 mod_stackedbarplot_ui <- function(id){
   ns <- NS(id)
-  caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recovered or Hospitalised cases"
+  caption_explain <- "The plot shows what areas have more to recover from their Confirmed cases. Not all of them may have provided Recoveries or Hospitalizations"
 
   fluidRow(
           div(htmlOutput(ns("title_stackedbarplot_status")), align = "center", class = "plottitle"),
