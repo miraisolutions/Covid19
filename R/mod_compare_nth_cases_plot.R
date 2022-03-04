@@ -78,7 +78,9 @@ mod_compare_nth_cases_plot_ui <- function(id, vars = .vars_nthcases_plot,
   if (istop) {
     plottitle = paste0("Top ",n_highlight," countries for the chosen variable")
   } else {
-    plottitle = paste0("Timeline from day with ", nn ," contagions")
+    plottitle = paste0("Timeline per variable",
+                       ifelse(areasearch, paste0(" area", ifelse(oneMpop, " & Pop. size", "")), "")
+                       )
   }
   # UI ----
   divtitle =  switch(writetitle ,div(class = "plottitle", plottitle, align = "center"),NULL)
@@ -261,7 +263,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         filter(date == AsOfDate) %>%
         arrange(desc(confirmed)) %>% .[,"Country.Region"]
       selected_countries = head(countries$Country.Region,3)
-
     }
     # Update radio_indicator, if oneMpop then some variables must be excluded
     observe({
@@ -307,7 +308,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   }
 
   cum_vars = intersect(get_cumvars(), names(df))
-  rollw = reactive(!req(input$radio_indicator) %in% cum_vars) # do not roll if cumulativ var
+  rollw = reactive(!req(input$radio_indicator) %in% cum_vars) # do not roll if cumulative var
 
   calc_line_plot = function(dat, vars, cum_vars) {
 
@@ -331,7 +332,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     dat = dat[dat$date >= date_first_contagion, , drop = FALSE]
     # Give dat standard structure; reacts to input$radio_indicator
     df_data_1Mpop <- reactive({
-      message("df_data_1Mpop:")
       data = dat
       if (oneMpop && !is.null(input$radio_1Mpop) && input$radio_1Mpop == "oneMpop")  {
         if (all(is.na(data$population))) {
@@ -340,7 +340,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         #if (!(paste(req(input$radio_indicator),"rate_1M_pop", sep = "_") %in% names(data))) {
         #varname = gsub("rate_1M_pop$","",reactSelectVar$radio_indicator)
         #reactSelectVar$radio_indicator = gsub("rate_1M_pop$","",reactSelectVar())
-        message("divide by pop size")
         data[, reactSelectVar()] = round(10^6*data[, reactSelectVar()] / data$population, 3)
         #}
       }
@@ -353,7 +352,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       )
 
     df_data_roll <- reactive({
-      message("df_data_roll")
 
       if (rollw()) {
         message("compute rolling average")
@@ -376,7 +374,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       data
     })
     df_data_timeframe <- reactive({
-      message("df_data_timeframe")
 
       data = df_data_roll()
       if (!is.null(input$time_frame)) {
@@ -419,7 +416,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       data
     })
     df_istop <- reactive({
-      message("df_istop")
       data = df_data_timeframe()
       if(istop) {
         # countries_order =  data %>% filter(date == max(date)) %>%
@@ -437,7 +433,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
 
     df_out <- reactive({
-      message("df_out")
       data = df_istop()
       varsfinal = c("Country.Region", reactSelectVar(), "Date")
       if (strindx)
@@ -468,9 +463,10 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     #rollw = TRUE
     # Plot -----
     output$plot <- renderPlotly({
-
       if (length(reactSelectVar()) == 0) {
         p <- blank_plot(where = "selected area", add = " All data missing")
+      # } else if (length(reactSelectVar()) == 0){
+      #   p <- blank_plot(where = "Variables have", add = " All data missing", what = reactSelectVar())
       } else {
         #secondline = NULL
         #if (!(input$radio_indicator %in% get_aggrvars()) || (input$time_frame != "sincestart"))
