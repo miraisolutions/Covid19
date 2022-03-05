@@ -9,7 +9,6 @@ if (interactive()) {
 
     # Data ----
     orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
     n = 100
     w = 7
     data_filtered <-

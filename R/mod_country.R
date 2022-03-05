@@ -268,7 +268,6 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
         arrange(desc(date))
 
     #   # Data ----
-
     if (req(input$select_country) == .Selected_Country) {
       message("take dump Selected_Country.rds")
       area_data_2 <- selected_country_data
@@ -280,7 +279,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       area_data_2 <- get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE, cache = TRUE)
     } else
       area_data_2 <- NULL
-
+    
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # Align AsOfDate with level 1
       Lev1AsOfDate <- max(country_data$AsOfDate)

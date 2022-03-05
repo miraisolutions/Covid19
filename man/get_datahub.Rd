@@ -3,6 +3,7 @@
 \name{build_data}
 \alias{build_data}
 \alias{get_datahub_fix_ch}
+\alias{build_data}
 \alias{get_datahub}
 \title{Build data in GutHub action yml and save as RDS}
 \usage{
@@ -14,6 +15,8 @@ get_datahub_fix_ch(
   lev = 1,
   verbose = FALSE
 )
+
+build_data()
 
 get_datahub(
   country = NULL,
@@ -46,6 +49,8 @@ data tibble of confirmed, deaths, active and recovered Country.Region
 Build data in GutHub action yml and save as RDS
 
 Get timeseries full data from datahub adding CH hospitalised data from level 2
+
+Build data in GutHub action yml and save as RDS
 
 Get timeseries full data from datahub
 }
