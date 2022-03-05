@@ -1,4 +1,4 @@
-### Covid19Mirai 2.7.2-9000
+### Covid19Mirai 2.7.2
 - Adjusted margins and padding for mobile (#210)
 - More countries in rds dump
 - Separated Individual country page
