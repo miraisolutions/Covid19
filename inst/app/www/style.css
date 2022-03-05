@@ -199,7 +199,9 @@ ul.bodytextplot {
   background-color: #fff;
   font-family: Arial, sans-serif;
   font-size: 10px;
-  color: black;<
+  color: black;
+  padding: 0em;
+  padding-left: 1em;
 }
 
 .plottitle {
