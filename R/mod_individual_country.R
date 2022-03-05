@@ -22,7 +22,7 @@ mod_ind_country_ui <- function(id){
     div(
       htmlOutput(ns("ind_from_nth_case")), class = "bodytext"
     ),
-    hr(),
+    #hr(),
     div(
       htmlOutput(ns("ind_missing_days")), class = "bodytext"
     ),
@@ -203,7 +203,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   output$ind_from_nth_case<- renderText({
     HTML(paste(
          message_missing_data("Recovered and Tests",where = "most of Cantons"),
-         message_firstday(nn),
+         #message_firstday(nn),
          message_hosp_data(where = "Cantons"), sep = "<br/>"))
   })
 

@@ -12,8 +12,8 @@
 #' @importFrom shinycssloaders withSpinner
 mod_country_ui <- function(id, nn = 1000, n.select = 1000){
   ns <- NS(id)
-  from_nth_case_msg = paste(message_conf_case("Countries",n.select),
-                            message_firstday(nn),
+  from_nth_case_msg <- paste(message_conf_case("Countries",n.select),
+                            #message_firstday(nn),
                             message_missing_recovered(),
                             message_missing_data(),
                             message_hosp_data(),
@@ -27,12 +27,14 @@ mod_country_ui <- function(id, nn = 1000, n.select = 1000){
       HTML(from_nth_case_msg), class = "bodytext"
       #uiOutput(ns("from_nth_case"))
     ),
-    hr(),
+    #hr(),
     div(
         htmlOutput(ns("ind_missing_days")), class = "bodytext"
     ),
     hr(),
-    selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL),
+    div(class = "plottext", style = "font-size:14px",
+      selectInput(label = "Country", inputId = ns("select_country"), choices = NULL, selected = NULL)
+    ),
 
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("count-boxes"), outputui = TRUE),
@@ -85,7 +87,7 @@ from_nth_case_area2_msg <- function(n2){
     "They may not match those at Country Level or they may miss information.",
     #paste0("Some countries or some regions within countries are not providing Recovered data."),
     message_missing_data(),
-    message_firstday(n2),
+    #message_firstday(n2),
     #paste0("1st day is the day when ", n2 ," confirmed cases are reached."),
     message_hosp_data(where = "some areas"),
     sep = "<br/>")

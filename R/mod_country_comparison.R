@@ -17,7 +17,7 @@ mod_country_comparison_ui <- function(id, nn = 1000){
     message_missing_recovered(),
     message_missing_data("Recovered and Tests", "some countries"),
     #paste0("1st day is the day when ", nn ," confirmed cases are reached.")
-    message_firstday(nn),
+    #message_firstday(nn),
     sep = "<br/>")
 
 
@@ -29,7 +29,9 @@ mod_country_comparison_ui <- function(id, nn = 1000){
         #uiOutput(ns("from_nth_case"))
       ),
       hr(),
-      div(class = "plottext",selectInput(label = "Select Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE))
+      div(class = "plottext", style = "font-size:14px",
+          selectInput(label = "Select Countries", inputId = ns("select_countries"), choices = NULL, selected = NULL, multiple = TRUE)
+          )
     ),
     #tagList(
       div(h4("Countries Comparison"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
