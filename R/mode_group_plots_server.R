@@ -71,7 +71,7 @@ section_title <- function(type, tit) {
                 "confirmed" = "COVID-19 main variables",
                 "stringency" = "Stringency Lock-Down Index",
                 "vaccines" = "Vaccination status",
-                "hosp" = "Hospitalization",
+                "hosp" = "Hospitalizations and Intensive Care Units",
                 "")
   if (tit)
     div(hr(), text, align = "center", class = "sectiontitle")
