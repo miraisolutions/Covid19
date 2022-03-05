@@ -209,7 +209,7 @@ if (interactive()) {
                                 "plot_2" = barplots_colors$hosp$uniform,
                                 calc = FALSE),
                #pickvariable = list("plot_1" = "confirmed_rate_1M_pop","plot_2" = "hosp_rate_1M_pop"),
-               plottitle =  c("Confirmed positive cases per area", "Hospitalised and Intensive Care per area")
+               plottitle =  c("Confirmed positive cases per area", "Hospitalized and Intensive Care per area")
 
                #pickvariable = list("plot_1" = "confirmed")
                )

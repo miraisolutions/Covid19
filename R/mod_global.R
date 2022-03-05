@@ -13,6 +13,7 @@ mod_global_ui <- function(id){
   n = 1000 # define areaplot start
 
   ns <- NS(id)
+  message("global ui: ")
   tagList(
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("count-boxes")),
@@ -21,11 +22,13 @@ mod_global_ui <- function(id){
     ),
     div(h4("Global view of the pandemic"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     hr(),
-    div(timeline_info(hosp = FALSE), class = "bodytext"),
+    fluidRow(
+      div(timeline_info(hosp = FALSE), class = "bodytext"),
+    ),
     br(),
     fluidRow(
       column(6,
-             div(h4("Global Covid-19 time evolution"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Global Covid-19 evolution over time"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              withSpinner(mod_plot_log_linear_ui(ns("plot_area_global")))
       ),
       column(6,

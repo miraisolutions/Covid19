@@ -5,7 +5,7 @@
 \title{Message text, missing data}
 \usage{
 message_missing_data(
-  what = "Recovered, Hospitalised and Tests",
+  what = "Recovered, Hospitalized and Tests",
   where = "some countries and areas"
 )
 }

@@ -105,6 +105,8 @@ if (interactive()) {
     orig_data <- get_datahub(country = "USA", lev = 2) %>%
       get_timeseries_by_contagion_day_data()
 
+    # selected_country_data <- readRDS(system.file("datahub/Selected_Country.rds", package = "Covid19Mirai"))$area_data_2
+
     #pop_data = get_pop_datahub()
     #orig_data_aggregate = build_data_aggr(orig_data, pop_data)
     orig_data_aggregate = build_data_aggr(orig_data)
