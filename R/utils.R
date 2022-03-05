@@ -506,7 +506,7 @@ clean_plotly_leg <- function(.plotly_x, .extract_str) {
 #'
 #' @importFrom rlang sym
 #' @export
-aggr_to_cont = function(data, group, time,
+aggr_to_cont <- function(data, group, time,
                         allstatuses = intersect(get_aggrvars(), names(data))) {
 
   aggrvars = setdiff(intersect(get_aggrvars(), names(data)), "population")
@@ -514,6 +514,7 @@ aggr_to_cont = function(data, group, time,
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
     group_by(.dots = c(time,group)) %>%
+    #group_by(across(all_of(time,group))) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
     #add_growth_death_rate(group, time) %>%
     #left_join(popdata_cont[,c(group, "population")], by = group) %>% #TODO: why left_join not earlier?
@@ -594,7 +595,7 @@ tsdata_areplot <- function(data, levs, nn = 1000) {
     mutate(status = factor(status, levels = levs)) %>%
     capitalize_names_df()
 }
-#' creates message of countries within subcountries
+#' creates message of countries within sub countries
 #' @param data data.frame aggregated data per region
 #' @param area character main area
 #' @param region character sub area
@@ -604,10 +605,11 @@ tsdata_areplot <- function(data, levs, nn = 1000) {
 message_subcountries <- function(data, area, region) {
   # remove where subcontinent could be NA
   list.countries = data[,c(area,region)] %>% filter(!is.na(!!rlang::sym(area))) %>% unique() %>%
+    #group_by(across(all_of(area))) %>%
     group_by(.dots = area) %>% group_split()
   list.message = lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
-           paste(x[[region]], collapse = ",")))
+           paste(x[[region]], collapse = ", ")))
   c("Continent Area composition: ", list.message)
 }
 #' Calculates growth vs prevalence, growth vs stringency factors
@@ -1009,7 +1011,7 @@ message_conf_case = function(where = "Countries", ncases = 1000, suffix = "can b
 #'
 #' @return character vector
 #'
-message_firstday = function(ncases, var = "confirmed") {
+message_firstday <- function(ncases, var = "confirmed") {
   paste("1st day is the day when", ncases ,var, "cases are reached.")
 }
 #'Message text, missing data
@@ -1018,7 +1020,7 @@ message_firstday = function(ncases, var = "confirmed") {
 #'
 #' @return character vector
 #'
-message_missing_data = function(what = "Recovered, Hospitalised and Tests", where = "some countries and areas") {
+message_missing_data <- function(what = "Recovered, Hospitalized and Tests", where = "some countries and areas") {
   paste(what, "data can be partially/completely unavailable in our data source for",where, ".")
 }
 
@@ -1107,7 +1109,7 @@ message_missing_recovered = function(what = "Recovered", where = "Some countries
 #'
 #' @return character vector
 #'
-message_hosp_data = function(what = "Hospitalised, Vaccine doses and Test", where = "some countries and areas", suffix = "where available") {
+message_hosp_data <- function(what = "Hospitalized, Vaccine doses and Test", where = "some countries and areas", suffix = "where available") {
   paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
 }
 #' Color Palette for simple barplots
@@ -1142,3 +1144,17 @@ barplots_colors <- list(
                      "calc" = c(col = "Reds", rev = TRUE, skip = 2)
   )
 )
+
+#' Check whether data are available
+#' @param data data.frame
+#' @param var character string, variable name
+#'
+#' @return logical
+#' @noRd
+check_flag <- function(data, var) {
+  Flag = TRUE
+  # do not use stringency v is the same for all areas
+  if (all(is.na(data[[var]])) || all(data[[var]] == 0, na.rm = TRUE) || length(table(data[[var]])) == 1)
+    Flag = FALSE
+  Flag
+}

@@ -169,8 +169,9 @@ ul.bodytextplot {
   font-family: Arial, sans-serif;
   font-size: 11px;
   color: black;
-  margin-left: 2em;
-  margin-right:2em;
+  margin-left: 1.5em;
+  margin-right: 1.5em;
+  margin-bottom: 1em;
   padding: 1em 2em 1em 2px";
 }
 
@@ -179,8 +180,9 @@ ul.bodytextplot {
   font-family: Arial, sans-serif;
   font-size: 12px;
   color: black;
-  margin-left: 1.5em;
-  margin-right:1.5em;
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 2em;
   padding: 1em 2em 1em 2px";
   align-content: center;
 }
@@ -197,7 +199,9 @@ ul.bodytextplot {
   background-color: #fff;
   font-family: Arial, sans-serif;
   font-size: 10px;
-  color: black;<
+  color: black;
+  padding: 0em;
+  padding-left: 1em;
 }
 
 .plottitle {
@@ -243,18 +247,32 @@ input[type=checkbox], input[type=radio] {
 .navbar {
   margin-left: 0em;
   margin-right: 0em;
+  padding: 1em;
+  padding-left: 0.5em;
+/*
+  padding: 5px;
+  padding-left: 2px;
+  */
 }
 /* tabsetPanel style */
 .nav-tabs {
   border-bottom: 1px solid #FF9966;
+  padding: 1em;
+  padding-left: 0.5em;
 /*
+  padding: 5px;
+  padding-left: 2px
   border-bottom: 0 solid #008cc3;
 */
 }
 .tab-content {
-  padding: 10px;
+  padding: 1em;
+  padding-left: 0.5em;
+  padding-top: 1em;
+/* 10px;
+  padding: 5px;
+  padding-left: 2px
   padding-top: 15px;
-/*
   padding: 6px 12px;
   border: 1px solid #008cc3;
   border-radius: 3px;
@@ -263,9 +281,10 @@ input[type=checkbox], input[type=radio] {
 */
 }
 .tabbable > .nav > li > a {
-  margin-left: 20px;
+  margin-left: 1em;
   min-width: 100px;
 /*
+  margin-left: 20px;
   font-size: 13px;
   font-weight: bold;
   background-color: white;

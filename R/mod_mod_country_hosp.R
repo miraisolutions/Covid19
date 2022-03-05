@@ -24,7 +24,7 @@ mod_mod_country_hosp_ui <- function(id){
 
       ),
       column(6,
-             div(h4("Time evolution of Hospitalised cases"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+             div(h4("Evolution over time of Hospitalizations"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
              #withSpinner(uiOutput(ns("plot_areahosp_area2")))
              withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp2_area2"), select = TRUE, area = TRUE))
 

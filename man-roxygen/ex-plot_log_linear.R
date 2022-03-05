@@ -3,20 +3,17 @@ if (interactive()) {
 
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
   ui <- fluidPage(
-    Covid19Mirai:::mod_plot_log_linear_ui("test", select = FALSE, area = FALSE)
+    mod_plot_log_linear_ui("test", select = FALSE, area = FALSE)
   )
   server <- function(input, output) {
 
     # Data ----
     orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
-
     n = 100
     w = 7
     data_filtered <-
       orig_data %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-
 
     country_data <- reactive({data_filtered %>%
         filter(Country.Region %in% "Switzerland") %>%

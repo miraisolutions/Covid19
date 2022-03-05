@@ -101,7 +101,7 @@ mod_compare_timeline_plot_ui <- function(id, titles = 1:3,
 
   plottitleTLSE = "Timeline per variable"
   plottitleTLCY = "Timeline per calendar year"
-  plottitleTLTE = "Pandemic time evolution"
+  plottitleTLTE = "Pandemic evolution over time"
   alltitles = c(plottitleTLSE, plottitleTLCY, plottitleTLTE)[titles]
 
   plot_tabs <- tabsetPanel(
@@ -119,7 +119,7 @@ mod_compare_timeline_plot_ui <- function(id, titles = 1:3,
                                                  istop = istop, tests = tests, hosp = hosp, strindx = strindx, vax = vax,
                                                  selectvar = "new_deaths", writetitle = FALSE)
     ),
-    tabPanel("Pandemic time evolution",
+    tabPanel("Pandemic evolution over time",
              mod_plot_log_linear_ui(ns("timelinearea_plot"))
     )
   )
@@ -129,14 +129,21 @@ mod_compare_timeline_plot_ui <- function(id, titles = 1:3,
     #uiOutput(ns("title")),
     #div(h4(plottitle), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
     fluidRow(
-      column(7,
-             offset = 4,
-             div(class = "plottext", selectInput(inputId = ns("plot_indicator"), label = "Select view",
-                         choices = alltitles, selected = alltitles[1]))
-      )#,
+      #tagList(
+        column(7,
+               offset = 4,
+               div(class = "plottext", selectInput(inputId = ns("plot_indicator"), label = "Select view",
+                           choices = alltitles, selected = alltitles[1]))
+        )#,
+      #   tabPanel("Panel plot",
+      #            plot_tabs
+      #   )
+      # )
     ),
-    tabPanel("Panel plot",
-             plot_tabs
+    fluidRow(
+      tabPanel("Panel plot",
+               plot_tabs
+      )
     )
   )
 
@@ -187,7 +194,7 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
                         n_highlight = n_highlight, istop = istop, g_palette = graph_palette, datevar = "date",
                         actives = actives, tests = tests, hosp = hosp, strindx = strindx, vax = vax, oneMpop = oneMpop, secondline = secondline, areasearch = areasearch)#, secondline = "stringency_index")
 
-           }, "Pandemic time evolution" ={
+           }, "Pandemic evolution over time" ={
              levs <- areaplot_vars()
              callModule(mod_plot_log_linear_server, "timelinearea_plot", df = df, type = "area", process_data = TRUE, fun.args = list(levs = levs, nn = nn))
 
@@ -225,7 +232,8 @@ mod_compare_timeline_plot_server <- function(input, output, session, df,
 #' @importFrom shinycssloaders withSpinner
 mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
                                                 istop = TRUE, n_highlight = 10,
-                                                actives = TRUE, tests = TRUE, hosp = TRUE, strindx = TRUE, vax = TRUE, selectvar = "new_deaths", writetitle = TRUE){
+                                                actives = TRUE, tests = TRUE, hosp = TRUE, strindx = TRUE, vax = TRUE,
+                                                selectvar = "new_deaths", writetitle = TRUE){
   ns <- NS(id)
 
   choices_plot = choice_nthcases_plot(vars, actives = actives, tests = tests, hosp = hosp, strindx = strindx, vax = vax) # do not add stringency_index in possible choices
@@ -251,8 +259,9 @@ mod_compare_nth_cases_years_plot_ui <- function(id, vars = .vars_nthcases_plot,
                          choices = c("Last Month" = "lstmonth", "Full year" = "sincestart"), selected = "lstmonth"))
       ),
     ),
-    withSpinner(plotlyOutput(ns("plot"), height = 400)),
-    #div(uiOutput(ns("caption")), align = "center")
+    fluidRow(
+      withSpinner(plotlyOutput(ns("plot"), height = 400))
+    ),    #div(uiOutput(ns("caption")), align = "center")
     div(htmlOutput(ns("caption")), align = "center", height = 10, class = "plottext")
   )
 

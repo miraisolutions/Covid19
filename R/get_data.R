@@ -244,9 +244,10 @@ combine_hospvars_lev2 <- function(data1, data2, country = "Switzerland") {
 #'
 #' @param country character country, to chose with lev = 2
 #' @param startdate character staring date
-#' @param lev integer 1 for country level, 2 for reagions
+#' @param lev integer 1 for country level, 2 for regions
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
-#' @param hosp logical. If TRUE hospitalised detailed data are retrieved. Default TRUE since release 2.3.1
+#' @param hosp logical. If TRUE hospitalized detailed data are retrieved. Default TRUE since release 2.3.1
+#' @param cache logical. If TRUE cache argument is used in the covid19() call
 #'
 #' @details data sourced from https://github.com/covid19datahub/COVID19/
 #'
@@ -257,7 +258,7 @@ combine_hospvars_lev2 <- function(data1, data2, country = "Switzerland") {
 #' @import zoo
 #'
 #' @export
-get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE, hosp = TRUE) {
+get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE, hosp = TRUE, cache = FALSE) {
   # country = NULL; startdate = "2020-01-22"; lev = 1; verbose = FALSE; hosp = TRUE
   message("get_datahub: country = ", country, "/ startdate = ", startdate, "/ level = ", lev)
   rawarg = TRUE
@@ -274,7 +275,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
                      "U.S. Virgin Islands" = "U.S. Virgin Islands",
     )
   }
-  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg, cache = TRUE) # select level2 to add states
+  # cache = TRUE not needed since there are rds
+  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg, cache = cache) # select level2 to add states
   #dataHub <- covid19(country = country, level = lev) #
 
   # raw = FALSE then NAs replaced with 0s
