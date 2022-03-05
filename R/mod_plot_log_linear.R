@@ -14,10 +14,15 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
   ns <- NS(id)
   if (!select && (!area)) {
     # linear plot
-    fluidRow(
-      div(class = "plottext", align = "center", radioButtons(inputId = ns("radio_log_linear"), label = "",
-                   choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE)),
-      withSpinner(plotlyOutput(ns("plot_log_linear"), height = 500))#,
+    tagList(
+      fluidRow(
+        div(class = "plottext", align = "center",
+            radioButtons(inputId = ns("radio_log_linear"), label = "",
+                          choices = c("Log Scale" = "log", "Linear Scale" = "linear"), selected = "linear", inline = TRUE))
+      ),
+      fluidRow(
+        withSpinner(plotlyOutput(ns("plot_log_linear"), height = 500))#,
+      )
     )
   } else if (!select && (area)){
     # global page
@@ -26,9 +31,13 @@ mod_plot_log_linear_ui <- function(id, select = FALSE, area = TRUE){
     )
   } else if (select && (area)) {
     # country page
-    fluidRow(
-      uiOutput(ns("select_area_ui")),
-      withSpinner(plotlyOutput(ns("plot_area_select"), height = 450))#,
+    tagList(
+      fluidRow(
+        uiOutput(ns("select_area_ui"))
+      ),
+      fluidRow(
+        withSpinner(plotlyOutput(ns("plot_area_select"), height = 450))#,
+      )
     )
   } else {
     stop("wrong selection in mod_plot_log_linear_ui")

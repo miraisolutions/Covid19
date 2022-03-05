@@ -25,14 +25,18 @@ build_data <- function() {
   pop_data <- get_pop_datahub()
   europe <- pop_data %>% filter(continent == "Europe")
 
-  top_europe <- merge_pop_data(orig_data, pop_data) %>%
+  all_data <- merge_pop_data(orig_data, pop_data)
+
+  top_europe <- all_data %>%
     filter(continent == "Europe") %>%
     distinct(Country.Region,population) %>%
-    slice_max(population, n = 20) %>% as.data.frame() %>% .[,"Country.Region"]
+    slice_max(population, n = 25) %>% as.data.frame() %>% .[,"Country.Region"]
 
-  top_counties <- orig_data %>% distinct(Country.Region,population) %>%
-    slice_max(population, n = 20) %>% as.data.frame() %>% .[,"Country.Region"]
+  top_counties <- all_data %>% distinct(Country.Region,population) %>%
+    slice_max(population, n = 25) %>% as.data.frame() %>% .[,"Country.Region"]
 
+  add_countries <- c("Australia", "Canada", "Argentina", "South Africa", "South Korea")
+  top_counties <- c(top_counties, add_countries)
   # remove Switzerland and USA
   all_countries <- union(top_counties, top_europe) %>% setdiff(c("Switzerland", "USA"))
 
@@ -50,6 +54,7 @@ build_data <- function() {
   # remove those whithout data
   idx <- sapply(1:length(all_lev2_data), function(x)
     nrow(all_lev2_data[[x]])) >0
+  message("Level 2 data not found for ", sum(!idx), " countries out of ", length(idx))
   all_lev2_data <- all_lev2_data[idx]
 
   message("** Save data as Selected_Country.rds **")
