@@ -5,7 +5,7 @@
 \title{Message text, missing data}
 \usage{
 message_hosp_data(
-  what = "Hospitalised, Vaccine doses and Test",
+  what = "Hospitalized, Vaccine doses and Test",
   where = "some countries and areas",
   suffix = "where available"
 )

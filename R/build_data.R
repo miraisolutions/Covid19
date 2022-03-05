@@ -5,6 +5,7 @@
 #' @export
 build_data <- function() {
 
+  message("Start build_data, read Level 1 and CH at Level 2")
   orig_data_with_ch <- get_datahub_fix_ch()
   orig_data <- orig_data_with_ch$orig_data
   orig_data_ch_2 <- orig_data_with_ch$orig_data_ch_2

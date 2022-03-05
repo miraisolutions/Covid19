@@ -1109,7 +1109,7 @@ message_missing_recovered = function(what = "Recovered", where = "Some countries
 #'
 #' @return character vector
 #'
-message_hosp_data = function(what = "Hospitalized, Vaccine doses and Test", where = "some countries and areas", suffix = "where available") {
+message_hosp_data <- function(what = "Hospitalized, Vaccine doses and Test", where = "some countries and areas", suffix = "where available") {
   paste(what, "data are updated with delay for", where, "in our data source", suffix, ".")
 }
 #' Color Palette for simple barplots
