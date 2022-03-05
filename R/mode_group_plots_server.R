@@ -5,7 +5,7 @@
 timeline_info <- function(sep = "<br/>", hosp = TRUE, country = "the world") {
   #tags$p(
   paste(paste0("Check how indicators developed over time for ",country,". 3 main type of plots are proposed: (1) area plot for confirmed infections",
-        ifelse(hosp, ", area plot of hospitalised an ICU admisions", ""), ", (2) time line of each single variable from \"start\", \"6 months\" and \"1 month\" ago, (3) calendar comparison for the \"full year\" or for the \"last month\".
+        ifelse(hosp, ", area plot of hospitalized an ICU admisions", ""), ", (2) time line of each single variable from \"start\", \"6 months\" and \"1 month\" ago, (3) calendar comparison for the \"full year\" or for the \"last month\".
         Change \"Select View\" to \"Timeline per calendar year\" to see the years' comparison."),
         sep = sep)
   #)
@@ -297,7 +297,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
   barplottitle <- ifelse(type == "vaccines", "Vaccine Doses",
                          ifelse(type == "stringency","Stringency Index",
                                 ifelse(type == "confirmed", "Confirmed Infections and Tests",
-                                       ifelse(type == "hosp", "Hospitalised / ICU",
+                                       ifelse(type == "hosp", "Hospitalized / ICU",
                                        stop("wrong type argument")))))
 
   sortbyvar = ifelse(is.null(barplotargs[["sortbyvar"]]), TRUE, barplotargs[["sortbyvar"]])

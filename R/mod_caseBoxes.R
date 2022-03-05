@@ -237,7 +237,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
   } else {
     if(!renderui) {
       insertUI(paste0("#",ns("hosp")),
-               ui = countBox3(title1 = "Hospitalised: ",
+               ui = countBox3(title1 = "Hospitalized: ",
                               subtitle1 = counts[["hosp"]],
                               title2 = "Last Week: ",
                               subtitle2 =  counts[["lw_hosp"]],
@@ -290,7 +290,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       )
     } else {
       output$hosp <- renderUI({
-        countBox3(title1 = "Hospitalised: ",
+        countBox3(title1 = "Hospitalized: ",
                  subtitle1 = counts[["hosp"]],
                  title2 = "Last Week: ",
                  subtitle2 =  counts[["lw_hosp"]],
