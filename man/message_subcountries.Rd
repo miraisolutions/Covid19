@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{message_subcountries}
 \alias{message_subcountries}
-\title{creates message of countries within subcountries}
+\title{creates message of countries within sub countries}
 \usage{
 message_subcountries(data, area, region)
 }
@@ -17,5 +17,5 @@ message_subcountries(data, area, region)
 list messages printing Country.Region within subcontinent
 }
 \description{
-creates message of countries within subcountries
+creates message of countries within sub countries
 }
