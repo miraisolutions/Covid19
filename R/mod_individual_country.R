@@ -79,7 +79,7 @@ mod_ind_country_ui <- function(id){
     div(
       HTML(from_nth_case_area2_msg(n2)), class = "bodytext"
     ),
-    hr(),
+    #hr(),
     div(
       htmlOutput(ns("ind_missing_days_area2")), class = "bodytext"
     ),

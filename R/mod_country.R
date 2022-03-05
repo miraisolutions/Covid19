@@ -119,7 +119,7 @@ areaUI <- function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag =
            div(
              HTML(from_nth_case_area2_msg(n2)), class = "bodytext"
            ),
-          hr(),
+          #hr(),
           div(
             htmlOutput(ns("country_missing_days_area2")), class = "bodytext"
           ),
