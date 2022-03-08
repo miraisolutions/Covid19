@@ -22,6 +22,10 @@ build_data <- function() {
   # read data for default country at level 2
   area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)
 
+  message("** Save data as Selected_Country.rds **")
+
+  saveRDS(list(area_data_2 = area_data_2), "inst/datahub/Selected_Country.rds")
+
   # take main European countries:
   pop_data <- get_pop_datahub()
   europe <- pop_data %>% filter(continent == "Europe")
