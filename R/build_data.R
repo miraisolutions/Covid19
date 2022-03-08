@@ -62,6 +62,10 @@ build_data <- function() {
   message("Level 2 data not found for ", sum(!idx), " countries out of ", length(idx))
   all_lev2_data <- all_lev2_data[idx]
 
+  message("** Save data as Selected_Country.rds **")
+
+  saveRDS(list(area_data_2 = area_data_2), "inst/datahub/Selected_Country.rds")
+
   message("** Save data as Top_Countries.rds **")
 
   saveRDS(list(all_lev2_data = all_lev2_data, all_countries = all_countries), "inst/datahub/Top_Countries.rds")
