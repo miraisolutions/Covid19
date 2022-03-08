@@ -171,36 +171,6 @@ get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1
   list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2)
 }
 
-#' Build data in GutHub action yml and save as RDS
-#' @rdname get_datahub
-#'
-#'
-#' @export
-build_data <- function() {
-
-  orig_data_with_ch <- get_datahub_fix_ch()
-  orig_data <- orig_data_with_ch$orig_data
-  orig_data_ch_2 <- orig_data_with_ch$orig_data_ch_2
-
-  orig_data <- orig_data %>%
-    get_timeseries_by_contagion_day_data()
-
-  orig_data_ch_2 <- orig_data_ch_2 %>%
-    get_timeseries_by_contagion_day_data()
-
-  message("** Save data as DATA.rds **")
-  saveRDS(list(orig_data = orig_data, orig_data_ch_2 = orig_data_ch_2), "inst/datahub/DATA.rds")
-
-  # read data for default country at level 2
-  area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)
-
-  message("** Save data as Selected_Country.rds **")
-
-  saveRDS(list(area_data_2 = area_data_2), "inst/datahub/Selected_Country.rds")
-
-  NULL
-}
-
 
 #' replace hospital data of level1 with level2 data
 #'
