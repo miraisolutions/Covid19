@@ -27,6 +27,8 @@ mod_continent_comparison_ui <- function(id){
              # withSpinner(uiOutput(ns("lines_points_plots_cont")))
              # )
              withSpinner(mod_compare_nth_cases_plot_ui(ns("lines_points_plots_cont"), istop = FALSE, nn = 1000, tests = FALSE, hosp = FALSE, selectvar = "new_confirmed", oneMpop = TRUE, vax = TRUE))
+             #withSpinner(mod_compare_timeline_plot_ui(ns("lines_points_plots_cont"), titles = 1:2, tests = FALSE, hosp = FALSE, strindx = FALSE, nn = 1, oneMpop = TRUE, vax = TRUE))
+
       ),
       column(6,
              #withSpinner(uiOutput(ns("rateplots_cont")))
@@ -90,6 +92,10 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   callModule(mod_compare_nth_cases_plot_server, "lines_points_plots_cont", continent_data, nn = nn,
              n_highlight = length(continents), tests = FALSE, hosp = FALSE, istop = FALSE, oneMpop = TRUE, vax = TRUE)
+
+  # callModule(mod_compare_timeline_plot_server, "lines_points_plots_cont", continent_data , istop = FALSE,
+  #            tests = FALSE, hosp = FALSE, strindx = FALSE, nn = 1, oneMpop = FALSE, vax = TRUE)
+  #
 
   # scatterplot
 

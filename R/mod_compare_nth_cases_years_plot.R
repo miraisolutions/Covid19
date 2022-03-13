@@ -27,31 +27,34 @@ lmonth_dates_calc <- function(yy,dd, nmonth = 31, ylength = 365) {
 #' @param varInternal numeric variable vector.
 #' @param category vector category to select starting point from first value
 #' @param lstmonth logical if TRUE then rescale from 1st value, if false from last year of previous category
-#' @param desc logical if lstmonth TRUE then it says whether data are in ascending or descending chronological order
+#' @param desc logical if `lstmonth` TRUE then it says whether data are in ascending or descending chronological order
 #'
 #' @noRd
 #'
-rescale_from_start = function(var, category, lstmonth = FALSE, desc = FALSE) {
+rescale_from_start <- function(var, category, lstmonth = FALSE, desc = FALSE) {
 
   if (lstmonth) {
     fromLast = ifelse(desc, TRUE, FALSE)
     # reptimes = unique(table(category)[as.character(unique(category))])
-    reptimes = as.integer(table(category)[as.character(unique(category))])
+    #reptimes = as.integer(table(category)[as.character(unique(category))])
 
     # if(length(unique(reptimes)) == 1) # if countries all have same lengths then rep behaves differently
     #   reptimes = unique(reptimes)
     idx_first_day = which(!duplicated(category, fromLast = fromLast))
     # use each or times depending on the order of categories
-    # reparg = "each"
-    # if (identical(tail(category, length(unique(category))), unique(category) ))
-      reparg = "times"
-
+    #reparg = "times"
+     # if (identical(tail(category, length(unique(category))), unique(category) ))
+     #  reparg = "each"
     #last_day_of_prev_cat = rep(var[idx_first_day], each = reptimes)
-    last_day_of_prev_cat = rep(var[idx_first_day], times = reptimes)
+    #last_day_of_prev_cat = rep(var[idx_first_day], times = reptimes)
 
-    argsrep = list(var[idx_first_day], reptimes)
-    names(argsrep) = c("x",reparg)
-    last_day_of_prev_cat = do.call("rep", argsrep)
+    last_day_of_prev_cat = var[idx_first_day]
+    names(last_day_of_prev_cat) = as.character(unique(category))
+    last_day_of_prev_cat = as.numeric(last_day_of_prev_cat[as.character(category)])
+
+    # argsrep = list(var[idx_first_day], reptimes)
+    # names(argsrep) = c("x",reparg)
+    # last_day_of_prev_cat = do.call("rep", argsrep)
 
   } else {
     # depends on whether data are sorted asc or desc
@@ -374,7 +377,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
 
         startm = month(as.Date(max(data$date)- 31))
 
-        lstmonth = ifelse(!is.null(input$time_frame) && (input$time_frame != "sincestart"), TRUE, FALSE)
+        lstmonth <-ifelse(!is.null(input$time_frame) && (input$time_frame != "sincestart"), TRUE, FALSE)
 
 
         # if (input$time_frame == "sincestart") {
@@ -408,7 +411,7 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
           #   seq.Date(dates_lst_month[i], dates_today[i], by = 1)
           # }) %>% unlist()
           # dates_keep is numeric but it works for Date class
-          data = data[data$Date %in% dates_keep, , drop = FALSE]
+          data <- data[data$Date %in% dates_keep, , drop = FALSE]
 
           # seq.Date(dates_lst_month, dates_today, by = 1)
           # date_lst_month = data$date - 31-365 # TODO: to be changed, leap year
@@ -419,9 +422,8 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
       }
       if (any(data$d.year>0) && (input$radio_indicator %in% cum_vars)) {
         # if there are more than 2 years and if the variable is cumulative
-        desc = ifelse(tail(data$date,1) > head(data$date,1), FALSE, TRUE )
-
-        data = data %>%
+        desc <- ifelse(tail(data$date,1) > head(data$date,1), FALSE, TRUE )
+        data <- data %>%
           mutate( # add aggregated vars
             #across(all_of(as.vector(cum_vars)), ~.rescale_year_start(data = .x, years = years)) # use all_of
             across(all_of(as.vector(input$radio_indicator)), ~rescale_from_start(var = .x, category = d.year, lstmonth = lstmonth, desc = desc)) # use all_of

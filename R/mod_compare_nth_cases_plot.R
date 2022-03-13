@@ -379,9 +379,9 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       if (!is.null(input$time_frame)) {
         if (input$time_frame == "sincestart") {
           #data = data[data$date >= date_first_var, , drop = FALSE]
-          data = df_data_roll()
+          #data = df_data_roll() # is it needed?
         } else {
-          df_year = as.integer(format(data$date, "%Y"))
+          # df_year = as.integer(format(data$date, "%Y"))
 
           if (input$time_frame == "lst6month") {
             # n_days <- max()
