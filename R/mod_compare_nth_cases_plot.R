@@ -31,7 +31,7 @@ choice_nthcases_plot = function(vars = .vars_nthcases_plot, actives = TRUE, test
     vars = vars[!grepl("stringency", vars)]
   }
   if (!vax) {
-    vars = vars[!grepl("vaccines", vars)]
+    vars = vars[!grepl("vaccin", vars)]
   }
   if (!log) {
     vars = vars[!grepl("^new", vars) & !(vars %in% .neg_vars)]

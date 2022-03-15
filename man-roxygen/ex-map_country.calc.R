@@ -16,7 +16,7 @@ if (interactive()) {
   #variable = "active" # set variable
  #variable = "growth factor" # set variable
   #variable = "confirmed" # set variable
-  variable = "stringency_index" # set variable
+  variable = "vaccines" # set variable
 
  #sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."
@@ -30,18 +30,22 @@ if (interactive()) {
 
     country = "Switzerland"
 
-    area_data_2 <- get_datahub(country, lev = 2) %>%
-      get_timeseries_by_contagion_day_data()
+    # area_data_2 <- get_datahub(country, lev = 2) %>%
+    #   get_timeseries_by_contagion_day_data()
+
+    area_data_2 <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data_ch_2
 
     area_data_2_aggregate <-
       build_data_aggr(area_data_2)
     area2_data_map = leaflet::gadmCHE
 
     data7_2_aggregate = lw_vars_calc(area_data_2_aggregate)
+    data14_2_aggregate = lw_vars_calc(area_data_2_aggregate, 14)
 
     # create datasets for maps merging today with data7
     data_area2 = area_data_2_aggregate %>% add_growth_death_rate() %>%
-      left_join(data7_2_aggregate %>% select(-population))
+      left_join(data7_2_aggregate %>% select(-population)) %>%
+      left_join(data14_2_aggregate %>% select(-population))
 
     .adjustmap = function(spmap, country) {
       spmap$NAME = factor(spmap$NAME_1)

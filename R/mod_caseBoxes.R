@@ -178,27 +178,29 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
       message("Vaccine doses box")
       if(!renderui)
         insertUI(paste0("#",ns(vax)),
-                 ui = countBox3(title1 = "Vaccine doses: ",
-                                subtitle1 = counts[["vaccines"]],
-                                title2 = "Last Week: ",
+                 ui = countBox3(title1 = "Fully Vaccinated: ",
+                                subtitle1 = counts[["fully_vaccinated_rate"]],
+                                title2 = "L. Week Doses: ",
                                 subtitle2 =  counts[["lw_vaccines"]],
-                                title3 = "Prev. Week: ",
+                                title3 = "P. Week Doses: ",
                                 subtitle3 =  counts[["pw_vaccines"]],
                                 color = "white",
-                                background = .case_colors[["vaccines"]]),
+                                background = .case_colors[["vaccines"]],
+                                type = c("perc","thousands","thousands")),
                  session = session,
                  immediate = TRUE
         )
       else {
         output[[vax]]  <- renderUI({
-          countBox3(title1 = "Vaccine doses: ",
-                   subtitle1 = counts[["vaccines"]],
-                   title2 = "Last Week: ",
-                   subtitle2 =  counts[["lw_vaccines"]],
-                   title3 = "Prev. Week: ",
-                   subtitle3 =  counts[["pw_vaccines"]],
-                   color = "white",
-                   background = .case_colors[["vaccines"]])
+          countBox3(title1 = "Fully Vaccinated: ",
+                    subtitle1 = counts[["fully_vaccinated_rate"]],
+                    title2 = "L. Week Doses: ",
+                    subtitle2 =  counts[["lw_vaccines"]],
+                    title3 = "P. Week Doses: ",
+                    subtitle3 =  counts[["pw_vaccines"]],
+                    color = "white",
+                    background = .case_colors[["vaccines"]],
+                    type = c("perc","thousands","thousands"))
         })
       }
 
@@ -206,15 +208,15 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
     if (!vaxflag || vax != "active") {
       if(!renderui)
         insertUI(paste0("#",ns("active")),
-               ui =       countBox3(title1 = "Active: ",
-                                    subtitle1 = counts[["active"]],
-                                    title2 = "Last Week: ",
-                                    subtitle2 =  counts[["lw_active"]],
-                                    title3 = "Prev. Week: ",
-                                    subtitle3 =  counts[["pw_active"]],
-                                    color = "white",
-                                    background = .case_colors[["active"]],
-                                    diffcalc = TRUE),
+               ui = countBox3(title1 = "Active: ",
+                          subtitle1 = counts[["active"]],
+                          title2 = "Last Week: ",
+                          subtitle2 =  counts[["lw_active"]],
+                          title3 = "Prev. Week: ",
+                          subtitle3 =  counts[["pw_active"]],
+                          color = "white",
+                          background = .case_colors[["active"]],
+                          diffcalc = TRUE),
                session = session,
                immediate = TRUE
       )
@@ -245,6 +247,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                               subtitle3 =  counts[["pw_hosp"]],
                               color = "white",
                               background = .hosp_colors[["hosp"]],
+                              type = c("thousands", "sign", "sign"),
                               diffcalc = FALSE),
                session = session,
                immediate = TRUE
@@ -258,6 +261,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                               subtitle3 =  counts[["pw_icuvent"]],
                               color = "white",
                               background = .hosp_colors[["icuvent"]],
+                              type = c("thousands", "sign", "sign"),
                               diffcalc = FALSE),
                session = session,
                immediate = TRUE
@@ -283,7 +287,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                               subtitle3 =  counts[["pw_positive_tests_rate"]],
                               color = "white",
                               background = .tests_colors[["positive_tests_rate"]],
-                              perc = TRUE,
+                              type = "perc",
                               diffcalc = FALSE),
                session = session,
                immediate = TRUE
@@ -298,6 +302,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                  subtitle3 =  counts[["pw_hosp"]],
                  color = "white",
                  background = .hosp_colors[["hosp"]],
+                 type = c("thousands", "sign", "sign"),
                  diffcalc = FALSE)
       })
 
@@ -311,6 +316,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                  subtitle3 =  counts[["pw_icuvent"]],
                  color = "white",
                  background = .hosp_colors[["icuvent"]],
+                 type = c("thousands", "sign", "sign"),
                  diffcalc = FALSE)
       })
 
@@ -336,7 +342,7 @@ mod_caseBoxes_server <- function(input, output, session, counts, hosp = FALSE, v
                  subtitle3 =  counts[["pw_positive_tests_rate"]],
                  color = "white",
                  background = .tests_colors[["positive_tests_rate"]],
-                 perc = TRUE,
+                 type = "perc",
                  diffcalc = FALSE)
       })
     }
@@ -351,7 +357,10 @@ countBox <- function(title1, subtitle1, title2, subtitle2, color, background, wi
   format_thousands = function(x)
     formatC(x, format = "f", big.mark = "'", digits  = 0)
   format_perc = function(x)
-    paste(x*100, "%")
+    paste0(x*100, "%")
+  fun_sign = function(x) {
+    paste(ifelse(x>0, "+",""),format_thousands(x))
+  }
   format_fun = ifelse(perc, format_perc, format_thousands)
   pp =  div(
     class = "count-box",
@@ -377,22 +386,36 @@ countBox <- function(title1, subtitle1, title2, subtitle2, color, background, wi
 #' @param color character text's colour
 #' @param background character box's colour
 #' @param width with of box
-#' @param perc logical if TRUE then values are %
-#' @param diffcalc logical if TRUE diffeerence in % is also displayed
+#' @param type character `perc`, `thousands`, `sign`, default perc
+#' @param diffcalc logical if TRUE difference in % is also displayed
 #'
 #' @import tidyr
 #' @import shiny
 #'
 #' @noRd
-countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, color, background, width = "100%", perc = FALSE, diffcalc = TRUE) {
+countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, color, background, width = "100%", type = c("perc"), diffcalc = TRUE) {
 
-  format_thousands = function(x)
+  format_thousands = function(x) {
     formatC(x, format = "f", big.mark = "'", digits  = 0)
+  }
   format_perc = function(x) {
     ifelse(is.na(x),"",paste(x*100,"%"))
   }
+  format_sign = function(x) {
+    paste(ifelse(x>0, "+",""),format_thousands(x))
+  }
 
-  format_fun = ifelse(perc, format_perc, format_thousands)
+  if (!type %in% c("perc", "thousands", "sign"))
+    stop("Wrong type arg ", type)
+
+  format_choice = list(format_thousands = format_thousands,
+                       format_perc = format_perc,
+                       format_sign = format_sign)
+  if (length(type) == 1)
+    type = rep(type, 3)
+  format_fun = format_choice[paste("format", type, sep = "_")]
+
+  # ifelse(perc, format_perc, format_thousands)
 
   format_change = function(x) {
     sign.perc = "+"
@@ -415,13 +438,13 @@ countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, c
   div(
     class = "count-box",
     shiny::h3(title1),
-    shiny::p(format_fun(subtitle1)),
+    shiny::p(format_fun[[1]](subtitle1)),
     br(),
     shiny::h3(title2),
-    shiny::p(format_fun(subtitle2)),
+    shiny::p(format_fun[[2]](subtitle2)),
     br(),
     shiny::h3(title3),
-    shiny::p(format_fun(subtitle3)),
+    shiny::p(format_fun[[3]](subtitle3)),
     br(),
     shiny::h3(titlestringdiff),
     shiny::p(stringgdiff),
