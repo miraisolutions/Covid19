@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_map_calc_continent.R
 \name{update_radio}
 \alias{update_radio}
-\title{Updates UI radiobuttons depending to variable va}
+\title{Updates UI radiobuttons depending to variable chosen for the map}
 \usage{
 update_radio(var, growthvar = 7, global = FALSE)
 }
@@ -21,5 +21,5 @@ caption: vaption
 textvar: variables to add in popup
 }
 \description{
-Updates UI radiobuttons depending to variable va
+Updates UI radiobuttons depending to variable chosen for the map
 }

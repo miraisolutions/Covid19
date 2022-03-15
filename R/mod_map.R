@@ -11,7 +11,8 @@
 #' @importFrom shinycssloaders withSpinner
 mod_map_ui <- function(id){
   ns <- NS(id)
-  vars = setdiff(names(.case_colors), c("hosp","recovered")) # remove hosp for now
+  vars = setdiff(names(.case_colors), c("hosp","recovered", "vaccines")) # remove hosp and vaccines for now
+  vars = c(vars, "fully_vaccinated_rate")
   choices_map <- c(vars, paste0("lw_",vars), "stringency_index")# %>%
     #setNames(gsub("_", " ",c(vars, paste0("lw_",vars), "stringency_index"))) %>% as.list()
 

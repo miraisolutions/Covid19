@@ -255,7 +255,7 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   country_data_area = country_data
   active_hosp = FALSE
   if (sum(country_data$hosp, na.rm = TRUE)>0) {
-    message("Adding hospitalised data for areaplot for ", country)
+    message("Adding hospitalized data for areaplot for ", country)
     levs = c(levs, "hosp")
     active_hosp = TRUE
   }
@@ -332,14 +332,15 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
              # scatterplotargs = list(nmed = n2, countries = relevant_countries),
              tests = testsflag,
              scatterplotargs = list(nmed = 10),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE))
 
   levs <- areaplot_vars()
   data_area = area_data_2
   active_hosp = FALSE
   hospflag = FALSE
   if (sum(data$hosp, na.rm = TRUE)>0) {
-    message("Adding hospitalised data for areaplot")
+    message("Adding hospitalized data for areaplot")
     levs = c(levs, "hosp")
     active_hosp = TRUE
     hospflag = TRUE
@@ -408,11 +409,13 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
   callModule(mod_group_plot_server, "ind_country_hosp_2", data_today = area_data_2_aggregate_today, nn = n2, type = "hosp", istop = FALSE,
              scatterplotargs = list(nmed = n2),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE))
 
   callModule(mod_group_plot_server, "ind_country_vax_2", data_today = area_data_2_aggregate_today, nn = n2, type = "vaccines", istop = FALSE,
              scatterplotargs = list(nmed = n2),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE))
 
 
   output$maps_ind_subarea <- renderUI({
@@ -509,12 +512,12 @@ mod_country_area_maps_server <- function(input, output, session, data, country){
   #maps hosp
 
   callModule(mod_map_area_calc_server, "map_ind_hosp", df = data_maps,  area2_map,
-             area = country, variable = "hospitalised", max.pop = 0, countrymap = TRUE)
+             area = country, variable = "hospitalized", max.pop = 0, countrymap = TRUE)
 
   #maps hosp per population
 
   # callModule(mod_map_area_calc_server, "map_ind_hosp_1M_pop", df = data_maps,  area2_map,
-  #            area = country, variable = "hospitalised over 1M", max.pop = 0, countrymap = TRUE)
+  #            area = country, variable = "hospitalized over 1M", max.pop = 0, countrymap = TRUE)
 }
 
 

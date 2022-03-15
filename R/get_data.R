@@ -251,7 +251,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
 
   # raw = FALSE then NAs replaced with 0s
 
-  vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", "vaccines", "stringency_index","population")
+  vars = c("date", "tests", "confirmed", "recovered", "deaths", "hosp", as.character(.vacc_vars_datahub), "stringency_index","population")
   if (hosp) {
     vars = append(vars, setdiff(.hosp_vars_datahub, vars), which(vars == "hosp"))
   }

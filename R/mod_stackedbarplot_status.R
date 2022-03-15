@@ -59,7 +59,7 @@ mod_stackedbarplot_status_server <- function(input, output, session, df, w = 7, 
     #   statuses = append(statuses, "hosp", after = which(statuses == "deaths"))
     #   #active_hosp = TRUE
     # }
-    message("Using hospitalised data for stackedbarplot")
+    message("Using hospitalized data for stackedbarplot")
     statuses = append(statuses, "hosp", after = which(statuses == "deaths"))
   }
   statuses_lab = names(varsNames(statuses))

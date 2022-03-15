@@ -18,44 +18,44 @@ app_server <- function(input, output, session) {
 
   # Data ----
   # map
-  rds_map = "WorldMap_sp_spl.rds"
-  message("read map from RDS ", rds_map)
-  countries_data_map <- readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
+  # rds_map = "WorldMap_sp_spl.rds"
+  # message("read map from RDS ", rds_map)
+  # countries_data_map <- readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
 
   # orig_data_with_ch <- get_datahub_fix_ch()
   rds_data = "DATA.rds"
-  orig_data_with_ch = readRDS(file =  file.path(system.file("./datahub", package = "Covid19Mirai"),rds_data))
+  DATA = readRDS(file =  file.path(system.file("./datahub", package = "Covid19Mirai"),rds_data))
 
-  orig_data       = orig_data_with_ch$orig_data
-  orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
-
-
-  pop_data <- get_pop_datahub()
+  orig_data_aggregate       = DATA$orig_data_aggregate
+  orig_data_ch_2  = DATA$orig_data_ch_2
+  pop_data <- DATA$pop_data
+  countries_data_map <- DATA$countries_data_map
+  # pop_data <- get_pop_datahub()
 
   #align continents from map with pop
   #country_name <- as.character(unique(as.character(countries_data_map$NAME))[charmatch(pop_data$Country.Region, unique(as.character(countries_data_map$NAME)))])
-  .align_map_pop <- function(map,pop) {
-    tmp = map@data[,c("NAME","CONTINENT")] %>%
-      merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T, sort = FALSE, incomparables = NA)
-    tmp = tmp[match(map@data$NAME,tmp$NAME),]
-    tmp2 = pop[,c("Country.Region","continent")] %>%
-      merge(map@data[,c("NAME","CONTINENT")], by.x = "Country.Region", by.y = "NAME", all.x = T, sort = FALSE, incomparables = NA)
-    tmp2 = tmp2[match(pop$continent,tmp2$continent),]
+  # .align_map_pop <- function(map,pop) {
+  #   tmp = map@data[,c("NAME","CONTINENT")] %>%
+  #     merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T, sort = FALSE, incomparables = NA)
+  #   tmp = tmp[match(map@data$NAME,tmp$NAME),]
+  #   tmp2 = pop[,c("Country.Region","continent")] %>%
+  #     merge(map@data[,c("NAME","CONTINENT")], by.x = "Country.Region", by.y = "NAME", all.x = T, sort = FALSE, incomparables = NA)
+  #   tmp2 = tmp2[match(pop$continent,tmp2$continent),]
+  #
+  #   map@data$CONTINENT[!is.na(tmp$continent)] = tmp$continent[!is.na(tmp$continent)]
+  #   pop$continent[is.na(pop$continent)] = as.character(tmp2$CONTINENT[is.na(pop$continent)])
+  #
+  #   list(map = map, pop = pop)
+  # }
 
-    map@data$CONTINENT[!is.na(tmp$continent)] = tmp$continent[!is.na(tmp$continent)]
-    pop$continent[is.na(pop$continent)] = as.character(tmp2$CONTINENT[is.na(pop$continent)])
-
-    list(map = map, pop = pop)
-  }
-
-  res = .align_map_pop(countries_data_map, pop_data)
-  pop_data = res$pop
-  countries_data_map = res$map
+  # res = .align_map_pop(countries_data_map, pop_data)
+  # pop_data = res$pop
+  # countries_data_map = res$map
   # remove small countries, population <=1000
   # TODO pop_data = pop_data %>% filter(population >1000)
 
-  orig_data_aggregate <-
-    build_data_aggr(orig_data, pop_data)
+  # orig_data_aggregate <-
+  #   build_data_aggr(orig_data, pop_data)
 
   glob_var = reactiveVal(0)
   summary_var = reactiveVal(0)

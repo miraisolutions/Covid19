@@ -4,7 +4,7 @@
 \alias{vars_vs_stringency_vax}
 \title{selectInput UI parameters for stringency}
 \usage{
-vars_vs_stringency_vax(ax)
+vars_vs_stringency_vax(ax = "y")
 }
 \arguments{
 \item{ax}{axis, x or y}

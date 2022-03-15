@@ -11,18 +11,18 @@ capitalize_first_letter <- function(x) {
         sep = "", collapse = " ")
 }
 
-#' Color Palette for Areaplot variables
+#' Color Palette vaccination vars
 #'
 #' @export
-.case_colors <- c(
-  "confirmed" = "#dd4b39",
-  "deaths" = "black",
-  "recovered" = "#00a65a",
-  "active" = "#3c8dbc",
-  "hosp" = "#08306B",
-  "vaccines" = "#17a2ff" #"#24bbff"#,##24bbff "lightskyblue"#"cadetblue2"
+.vacc_colors <- c(
+  "vaccines" = "#17a2ff",
+  "people_vaccinated" = "lightblue",#"darkblue",
+  "people_fully_vaccinated" = "darkblue", #"darkslategray"
+  "vaccinated_rate" = "lightblue",#"darkblue",
+  "fully_vaccinated_rate" = "darkblue" #"darkslategray"
 )
-#' Color Palette Hospitalised vars
+
+#' Color Palette Hospitalizations vars
 #'
 #' @export
 .hosp_colors <- c(
@@ -31,6 +31,19 @@ capitalize_first_letter <- function(x) {
   "icu" = "dimgrey", #"darkslategray"
   "icuvent" = "dimgrey"#"darkslategray"
 )
+
+#' Color Palette for Areaplot variables
+#'
+#' @export
+.case_colors <- c(
+  "confirmed" = "#dd4b39",
+  "deaths" = "black",
+  "recovered" = "#00a65a",
+  "active" = "#3c8dbc",
+  "hosp" = as.character(.hosp_colors["hosp"]),
+  "vaccines" = as.character(.vacc_colors["vaccines"]) #"#24bbff"#,##24bbff "lightskyblue"#"cadetblue2"
+)
+
 #' Color Palette Tests vars
 #'
 #' @export
@@ -38,14 +51,31 @@ capitalize_first_letter <- function(x) {
   "tests" = "cadetblue",
   "positive_tests_rate" = "brown"#"darkblue",
 )
-#' Variables related to hospitalisation
+#' Variables related to hospitalization
 #' @export
 .hosp_vars <- c(
   #c("hosp","vent","icu")
-  c("Hospitalised" = "hosp", "Ventilated/Int.Care" = "icuvent")
+  c("Hospitalized" = "hosp", "Ventilated/Int.Care" = "icuvent")
+)
+#' Variables related to hospitalization in datahub
+#' @export
+.vacc_vars_datahub <- c(
+  #c("hosp","vent","icu")
+  c("Vaccine doses" = "vaccines", "Vaccinated" = "people_vaccinated",
+    "Fully Vaccinated" = "people_fully_vaccinated")
+)
+#' Variables related to hospitalization in datahub
+#' @export
+.vacc_vars <- c(
+  #c("hosp","vent","icu")
+  c(.vacc_vars_datahub,
+    c("% Vaccinated" = "vaccinated_rate",
+    "% Fully Vaccinated" = "fully_vaccinated_rate") )
 )
 
-#' Variables related to hospitalisation in covid19datahub
+
+
+#' Variables related to hospitalization in covid19datahub
 #' @export
 .hosp_vars_datahub <- c(
   c("hosp","vent","icu")
@@ -82,6 +112,7 @@ prefix_var <- function(cc = .case_colors,  prefix = c("lw","pw","new")) {
     names(.case_colors), setdiff(.hosp_vars, names(.case_colors)),
     prefix_var(names(.case_colors), "new"),
     prefix_var(setdiff(.hosp_vars, names(.case_colors)), "new"),
+    setdiff(.vacc_vars, names(.case_colors)),
     #"new_confirmed", "new_deaths", "new_active",
     #"new_prevalence_rate_1M_pop",
     "tests","new_tests", #"new_tests_rate_1M_pop",
@@ -95,17 +126,25 @@ prefix_var <- function(cc = .case_colors,  prefix = c("lw","pw","new")) {
 #' @param vars variable name to be selected, if empty tehn all are returned
 #' @details The name of the list component correspond to the variable label
 #' @return list All variables, if vars is missing, or one variable.
-varsNames = function(vars) {
+varsNames <- function(vars) {
+
   newhosp = setdiff(.hosp_vars,names(.case_colors)) # review
   hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
   names(hospvars_1M_pop) = paste(names(.hosp_vars), "Rate 1M pop")
-  cases_1M_pop = paste(setdiff(names(.case_colors), .hosp_vars),"rate_1M_pop",  sep = "_" ) # review
+
+  newvacc = .vacc_vars[!.vacc_vars %in% names(.case_colors)]
+
+  cases_1M_pop = paste(setdiff(names(.case_colors), c(.hosp_vars)),"rate_1M_pop",  sep = "_" ) # review
+
   allvars = c(names(.case_colors),
               prefix_var(names(.case_colors)),
               newhosp,
               prefix_var(newhosp),
               hospvars_1M_pop,
               prefix_var(hospvars_1M_pop),
+              newvacc, # to add also prefix_var(newvacc) ?
+              #prefix_var(grep("rate", newvacc, value = TRUE, invert = TRUE)),
+              prefix_var(newvacc),
               cases_1M_pop,
               prefix_var(cases_1M_pop),
               "lm_confirmed_rate_1M_pop",
@@ -173,6 +212,7 @@ varsNames = function(vars) {
   grep("positive_tests_rate", unlist(varsNames()), value = TRUE),
   grep("hosp_rate_active", unlist(varsNames()), value = TRUE),
   grep("vaccines_rate_pop", unlist(varsNames()), value = TRUE),
+  grep("vaccinated_rate$", unlist(varsNames()), value = TRUE),
   grep("icuvent_rate_hosp", unlist(varsNames()), value = TRUE)
 )
 #' Variables defined as 0-100 index in map plot
@@ -529,8 +569,9 @@ aggr_to_cont <- function(data, group, time,
             lethality_rate = rate_calc(deaths, tests, nawith0 = TRUE),
             hosp_rate_active = rate_calc(hosp, active),
             icuvent_rate_hosp = rate_calc(icuvent, hosp),
-            vaccines_rate_pop = rate_calc(vaccines, population,cap = Inf),
-
+            vaccines_rate_pop = rate_calc(vaccines, population,cap = Inf, digits = 5),
+            vaccinated_rate = rate_calc(people_vaccinated, population, cap = 1, digits = 5),
+            fully_vaccinated_rate = rate_calc(people_fully_vaccinated, population, cap = 1, digits = 5)
 
            # positive_tests_rate = ifelse(tests == 0, NA, pmin(round(confirmed/tests, digits = 3),1)),
            # new_positive_tests_rate = ifelse(tests == 0, NA, pmin(round(new_confirmed/new_tests, digits = 3),1)),
@@ -786,9 +827,8 @@ build_data_aggr <- function(data, popdata) {
       merge_pop_data(popdata)
 
   }
-  # select variables that can be devided by population
+  # select variables that can be divided by population
   aggrvars = setdiff(intersect(get_aggrvars(), names(orig_data_aggregate)), "population")
-
 
   # orig_data_aggregate$positive_tests_rate = ifelse(orig_data_aggregate$tests == 0, NA,
   #                                                  pmin(round(orig_data_aggregate$confirmed/orig_data_aggregate$tests, digits = 4),1))
@@ -823,7 +863,8 @@ build_data_aggr <- function(data, popdata) {
 
            #vaccines_rate_pop =  round(vaccines/population, digits = 5), # do not cap to 1
            vaccines_rate_pop = rate_calc(vaccines, population, cap = Inf), # do not cap to 1
-
+           vaccinated_rate = rate_calc(people_vaccinated, population, cap = 1),
+           fully_vaccinated_rate = rate_calc(people_fully_vaccinated, population, cap = 1)
            #deaths_rate_hosp =  round(deaths/hosp, digits = 5) # not correct
            )  %>%   #mutate(
            #   across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
@@ -894,18 +935,21 @@ lw_vars_calc <- function(data, days = 7) {
   # rename columns
   colnames(data7vars) = gsub("new","lw",colnames(data7vars))
   # calculate for hosp vars
-  lwcalc_hosp = function(x, date) {
+  .lwcalc_diff <- function(x, date) {
     tdy <- max(date)
     startday <- min(date)
     x[date == tdy] - x[date == startday]
   }
+  #varExtra <- c(.hosp_vars, setdiff(.vacc_vars_datahub, "vaccines"))
+  varExtra <- .hosp_vars
+
   data7extra = data7 %>% group_by(Country.Region) %>%
     summarize(lw_positive_tests_rate = lw_positive_test_rate_calc(new_confirmed, new_tests),
-              across(all_of(as.vector(.hosp_vars)), ~lwcalc_hosp(.x, date), .names= "lw_{col}")) # last week of hospitalised
+              across(all_of(as.vector(varExtra)), ~.lwcalc_diff(.x, date), .names= "lw_{col}")) # last week of hospitalized
 
   # add back population
   data7vars = data7vars %>% left_join(unique(data7[,c("Country.Region","population"), drop = FALSE])) %>%
-    right_join(data7extra) # right join simply to have them on the right
+    right_join(data7extra, by = "Country.Region") # right join simply to have them on the right
   # save value for
   data7today <- data7 %>%
     filter( date == (AsOfDate - days +7))
@@ -916,7 +960,7 @@ lw_vars_calc <- function(data, days = 7) {
     left_join(data7today[, c("Country.Region","active", "hosp")],
               by = c(c("Country.Region")))
 
-  aggrvars = setdiff(intersect(get_aggrvars(), names(data7vars)), c("population", "active", "hosp"))
+  aggrvars <- setdiff(intersect(get_aggrvars(), names(data7vars)), c("population", "active", "hosp"))
   # compute rates
   data7vars = data7vars %>%
     mutate(
@@ -926,7 +970,9 @@ lw_vars_calc <- function(data, days = 7) {
             lw_active = replace_na(lw_confirmed - lw_deaths - lw_recovered,0),
 
             lw_lethality_rate = rate_calc(lw_deaths, lw_confirmed, nawith0 = TRUE),
-            lw_vaccines_rate_pop = rate_calc(lw_vaccines, population, cap = Inf),
+            lw_vaccines_rate_pop = rate_calc(lw_vaccines, population, cap = Inf, digits = 5),
+            lw_vaccinated_rate = rate_calc(lw_people_vaccinated, population, cap = 1, digits = 5),
+            lw_fully_vaccinated_rate = rate_calc(lw_people_fully_vaccinated, population, cap = 1, digits = 5),
             lw_hosp_rate_active = rate_calc(hosp, active, cap = Inf), # use current var
 
            # lw_lethality_rate = round(pmax(0, replace_na(lw_deaths / lw_confirmed, 0)), digits = 4),
@@ -956,7 +1002,7 @@ lw_vars_calc <- function(data, days = 7) {
 #' @return character vector
 #'
 get_cumvars = function() {
-  c("confirmed", "deaths","recovered","tests", "vaccines")
+  c("confirmed", "deaths","recovered","tests", .vacc_vars_datahub)
 }
 
 #'Global definition of numeric aggregatable vars in dataset
@@ -1086,7 +1132,6 @@ message_missing_country_days = function(data, sep = "<br/>") {
 
     msg = c(msg,"In our dataset the following areas miss the most recent data:",
             paste("<li>", msg1, "</li>"))
-
   }
 
   msg = paste(msg, collapse = sep)

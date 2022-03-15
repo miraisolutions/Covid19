@@ -992,7 +992,7 @@ scatter_plot <- function(df, med, x.min = c(0.9, 1.1), y.min = c(0.99,1.01), xva
     color_cases = c("yellow3", "darkgreen", "#dd4b39", "#E69F00")
   } else if (grepl("stringency", xvar)) {
     color_cases = c("#3c8dbc","darkgreen", "gray3","#dd4b39")
-  } else if (grepl("vaccines", xvar)) {
+  } else if (grepl("vaccin", xvar)) {
     color_cases = c("darkgreen","deepskyblue1", "deepskyblue4","gray3")
   } else if (grepl("confirmed", xvar) && grepl("^hosp", yvar)) {
     color_cases = c("deepskyblue1","darkgreen", "gray3","deepskyblue4")
@@ -1143,7 +1143,7 @@ caption_source_vaccines <- function() {
 #' caption vaccination
 #' @return character text for caption
 caption_vaccines <- function() {
-  paste("Simple count of number of vaccines.", caption_source_vaccines(), collapse = " ")
+  paste("Full Vaccination has 2 doses.", caption_source_vaccines(), collapse = " ")
 }
 
 #' caption tests

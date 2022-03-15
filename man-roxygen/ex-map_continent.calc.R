@@ -10,7 +10,7 @@ if (interactive()) {
   #variable = "tests" # set variable
   variable = "positive tests rate" # set variable
   #variable = "hospitalised" # set variable
-  #variable = "hospitalised over 1M" # set variable
+  #variable = "hospitalized over 1M" # set variable
   #variable = "stringency_index" # set variable
  # variable = "growth vs stringency" # set variable
  #  variable = "growth vs prevalence" # set variable
