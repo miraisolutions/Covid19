@@ -153,7 +153,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
                   "  Number of Vaccinations done as of today: <b>", .format_num(dftday$people_fully_vaccinated),"</b>.<br/>",
                   "  Average Vaccinations per day: <b>", .format_num(dftday$people_fully_vaccinated_per_day),"</b>.<br/>",
                   ifelse(data()$people_left_to_target > 0, "  With this average pace ", ""),
-                  input$target,"% of the population",
+                  input$target,"% of the population ",
                   ifelse(data()$people_left_to_target > 0,
                     paste0("will be covered with <b>2 doses</b> by <b>",data()$achieved_date,"</b>"),
                     paste0("was covered with <b>2 doses</b> on <b>",data()$day_target_reached,"</b>")
@@ -162,7 +162,7 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
                   "  Number of Vaccinations done last week: <b>", .format_num(dftday$lw_people_fully_vaccinated),"</b>.<br/>",
                   "  Average Vaccinations per day during last week: <b>", .format_num(dftday$lw_people_fully_vaccinated_per_day),"</b>.<br/>",
                   ifelse(data()$people_left_to_target > 0, "  With this average pace ", ""),
-                  input$target,"% of the population",
+                  input$target,"% of the population ",
                   ifelse(data()$people_left_to_target > 0,
                          paste0("will be covered with <b>2 doses</b> by <b>",data()$lw_achieved_date,"</b>"),
                          paste0("was covered with <b>2 doses</b> on <b>",data()$day_target_reached,"</b>")
