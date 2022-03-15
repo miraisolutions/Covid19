@@ -393,7 +393,7 @@ countBox <- function(title1, subtitle1, title2, subtitle2, color, background, wi
 #' @import shiny
 #'
 #' @noRd
-countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, color, background, width = "100%", type = c("perc"), diffcalc = TRUE) {
+countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, color, background, width = "100%", type = c("thousands"), diffcalc = TRUE) {
 
   format_thousands = function(x) {
     formatC(x, format = "f", big.mark = "'", digits  = 0)
@@ -405,7 +405,7 @@ countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, c
     paste(ifelse(x>0, "+",""),format_thousands(x))
   }
 
-  if (!type %in% c("perc", "thousands", "sign"))
+  if (!all(type %in% c("perc", "thousands", "sign")))
     stop("Wrong type arg ", type)
 
   format_choice = list(format_thousands = format_thousands,
