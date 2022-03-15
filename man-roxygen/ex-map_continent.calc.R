@@ -34,13 +34,10 @@ if (interactive()) {
     orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
     # orig_data = readRDS("orig_data.rds")
-    pop_data = get_pop_datahub()
-    orig_data_aggregate =  build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
-    #countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
-    rds_map = "WorldMap_sp_spl.rds"
-    message("read map from RDS ", rds_map)
-    countries_data_map = readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
+    countries_data_map = DATA$countries_data_map
 
     #countries_data_map = rmapshaper::ms_simplify(countries_data_map, keep = 0.4)
     orig_data_aggregate_cont <-

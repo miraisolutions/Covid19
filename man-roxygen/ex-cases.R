@@ -8,10 +8,8 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+    orig_data_aggregate <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data_aggregate
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
     total <-
       orig_data_aggregate %>%
       get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%
@@ -55,11 +53,8 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+    orig_data_aggregate <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data_aggregate
 
-
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
     total <-
       orig_data_aggregate %>%
       get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%

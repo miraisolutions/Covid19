@@ -15,11 +15,7 @@ if (interactive()) {
   server <- function(input, output) {
 
     # Data ----
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
-
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    orig_data_aggregate <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data_aggregate
 
     n = 1000; w = 7
     # data_filtered <-
