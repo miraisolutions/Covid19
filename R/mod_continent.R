@@ -341,17 +341,20 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
 
   callModule(mod_group_plot_server, "cmp_confirmed_countries", data_today = data_cont_maps, type = "confirmed", istop = FALSE,
              scatterplotargs = list(countries = countries200000, nmed = nn),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE)
       )
 
   callModule(mod_group_plot_server, "cmp_hosp_countries", data_today = data_cont_maps, type = "hosp", istop = FALSE,
              scatterplotargs = list(countries = countries200000, nmed = nn),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE)
   )
 
   callModule(mod_group_plot_server, "cmp_stringency_countries", data_today = data_cont_maps, type = "stringency", istop = FALSE,
              scatterplotargs = list(countries = countries200000, nmed = nn),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE)
   )
   # callModule(mod_barplot_server, "confirmed_hosp_plot_countries", data_cont_maps, #plottitle = c("Confirmed status"),
   #            istop = FALSE, n_highlight = length(countries200000),
@@ -375,21 +378,10 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   # Rate plots ----
   # Vaccination
 
-  # callModule(mod_barplot_server, "barplot_vax_countries", data_cont_maps,
-  #            n_highlight = length(data_cont_maps$Country.Region), istop = FALSE,
-  #            plottitle = c("Vaccination Status"),
-  #            g_palette = list("plot_1" = barplots_colors[["vaccines"]]$calc,
-  #                             calc = TRUE)#,
-  #            #pickvariable = list("plot_1" = "confirmed_rate_1M_pop")
-  #            )
-  #
-  #
-  # callModule(mod_scatterplot_server, "scatterplot_vax_vars_countries",
-  #            data_cont_maps, nmed = nn, n_highlight = length(countries200000),
-  #            istop = FALSE, countries = countries200000, xvar = "vaccines_rate_pop", growth = FALSE, fitted = FALSE)
   callModule(mod_group_plot_server, "cmp_cont_countries_vax", data_today = data_cont_maps, type = "vaccines", istop = FALSE,
              scatterplotargs = list(countries = countries200000, nmed = nn),
-             barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                                sortbyvar = TRUE)
   )
   #############################################
   #maps confirmed
@@ -401,7 +393,7 @@ mod_continent_server <- function(input, output, session, orig_data_aggregate, co
   #            area = cont, variable = "active")
   #maps active
   callModule(mod_map_area_calc_server, "map_countries_hosp", df = data_cont_maps,  countries_data_map_cont,
-             area = cont, variable = "hospitalised")
+             area = cont, variable = "hospitalized")
   #maps growth vs prev
   callModule(mod_map_area_calc_server, "map_countries_growthvsprev", df = data_cont_maps,  countries_data_map_cont,
              area = cont, variable = "growth vs prev")

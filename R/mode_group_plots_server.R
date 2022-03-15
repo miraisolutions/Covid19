@@ -15,8 +15,9 @@ timeline_info <- function(sep = "<br/>", hosp = TRUE, country = "the world") {
 #' @param sep separator, break line.
 vaccines_info <- function(sep = "<br/>") {
   #tags$p(
-  paste("<b>Vaccines</b> are a simple count of injected doses, more detailed insight on full vaccination is not available in our data source yet, it will be added in the next releases. For this reason the \"Vaccination over population size\" can have values > 100%.",
-        "Areas that already started utilizing multiple doses (boosters) would result as more highliy vaccinated than others. It is reasonable to think that more doses mean higher vaccination, therefore vaccine doses can be put in reletion with other variables.",
+  paste("<b>Vaccines</b> are a simple count of injected doses, they included also boosters. For this reason the \"Vaccination over population size\" can have values > 100%.",
+        "Areas that already started utilizing multiple doses (boosters) would result as more highliy vaccinated than others. ",
+        "Those who have received 2 doses are labelled as <b>Fully Vaccinated</b>, while the <b>Vaccinated</b> have a partial vaccination.",
         paste("Not all analyzed areas may have provided data on vaccines, our source is",
               a(
                 href = "https://ourworldindata.org",
@@ -108,10 +109,16 @@ section_info <- function(type, infotext) {
 mod_group_plot_ui <- function(id, type = c("vaccines", "stringency", "confirmed", "hosp"), infotext = TRUE, titlesection = TRUE){
 
   ns <- NS(id)
-  growth = ifelse(type == "confirmed", TRUE, FALSE)
+  growth = ifelse(type %in% c("confirmed", "vaccines"), TRUE, FALSE)
   hosp = ifelse(type == "hosp", TRUE, FALSE)
+  varsx = NULL
+  if (type == "vaccines")
+    varsx = vars_vs_vax()
+  varsy = NULL
+  if (type == "vaccines")
+    varsy = vars_vs_stringency_vax()
 
-  hosp_vars <- function(type) {
+  hosp_vars_scatter <- function(type) {
     switch(type,
            "confirmed" = "remove",
            "stringency" = "keep",
@@ -138,7 +145,8 @@ mod_group_plot_ui <- function(id, type = c("vaccines", "stringency", "confirmed"
     #br(),
     fluidRow(
       column(6,
-             mod_scatterplot_ui(ns(paste0("scatterplot_", type)), growth = growth, hospvars = hosp_vars(type), text = TRUE)
+             mod_scatterplot_ui(ns(paste0("scatterplot_", type)), growth = growth, varsy = varsy,
+                                varsx = varsx, hospvars = hosp_vars_scatter(type), text = TRUE)
              #)
       ),
       column(6,
@@ -191,7 +199,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
   n_highlight <- ifelse(istop, n_highlight, length(countries))
 
   xvar <- switch(type,
-                 "vaccines" = "vaccines_rate_pop",
+                 "vaccines" = "fully_vaccinated_rate",
                  "stringency" =  "stringency_index",
                  "confirmed" = "lm_confirmed_rate_1M_pop",
                  "hosp" = "lm_confirmed_rate_1M_pop" ,
@@ -203,7 +211,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
                       "stringency" = "stringency_index",
                       "confirmed" = c("lw_confirmed_rate_1M_pop", "growth_factor_7", "lw_positive_tests_rate"),
                       "hosp" = paste0(prefix_var(.hosp_vars, c("","lw")), "_rate_1M_pop"),
-                      "vaccines" = c(prefix_var("vaccines_rate_pop", c("","lw"))),
+                      "vaccines" = c(prefix_var("vaccines_rate_pop", c("","lw")), "fully_vaccinated_rate", "vaccinated_rate"),
                       stop("wrong type argument"))
   if (!tests)
     report_var = grep("tests", report_var, value = TRUE, invert = TRUE)
@@ -294,7 +302,7 @@ mod_group_plot_server <-  function(input, output, session, data_today , nn = 1, 
              data_today, nmed = nmed, n_highlight = n_highlight,
              istop = istop, countries = countries, xvar = xvar, growth = growth, fitted = FALSE)
 
-  barplottitle <- ifelse(type == "vaccines", "Vaccine Doses",
+  barplottitle <- ifelse(type == "vaccines", "Vaccine Doses and Rates",
                          ifelse(type == "stringency","Stringency Index",
                                 ifelse(type == "confirmed", "Confirmed Infections and Tests",
                                        ifelse(type == "hosp", "Hospitalized / ICU",

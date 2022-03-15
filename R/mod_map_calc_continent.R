@@ -258,7 +258,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 
 }
 
-#' Updates UI radiobuttons depending to variable va
+#' Updates UI radiobuttons depending to variable chosen for the map
 #' @param var variable name
 #' @param growthvar integer, 3 5 7 depending on choice
 #' @param global logical, TRUE when used in global map
@@ -268,7 +268,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
 #' graph_title: graph title
 #' caption: vaption
 #' textvar: variables to add in popup
-update_radio<- function(var, growthvar = 7, global = FALSE){
+update_radio <- function(var, growthvar = 7, global = FALSE){
 
   graph_title = var
   textvar = NULL
@@ -371,7 +371,7 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
     caption <- "Total, Last Week, New and Over 1 Million peope Confirmed Positive cases"
     graph_title = "Confirmed positive cases"
     textvar = c(c(rev(prefix_var("confirmed")), "confirmed"),c(rev(prefix_var("confirmed_rate_1M_pop")),"confirmed_rate_1M_pop"),
-                "growth_factor_3","vaccines",
+                "growth_factor_3","fully_vaccinated_rate",
                 "tests", "population")
     if (global) {
       caption <- "Total and Over a million Confirmed positive cases"
@@ -435,55 +435,56 @@ update_radio<- function(var, growthvar = 7, global = FALSE){
 
     graph_title = "Positive Tests rate"
     textvar = c("lw_tests","tests", "lw_confirmed","confirmed", "lw_confirmed_rate_1M_pop", "pw_confirmed_rate_1M_pop","confirmed_rate_1M_pop")
-  }  else if (FALSE && grepl("hospitalised", var) && grepl("1M", var)) {
+  }  else if (FALSE && grepl("hospitalized", var) && grepl("1M", var)) {
     hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
     mapvar = unlist(varsNames(hospvars_1M_pop))
     #mapvar = prefix_var("hosp_rate_1M_pop", c("","lw","new"))
 
     new_buttons = list(name = "radio",
                        choices = mapvar, selected = mapvar[mapvar == "hosp_rate_1M_pop" ])
-    caption <- "Current status of Hospitalisation over 1 M people."
+    caption <- "Current status of Hospitalization over 1 M people."
     caption_hosp <- paste("Data may not be available for all areas and", length(mapvar), "statuses")
     caption =HTML(paste(c(caption,caption_hosp), collapse = '<br/>'))
 
-    graph_title = "Hospitalisation over 1 M people"
+    graph_title = "Hospitalization over 1 M people"
     #textvar = c("active",c(as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))), "icuvent_rate_hosp", "population"))
     textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), as.vector(.hosp_vars), "icuvent_rate_hosp", "population"))
 
-  } else if (grepl("hospitalised", var)) {
+  } else if (grepl("hospitalized", var)) {
       mapvar = unlist(varsNames(.hosp_vars))
       # new_buttons = list(name = "radio",
-      #                    choices = mapvar, selected = mapvar["Hospitalised"])
+      #                    choices = mapvar, selected = mapvar["Hospitalized"])
       new_buttons = list(name = list("radio","oneMpop"),
-                         choices = list(mapvar, oneMpopbut), selected = list(mapvar["Hospitalised"], oneMpopbut["Over 1 M people"]))
+                         choices = list(mapvar, oneMpopbut), selected = list(mapvar["Hospitalized"], oneMpopbut["Over 1 M people"]))
 
-      caption <- "Current status of Hospitalisation."
+      caption <- "Current status of Hospitalization."
       caption_hosp <- paste("Data may not be available for all areas and", length(mapvar), "statuses")
       caption =HTML(paste(c(caption,caption_hosp), collapse = '<br/>'))
 
-      graph_title = "Hospitalisation"
+      graph_title = "Hospitalization"
       #textvar = c("active",c(as.vector(t(sapply(c("new_","lw_"), paste0, .hosp_vars))), "icuvent_rate_hosp"))
-      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "lw_hosp", "pw_hosp","icuvent_rate_hosp", "vaccines"))
+      textvar = c("lw_confirmed", c(paste0("new_",as.vector(.hosp_vars)), "lw_hosp", "pw_hosp","icuvent_rate_hosp", "fully_vaccinated_rate"))
 
-  } else if (grepl("vaccines", var)) {
+  } else if (grepl("vaccin", var)) {
     #mapvar = grep("vaccines$", varsNames(), value = T)
-    mapvar = unlist(varsNames(c(
-          prefix_var("vaccines", c("","lw","new"))
-        )))
-    names(mapvar) = c("Total", "Last Week",
-                      "Last Day")
-    new_buttons = list(name = list("radio","oneMpop"),
-                       choices = list(mapvar, oneMpopbut), selected = list(mapvar["Total"], oneMpopbut["Over 1 M people"]))
+      mapvar = unlist(varsNames(c(
+            prefix_var("fully_vaccinated_rate", c("")),
+            prefix_var("vaccines_rate_1M_pop", c("","lw"))
+          )))
+      # names(mapvar) = c("Total", "Last Week",
+      #                   "Last Day")
+      new_buttons = list(name = list("radio"),
+                         choices = list( mapvar), selected = list(mapvar[mapvar == "fully_vaccinated_rate" ]))
 
-    # caption <- paste("Total, Last Week and New", caption_tests("Vaccines")[1])
-    # caption = c(caption, caption_tests()[2])
-    caption <- paste("Total, Last Week New and", caption_tests("Vaccines")[1])
-    caption_vax <- caption_tests("Vaccines")[2]
+      # caption <- paste("Total, Last Week and New", caption_tests("Vaccines")[1])
+      # caption = c(caption, caption_tests()[2])
+      caption <- paste("Fully Vaccinated and Administred doses")
+      caption_vax <- caption_tests("Vaccines")[2]
 
-    caption =HTML(paste(c(caption,caption_vax,caption_vaccines()), collapse = '<br/>'))
+      caption =HTML(paste(c(caption,caption_vax,caption_vaccines()), collapse = '<br/>'))
 
-    graph_title = "Vaccination"
-    textvar = c("new_vaccines","lw_vaccines","pw_vaccines", "vaccines", "population", "lw_vaccines_rate_pop", "vaccines_rate_pop")
+      graph_title = "Vaccination"
+      textvar = c("new_vaccines","lw_vaccines", "vaccines", "fully_vaccinated_rate","vaccinated_rate", "population", "lw_vaccines_rate_pop", "vaccines_rate_pop")
 
   } else  {
       new_buttons = NULL
@@ -695,7 +696,7 @@ domainindex <- function(x) {
 }
 
 # to control variables that do not go from 0 to many, where many countries have close values
-domainlin_vars = function(x) {
+domainlin_vars <- function(x) {
   vars = unlist(varsNames())
   vars = grep("vaccines", vars, value = TRUE)
   #vars[(grepl("growth",var) && grepl("fact",var))]
@@ -784,7 +785,7 @@ pal_fun = function(var,x){
       colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")
     } else
       colorNumeric(palette = "Purples", domain = domain(x), na.color = "lightgray")
-  } else  if (grepl("vaccines", var)) {
+  } else  if (grepl("vaccin", var)) {
     colorNumeric(palette = "Blues", domain = domain(x), na.color = "lightgray")
   } else
     stop("non existing color palette for ", var)

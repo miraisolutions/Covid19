@@ -3,7 +3,7 @@
 \docType{data}
 \name{.hosp_vars}
 \alias{.hosp_vars}
-\title{Variables related to hospitalisation}
+\title{Variables related to hospitalization}
 \format{
 An object of class \code{character} of length 2.
 }
@@ -11,6 +11,6 @@ An object of class \code{character} of length 2.
 .hosp_vars
 }
 \description{
-Variables related to hospitalisation
+Variables related to hospitalization
 }
 \keyword{datasets}

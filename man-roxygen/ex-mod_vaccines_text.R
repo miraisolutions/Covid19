@@ -10,16 +10,14 @@ if (interactive()) {
     w <- 7 # number of days of outbreak. Default 7
 
     # Data ----
-    orig_data <- get_datahub(country = "Switzerland") %>%
-      get_timeseries_by_contagion_day_data()
+    # orig_data <- get_datahub(country = "Switzerland") %>%
+    #   get_timeseries_by_contagion_day_data()
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
-    # data_filtered <-
-    #   orig_data_aggregate %>%
-    #     Covid19Mirai:::rescale_df_contagion(n = n, w = w)
-
+    orig_data_aggregate = orig_data_aggregate %>%
+      filter(Country.Region == "Italy")
 
     country_data <-
       orig_data_aggregate %>%

@@ -12,10 +12,10 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+    orig_data_with_ch = readRDS(file =  file.path(system.file("./datahub", package = "Covid19Mirai"),rds_data))
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    orig_data_aggregate       = orig_data_with_ch$orig_data_aggregate
+    orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
 
     lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
     pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate,14)
@@ -50,10 +50,8 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
     lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
     pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate,14)
@@ -92,10 +90,8 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
     lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
     pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate,14)
@@ -134,10 +130,8 @@ if (interactive()) {
 
     # Data ----
     # Data ----
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
     lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
     pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate,14)

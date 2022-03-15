@@ -9,11 +9,8 @@ if (interactive()) {
   )
   server <- function(input, output, session) {
 
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
-
-
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
     country_data = orig_data_aggregate %>%
       dplyr::filter(Country.Region == "France")
@@ -49,8 +46,8 @@ if (interactive()) {
     orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
 
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
     country_data = orig_data_aggregate %>%
       dplyr::filter(Country.Region == "France")

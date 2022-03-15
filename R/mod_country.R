@@ -279,14 +279,14 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
       area_data_2 <- get_datahub(country = req(input$select_country), lev = 2, verbose = FALSE, cache = TRUE)
     } else
       area_data_2 <- NULL
-    
+
     if (!is.null(area_data_2) && nrow(area_data_2) >0) {
       # Align AsOfDate with level 1
       Lev1AsOfDate <- max(country_data$AsOfDate)
       area_data_2 <- area_data_2 %>% filter(date <= Lev1AsOfDate)
      # adjust hospitalized data if we have better in lev 2
       if (sum(area_data_2$hosp, na.rm = TRUE) > sum(country_data$hosp, na.rm = TRUE)*1.5) {
-        message("Update Lev 1 hospitalised data based on lev2 fo country ", req(input$select_country))
+        message("Update Lev 1 hospitalized data based on lev2 fo country ", req(input$select_country))
 
         country_data = combine_hospvars_lev2(country_data, area_data_2, req(input$select_country))
 
@@ -318,12 +318,12 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     message("hospflag = ", hospflag)
     message("vaxflag = ", vaxflag)
 
-    last10days = max(country_data$date) - 0:9
-    country_data[, c("Country.Region","date", get_cumvars())] %>%
-      filter(date %in% last10days) %>% # take
-      group_by(Country.Region) %>% #.[,get_cumvars()] %>%
-      summarize(miss = sum(c_across(get_cumvars()))) %>%
-      ungroup()
+    # last10days = max(country_data$date) - 0:9
+    # country_data[, c("Country.Region","date", get_cumvars())] %>%
+    #   filter(date %in% last10days) %>% # take
+    #   group_by(Country.Region) %>% #.[,get_cumvars()] %>%
+    #   summarize(miss = sum(c_across(get_cumvars()))) %>%
+    #   ungroup()
 
     output$ind_missing_days <- renderText({
       HTML(
@@ -364,7 +364,7 @@ mod_country_server <- function(input, output, session, data, countries, nn = 100
     country_data_area = country_data
     active_hosp = FALSE
     if (sum(country_data$hosp, na.rm = TRUE)>0) {
-      message("Adding hospitalised data in areaplot for ", req(input$select_country))
+      message("Adding hospitalized data in areaplot for ", req(input$select_country))
       levs = c(levs, "hosp")
       active_hosp = TRUE
     }
@@ -509,8 +509,9 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
 
   callModule(mod_group_plot_server, "cmp_confirmed_area2", data_today, type = "confirmed", istop = FALSE,
              scatterplotargs = list(nmed = n2, countries = relevant_countries),
-             tests = testsflag
-             #barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+             tests = testsflag,
+             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+               sortbyvar = TRUE)
   ) # pi
   # # hosp session
   # callModule(mod_group_plot_server, "cmp_hosp_area2", data_today, type = "hosp", istop = FALSE,
@@ -523,7 +524,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   data_area = data
   active_hosp = FALSE
   if (sum(data$hosp, na.rm = TRUE)>0) {
-    message("Adding hospitalised data for areaplot")
+    message("Adding hospitalized data for areaplot")
     levs = c(levs, "hosp")
     active_hosp = TRUE
   }
@@ -543,7 +544,7 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
   # })
   callModule(mod_plot_log_linear_server, "plot_area2_area2", df = df_area_2, type = "area" , countries = reactive(areas), active_hosp = active_hosp)
 
-  # # Area plot hospitalised ----
+  # # Area plot hospitalized ----
   levs <- areaplot_hospvars()
   #
   #relevant_countries = unique(data_area$Country.Region[data_area$confirmed>1])
@@ -644,7 +645,8 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       # > barplot hosp
       callModule(mod_group_plot_server, hospidx2id, data_today, type = "hosp", istop = FALSE,
                  scatterplotargs = list(nmed = n2),
-                 barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+                 barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                   sortbyvar = TRUE))
       # callModule(mod_mod_country_hosp_server, id, data_today, data, n2) # pick top 10 confirmed countries
 
     } else{
@@ -714,7 +716,8 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       #            )
       callModule(mod_group_plot_server, id, data_today, type = "stringency", istop = FALSE,
                  scatterplotargs = list(nmed = n2),
-                 barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")))
+                 barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                   sortbyvar = TRUE))
 
     } else{
       if (exists("stridx2id")) {
@@ -784,7 +787,8 @@ mod_country_area_server <- function(input, output, session, data, n2 = 1, w = 7,
       #            pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")) # pick top 10 confirmed countries
       callModule(mod_group_plot_server, id, data_today, type = "vaccines", istop = FALSE,
                  scatterplotargs = list(nmed = n2),
-                 barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"))
+                 barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                   sortbyvar = TRUE)
                  )# pick top 10 confirmed countries
 
     } else{

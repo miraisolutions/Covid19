@@ -8,11 +8,12 @@ if (interactive()) {
   server <- function(input, output) {
 
     # Data ----
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
     n = 100
     w = 7
     data_filtered <-
-      orig_data %>%
+      orig_data_aggregate %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
     country_data <- reactive({data_filtered %>%
@@ -45,12 +46,13 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
     n = 100
     w = 7
     data_filtered <-
-      orig_data %>%
+      orig_data_aggregate %>%
         Covid19Mirai:::rescale_df_contagion(n = n, w = w)
 
 

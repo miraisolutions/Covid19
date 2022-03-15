@@ -3,7 +3,7 @@ context("get datahub tests")
 data_full_ch <- get_datahub_fix_ch()
 data_full = data_full_ch$orig_data
 data_ch2 = data_full_ch$orig_data_ch_2
-vars = c("Country.Region", "date","confirmed", "deaths","active", "recovered", "tests","population","stringency_index","vaccines",.hosp_vars)
+vars = c("Country.Region", "date","confirmed", "deaths","active", "recovered", "tests","population","stringency_index",.vacc_vars_datahub,.hosp_vars)
 
 check_data <- function(dat, vars) {
   if (!missing(vars))
@@ -74,7 +74,7 @@ vars = c(vars,"AsOfDate")
 test_that("get_timeseries_by_contagion_day_data returns expected headers", {
 
   check_data(data)
-  varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests","vaccines", .hosp_vars))
+  varnames = as.vector(c("confirmed", "deaths", "recovered", "active","tests",.vacc_vars_datahub, .hosp_vars))
   expect_equal(sort(names(data)), as.vector(sort(c("Country.Region", "date","AsOfDate",varnames ,"population","stringency_index",
                                          paste0("new_",varnames), "contagion_day"))))
   expect_equal(class(data$contagion_day),"numeric")

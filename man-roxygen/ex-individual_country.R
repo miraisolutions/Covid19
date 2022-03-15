@@ -12,11 +12,11 @@ if (interactive()) {
     rds_data = "DATA.rds"
     orig_data_with_ch = readRDS(file =  file.path(system.file("./datahub", package = "Covid19Mirai"),rds_data))
 
-    orig_data       = orig_data_with_ch$orig_data
+    orig_data_aggregate       = orig_data_with_ch$orig_data_aggregate
     orig_data_ch_2  = orig_data_with_ch$orig_data_ch_2
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
+    # pop_data = get_pop_datahub()
+    # orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
     orig_data_aggregate = orig_data_aggregate %>% filter(Country.Region == country)
     n = 100; w = 7

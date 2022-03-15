@@ -3,7 +3,7 @@
 \docType{data}
 \name{.hosp_vars_datahub}
 \alias{.hosp_vars_datahub}
-\title{Variables related to hospitalisation in covid19datahub}
+\title{Variables related to hospitalization in covid19datahub}
 \format{
 An object of class \code{character} of length 3.
 }
@@ -11,6 +11,6 @@ An object of class \code{character} of length 3.
 .hosp_vars_datahub
 }
 \description{
-Variables related to hospitalisation in covid19datahub
+Variables related to hospitalization in covid19datahub
 }
 \keyword{datasets}

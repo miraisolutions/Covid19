@@ -3,7 +3,7 @@
 \docType{data}
 \name{.hosp_colors}
 \alias{.hosp_colors}
-\title{Color Palette Hospitalised vars}
+\title{Color Palette Hospitalizations vars}
 \format{
 An object of class \code{character} of length 4.
 }
@@ -11,6 +11,6 @@ An object of class \code{character} of length 4.
 .hosp_colors
 }
 \description{
-Color Palette Hospitalised vars
+Color Palette Hospitalizations vars
 }
 \keyword{datasets}

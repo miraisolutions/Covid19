@@ -1,3 +1,7 @@
+### Covid19Mirai 2.7.4 
+- Complete vaccination data (#201)
+- Fix year comparison lineplot bug
+
 ### Covid19Mirai 2.7.3 (2022-03-08)
 - Quick fix in build_data
 

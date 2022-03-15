@@ -12,11 +12,9 @@ if (interactive()) {
       # orig_data <- get_datahub() %>%
       #     get_timeseries_by_contagion_day_data()
 
-      orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+      DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+      orig_data_aggregate <- DATA$orig_data_aggregate
 
-
-      pop_data = get_pop_datahub()
-      orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
       country_data = orig_data_aggregate %>% dplyr::filter(Country.Region == "Italy") # possibly with select also multiple countries possible
       df = country_data
@@ -38,12 +36,9 @@ if (interactive()) {
     )
     server <- function(input, output, session) {
       # Data ----
-      orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+      DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+      orig_data_aggregate <- DATA$orig_data_aggregate
 
-
-
-      pop_data = get_pop_datahub()
-      orig_data_aggregate = build_data_aggr(orig_data, pop_data)
 
       country_data = orig_data_aggregate %>% filter(Country.Region == "Israel") # possibly with select also multiple countries possible
       df = country_data

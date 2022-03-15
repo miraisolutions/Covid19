@@ -16,13 +16,10 @@ if (interactive()) {
   )
   server <- function(input, output) {
 
-    orig_data <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))$orig_data
+    DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
+    orig_data_aggregate <- DATA$orig_data_aggregate
 
-    pop_data = get_pop_datahub()
-    orig_data_aggregate = build_data_aggr(orig_data, pop_data)
-
-    countries_data_map <- Covid19Mirai:::load_countries_datahub_map(destpath = system.file("./countries_data", package = "Covid19Mirai"))
-
+    countries_data_map <- DATA$countries_data_map
     n = 1000; w = 7
     # data_filtered <- reactive({
     #   orig_data_aggregate_cont() %>%

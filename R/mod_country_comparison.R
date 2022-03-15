@@ -122,8 +122,8 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       # Data ----
 
       countries_data <- all_countries_data %>%
-          filter(Country.Region %in% input$select_countries) %>%
-          arrange(desc(date))
+          filter(Country.Region %in% input$select_countries) #%>%
+          #arrange(desc(date))
 
       # idx = order(match(countries_data$Country.Region, input$select_countries))
       # countries_data = countries_data[idx, ]

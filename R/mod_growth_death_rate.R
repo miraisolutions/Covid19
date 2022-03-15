@@ -59,9 +59,12 @@ mod_barplot_ui <- function(id, plot1 = "ui_growth", plot2  = "ui_death", text = 
                                  selected = "current")),
                    ui_vaccines =  list(
                         var = list(label = "Choose Variable",
-                                         choices = varsNames(c(prefix_var("vaccines", c("")),
-                                                               prefix_var("vaccines_rate_pop", c("")))),
-                                         selected = "vaccines_rate_pop"),
+                                         choices = varsNames(c(
+                                                            prefix_var("fully_vaccinated_rate", c("")),
+                                                            prefix_var("vaccinated_rate", c("")),
+                                                            prefix_var("vaccines", c("")),
+                                                            prefix_var("vaccines_rate_pop", c("")))),
+                                         selected = "fully_vaccinated_rated"),
                         time = list(label = "Time-line",
                                     choices = list("Total" = "total", "Last Week" = "lw", "Past Week" = "pw"),
                                     selected = "total")),

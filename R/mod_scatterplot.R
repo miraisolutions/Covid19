@@ -1,6 +1,6 @@
 #' selectInput UI parameters for stringency
 #' @param ax axis, x or y
-vars_vs_stringency_vax = function(ax) {
+vars_vs_stringency_vax = function(ax = "y") {
   list(label = paste0("Select (",ax,") variable"),
        choices = varsNames(c("lw_confirmed_rate_1M_pop", "growth_factor_7", "lw_positive_tests_rate", "hosp_rate_1M_pop", "icuvent_rate_1M_pop",
                              "lw_deaths_rate_1M_pop")),
@@ -20,7 +20,7 @@ vars_growth = function(ax = "y") {
 #' selectInput UI parameters for growth
 #' @param ax axis, x or y
 vars_vs_growth = function(ax = "x") {
-  list(label = paste0("Select (",ax,")  Prevalence over 1M people"),
+  list(label = paste0("Select (",ax,") Prevalence over 1M people"),
                       choices = list("Last week" = "lw_confirmed_rate_1M_pop",
                                      "Last month" = "lm_confirmed_rate_1M_pop",
                                      "Total" = "confirmed_rate_1M_pop"),
@@ -34,6 +34,13 @@ vars_hosp = function(ax = "y") {
                        #"lw_hosp_rate_1M_pop", "lw_icuvent_rate_1M_pop"
                        )),
        selected = "hosp_rate_1M_pop")
+}
+#' selectInput UI parameters for vax
+#' @param ax axis, x or y
+vars_vs_vax <-function(ax = "x") {
+  list(label = paste0("Select (",ax,") Vacc. variable"),
+       choices = varsNames(c("fully_vaccinated_rate", "vaccines_rate_pop")),
+       selected = "fully_vaccinated_rate")
 }
 #' plot_scatterplot UI Function
 #'
