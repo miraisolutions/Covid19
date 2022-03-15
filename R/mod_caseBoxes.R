@@ -399,10 +399,10 @@ countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, c
     formatC(x, format = "f", big.mark = "'", digits  = 0)
   }
   format_perc = function(x) {
-    ifelse(is.na(x),"",paste(x*100,"%"))
+    ifelse(is.na(x),"",paste0(x*100,"%"))
   }
   format_sign = function(x) {
-    paste(ifelse(x>0, "+",""),format_thousands(x))
+    paste0(ifelse(x>0, "+",""),format_thousands(x))
   }
 
   if (!all(type %in% c("perc", "thousands", "sign")))
@@ -421,7 +421,7 @@ countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, c
     sign.perc = "+"
     if (is.na(x) || x < 0)
       sign.perc = ""
-    textx = ifelse(is.na(x),"",paste(x*100,"%"))
+    textx = ifelse(is.na(x),"",format_perc(x))
     paste0(sign.perc,textx)
 
   }

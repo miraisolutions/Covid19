@@ -1,3 +1,5 @@
+### Covid19Mirai 2.7.4-9000 
+
 ### Covid19Mirai 2.7.4 
 - Complete vaccination data (#201)
 - Fix year comparison lineplot bug
