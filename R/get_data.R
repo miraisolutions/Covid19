@@ -332,7 +332,8 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     dataHub = dataHub %>% filter(date <= AsOfDate) %>% arrange(Country.Region, date)
 
     # convert integers into numeric
-    dataHub[,sapply(dataHub, class) == "integer"] = dataHub[,sapply(dataHub, class) == "integer"] %>% sapply(as.numeric)
+    dataHub[,sapply(dataHub, class) %in% c("integer","integer64")] <-
+      dataHub[,sapply(dataHub, class) %in% c("integer","integer64")] %>% sapply(as.numeric)
 
     #cumvars = c("confirmed", "deaths","recovered","tests", "vaccines")
     cumvars = get_cumvars()

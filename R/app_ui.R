@@ -18,6 +18,10 @@ app_ui <- function(request) {
 
 
   message("app_ui")
+# if (TRUE)
+#   return(htmltools::includeHTML("inst/app/www/main_ui.html"))
+# if (FALSE)   #
+  #mainui <-
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
@@ -167,6 +171,8 @@ app_ui <- function(request) {
       )
     )
   )
+  # htmltools::save_html(mainui, "inst/app/www/main_ui.html")
+  #mainui
 }
 
 #' Add external Resources to the Application

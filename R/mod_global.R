@@ -81,6 +81,7 @@ mod_global_ui <- function(id){
 #' global Server Function
 #'
 #' @param orig_data_aggregate data.frame
+#' @param TOTAL list of data.frame with data for the page
 #' @param countries_data data.frame sp for mapping
 #'
 #' @import dplyr
@@ -91,7 +92,8 @@ mod_global_ui <- function(id){
 #' @importFrom plotly ggplotly
 #'
 #' @noRd
-mod_global_server <- function(input, output, session, orig_data_aggregate, countries_data_map){
+mod_global_server <- function(input, output, session, orig_data_aggregate, TOTAL,
+                              countries_data_map){
   ns <- session$ns
 
   # Datasets ----
@@ -102,56 +104,62 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, count
 
   # world time series
   # data at World level with get_timeseries_global_data
-   total <-
-     orig_data_aggregate %>%
-     get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%
-     get_timeseries_by_contagion_day_data()
+  #  total <-
+  #    orig_data_aggregate %>%
+  #    get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%
+  #    get_timeseries_by_contagion_day_data()
+  #
+  #  total_aggregate <- total %>%  # add additional vars
+  #    build_data_aggr()
+  #
+  #  # total_aggregate_plot <-  total_aggregate %>%# filter last dates which may be incomplete
+  #  #   mutate(diffconf = confirmed - lag(confirmed)) %>%
+  #  #   filter(diffconf > 0 | date < tail(date, 5)) %>%
+  #  #   select(-diffconf)
+  #  #arrange(desc(date))
+  #
+  #  total_today <-
+  #    total_aggregate %>%
+  #       filter(date == AsOfDate)
+  #  lw_total =  lw_vars_calc(total_aggregate)
+  #  pw_total =  lw_vars_calc(total_aggregate, 14)
+  #
+  #  total_today = total_today  %>%
+  #    left_join(lw_total %>% select(-population))  %>%
+  #    left_join(pw_total %>% select(-population))
+  #
+  #  orig_data_aggregate = orig_data_aggregate %>%
+  #    filter(population > 300000) # remove very small countries
+  # # countries today
+  # orig_data_aggregate_today <-
+  #   orig_data_aggregate %>%
+  #   add_growth_death_rate()
+  #
+  # lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
+  # pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate, 14)
+  #
+  # orig_data_aggregate_today = orig_data_aggregate_today  %>%
+  #   left_join(lw_orig_data_aggregate %>% select(-population)) %>%
+  #   left_join(pw_orig_data_aggregate %>% select(-population))
+  # # TODO: REVIEW!
+  # world <-
+  #   orig_data_aggregate_today %>%
+  #     arrange(desc(confirmed) )
+  # # todp 5 countries today by confirmed
+  # world_top_5_today <-
+  #   world %>%
+  #     head(5)
+  #
+  # world_top_5_confirmed <-
+  #   orig_data_aggregate %>%
+  #     filter(Country.Region %in% world_top_5_today$Country.Region) %>%
+  #     select(Country.Region, date, AsOfDate,confirmed)
 
-   total_aggregate <- total %>%  # add additional vars
-     build_data_aggr()
-
-   # total_aggregate_plot <-  total_aggregate %>%# filter last dates which may be incomplete
-   #   mutate(diffconf = confirmed - lag(confirmed)) %>%
-   #   filter(diffconf > 0 | date < tail(date, 5)) %>%
-   #   select(-diffconf)
-   #arrange(desc(date))
-
-   total_today <-
-     total_aggregate %>%
-        filter(date == AsOfDate)
-   lw_total =  lw_vars_calc(total_aggregate)
-   pw_total =  lw_vars_calc(total_aggregate, 14)
-
-   total_today = total_today  %>%
-     left_join(lw_total %>% select(-population))  %>%
-     left_join(pw_total %>% select(-population))
-
-   orig_data_aggregate = orig_data_aggregate %>%
-     filter(population > 300000) # remove very small countries
-  # countries today
-  orig_data_aggregate_today <-
-    orig_data_aggregate %>%
-    add_growth_death_rate()
-
-  lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
-  pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate, 14)
-
-  orig_data_aggregate_today = orig_data_aggregate_today  %>%
-    left_join(lw_orig_data_aggregate %>% select(-population)) %>%
-    left_join(pw_orig_data_aggregate %>% select(-population))
-  # TODO: REVIEW!
-  world <-
-    orig_data_aggregate_today %>%
-      arrange(desc(confirmed) )
-  # todp 5 countries today by confirmed
-  world_top_5_today <-
-    world %>%
-      head(5)
-
-  world_top_5_confirmed <-
-    orig_data_aggregate %>%
-      filter(Country.Region %in% world_top_5_today$Country.Region) %>%
-      select(Country.Region, date, AsOfDate,confirmed)
+  total_today <- TOTAL$total_today
+  orig_data_aggregate_today <- TOTAL$orig_data_aggregate_today
+  total_aggregate <- TOTAL$total_aggregate
+  world_top_5_confirmed <- TOTAL$world_top_5_confirmed
+  world <- TOTAL$world
 
   # Boxes ----
   callModule(mod_caseBoxes_server, "count-boxes", total_today, vax = "recovered")

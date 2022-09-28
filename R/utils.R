@@ -817,6 +817,8 @@ lw_positive_test_rate_calc <- function(conf, tests, digits = 4) {
 #' @import dplyr
 #' @export
 build_data_aggr <- function(data, popdata) {
+  # data = orig_data
+  # popdata = pop_data
   orig_data_aggregate <- data %>%
     #aggregate_province_timeseries_data() %>% # not required anymore
     #add_growth_death_rate() %>%

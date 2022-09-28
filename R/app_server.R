@@ -30,6 +30,7 @@ app_server <- function(input, output, session) {
   orig_data_ch_2  = DATA$orig_data_ch_2
   pop_data <- DATA$pop_data
   countries_data_map <- DATA$countries_data_map
+  TOTAL <- DATA$TOTAL
   # pop_data <- get_pop_datahub()
 
   #align continents from map with pop
@@ -65,7 +66,7 @@ app_server <- function(input, output, session) {
   #uicontinents = c("europe", "asia", "africa", "latam", "northernamerica", "oceania")
   continents_var <- reactiveValues(europe = 0, asia = 0, africa = 0, latam = 0, northernamerica = 0, oceania = 0)
   # Modules ----
-  observeEvent(input$main_ui, {
+  observeEvent(c(input$main_ui,input$continents_ui), {
 
   # })
   # observe({
@@ -74,6 +75,7 @@ app_server <- function(input, output, session) {
     if (req(input$main_ui) == "Global" && glob_var() == 0) {
       message("-- Do global module")
       callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
+                 TOTAL,
                  countries_data_map)
       glob_var(1)
     } else
