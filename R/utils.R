@@ -774,7 +774,7 @@ oneM_pop_calc = function(x, pop) {
 #'
 #' @return x numeric rate
 #'
-rate_calc = function(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE) {
+rate_calc <- function(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE) {
   # if (length(x) != length(pop))
   #   stop("different length x and pop")
   # remove latest NAs
@@ -782,7 +782,7 @@ rate_calc = function(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE) {
   res[is.infinite(res)] = NA
   res[is.nan(res)] = NA
 
-  res = round(pmax(pmin(res,cap), floor),digits)
+  res = round(pmax(pmin(res,cap, na.rm = TRUE), floor, na.rm = TRUE),digits)
   if (nawith0)
     res = replace_na(res, 0)
  res
@@ -795,7 +795,7 @@ rate_calc = function(x, y, cap = 1, floor = 0, digits = 4, nawith0 = FALSE) {
 #'
 #' @return x numeric positive tests rate
 #'
-lw_positive_test_rate_calc = function(conf, tests, digits = 4) {
+lw_positive_test_rate_calc <- function(conf, tests, digits = 4) {
   # if (length(x) != length(pop))
   #   stop("different length x and pop")
   # remove latest NAs
@@ -828,13 +828,13 @@ build_data_aggr <- function(data, popdata) {
 
   }
   # select variables that can be divided by population
-  aggrvars = setdiff(intersect(get_aggrvars(), names(orig_data_aggregate)), "population")
+  aggrvars <- setdiff(intersect(get_aggrvars(), names(orig_data_aggregate)), "population")
 
   # orig_data_aggregate$positive_tests_rate = ifelse(orig_data_aggregate$tests == 0, NA,
   #                                                  pmin(round(orig_data_aggregate$confirmed/orig_data_aggregate$tests, digits = 4),1))
   # orig_data_aggregate$new_positive_tests_rate = ifelse(orig_data_aggregate$new_tests == 0, NA,
   #                                                      pmin(round(orig_data_aggregate$new_confirmed/orig_data_aggregate$new_tests, digits = 4),1))
-  orig_data_aggregate = orig_data_aggregate %>%   mutate(
+  orig_data_aggregate <- orig_data_aggregate %>%   mutate(
               across(all_of(as.vector(aggrvars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
           ) %>%
     #merge_pop_data(popdata) %>% # compute additional variables
@@ -869,9 +869,12 @@ build_data_aggr <- function(data, popdata) {
            )  %>%   #mutate(
            #   across(all_of(as.vector(.hosp_vars)), ~oneM_pop_calc(.x,pop = population), .names="{col}_rate_1M_pop") # use all_of
            # ) %>%
-    mutate_if(is.numeric, list(function(x) {
+    mutate(across(where(is.numeric), function(x) {
       ifelse(is.infinite(x),NA, x)
     }))
+    # mutate_if(is.numeric, list(function(x) {
+    #   ifelse(is.infinite(x),NA, x)
+    # }))
 
   classd = sapply(orig_data_aggregate, class)
   whichc = which(classd == "character")
@@ -909,7 +912,7 @@ lw_vars_calc <- function(data, days = 7) {
   LastDate <- get_asofdate(char = FALSE)
   # remove all countries without updates in the last week
   data = data %>%
-      filter(AsOfDate > (LastDate-7))
+      dplyr::filter(AsOfDate > (LastDate-7))
 
   n.days = ifelse(days == 30, 30, 7)
   data7 = data %>% filter(date > (max(date, na.rm = TRUE)-days))# last week

@@ -388,7 +388,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
       message(sum((dataHub$hosp - dataHub$icuvent) < 0, na.rm = TRUE), " wrong cases where icuvent > (hosp)")
       dataHub$hosp = pmax(dataHub$hosp, dataHub$icuvent, na.rm = TRUE) # generally it can be lower
       dataHub = dataHub %>% select(-icu,-vent) # remove icu and vent
-      if (any(dataHub$active < dataHub$hosp)) {
+      if (any(dataHub$active < dataHub$hosp, na.rm = TRUE)) {
         warning(sum(dataHub$active < dataHub$hosp, na.rm = TRUE), " cases with active < hosp")
         # generally for Costa Atlantica cruise and Canada, peru'
         # it seems that recovered and hosp are not in line, to recompute recovered and active again

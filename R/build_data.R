@@ -1,4 +1,4 @@
-#' Build data in GutHub action yml and save as RDS
+#' Build data in GitHub action yml and save as RDS
 #' @rdname get_datahub
 #'
 #' @import dplyr
@@ -84,6 +84,7 @@ build_data <- function() {
   message("reading data at level 2 for country: ", paste(all_countries, collapse = ","))
 
   all_lev2_data <- sapply(all_countries, function(cntr) {
+    message(cntr)
     orig_data_2_tmp <- get_datahub(country = cntr, lev = 2, verbose = FALSE, cache = TRUE)
     # cant use get_timeseries_by_contagion_day_data because of reconciliation of hosp data
     # if (nrow(orig_data_2_tmp)>0)
