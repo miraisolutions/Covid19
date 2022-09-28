@@ -1,4 +1,4 @@
-#' Build data in GutHub action yml and save as RDS
+#' Build data in GitHub action yml and save as RDS
 #' @rdname get_datahub
 #'
 #' @import dplyr
@@ -49,11 +49,69 @@ build_data <- function() {
   orig_data_aggregate <-
     build_data_aggr(orig_data, pop_data)
 
+  # data for global module
+
+  total <-
+    orig_data_aggregate %>%
+    get_timeseries_global_data() %>% mutate(Country.Region = "World") %>%
+    get_timeseries_by_contagion_day_data()
+
+  total_aggregate <- total %>%  # add additional vars
+    build_data_aggr()
+
+  total_today <-
+    total_aggregate %>%
+    filter(date == AsOfDate)
+  lw_total =  lw_vars_calc(total_aggregate)
+  pw_total =  lw_vars_calc(total_aggregate, 14)
+
+  total_today = total_today  %>%
+    left_join(lw_total %>% select(-population))  %>%
+    left_join(pw_total %>% select(-population))
+
+  orig_data_aggregate = orig_data_aggregate %>%
+    filter(population > 300000) # remove very small countries
+  # countries today
+  orig_data_aggregate_today <-
+    orig_data_aggregate %>%
+    add_growth_death_rate()
+
+  lw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate)
+  pw_orig_data_aggregate =  lw_vars_calc(orig_data_aggregate, 14)
+
+  orig_data_aggregate_today = orig_data_aggregate_today  %>%
+    left_join(lw_orig_data_aggregate %>% select(-population)) %>%
+    left_join(pw_orig_data_aggregate %>% select(-population))
+  # TODO: REVIEW!
+  world <-
+    orig_data_aggregate_today %>%
+    arrange(desc(confirmed) )
+  # todp 5 countries today by confirmed
+  world_top_5_today <-
+    world %>%
+    head(5)
+
+  world_top_5_confirmed <-
+    orig_data_aggregate %>%
+    filter(Country.Region %in% world_top_5_today$Country.Region) %>%
+    select(Country.Region, date, AsOfDate,confirmed)
+
+  TOTAL <- list(
+    world_top_5_confirmed = world_top_5_confirmed,
+    world_top_5_today = world_top_5_today,
+    world = world,
+    orig_data_aggregate_today = orig_data_aggregate_today,
+    total = total,
+    total_aggregate = total_aggregate,
+    total_today = total_today
+  )
+
   message("** Save data as DATA.rds **")
   saveRDS(list(orig_data_aggregate = orig_data_aggregate,
                countries_data_map = countries_data_map,
                pop_data = pop_data,
-               orig_data_ch_2 = orig_data_ch_2), "inst/datahub/DATA.rds")
+               orig_data_ch_2 = orig_data_ch_2,
+               TOTAL = TOTAL), "inst/datahub/DATA.rds")
 
   # read data for default country at level 2
   area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)
@@ -84,6 +142,7 @@ build_data <- function() {
   message("reading data at level 2 for country: ", paste(all_countries, collapse = ","))
 
   all_lev2_data <- sapply(all_countries, function(cntr) {
+    message(cntr)
     orig_data_2_tmp <- get_datahub(country = cntr, lev = 2, verbose = FALSE, cache = TRUE)
     # cant use get_timeseries_by_contagion_day_data because of reconciliation of hosp data
     # if (nrow(orig_data_2_tmp)>0)

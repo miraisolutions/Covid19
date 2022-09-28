@@ -11,10 +11,10 @@
   "Packages": {
     "COVID19": {
       "Package": "COVID19",
-      "Version": "2.3.2",
+      "Version": "3.0.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4d8373d2829aa7d08722dec97b1d2169"
+      "Hash": "2820894519437a25b4103b62462fa334"
     },
     "DT": {
       "Package": "DT",
@@ -36,6 +36,27 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "df57c82e79600601287edfdcef92c2d6"
+    },
+    "R.methodsS3": {
+      "Package": "R.methodsS3",
+      "Version": "1.8.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4bf6453323755202d5909697b6f7c109"
+    },
+    "R.oo": {
+      "Package": "R.oo",
+      "Version": "1.24.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5709328352717e2f0a9c012be8a97554"
+    },
+    "R.utils": {
+      "Package": "R.utils",
+      "Version": "2.11.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a7ecb8e60815c7a18648e84cd121b23a"
     },
     "R6": {
       "Package": "R6",

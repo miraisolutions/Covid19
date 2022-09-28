@@ -97,35 +97,38 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
       selectInput(label = "Area", inputId = ns("select_area"), choices = sort(countries()$Country.Region), selected = selectedcountry)
     })
     # area plot with selection of countries
-    observeEvent(input$select_area,  {    #
+    #observeEvent(input$select_area,  {    #
+    plot_output <- "plot_area_select"
+    pp <- eventReactive(input$select_area,  {    #
+
       if (input$select_area == "" || (!(input$select_area %in% df$Country.Region))) {
 
-        output$plot_area_select <- renderPlotly({
+        # output$plot_area_select <- renderPlotly({
 
-          blank_plot(where = input$select_area, add = " All data missing")
-        })
-        return()
+          p_out <- blank_plot(where = input$select_area, add = " All data missing")
+        # })
+      } else {
+        message("process area ", req(input$select_area))
+        # Data ----
+        area_data <-  df %>%
+          filter(Country.Region %in% req(input$select_area)) %>%
+          select(-Country.Region)
+
+        # output$plot_area_select <- renderPlotly({
+          p <- area_data %>%
+            time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp,active_hosp = active_hosp)
+          #p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
+
+          p_out <- p %>%
+            #ggplotly(tooltip = c("x", "y", "text")) %>%
+            ggplotly(tooltip = c("text")) %>%
+            plotly::layout(legend = list(orientation = "h", y = 1.05, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
+                                         itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
+                           yaxis = list(autorange = TRUE, fixedrange = TRUE))
+
+        #})
       }
-      message("process area ", req(input$select_area))
-      # Data ----
-      area_data <-  df %>%
-        filter(Country.Region %in% req(input$select_area)) %>%
-        select(-Country.Region)
-
-      output$plot_area_select <- renderPlotly({
-        p <- area_data %>%
-          time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp,active_hosp = active_hosp)
-        #p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
-
-        p <- p %>%
-          #ggplotly(tooltip = c("x", "y", "text")) %>%
-          ggplotly(tooltip = c("text")) %>%
-          plotly::layout(legend = list(orientation = "h", y = 1.05, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
-                               itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
-                         yaxis = list(autorange = TRUE, fixedrange = TRUE))
-
-        p
-      })
+      p_out
     })
   } else if (is.null(countries) && type != "area") {
     message("mod_plot_log_linear_server linear with Log")
@@ -133,8 +136,11 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
     log <- reactive({
       req(input$radio_log_linear) != "linear"
     })
-    observeEvent(input$radio_log_linear, {
-      output$plot_log_linear <- renderPlotly({
+    plot_output <- "plot_log_linear"
+
+    #observeEvent(input$radio_log_linear, {
+    pp <- eventReactive(input$radio_log_linear, {
+      #output$plot_log_linear <- renderPlotly({
         p <- df %>%
             time_evol_line_plot(log = log(), text = "Area" , g_palette = graph_palette)
 
@@ -146,31 +152,40 @@ mod_plot_log_linear_server <- function(input, output, session, df, type, g_palet
                          yaxis = list(autorange = TRUE, fixedrange = TRUE))
 
         p
-      })
+      #})
 
     })
   } else if (is.null(countries) && type == "area"){
       message("mod_plot_log_linear_server area plot")
 
       log = reactive(FALSE)
+      plot_output <- "plot_area"
 
-      output$plot_area <- renderPlotly({
+      #output$plot_area <- renderPlotly({
+      pp <- reactive( {
         if (nrow(df) > 0)  {
           p <- df %>%
             time_evol_area_plot(stack = TRUE, log = log(), text = "Status", hosp = hosp, active_hosp = active_hosp) #%>%
           # p <- p + scale_y_continuous(labels = label_number(big.mark = "'")) # add label
-          p <- p %>%
+          p_out <- p %>%
             #ggplotly(tooltip = c("x", "y", "text")) %>%
             ggplotly(tooltip = c("text")) %>%
             plotly::layout(legend = list(orientation = "h", y = 1.05, yanchor = "bottom", font = list(family = "Arial, sans-serif", size = 10),
-                                 itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
+                                         itemwidth = 10, itemsizing = "constant", hovermode = 'closest', clickmode = "event", title = ""),
                            yaxis = list(autorange = TRUE, fixedrange = TRUE))
-          p
         } else {
-          blank_plot(where = "the area plot", add = " All data missing.")
+          p_out <- blank_plot(where = "the area plot", add = " All data missing.")
         }
+        p_out
       })
+
+      #})
   } else {
       stop("mod_plot_log_linear_server unsupported selction")
   }
+
+  output[[plot_output]] <- renderPlotly({
+
+    pp()
+  })
 }

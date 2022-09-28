@@ -254,6 +254,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
                                               vars = .vars_nthcases_plot){
   ns <- session$ns
   df$Date = df[[datevar]]
+  message("mod_compare_nth_cases_plot_server")
   barp = reactive(length(unique(df$Country.Region)) ==1 &&  req(input$time_frame) != "sincestart")
 
   if (oneMpop || areasearch ) {
@@ -462,7 +463,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
     #rollw = TRUE
     # Plot -----
-    output$plot <- renderPlotly({
+    #output$plot <- renderPlotly({
       if (length(reactSelectVar()) == 0) {
         p <- blank_plot(where = "selected area", add = " All data missing")
       # } else if (length(reactSelectVar()) == 0){
@@ -486,15 +487,17 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
       }
       p
 
-    })
+    #})
   } # end calc_line_plot
   if (!areasearch) {
     keeporder = FALSE
-    calc_line_plot(df, vars, cum_vars)
+    pp <- reactive(calc_line_plot(df, vars, cum_vars))
   } else {
     keeporder = TRUE
 
-    observeEvent(!is.null(req(input$select_areas)),{
+    #observeEvent(!is.null(req(input$select_areas)),{
+    pp <- eventReactive(!is.null(req(input$select_areas)),{
+
       #if (input$select_areas != "") {
         message("Observe event select_areas")
         df_select = df %>% filter(Country.Region %in% input$select_areas)
@@ -504,6 +507,10 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
      # }
     })
   }
+
+  output$plot <- renderPlotly({
+    pp()
+  })
 
   output$caption <- renderText({
     #if  (!(input$radio_indicator %in% get_aggrvars()) || (input$time_frame != "sincestart"))
