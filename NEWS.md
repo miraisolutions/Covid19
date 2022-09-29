@@ -1,3 +1,6 @@
+### Covid19Mirai 2.8.0
+- updated to Covid19datahub 3.0.2 (#217)
+
 ### Covid19Mirai 2.7.4 
 - Complete vaccination data (#201)
 - Fix year comparison lineplot bug

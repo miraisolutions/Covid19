@@ -5,6 +5,7 @@
 #' @import shiny
 #' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
 #' @noRd
+#'
 app_ui <- function(request) {
 
   # Params ----
@@ -17,6 +18,10 @@ app_ui <- function(request) {
 
 
   message("app_ui")
+# if (TRUE)
+#   return(htmltools::includeHTML("inst/app/www/main_ui.html"))
+# if (FALSE)   #
+  #mainui <-
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
@@ -100,7 +105,7 @@ app_ui <- function(request) {
         #"Continents and Countries insight",
         id = "main_ui",
         tabPanel("Global",
-                 id = "tab_global",
+                 # id = "tab_global",
                  mod_global_ui("global")),
         tabPanel("Continents",
                  #tabsetPanel(
@@ -112,36 +117,36 @@ app_ui <- function(request) {
                    "",
                    id = "continents_ui",
                    tabPanel("Summary",
-                          id = "tab_global",
+                          # id = "tab_global",
                            mod_continent_comparison_ui("continent_comparison")),
                    tabPanel("Europe",
-                            id = "tab_global",
+                            # id = "tab_global",
                             mod_continent_ui("Europe_comparison", "europe", nn = n)),
                    tabPanel("Asia",
-                            id = "tab_global",
+                            # id = "tab_global",
                             mod_continent_ui("Asia_comparison", "asia", nn = n)),
                    tabPanel("Africa",
-                            id = "tab_global",
+                            # id = "tab_global",
                             mod_continent_ui("Africa_comparison", "africa", nn = n)),
                    tabPanel("Lat. America & Carib.",
-                            id = "tab_global",
+                            # id = "tab_global",
                             mod_continent_ui("LatAm_comparison", "latam", nn = n)),
                    tabPanel("Northern America",
-                            id = "tab_global",
+                            # id = "tab_global",
                             mod_continent_ui("NorthernAmerica_comparison","northernamerica", nn = n)),
                    tabPanel("Oceania",
-                            id = "tab_global",
+                            # id = "tab_global",
                             mod_continent_ui("Oceania_comparison","oceania", nn = n))
                  )
                 ),
         tabPanel("Switzerland",
-                 id = "tab_global",
+                 # id = "tab_global",
                  mod_ind_country_ui("swiss")),
         tabPanel("Country",
-                 id = "tab_global",
+                 # id = "tab_global",
                  mod_country_ui("country")),
         tabPanel("Country Comparison",
-                 id = "tab_global",
+                 # id = "tab_global",
                  mod_country_comparison_ui("country_comparison"))
       ),
       # Footer ----
@@ -166,6 +171,8 @@ app_ui <- function(request) {
       )
     )
   )
+  # htmltools::save_html(mainui, "inst/app/www/main_ui.html")
+  #mainui
 }
 
 #' Add external Resources to the Application

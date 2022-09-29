@@ -25,20 +25,41 @@ mod_add_table_ui <- function(id){
 mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5){
   ns <- session$ns
   # Add Labels
-  df = df %>% .[,c("date","AsOfDate",setdiff(names(df), c("date","AsOfDate")))] # place as of date in first place
+  df_out = df %>% .[,c("date","AsOfDate",setdiff(names(df), c("date","AsOfDate")))] # place as of date in first place
 
-  perccol = names(df) %in% .rate_vars
-  numcol_thous = (!perccol & sapply(df, is.numeric))
-  numcol_small = sapply(df[, numcol_thous], max, na.rm = TRUE) < 1000
-  numcol = numcol_thous
-  numcol[numcol_thous] = numcol_small
-  numcol_thous[numcol_thous] = !numcol_small
+  perccol = intersect(names(df_out), .rate_vars)
 
-  vars = intersect(names(df), unlist(varsNames()))
-  names(df)[names(df) %in% vars] = names(varsNames(vars))
+  numcol = names(df_out)[(sapply(df_out, is.numeric))]
+
+  numcol_small <- sapply(df_out[, numcol], max, na.rm = TRUE) < 1000
+  numcol_small <- names(numcol_small)[numcol_small]
+  numcol_small <- setdiff(numcol_small, perccol)
+
+  numcol_thous <- names(df_out) %in% setdiff(setdiff(numcol, perccol), numcol_small)
+  numcol_small <- names(df_out) %in%  numcol_small
+  perccol       <- names(df_out) %in%  perccol
+
+#
+#   numcol_thous <- cols
+#   numcol_thous[numcol][!numcol_small_val] <- TRUE
+#
+#   cols <- rep(FALSE, ncol(df_out)) %>%
+#     setNames(names(df_out))
+#   numcol_small <- cols
+#   numcol_small[names(numcol_small_val)] <- TRUE
+#   numcol_thous = numcol
+#
+#   numcol[numcol_thous] = numcol_small
+#
+#   numcol[numcol_thous] = numcol_small
+#   numcol_thous[numcol_thous] = !numcol_small
+
+  vars = intersect(names(df_out), unlist(varsNames()))
+  names(df_out)[names(df_out) %in% vars] = names(varsNames(vars))
+
 
   output$table <- renderDT(
-    datatable(df %>% capitalize_names_df(),
+    datatable(df_out %>% capitalize_names_df(),
               rownames = FALSE,
               selection = "single",
               filter = 'top',
@@ -55,7 +76,7 @@ mod_add_table_server <- function(input, output, session, df, maxrowsperpage = 5)
     paste("data-", Sys.Date(), ".csv", sep = "")
   },
   content = function(file) {
-    write.csv(df, file)
+    write.csv(df_out, file)
   }
   )
 }
