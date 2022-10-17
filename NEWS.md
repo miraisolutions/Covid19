@@ -1,4 +1,5 @@
-# Covid19Mirai (development version)
+### Covid19Mirai 2.8.1
+- Fixed tests (#221)
 
 ### Covid19Mirai 2.8.0
 - updated to Covid19datahub 3.0.2 (#217)
