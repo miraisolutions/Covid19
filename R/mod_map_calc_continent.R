@@ -628,7 +628,7 @@ legend_fun <- function(x, var){
       else
         val = log(seq(1,exp(max(bin)), length = 5000))
       dat = val
-      suf = ifelse(grepl("1M", var)," over 1M", " cases")
+      suf = ifelse(grepl("1M", var)," over 1M", "")
       .round_val = function(x){
        if (any(x<0, na.rm = TRUE)){
          y = rep(NA,length(x))

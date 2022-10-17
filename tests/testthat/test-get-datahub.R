@@ -35,8 +35,6 @@ if (FALSE) {
 ##############
 # test last week on swiss data
 
-
-
 test_that("get_datahub lev = 2 Swiss is ok", {
   data_ch2 = get_timeseries_by_contagion_day_data(data_ch2)
   orig_data_aggregate_ch2 = build_data_aggr(data_ch2)
@@ -47,6 +45,11 @@ test_that("get_datahub lev = 2 Swiss is ok", {
     add_growth_death_rate()
   orig_data_aggregate_today_ch2_today = orig_data_aggregate_ch2_today  %>%
     left_join(lw_orig_data_aggregate_ch2 %>% select(-population))
+  # no NAs
+  expect_equal(sum(sapply(orig_data_aggregate_today_ch2_today, is.na)), 0)
+  check_data(data_ch2)
+  check_data(orig_data_aggregate_ch2)
+  check_data(orig_data_aggregate_today_ch2_today)
 })
 
 # French data give always problems
@@ -98,7 +101,7 @@ test_that("test for missing dates and today data", {
   expect_true(names(table(df$lagdate))== "1")
 
   df = data %>% filter(date %in% tail(date,1)) %>% select(Country.Region, date, new_confirmed)
-  expect_true(sum(df$new_confirmed) > 0) # there are data
+  expect_true(sum(df$new_confirmed) != 0) # there are data (there could be negatives)
 
 })
 test_that("test for missing or duplicated countries", {
@@ -132,7 +135,6 @@ test_that("test pop_data and build_data_aggr returns expected format", {
   # some countries seem now to be among those with no continent. To be fixed
   #expect_false(any(unique(data$Country.Region) %in% na.cnt))
 
-
   orig_data_aggregate <- build_data_aggr(data, pop_data)
 
   countrynames= unique(orig_data_aggregate$Country.Region)
@@ -157,7 +159,6 @@ test_that("test pop_data and build_data_aggr returns expected format", {
   setdiff(mapdata$NAME, pop_data$Country.Region)
   setdiff(pop_data$Country.Region, mapdata$NAME)
 
-
   .align_map_pop <- function(map,pop) {
     tmp = map@data[,c("NAME","CONTINENT")] %>%
       merge(pop[,c("Country.Region","continent")], by.x = "NAME", by.y = "Country.Region", all.x = T, sort = FALSE, incomparables = NA)
@@ -179,6 +180,5 @@ test_that("test pop_data and build_data_aggr returns expected format", {
   setdiff(pop_data$Country.Region, mapdata$NAME)
 
   expect_true(sum(is.na(pop_data$continent)) <=  na.pop.data )
-
 
 })
