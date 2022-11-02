@@ -5,7 +5,6 @@
 #' @import shiny
 #' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
 #' @noRd
-#'
 app_ui <- function(request) {
 
   # Params ----
