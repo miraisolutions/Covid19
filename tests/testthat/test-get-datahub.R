@@ -119,7 +119,12 @@ test_that("test for missing or duplicated countries", {
 pop_data = get_pop_datahub()
 na.pop.data = sum(is.na(pop_data$continent))
 # test pop map data
-mapdata = load_countries_datahub_map()
+# mapdata = load_countries_datahub_map()
+
+rds_map = "WorldMap_sp_spl.rds"
+# message("read map from RDS ", rds_map)
+mapdata <- readRDS(file =  file.path(system.file("./countries_data", package = "Covid19Mirai"),rds_map))
+
 
 test_that("test pop_data and build_data_aggr returns expected format", {
 
