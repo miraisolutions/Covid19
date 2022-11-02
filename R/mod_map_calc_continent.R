@@ -192,7 +192,7 @@ mod_map_area_calc_server <- function(input, output, session, df, countries_data_
   output[["map_area_calc"]] <- renderLeaflet({
     if (!countrymap) {
       map = leaflet(
-        data = data_plot(),
+        data = data_plot(), # TODO: inside renderLeaflet the call should not depend on the data
         options = leafletOptions(zoomControl = FALSE,
                                  minZoom = area_map_spec(area, "zoom")*0.95, maxZoom = area_map_spec(area, "zoom")*1.05,
                                  dragging = TRUE,
