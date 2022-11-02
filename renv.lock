@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://mran.microsoft.com/snapshot/2020-07-16"
+        "URL": "https://cloud.r-project.org"
       }
     ]
   },
@@ -810,10 +810,10 @@
     },
     "packrat": {
       "Package": "packrat",
-      "Version": "0.5.0",
+      "Version": "0.7.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "2ebd34a38f4248281096cc723535b66d",
+      "Hash": "95e8c3825efcaad09411799da92c0af9",
       "Requirements": []
     },
     "pillar": {
@@ -1063,10 +1063,10 @@
     },
     "rsconnect": {
       "Package": "rsconnect",
-      "Version": "0.8.16",
+      "Version": "0.8.25",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3924a1c20ce2479e89a08b0ca4c936c6",
+      "Hash": "c78e0acc405a6990475f1f9500ebe66c",
       "Requirements": [
         "curl",
         "digest",
