@@ -379,7 +379,7 @@ load_countries_data_map <- function(destpath = system.file("./countries_data", p
 #' @param destpath path to file
 #'
 #' @returns countries shapefile
-#' @export
+#' @noRd
 load_countries_datahub_map <- function(destpath = system.file("./countries_data", package = "Covid19Mirai")){
   # Resource https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
   url <- "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip"

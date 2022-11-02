@@ -2,10 +2,10 @@
 #'
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
-#' @import shiny
-#' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
 #' @noRd
 #'
+#' @importFrom bsplus use_bs_tooltip bs_embed_tooltip
+#' @import shiny
 app_ui <- function(request) {
 
   # Params ----
@@ -89,16 +89,16 @@ app_ui <- function(request) {
                   tags$p("Dashboard designed for desktop view.")),
 
       # body ----
-      #' tags$head(
-      #'   # Note the wrapping of the string in HTML()
-      #'   tags$style(HTML("
+      # tags$head(
+      #   # Note the wrapping of the string in HTML()
+      #   tags$style(HTML("
                 #@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
-      #'           body {
-      #'             background-color: #FFEBCD;
-      #'             color: white;
-      #'           }"
-      #'   ))
-      #' ),
+      #           body {
+      #             background-color: #FFEBCD;
+      #             color: white;
+      #           }"
+      #   ))
+      # ),
       #tabsetPanel(
       navbarPage(
         "",

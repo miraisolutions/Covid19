@@ -18,7 +18,9 @@ options(repos = "https://cloud.r-project.org")
 renv::upgrade()
 
 # Install all dependencies from a specific MRAN date repo
-options(repos = "https://mran.microsoft.com/snapshot/2020-08-03")
+# options(repos = "https://mran.microsoft.com/snapshot/2020-08-03")
+options(repos = "https://mran.microsoft.com/snapshot/2020-07-16")
+
 # NOTE that renv would only enforce the given repo for the top-level
 # dependencies, others seem to depend on what is found in the renv cache or was
 # already installed => use remotes to get the full tree of dependencies with the
@@ -33,7 +35,7 @@ renv::install(with(deps, sprintf("%s@%s", package[diff!=0], available[diff!=0]))
 
 # Set the CRAN repo and cherry-pick version-constrained updates
 options(repos = "https://cloud.r-project.org")
-renv::install("COVID19@2.3.1")
+renv::install("COVID19@3.0.2")
 # Alternatively, set a newer MRAN date and update from there
 # options(repos = "https://mran.microsoft.com/snapshot/2020-10-12")
 # renv::update("COVID19")
@@ -41,4 +43,5 @@ renv::install("COVID19@2.3.1")
 # Create the renv snapshot, making sure CRAN is set as repo, which will also end
 # up in the lockfile. This allows restoring any version regardless of the
 # corresponding MRAN date, since CRAN includes archives for older versions.
-options(repos = "https://cloud.r-project.org"); renv::snapshot()
+options(repos = "https://cloud.r-project.org");
+renv::snapshot()
