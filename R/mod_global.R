@@ -189,15 +189,16 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, TOTAL
   # > line plot top 5
   #df_top_n <-
     # create factors with first top confirmed
+
   countries_order =  world_top_5_confirmed %>% filter(date == AsOfDate) %>%
     arrange(desc(confirmed)) %>%
-     .[,"Country.Region"] %>% as.vector()
+     .[,"Country.Region", drop = TRUE]
 
   # start lineplot from a later date
   mindate = min(world_top_5_confirmed$date[world_top_5_confirmed$confirmed>n], na.rm = TRUE)
 
   df_top_n = world_top_5_confirmed %>% filter(date >= mindate) %>% # take only starting point where greater than 1000
-    mutate(status = factor(Country.Region, levels = countries_order[, "Country.Region", drop = T])) %>%
+    mutate(status = factor(Country.Region, levels = countries_order)) %>%
     mutate(value = confirmed) %>%
     capitalize_names_df()
 

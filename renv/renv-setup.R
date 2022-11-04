@@ -19,7 +19,8 @@ renv::upgrade()
 
 # Install all dependencies from a specific MRAN date repo
 # options(repos = "https://mran.microsoft.com/snapshot/2020-08-03")
-options(repos = "https://mran.microsoft.com/snapshot/2020-07-16")
+# options(repos = "https://mran.microsoft.com/snapshot/2020-07-16")
+options(repos = "https://cran.microsoft.com/snapshot/2022-10-31")
 
 # NOTE that renv would only enforce the given repo for the top-level
 # dependencies, others seem to depend on what is found in the renv cache or was
