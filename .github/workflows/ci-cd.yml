@@ -1,4 +1,4 @@
-# Triggered on push and pull request events
+# Triggered on push and pull request events, schedule for data update
 on:
   push:
   pull_request:
@@ -37,7 +37,6 @@ jobs:
           key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
           restore-keys: |
             ${{ runner.os }}-renv-
-
       - name: Install system dependencies
         env:
           RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
@@ -45,7 +44,6 @@ jobs:
           Rscript -e "renv::install('r-hub/sysreqs')"
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
           sudo -s eval "$sysreqs"
-
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
 
@@ -72,7 +70,6 @@ jobs:
           git commit -m "Update DataHub data" || echo "No changes to commit"
           git pull --ff-only
           git push origin
-
       - name: Deploy to shinyapps.io
         # Continuous deployment only for pushes to the main / master branch
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
