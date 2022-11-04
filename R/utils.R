@@ -553,7 +553,7 @@ aggr_to_cont <- function(data, group, time,
   continent_data =    data %>% filter(!is.na(!!rlang::sym(group))) %>%
     select(Country.Region, population, contagion_day, date, !!group, date, !!allstatuses) %>%
     mutate(population = as.numeric(population)) %>%
-    group_by(.dots = c(time,group)) %>%
+    group_by(across(all_of(c(time,group))))%>%
     #group_by(across(all_of(time,group))) %>%
     summarise_at(c(allstatuses), sum, na.rm = TRUE) %>%
     #add_growth_death_rate(group, time) %>%
@@ -647,7 +647,7 @@ message_subcountries <- function(data, area, region) {
   # remove where subcontinent could be NA
   list.countries = data[,c(area,region)] %>% filter(!is.na(!!rlang::sym(area))) %>% unique() %>%
     #group_by(across(all_of(area))) %>%
-    group_by(.dots = area) %>% group_split()
+    group_by(!!sym(area)) %>% group_split()
   list.message = lapply(list.countries, function(x)
     paste0("<b>",as.character(unique(x[[area]])),"</b>: ",
            paste(x[[region]], collapse = ", ")))
@@ -695,7 +695,7 @@ y_vs_x_calc <- function(data, yvar,xvar, yLab = "Growth", xLab = "Prevalence") {
 #' @return numeric vector after ceiling()
 #'
 round_up = function(maxv, down = FALSE) {
-  dg = nchar(as.character(round(maxv)))
+  dg = unique(nchar(as.character(round(maxv))))
   if (dg == 1 && maxv>1)
     dg = 0
   if(!down)

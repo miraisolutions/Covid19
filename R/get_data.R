@@ -594,7 +594,8 @@ add_growth_death_rate <- function(df, group = "Country.Region", time = "date"){
   res = df %>% #ungroup() %>%
     filter(date >= validdates) %>%
     #arrange(!!as.symbol(group), desc(!!as.symbol(time))) %>% #not required anymore
-    group_by(.dots = group) %>%
+    #group_by(.dots = group) %>%
+    group_by(!!sym(group)) %>%
     # mutate(daily_growth_factor_3 = replace_na(confirmed / lag(confirmed, n = 3), 1),
     #        daily_growth_factor_5 = replace_na(confirmed / lag(confirmed, n = 5), 1),
     #        daily_growth_factor_7 = replace_na(confirmed / lag(confirmed, n = 7), 1),
@@ -906,7 +907,7 @@ merge_pop_data <- function(data, popdata) {
 select_countries_n_cases_w_days <- function(df, n, w, group = "Country.Region") {
   countries_filtered <- df %>%
     filter(confirmed > n) %>% #pick only those countries that have more than n cases
-    group_by(.dots = group) %>%
+    group_by(!!sym(group)) %>%
     mutate(N = n()) %>%
     filter( N > w) %>% #pick only those countries that have had outbreak for more than w days
     ungroup() %>%
@@ -935,7 +936,7 @@ rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
     )) %>%
     filter(no_contagion == 0) %>%
     select(-no_contagion) %>%
-    group_by(.dots = group) %>%
+    group_by(!!sym(group)) %>%
     mutate(contagion_day = contagion_day - min(contagion_day)) %>%
     ungroup()
 
