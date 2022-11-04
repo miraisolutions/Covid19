@@ -52,7 +52,7 @@ jobs:
           while read -r cmd
           do
             eval sudo $cmd
-      #     done < <(Rscript -e 'writeLines(with(distro::distro(), remotes::system_requirements(id, short_version)))')
+          done < <(Rscript -e 'writeLines(with(distro::distro(), remotes::system_requirements(id, short_version)))')
 
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
