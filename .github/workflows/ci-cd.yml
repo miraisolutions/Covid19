@@ -29,7 +29,6 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-
       - name: Checkout repo
         uses: actions/checkout@v3
 
