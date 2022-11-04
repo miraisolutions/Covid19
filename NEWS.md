@@ -1,4 +1,5 @@
-### Covid19Mirai (development version)
+### Covid19Mirai 2.9.1
+- Update to R 4.0.3 and GH Actions update (#218)
 
 ### Covid19Mirai 2.9.0
 - Update to R 4.0.3 and GH Actions update (#226)
