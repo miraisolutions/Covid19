@@ -1,5 +1,8 @@
+### Covid19Mirai 2.9.2
+- Swiss data at level 2 have delay
+
 ### Covid19Mirai 2.9.1
-- Update to R 4.0.3 and GH Actions update (#218)
+- Update to R 4.2.1 (#218)
 
 ### Covid19Mirai 2.9.0
 - Update to R 4.0.3 and GH Actions update (#226)
@@ -8,7 +11,7 @@
 - Fixed tests (#221) 
 
 ### Covid19Mirai 2.8.0
-- updated to Covid19datahub 3.0.2 (#217)
+- Updated to Covid19datahub 3.0.2 (#217)
 
 ### Covid19Mirai 2.7.4 
 - Complete vaccination data (#201)

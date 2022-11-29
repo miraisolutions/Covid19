@@ -100,7 +100,6 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
   #               message_firstday(nn),
   #     sep = "<br/>"))
   # })
-
   all_countries_data <- data %>%
     filter(contagion_day > 0) %>%
     arrange(desc(date))
@@ -118,9 +117,8 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
 
 
   observeEvent(input$select_countries,{
-    if (input$select_countries != "") {
+    if (all(input$select_countries != "")) {
       # Data ----
-
       countries_data <- all_countries_data %>%
           filter(Country.Region %in% input$select_countries) #%>%
           #arrange(desc(date))
@@ -222,6 +220,6 @@ mod_country_comparison_server <- function(input, output, session, data, countrie
       # tables ----
       callModule(mod_add_table_server, "add_table_countries", countries_data, maxrowsperpage = 10)
     }
-  })
+  }, ignoreInit = TRUE)
 
 }
