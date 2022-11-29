@@ -590,8 +590,10 @@ legend_fun <- function(x, var){
     dg = nchar(as.character(round(max(abs(minxv),maxv, na.rm =T))))
     #dg = nchar(as.character(round(maxv)))
     domain = choose_domain(x, var)
+
     cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
-    #if (dg < 6 || (var %in% domainlin_vars()) || cvx<1){
+    if (!is.finite(cvx))
+      cvx <- 0
     bin = domain(x)
 
     if ((grepl("growth",var) && grepl("fact",var)) || (var %in% .rate_vars) || (var %in% domainlin_vars()) || cvx<1){
@@ -709,34 +711,41 @@ domainlin_vars <- function(x) {
 #' @param var character vector of variable name
 #' @return numeric vector of range
 choose_domain <- function(x, var) {
-  if (is.numeric(x)) {
-    maxy = max(x, na.rm = T)
-    minxy = min(x, na.rm = T)
-    dg = nchar(as.character(round(max(abs(minxy),maxy))))
-    cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
-    if (var %in% .rate_vars){ # if rate
-      domain = domainrate
-    } else if (var %in% .index_vars){ # if rate
-      domain = domainindex
-    } else if ((grepl("growth",var) && grepl("fact",var))){
-      # growth factors variables
-      domain = domaingrowth
-    # } else if ((var %in% domainlin_vars()) || cvx<1) {
-    #   domain = domainlin
-    #} else if (dg < 6) {
-    } else if ((var %in% domainlin_vars()) || cvx<1) {
-      if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
-        domain = domainlin_neg
-      else
-        domain = domainlin
-    } else {
-      if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
-        domain = domainlog_neg
-      else
-        domain = domainlog
+  if (all(is.na(x))) {
+    domain <- function(x) {
+      c(0,1)
     }
-  } else
-    domain = domainfact
+  } else {
+    if (is.numeric(x)) {
+      maxy = max(x, na.rm = T)
+      minxy = min(x, na.rm = T)
+      dg = nchar(as.character(round(max(abs(minxy),maxy))))
+      cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
+      if (var %in% .rate_vars){ # if rate
+        domain = domainrate
+      } else if (var %in% .index_vars){ # if rate
+        domain = domainindex
+      } else if ((grepl("growth",var) && grepl("fact",var))){
+        # growth factors variables
+        domain = domaingrowth
+        # } else if ((var %in% domainlin_vars()) || cvx<1) {
+        #   domain = domainlin
+        #} else if (dg < 6) {
+      } else if ((var %in% domainlin_vars()) || cvx<1) {
+        if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
+          domain = domainlin_neg
+        else
+          domain = domainlin
+      } else {
+        if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
+          domain = domainlog_neg
+        else
+          domain = domainlog
+      }
+    } else
+      domain = domainfact
+  }
+
   domain
 }
 #' Utility derive palette given datadisplay.brewer.all()
@@ -795,7 +804,7 @@ pal_fun = function(var,x){
 #' @param var character vector of variable name
 #' @return rescaled x
 pal_fun_calc <- function(x, var){
-  if (is.numeric(x)){
+  if (is.numeric(x) && all(!is.na(x))){
     # maxv = max(x)
     # dg = nchar(as.character(round(maxv)))
     maxv = max(x, na.rm = T)

@@ -43,13 +43,16 @@ test_that("get_datahub lev = 2 Swiss is ok", {
 
   orig_data_aggregate_ch2_today = orig_data_aggregate_ch2 %>%
     add_growth_death_rate()
-  orig_data_aggregate_today_ch2_today = orig_data_aggregate_ch2_today  %>%
-    left_join(lw_orig_data_aggregate_ch2 %>% select(-population))
+  if (nrow(lw_orig_data_aggregate_ch2) > 0) {
+    orig_data_aggregate_ch2_today = orig_data_aggregate_ch2_today  %>%
+      left_join(lw_orig_data_aggregate_ch2 %>% select(-population))
+  }
+
   # no NAs
-  expect_equal(sum(sapply(orig_data_aggregate_today_ch2_today, is.na)), 0)
+  expect_equal(sum(sapply(orig_data_aggregate_ch2_today, is.na)), 0)
   check_data(data_ch2)
   check_data(orig_data_aggregate_ch2)
-  check_data(orig_data_aggregate_today_ch2_today)
+  check_data(orig_data_aggregate_ch2_today)
 })
 
 # French data give always problems
