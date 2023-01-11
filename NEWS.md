@@ -1,4 +1,5 @@
-### Covid19Mirai (development version)
+### Covid19Mirai 2.9.3
+- Added dependabot yml (#235)
 
 ### Covid19Mirai 2.9.2
 - Swiss data at level 2 have delay

@@ -47,7 +47,7 @@ updated taking the yesterday date. This allows having data for about all
 countries when the date is updated with the new one.
 
 The data are stored as RDS file in folder `inst/datahub` of the package.
-A script `build_data` runs in **GitHub Actions** every day at 5pm UCT to update the data in the package.
+A script `build_data` runs in **GitHub Actions** twice every day to update the data in the package.
 
 ## The dashboard
 
