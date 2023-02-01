@@ -1,3 +1,5 @@
+# Covid19Mirai (development version)
+
 ### Covid19Mirai 2.9.4
 - Relaxed test on Swiss data, due to missing test data (#239)
 
