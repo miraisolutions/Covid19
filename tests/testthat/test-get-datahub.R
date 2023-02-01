@@ -48,8 +48,8 @@ test_that("get_datahub lev = 2 Swiss is ok", {
       left_join(lw_orig_data_aggregate_ch2 %>% select(-population))
   }
 
-  # no NAs
-  expect_equal(sum(sapply(orig_data_aggregate_ch2_today, is.na)), 0)
+  # no NAs, without considering test data, they are not provided anymore
+  expect_equal(sum(sapply(orig_data_aggregate_ch2_today %>% select(!contains("test")), is.na)), 0)
   check_data(data_ch2)
   check_data(orig_data_aggregate_ch2)
   check_data(orig_data_aggregate_ch2_today)
