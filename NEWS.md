@@ -1,3 +1,6 @@
+### Covid19Mirai 2.9.5
+- Check build data, build package once a day
+
 ### Covid19Mirai 2.9.4
 - Relaxed test on Swiss data, due to missing test data (#239)
 
