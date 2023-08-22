@@ -1,4 +1,5 @@
-# Covid19Mirai (development version)
+### Covid19Mirai 2.9.6
+- Updated rsconnect (#246)
 
 ### Covid19Mirai 2.9.5
 - Check build data, build package once a day
