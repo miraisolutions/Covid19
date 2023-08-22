@@ -18,7 +18,7 @@ if (interactive()) {
 
     DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
     orig_data_aggregate <- DATA$orig_data_aggregate
-
+    pop_data <- DATA$pop_data
     countries_data_map <- DATA$countries_data_map
     n = 1000; w = 7
     # data_filtered <- reactive({

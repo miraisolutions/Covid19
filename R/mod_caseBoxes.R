@@ -396,6 +396,8 @@ countBox <- function(title1, subtitle1, title2, subtitle2, color, background, wi
 countBox3 <- function(title1, subtitle1, title2, subtitle2, title3, subtitle3, color, background, width = "100%", type = c("thousands"), diffcalc = TRUE) {
 
   format_thousands = function(x) {
+    if (is.na(x))
+      return(x)
     formatC(x, format = "f", big.mark = "'", digits  = 0)
   }
   format_perc = function(x) {
