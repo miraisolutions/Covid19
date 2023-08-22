@@ -12,11 +12,14 @@ if (interactive()) {
 
     DATA <- readRDS(system.file("datahub/DATA.rds", package = "Covid19Mirai"))
     orig_data_aggregate <- DATA$orig_data_aggregate
-
+    TOTAL <- DATA$TOTAL
     countries_data_map = DATA$countries_data_map
-
-    callModule(mod_global_server, "global",
-               orig_data_aggregate, countries_data_map)
+#
+#     callModule(mod_global_server, "global",
+#                orig_data_aggregate, countries_data_map)
+    callModule(mod_global_server, "global", orig_data_aggregate = orig_data_aggregate,
+               TOTAL,
+               countries_data_map)
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }

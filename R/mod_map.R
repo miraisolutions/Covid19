@@ -177,6 +177,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
       #message("leg_par$bins 1:", paste(leg_par$bins, collapse = ","))
       #mapdata = leafletProxy("map", data = data_plot())  %>%
       #mapdata = leafletProxy("map")  %>%
+
       mapdata = leafletProxy("map", data = countries_data_map)  %>%
         clearMarkers() %>%
         #clearShapes() %>% removes everything
