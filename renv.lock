@@ -22,40 +22,6 @@
       ],
       "Hash": "2820894519437a25b4103b62462fa334"
     },
-    "Covid19Mirai": {
-      "Package": "Covid19Mirai",
-      "Version": "2.9.5.9000",
-      "Source": "unknown",
-      "Requirements": [
-        "COVID19",
-        "DT",
-        "R",
-        "RColorBrewer",
-        "bsplus",
-        "config",
-        "dplyr",
-        "ggplot2",
-        "golem",
-        "grDevices",
-        "grid",
-        "leaflet",
-        "leaflet.extras",
-        "lubridate",
-        "markdown",
-        "plotly",
-        "purrr",
-        "rgdal",
-        "rlang",
-        "scales",
-        "shiny",
-        "shinycssloaders",
-        "sp",
-        "stringr",
-        "tidyr",
-        "zoo"
-      ],
-      "Hash": "2f813c9fdd42d25af9aef11367f79008"
-    },
     "DT": {
       "Package": "DT",
       "Version": "0.26",
@@ -1457,13 +1423,8 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.17.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "utils"
-      ],
-      "Hash": "4543b8cd233ae25c6aba8548be9e747e"
+      "Version": "1.0.2",
+      "Source": "Repository"
     },
     "rgdal": {
       "Package": "rgdal",
