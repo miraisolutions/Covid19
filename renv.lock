@@ -747,9 +747,8 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.15.5",
-      "Source": "Repository",
-      "Requirements": []
+      "Version": "1.0.2",
+      "Source": "Repository"
     },
     "rgdal": {
       "Package": "rgdal",
@@ -793,11 +792,8 @@
     },
     "rsconnect": {
       "Package": "rsconnect",
-      "Version": "0.8.28",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "737312265e542d243f003b9625482e09",
-      "Requirements": []
+      "Version": "1.0.2",
+      "Source": "Repository"
     },
     "rstudioapi": {
       "Package": "rstudioapi",
