@@ -47,4 +47,5 @@ RoxygenNote: 7.2.1
 Suggests: 
     testthat,
     pkgload,
-    rsconnect
+    rsconnect,
+    sf
