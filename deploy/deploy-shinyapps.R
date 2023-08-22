@@ -6,7 +6,9 @@ rsconnect::setAccountInfo(
   Sys.getenv("SHINYAPPS_SECRET")
 )
 rsconnect::deployApp(
-  appName = "Covid19"
+  account = "miraisolutions",
+  appName = "Covid19",
+  forceUpdate = TRUE
   # exclude hidden files and renv directory (if present)
   # appFiles = setdiff(list.files(), "renv")
 )
