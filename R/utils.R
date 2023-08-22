@@ -695,10 +695,10 @@ y_vs_x_calc <- function(data, yvar,xvar, yLab = "Growth", xLab = "Prevalence") {
 #' @return numeric vector after ceiling()
 #'
 round_up = function(maxv, down = FALSE) {
-  dg = unique(nchar(as.character(round(maxv))))
+  dg = unique(nchar(as.character(as.integer(round(max(maxv, na.rm = TRUE))))))
   if (dg == 1 && maxv>1)
     dg = 0
-  if(!down)
+  if (!down)
    res =   ceiling(maxv/(10^(dg-1)))*10^(dg-1)
   else
    res =   floor(maxv/(10^(dg-1)))*10^(dg-1)

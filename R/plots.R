@@ -54,7 +54,10 @@ breaks_lab = function(x, breaks = .breaks.xaxis) {
   #   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
   # else
   #   x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
-  x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
+  if (all(is.na(x)))
+    x.d.breaks = 1:breaks
+  else
+    x.d.breaks = seq(x.d.lim[1],x.d.lim[2], length.out = breaks)
 
   x.d.breaks
 }
@@ -788,7 +791,6 @@ plot_all_highlight <- function(df, log = FALSE, text = "", percent =  FALSE, dat
   #   theme(panel.background = element_rect(fill = backgroud_map_col))+ # set grey background
   #   scale_color_manual(values = g_palette) +
   #   scale_y_continuous(labels = .ylabfun, breaks = breaks_lab(df[[varChoice]], .breaks.yaxis))
-
 
   if (barplot) {
     varChoice = "Points"

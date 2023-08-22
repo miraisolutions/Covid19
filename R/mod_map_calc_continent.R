@@ -754,11 +754,11 @@ choose_domain <- function(x, var) {
 #' @param var character: variable name
 #'
 #' @importFrom grDevices colorRampPalette
+#' @importFrom leaflet colorNumeric colorFactor
 #' @return palette
 pal_fun = function(var,x){
   domain = choose_domain(x, var)
   hospvars_1M_pop = paste(.hosp_vars,"rate_1M_pop",  sep = "_" )
-
   if (grepl("confirmed", var)  || grepl("(prevalence|rate)(?:.+)(prevalence|rate)", var)) {
     colorNumeric(palette = "Reds", domain = domain(x), na.color = "lightgray")
   } else if (grepl("death", var) || grepl("mortality", var) || grepl("lethal", var)) {
