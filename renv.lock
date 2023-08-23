@@ -1210,6 +1210,18 @@
       ],
       "Hash": "1f82a3e9e7e52f095b0f57869d957246"
     },
+    "packrat": {
+      "Package": "packrat",
+      "Version": "0.8.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "tools",
+        "utils"
+      ],
+      "Hash": "d84055adcb6bb1f4f0ce8c5f235bc328"
+    },
     "rstudioapi": {
       "Package": "rstudioapi",
       "Version": "0.14",
