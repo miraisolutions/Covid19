@@ -1,16 +1,14 @@
+name: CI-CD
+# renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions
+
 # Triggered on push and pull request events, schedule for data update
 on:
   push:
   pull_request:
   schedule:
-  # Allow manual runs from the Actions tab
-  workflow_dispatch:
   # every day at 21 UTC
   - cron: "0 21 * * *"
 
-name: CI-CD
-
-# renv with GitHub actions: https://rstudio.github.io/renv/articles/ci.html#github-actions
 
 
 jobs:
