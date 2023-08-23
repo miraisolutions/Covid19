@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_app.R
 \name{run_app}
 \alias{run_app}
-\title{Run the Shiny Application}
+\title{utiltities package}
 \usage{
 run_app(...)
 }
@@ -10,5 +10,5 @@ run_app(...)
 \item{...}{A series of options to be used inside the app.}
 }
 \description{
-Run the Shiny Application
+utiltities package
 }

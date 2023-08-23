@@ -1,3 +1,10 @@
+#' utilities package
+#'
+#' @importFrom pkgload load_all
+#' @importFrom rsconnect deployApp setAccountInfo
+#' @noRd
+
+
 #' Run the Shiny Application
 #'
 #' @param ... A series of options to be used inside the app.
@@ -10,9 +17,9 @@ run_app <- function(
 ) {
   with_golem_options(
     app = shinyApp(
-      ui = app_ui, 
+      ui = app_ui,
       server = app_server
-    ), 
+    ),
     golem_opts = list(...)
   )
 }
