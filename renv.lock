@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://packagemanager.posit.co/cran/latest"
+        "URL": "https://cran.rstudio.com"
       }
     ]
   },
@@ -1240,15 +1240,15 @@
     },
     "terra": {
       "Package": "terra",
-      "Version": "1.7-39",
+      "Version": "1.7-41",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://rspatial.r-universe.dev",
       "Requirements": [
         "R",
         "Rcpp",
         "methods"
       ],
-      "Hash": "6037d18193ca3f16900646e773937094"
+      "Hash": "4bda971a86227d0a5345b0e80b11abf9"
     },
     "tibble": {
       "Package": "tibble",
