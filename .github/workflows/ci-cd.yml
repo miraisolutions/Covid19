@@ -20,7 +20,7 @@ jobs:
       # single OS and R version, aligned with the target deployment environment
       matrix:
         config:
-          - {os: ubuntu-latest, r: '4.2.1'}
+          - {os: ubuntu-latest, r: '4.3.1'}
 
     env:
       # Access token for GitHub
