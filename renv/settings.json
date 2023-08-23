@@ -1,13 +1,11 @@
 {
   "bioconductor.version": null,
   "external.libraries": [],
-  "ignored.packages": [
-    "devtools",
-    "Covid19Mirai"
-  ],
+  "ignored.packages": [],
   "package.dependency.fields": [
     "Imports",
     "Depends",
+    "Suggests",
     "LinkingTo"
   ],
   "ppm.enabled": null,

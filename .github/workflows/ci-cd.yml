@@ -20,7 +20,7 @@ jobs:
       # single OS and R version, aligned with the target deployment environment
       matrix:
         config:
-          - {os: ubuntu-latest, r: '4.3.1'}
+          - {os: ubuntu-latest, r: '4.2.1'}
 
     env:
       # Access token for GitHub
@@ -39,27 +39,19 @@ jobs:
           # Enable RStudio Package Manager to speed up package installation
           use-public-rspm: true
 
-      # - name: Install system dependencies
-      #   # This is not taken care of (yet) by r-lib/actions/setup-renv
-      #   # Package distro used to get the distro for the used ubuntu-latest
-      #   run: |
-      #     Rscript -e "install.packages(c('remotes', 'distro'))"
-      #     while read -r cmd
-      #     do
-      #       eval sudo $cmd
-      #     done < <(Rscript -e 'writeLines(with(distro::distro(), remotes::system_requirements(id, short_version)))')
-      #
+      - name: Install system dependencies
+        # This is not taken care of (yet) by r-lib/actions/setup-renv
+        # Package distro used to get the distro for the used ubuntu-latest
+        run: |
+          Rscript -e "install.packages(c('remotes', 'distro'))"
+          while read -r cmd
+          do
+            eval sudo $cmd
+          done < <(Rscript -e 'writeLines(with(distro::distro(), remotes::system_requirements(id, short_version)))')
+
 
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
-
-      # - name: Install system dependencies
-      #   env:
-      #     RHUB_PLATFORM: linux-x86_64-ubuntu-gcc
-      #   run: |
-      #     Rscript -e "renv::install('r-hub/sysreqs')"
-      #     sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION'))")
-      #     sudo -s eval "$sysreqs"
 
       - name: Fetch and rebuild latest data
         if: github.event_name == 'schedule'
