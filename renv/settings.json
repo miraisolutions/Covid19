@@ -5,7 +5,6 @@
   "package.dependency.fields": [
     "Imports",
     "Depends",
-    "Suggests",
     "LinkingTo"
   ],
   "ppm.enabled": null,
