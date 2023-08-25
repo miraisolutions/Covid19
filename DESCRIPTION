@@ -31,7 +31,6 @@ Imports:
     grid,
     leaflet,
     leaflet.extras,
-    rgdal,
     shinycssloaders,
     lubridate,
     sp,
