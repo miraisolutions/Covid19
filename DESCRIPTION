@@ -48,4 +48,5 @@ Suggests:
     rsconnect,
     spelling,
     testthat (>= 3.0.0),
-    sf
+    sf,
+    packrat
