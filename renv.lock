@@ -176,6 +176,13 @@
       "Repository": "CRAN",
       "Hash": "d69a786e85775b126bddbee185ae6084"
     },
+    "brio": {
+      "Package": "brio",
+      "Version": "1.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "976cf154dfb043c012d87cddd8bca363"
+    },
     "bslib": {
       "Package": "bslib",
       "Version": "0.4.0",
@@ -1252,6 +1259,28 @@
         "R"
       ],
       "Hash": "1de7ab598047a87bba48434ba35d497d"
+    },
+    "rsconnect": {
+      "Package": "rsconnect",
+      "Version": "1.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cli",
+        "curl",
+        "digest",
+        "jsonlite",
+        "lifecycle",
+        "openssl",
+        "packrat",
+        "renv",
+        "rlang",
+        "rstudioapi",
+        "tools",
+        "yaml"
+      ],
+      "Hash": "1f82a3e9e7e52f095b0f57869d957246"
     },
     "rstudioapi": {
       "Package": "rstudioapi",
