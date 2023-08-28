@@ -11,7 +11,7 @@ options(rsconnect.packrat = FALSE)
 
 rsconnect::deployApp(
   account = "miraisolutions",
-  appName = "Covid19-test",
+  appName = "Covid19",
   forceUpdate = TRUE, # to be added since rsconnect >1
   quarto = FALSE # to be added since rsconnect >1
   # exclude hidden files and renv directory (if present)
