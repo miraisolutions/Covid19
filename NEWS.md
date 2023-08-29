@@ -1,5 +1,3 @@
-### Covid19Mirai (development version)
-
 ### Covid19Mirai 2.9.6
 - Updated rsconnect (#246)
 
