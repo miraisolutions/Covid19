@@ -22,7 +22,7 @@ jobs:
       # single OS and R version, aligned with the target deployment environment
       matrix:
         config:
-          - {os: ubuntu-latest, r: '4.3.1'}
+          - {os: ubuntu-latest, r: '4.2.1'}
 
     env:
       # Access token for GitHub
@@ -55,9 +55,9 @@ jobs:
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
 
-      - name: Install renv Development tools
-        run: renv::install()
-        shell: Rscript {0}
+      # - name: Install renv Development tools
+      #   run: renv::install()
+      #   shell: Rscript {0}
 
       - name: Fetch and rebuild latest data
         if: github.event_name == 'schedule'
@@ -84,7 +84,7 @@ jobs:
           git push origin
       - name: Deploy to shinyapps.io
         # Continuous deployment only for pushes to the main / master branch
-        # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         env:
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
           SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
