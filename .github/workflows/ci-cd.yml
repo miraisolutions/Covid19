@@ -55,6 +55,10 @@ jobs:
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
 
+      # - name: Install renv Development tools
+      #   run: renv::install()
+      #   shell: Rscript {0}
+
       - name: Fetch and rebuild latest data
         if: github.event_name == 'schedule'
         run: |

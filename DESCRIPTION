@@ -38,7 +38,6 @@ Imports:
     scales,
     COVID19,
     grDevices,
-    pkgload,
     rlang,
     zoo
 Encoding: UTF-8
@@ -47,6 +46,7 @@ RoxygenNote: 7.2.3
 Suggests: 
     rsconnect,
     spelling,
+    pkgload,
     testthat (>= 3.0.0),
     sf,
     packrat
