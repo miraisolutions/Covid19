@@ -7,7 +7,7 @@ rsconnect::setAccountInfo(
 )
 
 # to be added since rsconnect >1
-options(rsconnect.packrat = TRUE)
+options(rsconnect.packrat = FALSE)
 
 rsconnect::deployApp(
   account = "miraisolutions",
