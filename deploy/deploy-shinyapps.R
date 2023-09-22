@@ -7,13 +7,12 @@ rsconnect::setAccountInfo(
 )
 
 # to be added since rsconnect >1
-options(rsconnect.packrat = FALSE)
+options(rsconnect.packrat = TRUE)
 
 rsconnect::deployApp(
   account = "miraisolutions",
   appName = "covid19",
-  forceUpdate = TRUE, # to be added since rsconnect >1
-  quarto = FALSE # to be added since rsconnect >1
+  forceUpdate = TRUE # to be added since rsconnect >1
   # exclude hidden files and renv directory (if present)
   # appFiles = setdiff(list.files(), "renv")
 )
