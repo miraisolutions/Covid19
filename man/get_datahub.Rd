@@ -11,6 +11,7 @@ build_data()
 get_datahub_fix_ch(
   country = NULL,
   startdate = "2020-01-22",
+  enddate = END.DATE,
   lev = 1,
   verbose = FALSE
 )
@@ -18,6 +19,7 @@ get_datahub_fix_ch(
 get_datahub(
   country = NULL,
   startdate = "2020-01-22",
+  enddate = END.DATE,
   lev = 1,
   verbose = FALSE,
   hosp = TRUE,
@@ -28,6 +30,8 @@ get_datahub(
 \item{country}{character country, to chose with lev = 2}
 
 \item{startdate}{character staring date}
+
+\item{enddate}{character ending date, NULL to be today}
 
 \item{lev}{integer 1 for country level, 2 for regions}
 
