@@ -18,6 +18,7 @@ if (interactive()) {
  #
  variable = "growth factor" # set variable
   # variable = "confirmed" # set variable
+ variable = "death rate" # set variable
 
   #sapply(file.path("R",list.files("R")), source)
   #pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
@@ -44,10 +45,12 @@ if (interactive()) {
       orig_data_aggregate %>% filter(continent == cont)
 
     data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
+    data14_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont, 14)
 
     # create datasets for maps merging today with data7
     data_cont_maps = orig_data_aggregate_cont %>% add_growth_death_rate() %>%
-      left_join(data7_aggregate_cont %>% select(-population))
+      left_join(data7_aggregate_cont %>% select(-population)) %>%
+      left_join(data14_aggregate_cont %>% select(-population))
 
     .subsetmap = function(map,cc) {
       idx = map$CONTINENT %in% cc
