@@ -1,3 +1,6 @@
+###  Covid19Mirai 3.0.0
+- End of data update,fixed end date to 09/22 (#259)
+
 ### Covid19Mirai 2.9.6
 - Updated rsconnect (#246)
 

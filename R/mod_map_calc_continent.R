@@ -711,37 +711,44 @@ domainlin_vars <- function(x) {
 #' @param var character vector of variable name
 #' @return numeric vector of range
 choose_domain <- function(x, var) {
+
+  domain01 <- function(x) {
+    c(0,1)
+  }
   if (all(is.na(x))) {
-    domain <- function(x) {
-      c(0,1)
-    }
+    domain <- domain01
   } else {
     if (is.numeric(x)) {
       maxy = max(x, na.rm = T)
       minxy = min(x, na.rm = T)
       dg = nchar(as.character(round(max(abs(minxy),maxy))))
       cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
-      if (var %in% .rate_vars){ # if rate
-        domain = domainrate
-      } else if (var %in% .index_vars){ # if rate
-        domain = domainindex
-      } else if ((grepl("growth",var) && grepl("fact",var))){
-        # growth factors variables
-        domain = domaingrowth
-        # } else if ((var %in% domainlin_vars()) || cvx<1) {
-        #   domain = domainlin
-        #} else if (dg < 6) {
-      } else if ((var %in% domainlin_vars()) || cvx<1) {
-        if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
-          domain = domainlin_neg
-        else
-          domain = domainlin
+      if (is.nan(cvx)) { # if all obs are 0s
+        domain <- domain01
       } else {
-        if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
-          domain = domainlog_neg
-        else
-          domain = domainlog
+        if (var %in% .rate_vars){ # if rate
+          domain = domainrate
+        } else if (var %in% .index_vars){ # if rate
+          domain = domainindex
+        } else if ((grepl("growth",var) && grepl("fact",var))){
+          # growth factors variables
+          domain = domaingrowth
+          # } else if ((var %in% domainlin_vars()) || cvx<1) {
+          #   domain = domainlin
+          #} else if (dg < 6) {
+        } else if ((var %in% domainlin_vars()) || cvx<1) {
+          if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
+            domain = domainlin_neg
+          else
+            domain = domainlin
+        } else {
+          if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
+            domain = domainlog_neg
+          else
+            domain = domainlog
+        }
       }
+
     } else
       domain = domainfact
   }

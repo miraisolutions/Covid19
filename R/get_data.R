@@ -140,11 +140,14 @@ get_timeseries_full_data <- function() {
   data
 }
 
+END.DATE <- "2022-09-01" # NULL to get the latest
+
 #' Get timeseries full data from datahub adding CH hospitalised data from level 2
 #' @rdname get_datahub
 #'
 #' @param country character country, to chose with lev = 2
 #' @param startdate character staring date
+#' @param enddate character ending date, NULL to be today
 #' @param lev integer 1 for country level, 2 for reasons
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
 #'
@@ -156,13 +159,13 @@ get_timeseries_full_data <- function() {
 #' @import dplyr
 #'
 #' @export
-get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE) {
+get_datahub_fix_ch <- function(country = NULL, startdate = "2020-01-22", enddate = END.DATE, lev = 1, verbose = FALSE) {
 
   orig_data <-
-    get_datahub(country = country, startdate = startdate, lev = lev, verbose = verbose)
+    get_datahub(country = country, startdate = startdate, enddate = enddate, lev = lev, verbose = verbose)
 
   orig_data_ch_2 <-
-    get_datahub(country = "Switzerland", startdate = startdate, lev = 2, verbose = verbose)
+    get_datahub(country = "Switzerland", startdate = startdate, enddate = enddate, lev = 2, verbose = verbose)
 
   message("replace hosp data (",paste(.hosp_vars, collapse = ","), ") in lev1 dataset with lev2 swiss data")
 
@@ -214,6 +217,7 @@ combine_hospvars_lev2 <- function(data1, data2, country = "Switzerland") {
 #'
 #' @param country character country, to chose with lev = 2
 #' @param startdate character staring date
+#' @param enddate character ending date, NULL to be today
 #' @param lev integer 1 for country level, 2 for regions
 #' @param verbose logical. Print data sources? Default FALSE (opposite from \code{covid19})
 #' @param hosp logical. If TRUE hospitalized detailed data are retrieved. Default TRUE since release 2.3.1
@@ -228,9 +232,9 @@ combine_hospvars_lev2 <- function(data1, data2, country = "Switzerland") {
 #' @import zoo
 #'
 #' @export
-get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbose = FALSE, hosp = TRUE, cache = FALSE) {
+get_datahub = function(country = NULL, startdate = "2020-01-22", enddate = END.DATE, lev = 1, verbose = FALSE, hosp = TRUE, cache = FALSE) {
   # country = NULL; startdate = "2020-01-22"; lev = 1; verbose = FALSE; hosp = TRUE
-  message("get_datahub: country = ", country, "/ startdate = ", startdate, "/ level = ", lev)
+  message("get_datahub: country = ", country, "/ startdate = ", startdate, "/ enddate = ", enddate, "/ level = ", lev)
   rawarg = TRUE
   if (!is.null(country)) {
     # remap country )
@@ -246,8 +250,7 @@ get_datahub = function(country = NULL, startdate = "2020-01-22", lev = 1, verbos
     )
   }
   # cache = TRUE not needed since there are rds
-  dataHub <- covid19(country = country, start = startdate, level = lev, verbose = verbose, raw = rawarg, cache = cache) # select level2 to add states
-  #dataHub <- covid19(country = country, level = lev) #
+  dataHub <- covid19(country = country, start = startdate, end = enddate,level = lev, verbose = verbose, raw = rawarg, cache = cache) # select level2 to add states
 
   # raw = FALSE then NAs replaced with 0s
 
@@ -945,12 +948,13 @@ rescale_df_contagion <- function(df, n, w, group = "Country.Region"){
 
 #' get as Of date, i.e. latest day in the data
 #' @param char logical, convert date to character
+#' @param enddate Date, end Date, NULL to be computed from the latest
 #' @importFrom lubridate hour with_tz
 #' @noRd
-get_asofdate <- function(char = TRUE) {
-  if (exists("AsOfDateBuildData")) {
-    AsOfDate = get("AsOfDateBuildData")
-  } else {
+get_asofdate <- function(char = TRUE, enddate = as.Date(END.DATE)) {
+
+
+  if (is.null(enddate)) {
 
     now_day_UTC = lubridate::with_tz(as.POSIXct(Sys.time()), tzone = "UTC") # given time zone
     now_hour_UTC = lubridate::hour(now_day_UTC)
@@ -959,6 +963,8 @@ get_asofdate <- function(char = TRUE) {
     remove_hour_UTC <- ifelse(now_hour_UTC < 16, 48, 24)
 
     AsOfDate =  as.Date(now_day_UTC - delay_date(remove_hour_UTC))
+  } else {
+    AsOfDate = enddate
   }
   if (char)
     AsOfDate = as.character(AsOfDate)
