@@ -62,11 +62,11 @@ mod_ind_country_ui <- function(id){
     mod_add_table_ui(ns("ind_add_table_country")), # table at country level
 
     hr(),
-    actionButton(ns("button_2nd_level"), "Click to open graphs at Cantonal Level.", class = "button-style"),
-    div("Country Report at Cantonal level", align = "center", class = "sectiontitle"),
+    actionButton(ns("button_2nd_level"), p("Click to open report:",br(), "Cantonal Level."), class = "button-style"),
+    div(h4("Country Report at Cantonal level"), align = "center", class = "sectiontitle"),
     uiOutput(ns("ch_2nd_level_ui")),
     hr(),
-    actionButton(ns("button_2nd_level_maps"), "Click to open Heat Maps of Switzerland at Cantonal Level.", class = "button-style"),
+    actionButton(ns("button_2nd_level_maps"), p("Click to open Heat Mapsreport:",br(), "Switzerland at Cantonal Level."), class = "button-style"),
     uiOutput(ns("ch_2nd_level_maps_ui")),
 
     hr()
@@ -88,7 +88,7 @@ areamapUI <- function(id, country){
   tagList(
     div(id = id,
         hr(),
-        div(paste("Country Heat Maps within", country), align = "center", style = "sectiontitle"),
+        div(h4(paste("Country Heat Maps within", country)), align = "center", style = "sectiontitle"),
         hr(),
         fluidRow(
           column(6,
