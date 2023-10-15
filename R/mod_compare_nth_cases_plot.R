@@ -355,12 +355,14 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
     df_data_roll <- reactive({
 
       if (rollw()) {
-        message("compute rolling average")
+        message("compare_nth_cases_plot: compute rolling average")
         data = df_data_1Mpop() %>%
           group_by(Country.Region) %>%
           #mutate(WeeklyAvg = zoo::rollapplyr(Value, 7, mean, partial=TRUE, align = "right")) %>%
           mutate(WeeklyAvgVal := rollAvg(!!sym(reactSelectVar()),date)) %>%
           ungroup()
+        message("compare_nth_cases_plot: compute rolling average done")
+
       } else
         data = df_data_1Mpop()
       if (FALSE) #TODO

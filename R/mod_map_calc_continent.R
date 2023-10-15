@@ -811,13 +811,16 @@ pal_fun = function(var,x){
 #' @param var character vector of variable name
 #' @return rescaled x
 pal_fun_calc <- function(x, var){
-  if (is.numeric(x) && all(!is.na(x))){
+  if (is.numeric(x) && !all(is.na(x))){
     # maxv = max(x)
     # dg = nchar(as.character(round(maxv)))
     maxv = max(x, na.rm = T)
     minxv = min(x, na.rm = T)
     dg = nchar(as.character(round(max(abs(minxv),maxv))))
     cvx = sd(x,na.rm = T) / mean(x,na.rm = T)
+
+    domain = choose_domain(x, var)
+    domainx <- domain(x)
 
     #if (dg == 1 && maxv<=1 && minxv>=0) {
     if (var %in% .rate_vars) {
@@ -833,13 +836,24 @@ pal_fun_calc <- function(x, var){
         y[!is.na(x) & x>=0] = log(x[!is.na(x) & x>=0])
         #y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
         #y = log(x-min(x)+1) - log(-min(x))
-      }
-      else{
+      } else{
+
         y = log(x)
       }
     }
     y[is.infinite(y)] = 0 # perhaps to be moved also in the other case
 
+  # } else if ((var %in% domainlin_vars()) || cvx<1) {
+  #   if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
+  #     domain = domainlin_neg
+  #   else
+  #     domain = domainlin
+  # } else {
+  #   if (var %in% .neg_vars && any(x<0, na.rm = TRUE))
+  #     domain = domainlog_neg
+  #   else
+  #     domain = domainlog
+  # }
   } else
     y = x
 

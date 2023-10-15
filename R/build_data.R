@@ -106,12 +106,106 @@ build_data <- function() {
     total_today = total_today
   )
 
+  # Data for continent comparison module
+
+  # aggregate data to continent
+  message("Data for continent comparison module")
+  continent_data <- aggr_to_cont(orig_data_aggregate %>% filter(!is.na(continent)), "continent", "date")
+
+  continents = unique(continent_data$Country.Region)
+
+  nn <- 1000; w <- 7
+  # create data for comparison with common starting point
+  continent_data_filtered <- continent_data %>%
+    rescale_df_contagion(n = nn, w = w)
+
+  continent_data_filtered_today = continent_data_filtered %>%
+    add_growth_death_rate()
+
+  lw_continent_data_filtered =  lw_vars_calc(continent_data_filtered)
+  pw_continent_data_filtered =  lw_vars_calc(continent_data_filtered, 14)
+
+  continent_data_filtered_today = continent_data_filtered_today  %>%
+    left_join(lw_continent_data_filtered %>% select(-population))  %>%
+    left_join(pw_continent_data_filtered %>% select(-population))
+
+  CONTINENTS <- list(
+    continent_data = continent_data, continent_data_filtered_today = continent_data_filtered_today, continent_data_filtered = continent_data_filtered
+  )
+
+  # DATA for one continent;
+
+  build_continent <- function(cont) {
+    message("Build Continent ", cont)
+    orig_data_aggregate_cont <-
+      orig_data_aggregate %>% filter(continent == cont)
+
+    # subcontinents = reactive({sort(unique(orig_data_aggregate_cont$subcontinent))})
+    subcontinents = sort(unique(orig_data_aggregate_cont$subcontinent))
+
+    continent_data <-
+      aggr_to_cont(orig_data_aggregate_cont, "continent", "date" )
+
+    subcontinent_data <-
+      aggr_to_cont(orig_data_aggregate_cont, "subcontinent", "date" )
+
+    subcontinent_data_filtered <-
+      subcontinent_data %>% # select sub-continents with longer outbreaks
+      rescale_df_contagion(n = nn, w = w)
+
+    subcontinent_data_filtered_today = subcontinent_data_filtered %>%
+      add_growth_death_rate()
+
+    lw_subcontinent_data_filtered =  lw_vars_calc(subcontinent_data_filtered)
+    pw_subcontinent_data_filtered =  lw_vars_calc(subcontinent_data_filtered, 14)
+
+    subcontinent_data_filtered_today = subcontinent_data_filtered_today  %>%
+      left_join(lw_subcontinent_data_filtered %>% select(-population))  %>%
+      left_join(pw_subcontinent_data_filtered %>% select(-population))
+
+
+    continent_data_today <-
+      continent_data %>%
+      filter(date == AsOfDate)
+    lw_continent_data_today =  lw_vars_calc(continent_data)
+    pw_continent_data_today =  lw_vars_calc(continent_data, 14)
+
+    continent_data_today = continent_data_today  %>%
+      left_join(lw_continent_data_today %>% select(-population))  %>%
+      left_join(pw_continent_data_today %>% select(-population))
+
+    # Compute Last week variables
+    data7_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont)
+    data14_aggregate_cont = lw_vars_calc(orig_data_aggregate_cont, 14)
+
+    orig_data_aggregate_cont_today = orig_data_aggregate_cont %>%
+      add_growth_death_rate()
+
+    # scatterplot
+
+    # remove small countries
+    countries200000 = sort(unique(orig_data_aggregate_cont_today$Country.Region[orig_data_aggregate_cont_today$population > 200000]))
+
+    # create datasets for maps merging today with data7
+    data_cont_maps = orig_data_aggregate_cont_today  %>%
+      left_join(data7_aggregate_cont %>% select(-population))  %>%
+      left_join(data14_aggregate_cont %>% select(-population))
+
+    list(continent_data_today = continent_data_today, continent_data = continent_data,
+         subcontinent_data = subcontinent_data, subcontinent_data_filtered = subcontinent_data_filtered,
+         subcontinent_data_filtered_today = subcontinent_data_filtered_today,
+         data_cont_maps = data_cont_maps)
+  }
+  continents <- unique(orig_data_aggregate$continent[!is.na(orig_data_aggregate$continent)])
+
+  ONE.CONTINENT <- lapply(continents, build_continent) %>% setNames(continents)
+
   message("** Save data as DATA.rds **")
   saveRDS(list(orig_data_aggregate = orig_data_aggregate,
                countries_data_map = countries_data_map,
                pop_data = pop_data,
                orig_data_ch_2 = orig_data_ch_2,
-               TOTAL = TOTAL), "inst/datahub/DATA.rds")
+               TOTAL = TOTAL, CONTINENTS = CONTINENTS, ONE.CONTINENT = ONE.CONTINENT), "inst/datahub/DATA.rds")
 
   # read data for default country at level 2
   area_data_2 <- get_datahub(country = .Selected_Country, lev = 2, verbose = FALSE)

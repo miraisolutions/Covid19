@@ -140,7 +140,8 @@ get_timeseries_full_data <- function() {
   data
 }
 
-END.DATE <- "2022-09-01" # NULL to get the latest
+END.DATE <- "2022-06-01" # NULL to get the latest
+
 
 #' Get timeseries full data from datahub adding CH hospitalised data from level 2
 #' @rdname get_datahub

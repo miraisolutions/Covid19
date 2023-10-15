@@ -15,8 +15,8 @@ if (interactive()) {
   #variable = "prevalence rate" # set variable
   #variable = "active" # set variable
  #variable = "growth factor" # set variable
-  #variable = "confirmed" # set variable
-  variable = "vaccines" # set variable
+  variable = "confirmed" # set variable
+  #variable = "vaccines" # set variable
 
  #sapply(file.path("R",list.files("R")), source)
   long_title <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit."

@@ -352,12 +352,13 @@ mod_compare_nth_cases_years_plot_server <- function(input, output, session, df,
 
       if (rollw()) {
 
-        message("compute rolling average")
+        message("compare_nth_cases_years_plot: compute rolling average")
         # override variable.
         data = data %>%
           #mutate(WeeklyAvg = zoo::rollapplyr(Value, 2, mean, partial=TRUE, align = "right")) %>%
           #mutate(!!sym(input$radio_indicator) := rollAvg(!!sym(input$radio_indicator),date))
           mutate(WeeklyAvgVal := rollAvg(!!sym(input$radio_indicator),date))
+        message("compare_nth_cases_years_plot; compute rolling average done")
 
       }
 

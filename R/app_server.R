@@ -31,6 +31,10 @@ app_server <- function(input, output, session) {
   pop_data <- DATA$pop_data
   countries_data_map <- DATA$countries_data_map
   TOTAL <- DATA$TOTAL
+  CONTINENTS <- DATA$CONTINENTS
+  ONE.CONTINENT <- DATA$ONE.CONTINENT
+
+
   # pop_data <- get_pop_datahub()
 
   #align continents from map with pop
@@ -87,7 +91,7 @@ app_server <- function(input, output, session) {
 
     if (req(input$main_ui) == "Continents"  && summary_var() == 0) {
       message("-- Do Continents module")
-      callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, nn = n, w = w, pop_data = pop_data)
+      callModule(mod_continent_comparison_server, "continent_comparison", orig_data_aggregate = orig_data_aggregate, conts_data = CONTINENTS, nn = n, w = w, pop_data = pop_data)
       summary_var(1)
     }
 
@@ -103,7 +107,7 @@ app_server <- function(input, output, session) {
         message("-- Do mod_continent_server module for ",contInfo$tab[i.cont])
 
         callModule(mod_continent_server, paste(contInfo$mainui[i.cont], "comparison", sep = "_"),
-                   orig_data_aggregate = orig_data_aggregate, nn = n, w = w,
+                   orig_data_aggregate = orig_data_aggregate, ONE.CONTINENT, nn = n, w = w,
                    pop_data = pop_data, countries_data_map = countries_data_map,
                    cont = contInfo$names[i.cont], uicont = contInfo$ui[i.cont])
         continents_var[[contInfo$ui[i.cont]]] = 1
