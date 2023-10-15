@@ -23,7 +23,7 @@ mod_map_ui <- function(id){
     # fixedRow(
     #   column(12,
     #          offset = 5,
-    #          actionButton(ns("goButton"), "Show World heat map for the main indicators", class = "btn-success", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
+    #          actionButton(ns("goButton"), "Show World heat map for the main indicators", class = "button-style", style="color: #fff; background-color: #337ab7; border-color: #2e6da4;")
     #   )
     #
     # ),
@@ -153,7 +153,7 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
 
     output$map <- renderLeaflet({
       # Using leaflet() to include non dynamic aspects of the map
-      leaflet('map',
+      leaflet(elementId = 'map',
               data = countries_data_map,
               options = leafletOptions(zoomControl = FALSE) # not needed, clashes with slider
       ) %>%
@@ -194,7 +194,6 @@ mod_map_server <- function(input, output, session, orig_data_aggregate, countrie
         addPolygons(layerId = ~NAME,
                     # GM line for new colors
                     fillColor = pal_fun(input$radio_choices, data_plot()$indicator)(pal_fun_calc(data_plot()$indicator, input$radio_choices)),
-                    #fillColor = pal2()(dplyr::na_if(log(data_plot()$indicator), -Inf)),
                     fillOpacity = 1,
                     color = "#BDBDC3",
                     group = "mapdata",

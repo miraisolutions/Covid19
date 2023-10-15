@@ -345,3 +345,9 @@ Count Boxes
   font-size: 18px;
   display: inline-block;
 }
+
+.button-style {
+  background-color: #008cc3;
+  font-size: 14px;
+  display: inline-block;
+}

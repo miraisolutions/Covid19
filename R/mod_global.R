@@ -15,6 +15,7 @@ mod_global_ui <- function(id){
   ns <- NS(id)
   message("global ui: ")
   tagList(
+
     tags$head(tags$style(HTML(".small-box {width: 300px; margin: 20px;}"))),
     mod_caseBoxes_ui(ns("count-boxes")),
     fluidRow(
@@ -37,42 +38,18 @@ mod_global_ui <- function(id){
       )
     ),
     hr(),
-    fluidRow(
-      column(12,
-             mod_group_plot_ui(ns("plot_conf_glob"), type = "confirmed")
-      )
-    ),
-    fluidRow(
-      column(6,
-             div(h4("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
-      ),
-      column(6,
-             mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, n_highlight = 5, nn = 10000, hosp = TRUE, oneMpop = TRUE, vax = TRUE)
-      )
-    ),
+    actionButton(ns("button_global"), "Click to open graphs about Top Countries on main variables.", class = "button-style"),
+    uiOutput(ns("top_countries_ui")),
+
     hr(),
-    fluidRow(
-      column(12,
-             withSpinner(mod_barplot_ui(ns("plot_growth_death_rate")))
-      )
-    ),
+    actionButton(ns("button_global_hosp"), "Click to open graphs about Top Countries on Hospitalizations and Intensive Cares", class = "button-style"),
+    uiOutput(ns("top_countries_hosp_ui")),
     hr(),
-    fluidRow(
-      column(12,
-             mod_group_plot_ui(ns("plot_hosp_glob"), type = "hosp")
-      )
-    ),
-    fluidRow(
-      column(12,
-             mod_group_plot_ui(ns("plot_str_glob"), type = "stringency")
-      )
-    ),
-    fluidRow(
-      column(12,
-             mod_group_plot_ui(ns("plot_vax_glob"), type = "vaccines")
-      )
-    ),
+    actionButton(ns("button_global_str"), "Click to open graphs about Top Countries on Stringency Index", class = "button-style"),
+    uiOutput(ns("top_countries_str_ui")),
+    hr(),
+    actionButton(ns("button_global_vax"), "Click to open graphs about Top Countries on Vaccination", class = "button-style"),
+    uiOutput(ns("top_countries_vax_ui")),
     hr(),
     mod_add_table_ui(ns("add_table_world"))
   )
@@ -145,19 +122,52 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, TOTAL
     mutate(value = confirmed) %>%
     capitalize_names_df()
 
-  callModule(mod_group_plot_server, "plot_conf_glob", data_today = orig_data_aggregate_today, type = "confirmed", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
 
-  # lineplot of top 5 countries confirmed cases with date x axis
-  callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
+  observeEvent(input$button_global, {
 
-  # > comparison plot from day of nth contagion
+    output$top_countries_ui <- renderUI({
+      tagList(
+        fluidRow(
+          column(12,
+                 mod_group_plot_ui(ns("plot_conf_glob"), type = "confirmed")
+          )
+        ),
+        fluidRow(
+          column(6,
+                 div(h4("Confirmed cases for top 5 countries"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                 mod_plot_log_linear_ui(ns("plot_log_linear_top_n"), area = FALSE)
+          ),
+          column(6,
+                 mod_compare_nth_cases_plot_ui(ns("plot_compare_nth"), selectvar = "new_confirmed", istop = TRUE, n_highlight = 5, nn = 10000, hosp = TRUE, oneMpop = TRUE, vax = TRUE)
+          )
+        ),
+        hr(),
+        fluidRow(
+          column(12,
+                 withSpinner(mod_barplot_ui(ns("plot_growth_death_rate")))
+          )
+        )
+      )
+    })
 
-  # remove countries with few cases nn = 10000
-  callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = TRUE, oneMpop = TRUE, vax = TRUE, istop = TRUE, n_highlight = 5)
+    callModule(mod_group_plot_server, "plot_conf_glob", data_today = orig_data_aggregate_today, type = "confirmed", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
-  # > growth_death_rate
-  callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highlight = 10)
+
+    # lineplot of top 5 countries confirmed cases with date x axis
+    callModule(mod_plot_log_linear_server, "plot_log_linear_top_n", df = df_top_n, type = "line")
+
+    # > comparison plot from day of nth contagion
+
+    # remove countries with few cases nn = 10000
+    callModule(mod_compare_nth_cases_plot_server, "plot_compare_nth", orig_data_aggregate, nn = 10000, hosp = TRUE, oneMpop = TRUE, vax = TRUE, istop = TRUE, n_highlight = 5)
+
+    # > growth_death_rate
+    callModule(mod_barplot_server, "plot_growth_death_rate", orig_data_aggregate_today, n_highlight = 10)
+
+  }, once = TRUE)
+
+
 
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
@@ -174,7 +184,27 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, TOTAL
   #            #pickvariable = list("plot_1" = "hosp")
   #            )
 
-  callModule(mod_group_plot_server, "plot_hosp_glob", data_today = orig_data_aggregate_today, type = "hosp", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+
+
+  observeEvent(input$button_global_hosp, {
+    # shinyjs::toggle(ns("plot_conf_glob"))
+    # shinyjs::toggle(ns("plot_log_linear_top_n"))
+    # shinyjs::toggle(ns("plot_compare_nth"))
+    # shinyjs::toggle(ns("plot_growth_death_rate"))
+    output$top_countries_hosp_ui <- renderUI({
+      tagList(
+        fluidRow(
+          column(12,
+                 mod_group_plot_ui(ns("plot_hosp_glob"), type = "hosp")
+          )
+      ))
+    })
+
+    callModule(mod_group_plot_server, "plot_hosp_glob", data_today = orig_data_aggregate_today, type = "hosp", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+
+
+  }, once = TRUE)
+  # callModule(mod_group_plot_server, "plot_hosp_glob", data_today = orig_data_aggregate_today, type = "hosp", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
 
   # > scatterplot prevalence vs growth, nmed = 10000 by default
@@ -188,7 +218,22 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, TOTAL
   #            #pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
   #            ) # pick top 10 confirmed countries
 
-  callModule(mod_group_plot_server, "plot_str_glob", data_today = orig_data_aggregate_today, type = "stringency", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+  observeEvent(input$button_global_str, {
+
+    output$top_countries_str_ui <- renderUI({
+      tagList(
+        fluidRow(
+          column(12,
+                mod_group_plot_ui(ns("plot_str_glob"), type = "stringency")
+          )
+        ))
+    })
+
+    callModule(mod_group_plot_server, "plot_str_glob", data_today = orig_data_aggregate_today, type = "stringency", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+
+  }, once = TRUE)
+
+  # callModule(mod_group_plot_server, "plot_str_glob", data_today = orig_data_aggregate_today, type = "stringency", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
   # #scatterplot vax versus vars
   # callModule(mod_scatterplot_server, "plot_scatterplot_vax_glob",
@@ -205,7 +250,20 @@ mod_global_server <- function(input, output, session, orig_data_aggregate, TOTAL
   #            #pickvariable = list("plot_1" = "vaccines")
   #            )
 
-  callModule(mod_group_plot_server, "plot_vax_glob", orig_data_aggregate_today, type = "vaccines", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+  observeEvent(input$button_global_vax, {
+
+    output$top_countries_vax_ui <- renderUI({
+      tagList(
+        fluidRow(
+          column(12,
+                 mod_group_plot_ui(ns("plot_vax_glob"), type = "vaccines")          )
+        ))
+    })
+
+    callModule(mod_group_plot_server, "plot_vax_glob", orig_data_aggregate_today, type = "vaccines", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
+
+  }, once = TRUE)
+  # callModule(mod_group_plot_server, "plot_vax_glob", orig_data_aggregate_today, type = "vaccines", n_highlight = 10, istop = TRUE) # pick top 10 confirmed countries
 
 
 

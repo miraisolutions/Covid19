@@ -180,10 +180,11 @@ mod_vaccines_text_server <- function(input, output, session, df, dftoday) {
     #make plot if there are vaccine data
     output$vax_line <- renderPlot({
       #secondline = NULL
-      message("compute rolling average")
+      message("vaccines_text: compute rolling average")
       plotdata = plotdata %>%
         #mutate(WeeklyAvg = zoo::rollapplyr(Points, 7, mean, partial=TRUE, align = "right")) %>%
         mutate(WeeklyAvgVal := rollAvg(Points,Date))
+      message("vaccines_text: compute rolling done")
       p <- plot_all_highlight(plotdata, log = FALSE, text = "Area", percent =FALSE,
                               date_x =  TRUE, g_palette = graph_palette[1],  secondline = FALSE, rollw = TRUE, keeporder = TRUE, barplot = FALSE)
       if (data()$target_people_per_day > max(plotdata$Points, na.rm = TRUE)) {
