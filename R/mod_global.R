@@ -38,17 +38,17 @@ mod_global_ui <- function(id){
       )
     ),
     hr(),
-    actionButton(ns("button_global"), "Click to open graphs about Top Countries on main variables.", class = "button-style"),
+    actionButton(ns("button_global"),  p("Click to open report:",br(), "Top Countries - main variables."), class = "button-style"),
     uiOutput(ns("top_countries_ui")),
 
     hr(),
-    actionButton(ns("button_global_hosp"), "Click to open graphs about Top Countries on Hospitalizations and Intensive Cares", class = "button-style"),
+    actionButton(ns("button_global_hosp"), p("Click to open report:",br(), "Top Countries - Hospitalizations"), class = "button-style"),
     uiOutput(ns("top_countries_hosp_ui")),
     hr(),
-    actionButton(ns("button_global_str"), "Click to open graphs about Top Countries on Stringency Index", class = "button-style"),
+    actionButton(ns("button_global_str"), p("Click to open report:",br(), "Top Countries - Stringency Index"), class = "button-style"),
     uiOutput(ns("top_countries_str_ui")),
     hr(),
-    actionButton(ns("button_global_vax"), "Click to open graphs about Top Countries on Vaccination", class = "button-style"),
+    actionButton(ns("button_global_vax"), p("Click to open report:",br(), "Top Countries - Vaccination"), class = "button-style"),
     uiOutput(ns("top_countries_vax_ui")),
     hr(),
     mod_add_table_ui(ns("add_table_world"))

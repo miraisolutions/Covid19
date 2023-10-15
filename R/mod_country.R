@@ -114,7 +114,7 @@ areaUI <- function(id, tab = TRUE, hospflag = TRUE, stringency = TRUE, vaxflag =
    tg <- tagList(
       div(id = id,
            hr(),
-           div("Country Report at 2nd administrative level", align = "center", class = "sectiontitle"),
+           div(h4("Country Report at 2nd administrative level"), align = "center", class = "sectiontitle"),
            hr(),
            div(
              HTML(from_nth_case_area2_msg(n2)), class = "bodytext"

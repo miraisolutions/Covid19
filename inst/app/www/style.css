@@ -349,5 +349,5 @@ Count Boxes
 .button-style {
   background-color: #008cc3;
   font-size: 14px;
-  display: inline-block;
+  display: flex;
 }
