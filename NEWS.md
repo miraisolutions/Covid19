@@ -1,3 +1,9 @@
+### Covid19Mirai 3.1.0
+- Added action Buttons (#262)
+- Added data to RDS
+- Fixed bug in heatmap
+- Fixed end date to 06/22
+
 ###  Covid19Mirai 3.0.0
 - End of data update,fixed end date to 09/22 (#259)
 
