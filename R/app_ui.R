@@ -61,7 +61,7 @@ app_ui <- function(request) {
             span(
               id = "subtitle",
               #"Data source: worldometers from 26.03.2020, JHU CSSE before.",
-              tags$p(paste("Data source: COVID-19 Data Hub, latest update on", AsOfDate)) %>%
+              tags$p(paste("Data source: COVID-19 Data Hub, updates on", AsOfDate)) %>%
               #textOutput("last_update", inline = TRUE) %>%
                 bs_embed_tooltip(title = "Data Repository by COVID-19 Data Hub. More information in the README on our github page.", placement = "right")
 

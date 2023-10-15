@@ -58,77 +58,18 @@ mod_ind_country_ui <- function(id){
              withSpinner(mod_vaccines_text_ui(ns("ind_vaccines_text_plot")))
       )
     ),
-    # hr(),
-    # mod_add_table_ui(ns("ind_add_table_country")), # table at country level
-    hr(),
-    # withSpinner(uiOutput(ns("ind_subarea"))),
-    # hr(),
-    # fluidRow(
-    #   column(6,
-    #          withSpinner(mod_scatterplot_ui(ns("scatterplot_plots_canton"), growth = FALSE))
-    #   ),
-    #   column(6,
-    #          withSpinner(
-    #            mod_barplot_ui(ns("barplot_vax_index_canton"), plot1 = "ui_vaccines", plot2 = NULL)
-    #          )
-    #   )
-    # ),
-    hr(),
-    div("Country Report at Cantonal level", align = "center", class = "sectiontitle"),
-    hr(),
-    div(
-      HTML(from_nth_case_area2_msg(n2)), class = "bodytext"
-    ),
-    #hr(),
-    div(
-      htmlOutput(ns("ind_missing_days_area2")), class = "bodytext"
-    ),
-    fluidRow(
-      column(12,
-             #withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
-             withSpinner(mod_group_plot_ui(ns("ind_country_confirmed_2"), type = "confirmed"))
-      )
-    ),
-    hr(),
-    fluidRow(
-      column(6,
-             div(h4("COVID-19 evolution over time"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             #withSpinner(uiOutput(ns("plot_area_area2")))
-             withSpinner( mod_plot_log_linear_ui(ns("plot_ind_area2"), select = TRUE, area = TRUE))
-      ),
-      column(6,
-             withSpinner(uiOutput(ns("plot_compare_nth_ind_area2")))
-
-      )
-    ),
-    fluidRow(
-      column(12,
-             #withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
-             withSpinner(mod_group_plot_ui(ns("ind_country_hosp_2"), type = "hosp", infotext = TRUE, titlesection = TRUE))
-
-      )
-    ),
-    fluidRow(
-      column(6,
-             div(h4("Evolution over time of Hospitalizations"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
-             #withSpinner(uiOutput(ns("plot_areahosp_area2")))
-             withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp2_ind_area2"), select = TRUE, area = TRUE))
-      ),
-      column(6,
-             withSpinner(uiOutput(ns("plot_compare_hosp_nth_ind_area2")))
-      ),
-    ),
-    fluidRow(
-      column(12,
-             withSpinner(mod_group_plot_ui(ns("ind_country_vax_2"), type = "vaccines"))
-      )
-    ),
-    hr(),
-    withSpinner(uiOutput(ns("maps_ind_subarea"))),
-    hr(),
-    mod_add_table_ui(ns("add_table_subarea")),
     hr(),
     mod_add_table_ui(ns("ind_add_table_country")), # table at country level
+
+    hr(),
+    actionButton(ns("button_2nd_level"), "Click to open graphs at Cantonal Level.", class = "button-style"),
+    div("Country Report at Cantonal level", align = "center", class = "sectiontitle"),
+    uiOutput(ns("ch_2nd_level_ui")),
+    hr(),
+    actionButton(ns("button_2nd_level_maps"), "Click to open Heat Maps of Switzerland at Cantonal Level.", class = "button-style"),
+    uiOutput(ns("ch_2nd_level_maps_ui")),
+
+    hr()
     )
 }
 #' Level 2 areas UI function for maps
@@ -196,7 +137,7 @@ areamapUI <- function(id, country){
 #' @import shiny
 #'
 #' @noRd
-mod_ind_country_server <- function(input, output, session, data, data2, country , nn = 1, w = 7){
+mod_ind_country_server <- function(input, output, session, data, data2 = NULL, country , nn = 1, w = 7){
   ns <- session$ns
 
   message("mod_ind_country_server")
@@ -281,8 +222,8 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
 
 # # ##### country split within areas #############################################
 
-#   # Data ----
-  if (missing(data2)) {
+  #   # Data ----
+  if (is.null(data2)) {
     area_data_2 = get_datahub(country = country, lev = 2, verbose = FALSE)
 
     area_data_2 = area_data_2 %>%
@@ -295,142 +236,229 @@ mod_ind_country_server <- function(input, output, session, data, data2, country 
   area_data_2_aggregate <-
     build_data_aggr(area_data_2)
 
-  area_data_2_aggregate_today = area_data_2_aggregate %>%
-    add_growth_death_rate()
 
-  lw_data_2 =  lw_vars_calc(area_data_2_aggregate)
-  pw_data_2 =  lw_vars_calc(area_data_2_aggregate, 14)
+  observeEvent(input$button_2nd_level, {
 
-  area_data_2_aggregate_today = area_data_2_aggregate_today  %>%
-    left_join(lw_data_2 %>% select(-population)) %>%
-    left_join(pw_data_2 %>% select(-population))
+    output$ch_2nd_level_ui <- renderUI({
+      tagList(
+        div(
+          HTML(from_nth_case_area2_msg(n2)), class = "bodytext"
+        ),
+        #hr(),
+        div(
+          htmlOutput(ns("ind_missing_days_area2")), class = "bodytext"
+        ),
+        fluidRow(
+          column(12,
+                 #withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
+                 withSpinner(mod_group_plot_ui(ns("ind_country_confirmed_2"), type = "confirmed"))
+          )
+        ),
+        hr(),
+        fluidRow(
+          column(6,
+                 div(h4("COVID-19 evolution over time"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                 #withSpinner(uiOutput(ns("plot_area_area2")))
+                 withSpinner( mod_plot_log_linear_ui(ns("plot_ind_area2"), select = TRUE, area = TRUE))
+          ),
+          column(6,
+                 withSpinner(uiOutput(ns("plot_compare_nth_ind_area2")))
 
-  areas <- #reactive({
-    area_data_2_aggregate_today %>%
-    filter(confirmed > 10) %>%
-    select(Country.Region) %>%
-    distinct() %>% .$Country.Region
+          )
+        ),
+        fluidRow(
+          column(12,
+                 #withSpinner(mod_group_plot_ui(ns("ind_country_hosp"), type = "hosp", infotext = FALSE, titlesection = FALSE))
+                 withSpinner(mod_group_plot_ui(ns("ind_country_hosp_2"), type = "hosp", infotext = TRUE, titlesection = TRUE))
 
-  # output$ind_subarea <- renderUI({
-  #   areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE, vaxflag = FALSE)
-  #   #areaUI("ind_country_subarea")
-  # })
-  output$ind_missing_days_area2 <- renderText({
-    HTML(
-      message_missing_country_days(area_data_2)
-    )})
+          )
+        ),
+        fluidRow(
+          column(6,
+                 div(h4("Evolution over time of Hospitalizations"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
+                 #withSpinner(uiOutput(ns("plot_areahosp_area2")))
+                 withSpinner(mod_plot_log_linear_ui(ns("plot_areahosp2_ind_area2"), select = TRUE, area = TRUE))
+          ),
+          column(6,
+                 withSpinner(uiOutput(ns("plot_compare_hosp_nth_ind_area2")))
+          ),
+        ),
+        fluidRow(
+          column(12,
+                 withSpinner(mod_group_plot_ui(ns("ind_country_vax_2"), type = "vaccines"))
+          )
+        ),
+        # hr(),
+        # withSpinner(uiOutput(ns("maps_ind_subarea"))),
+        hr(),
+        mod_add_table_ui(ns("add_table_subarea"))
 
-  n2 <- 10
+      )
+    })
 
-  # callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = n2, tab = FALSE, hospitalFlag = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
-  testsflag = check_flag(area_data_2_aggregate, "tests")
+    # DATA area 2
 
-  # confirmed session
-  relevant_countries = unique(area_data_2_aggregate_today$Country.Region[area_data_2_aggregate_today$confirmed>n2])
+    area_data_2_aggregate_today = area_data_2_aggregate %>%
+      add_growth_death_rate()
 
-  callModule(mod_group_plot_server, "ind_country_confirmed_2", area_data_2_aggregate_today, type = "confirmed", istop = FALSE,
-             # scatterplotargs = list(nmed = n2, countries = relevant_countries),
-             tests = testsflag,
-             scatterplotargs = list(nmed = 10),
-             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
-               sortbyvar = TRUE))
+    lw_data_2 =  lw_vars_calc(area_data_2_aggregate)
+    pw_data_2 =  lw_vars_calc(area_data_2_aggregate, 14)
 
-  levs <- areaplot_vars()
-  data_area = area_data_2
-  active_hosp = FALSE
-  hospflag = FALSE
-  if (sum(data$hosp, na.rm = TRUE)>0) {
-    message("Adding hospitalized data for areaplot")
-    levs = c(levs, "hosp")
-    active_hosp = TRUE
-    hospflag = TRUE
-  }
-  oneMpopflag = check_flag(area_data_2, "population")
+    area_data_2_aggregate_today = area_data_2_aggregate_today  %>%
+      left_join(lw_data_2 %>% select(-population)) %>%
+      left_join(pw_data_2 %>% select(-population))
 
-  # relevant_countries = unique(data_area$Country.Region[data_area$confirmed>n2])
-  df_area_2 = purrr::map(relevant_countries,
-                         function(un) {
-                           dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
-                           dat$Country.Region = rep(un, nrow(dat))
-                           dat
-                         })
-  df_area_2 = Reduce("rbind",df_area_2)
+    areas <- #reactive({
+      area_data_2_aggregate_today %>%
+      filter(confirmed > 10) %>%
+      select(Country.Region) %>%
+      distinct() %>% .$Country.Region
 
+    # output$ind_subarea <- renderUI({
+    #   areaUI(ns("ind_country_subarea"), tab = FALSE, stringency = FALSE, vaxflag = FALSE)
+    #   #areaUI("ind_country_subarea")
+    # })
+    output$ind_missing_days_area2 <- renderText({
+      HTML(
+        message_missing_country_days(area_data_2)
+      )})
 
-  areas <- #reactive({
-    area_data_2 %>%
-    select(Country.Region) %>%
-    distinct() #%>% .$Country.Region
+    n2 <- 10
 
-  callModule(mod_plot_log_linear_server, "plot_ind_area2", df = df_area_2, type = "area" , countries = reactive(areas), active_hosp = active_hosp)
+    # callModule(mod_country_area_server, "ind_country_subarea", data = area_data_2_aggregate, n2 = n2, tab = FALSE, hospitalFlag = FALSE, stringencyFlag = FALSE, vaccinesFlag = FALSE, country = "Switzerland")
+    testsflag = check_flag(area_data_2_aggregate, "tests")
 
+    # confirmed session
+    relevant_countries = unique(area_data_2_aggregate_today$Country.Region[area_data_2_aggregate_today$confirmed>n2])
 
-  levs <- areaplot_hospvars()
-  #
-  #relevant_countries = unique(data_area$Country.Region[data_area$confirmed>1])
-  #
-  df_area_2 = purrr::map(relevant_countries,
-                         function(un) {
-                           dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot hosp, do not filter
-                           dat$Country.Region = rep(un, nrow(dat))
-                           dat
-                         })
-  df_area_2 = Reduce("rbind",df_area_2)
+    callModule(mod_group_plot_server, "ind_country_confirmed_2", area_data_2_aggregate_today, type = "confirmed", istop = FALSE,
+               # scatterplotargs = list(nmed = n2, countries = relevant_countries),
+               tests = testsflag,
+               scatterplotargs = list(nmed = 10),
+               barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                 sortbyvar = TRUE))
 
-  callModule(mod_plot_log_linear_server, "plot_areahosp2_ind_area2", df = df_area_2, type = "area" , countries = reactive(areas), hosp = TRUE)
+    levs <- areaplot_vars()
+    data_area = area_data_2
+    active_hosp = FALSE
+    hospflag = FALSE
+    if (sum(data$hosp, na.rm = TRUE)>0) {
+      message("Adding hospitalized data for areaplot")
+      levs = c(levs, "hosp")
+      active_hosp = TRUE
+      hospflag = TRUE
+    }
+    oneMpopflag = check_flag(area_data_2, "population")
 
-
-
-  strFlag = check_flag(area_data_2_aggregate, "stringency_index")
-  # # do not use stringency v is the same for all areas
-
-  vaxFlag = check_flag(area_data_2_aggregate, "vaccines")
-  # do not use vax is the same for all areas
-
-  message("hospflag: ", hospflag, "/ oneMpopflag: ", oneMpopflag,"/ strFlag: ", strFlag,"/ testsflag: ", testsflag, "/ vaxFlag: ", vaxFlag)
-
-  # paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
-  output[["plot_compare_nth_ind_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_ind_area2_",country)), vars = setdiff(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))),
-                                  nn = n2, istop = FALSE, tests = testsflag, hosp = FALSE, strindx = strFlag,vax = vaxFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
-  })
-
-  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_ind_area2_",country), df = area_data_2_aggregate, nn = n2,  istop = FALSE, tests = testsflag, hosp = FALSE, strindx = strFlag ,vax = vaxFlag,
-             n_highlight = length(unique(area_data_2_aggregate$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE,
-             vars = setdiff(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))))
-
-  output[["plot_compare_hosp_nth_ind_area2"]] <- renderUI({
-    mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_hosp_ind_area2_",country)), vars = intersect(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))),
-                                  nn = n2, istop = FALSE, tests = FALSE, hosp = hospflag, strindx = FALSE,vax = vaxFlag, selectvar = "new_hosp", oneMpop = oneMpopflag, areasearch = TRUE)
-  })
-  callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_hosp_ind_area2_",country), df = area_data_2_aggregate, nn = n2,  istop = FALSE, tests = FALSE, hosp = hospflag, strindx = FALSE ,vax = vaxFlag,
-             n_highlight = length(unique(area_data_2_aggregate$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE,
-             vars = intersect(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))))
-
-  callModule(mod_group_plot_server, "ind_country_hosp_2", data_today = area_data_2_aggregate_today, nn = n2, type = "hosp", istop = FALSE,
-             scatterplotargs = list(nmed = n2),
-             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
-               sortbyvar = TRUE))
-
-  callModule(mod_group_plot_server, "ind_country_vax_2", data_today = area_data_2_aggregate_today, nn = n2, type = "vaccines", istop = FALSE,
-             scatterplotargs = list(nmed = n2),
-             barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
-               sortbyvar = TRUE))
+    # relevant_countries = unique(data_area$Country.Region[data_area$confirmed>n2])
+    df_area_2 = purrr::map(relevant_countries,
+                           function(un) {
+                             dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, nn = n2) #n = 0 for area plot
+                             dat$Country.Region = rep(un, nrow(dat))
+                             dat
+                           })
+    df_area_2 = Reduce("rbind",df_area_2)
 
 
-  output$maps_ind_subarea <- renderUI({
-    areamapUI(ns("maps_subarea"), country)
-  })
-  callModule(mod_country_area_maps_server, "maps_subarea", data = area_data_2_aggregate, country = country)
+    areas <- #reactive({
+      area_data_2 %>%
+      select(Country.Region) %>%
+      distinct() #%>% .$Country.Region
 
-  # prepare data for table with country data
-  area_data_2_aggregate_tab = area_data_2_aggregate %>% # only data from today
-    filter(date == AsOfDate) %>%
-    arrange(desc(confirmed) )
+    callModule(mod_plot_log_linear_server, "plot_ind_area2", df = df_area_2, type = "area" , countries = reactive(areas), active_hosp = active_hosp)
 
-  # add tables UIs
-  callModule(mod_add_table_server, "add_table_subarea",
-             area_data_2_aggregate_tab, maxrowsperpage = 10)
+
+    levs <- areaplot_hospvars()
+    #
+    #relevant_countries = unique(data_area$Country.Region[data_area$confirmed>1])
+    #
+    df_area_2 = purrr::map(relevant_countries,
+                           function(un) {
+                             dat = tsdata_areplot(area_data_2[area_data_2$Country.Region == un, ], levs, nn = 1) #n = 0 for area plot hosp, do not filter
+                             dat$Country.Region = rep(un, nrow(dat))
+                             dat
+                           })
+    df_area_2 = Reduce("rbind",df_area_2)
+
+    callModule(mod_plot_log_linear_server, "plot_areahosp2_ind_area2", df = df_area_2, type = "area" , countries = reactive(areas), hosp = TRUE)
+
+
+
+    strFlag = check_flag(area_data_2_aggregate, "stringency_index")
+    # # do not use stringency v is the same for all areas
+
+    vaxFlag = check_flag(area_data_2_aggregate, "vaccines")
+    # do not use vax is the same for all areas
+
+    message("hospflag: ", hospflag, "/ oneMpopflag: ", oneMpopflag,"/ strFlag: ", strFlag,"/ testsflag: ", testsflag, "/ vaxFlag: ", vaxFlag)
+
+    # paste0("lines_plots_area2_",country) because  of problems with selectInputID after USA page. not solved, TBD
+    output[["plot_compare_nth_ind_area2"]] <- renderUI({
+      mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_ind_area2_",country)), vars = setdiff(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))),
+                                    nn = n2, istop = FALSE, tests = testsflag, hosp = FALSE, strindx = strFlag,vax = vaxFlag, selectvar = "new_confirmed", oneMpop = oneMpopflag, areasearch = TRUE)
+    })
+
+    callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_ind_area2_",country), df = area_data_2_aggregate, nn = n2,  istop = FALSE, tests = testsflag, hosp = FALSE, strindx = strFlag ,vax = vaxFlag,
+               n_highlight = length(unique(area_data_2_aggregate$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE,
+               vars = setdiff(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))))
+
+    output[["plot_compare_hosp_nth_ind_area2"]] <- renderUI({
+      mod_compare_nth_cases_plot_ui(ns(paste0("lines_plots_hosp_ind_area2_",country)), vars = intersect(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))),
+                                    nn = n2, istop = FALSE, tests = FALSE, hosp = hospflag, strindx = FALSE,vax = vaxFlag, selectvar = "new_hosp", oneMpop = oneMpopflag, areasearch = TRUE)
+    })
+    callModule(mod_compare_nth_cases_plot_server, paste0("lines_plots_hosp_ind_area2_",country), df = area_data_2_aggregate, nn = n2,  istop = FALSE, tests = FALSE, hosp = hospflag, strindx = FALSE ,vax = vaxFlag,
+               n_highlight = length(unique(area_data_2_aggregate$Country.Region)), oneMpop = oneMpopflag, areasearch = TRUE,
+               vars = intersect(.vars_nthcases_plot, prefix_var(.hosp_vars, c("", "new"))))
+
+    callModule(mod_group_plot_server, "ind_country_hosp_2", data_today = area_data_2_aggregate_today, nn = n2, type = "hosp", istop = FALSE,
+               scatterplotargs = list(nmed = n2),
+               barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                 sortbyvar = TRUE))
+
+    callModule(mod_group_plot_server, "ind_country_vax_2", data_today = area_data_2_aggregate_today, nn = n2, type = "vaccines", istop = FALSE,
+               scatterplotargs = list(nmed = n2),
+               barplotargs = list(#pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop")
+                 sortbyvar = TRUE))
+
+
+    # output$maps_ind_subarea <- renderUI({
+    #   areamapUI(ns("maps_subarea"), country)
+    # })
+    # callModule(mod_country_area_maps_server, "maps_subarea", data = area_data_2_aggregate, country = country)
+    #
+    # # prepare data for table with country data
+    area_data_2_aggregate_tab = area_data_2_aggregate %>% # only data from today
+      filter(date == AsOfDate) %>%
+      arrange(desc(confirmed) )
+
+    # add tables UIs
+    callModule(mod_add_table_server, "add_table_subarea",
+               area_data_2_aggregate_tab, maxrowsperpage = 10)
+
+
+  }, once = TRUE)
+
+  observeEvent(input$button_2nd_level_maps, {
+
+    output$ch_2nd_level_maps_ui <- renderUI({
+      tagList(
+        hr(),
+       #withSpinner(uiOutput(ns("maps_ind_subarea")))
+       areamapUI(ns("maps_subarea"), country)
+
+       )
+
+    })
+
+
+    callModule(mod_country_area_maps_server, "maps_subarea", data = area_data_2_aggregate, country = country)
+
+    # prepare data for table with country data
+    area_data_2_aggregate_tab = area_data_2_aggregate %>% # only data from today
+      filter(date == AsOfDate) %>%
+      arrange(desc(confirmed) )
+  }, once = TRUE)
+
 
 }
 #' ind_country Server Function

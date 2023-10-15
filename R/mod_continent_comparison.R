@@ -47,36 +47,31 @@ mod_continent_comparison_ui <- function(id){
 #' continent_comparison Server Function
 #'
 #' @param orig_data_aggregate data.frame
+#' @param conts_data list of data.frames
 #' @param nn min number of cases for a country to be considered. Default 1000
 #' @param w number of days of outbreak. Default 7
+#' @param pop_data data.frame
 #'
 #' @example ex-ex-continents.R
 #'
 #' @import dplyr
 #'
 #' @noRd
-mod_continent_comparison_server <- function(input, output, session, orig_data_aggregate, nn = 1000, w = 7, pop_data){
+mod_continent_comparison_server <- function(input, output, session, orig_data_aggregate, conts_data, nn = 1000, w = 7, pop_data){
   ns <- session$ns
 
   # aggregate data to continent
   message("start mod_continent_comparison_server")
-  continent_data <- aggr_to_cont(orig_data_aggregate, "continent", "date")
+  # continent_data <- aggr_to_cont(orig_data_aggregate, "continent", "date")
+  continent_data <- conts_data$continent_data
 
   continents = unique(continent_data$Country.Region)
 
   # create data for comparison with common starting point
-  continent_data_filtered <- continent_data %>%
-      rescale_df_contagion(n = nn, w = w)
+  continent_data_filtered <- conts_data$continent_data_filtered
 
-  continent_data_filtered_today = continent_data_filtered %>%
-    add_growth_death_rate()
+  continent_data_filtered_today <- conts_data$continent_data_filtered_today
 
-  lw_continent_data_filtered =  lw_vars_calc(continent_data_filtered)
-  pw_continent_data_filtered =  lw_vars_calc(continent_data_filtered, 14)
-
-  continent_data_filtered_today = continent_data_filtered_today  %>%
-    left_join(lw_continent_data_filtered %>% select(-population))  %>%
-    left_join(pw_continent_data_filtered %>% select(-population))
 
   callModule(mod_lineplots_day_contagion_server, "lineplots_day_contagion_cont", continent_data, nn = nn, statuses = c("confirmed", "deaths", "vaccines", "active"))
 
@@ -108,13 +103,7 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   )
 
-  # callModule(mod_barplot_server, "barplot_vax_index_cont", continent_data_filtered_today,
-  #            n_highlight = length(continents), istop = FALSE,
-  #            plottitle = c("Vaccination Status"),
-  #            g_palette = list("plot_1" = graph_palette[1:length(continents)], #barplots_colors$stringency,
-  #                             calc = FALSE),
-  #            sortbyvar = FALSE
-  #            )
+
   callModule(mod_group_plot_server, "cmp_vax_cont", data_today = continent_data_filtered_today, type = "vaccines", istop = FALSE,
              scatterplotargs = list(countries = continents, nmed = nn),
              barplotargs = list(pickvariable = list("plot_1" = "lm_confirmed_rate_1M_pop"),
@@ -124,7 +113,5 @@ mod_continent_comparison_server <- function(input, output, session, orig_data_ag
 
   # tables ----
   callModule(mod_add_table_server, "add_table_cont", continent_data_filtered, maxrowsperpage = 10)
-
-
 
 }
