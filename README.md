@@ -39,7 +39,7 @@ Ardia](https://ardiad.github.io/). We are very thankful to [David
 Bumbeishvili](https://github.com/bumbeishvili) for his great
 [work](https://github.com/bumbeishvili/covid19-daily-data)
 
-**Update October 2023**, the app stops updating data and is frozen to `2022-09-01`.
+**Update October 2023**, the app stops updating data and is frozen to `2022-06-01`.
 
 
 ## Data Storage
