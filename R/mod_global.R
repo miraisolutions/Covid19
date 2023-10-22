@@ -38,16 +38,21 @@ mod_global_ui <- function(id){
       )
     ),
     hr(),
+    p("This section will display statistics and graphs for the countries with the highest records for the main variables considered in a given time interval:
+      confirmed cases in relation to the populazion size, current growth factor, statisticts related to deaths counts and tests."),
     actionButton(ns("button_global"),  p("Click to open report:",br(), "Top Countries - main variables."), class = "button-style"),
     uiOutput(ns("top_countries_ui")),
-
     hr(),
+    p("This section will display statistics and graphs for the countries with the highest records for hospitalized cases in relation to their population size.
+      Hospizalizations are with Ventilated and Intesive cares aids are also considered."),
     actionButton(ns("button_global_hosp"), p("Click to open report:",br(), "Top Countries - Hospitalizations"), class = "button-style"),
     uiOutput(ns("top_countries_hosp_ui")),
     hr(),
+    p("This section will display statistics and graphs for the countries with the highest records for Stringeny Index, i.e. the measures States have put in place to restrict mobility, access to public places, etc."),
     actionButton(ns("button_global_str"), p("Click to open report:",br(), "Top Countries - Stringency Index"), class = "button-style"),
     uiOutput(ns("top_countries_str_ui")),
     hr(),
+    p("This section will display statistics and graphs for the countries with the highest Vaccination records. Full Vaccination is considered with 2 doses."),
     actionButton(ns("button_global_vax"), p("Click to open report:",br(), "Top Countries - Vaccination"), class = "button-style"),
     uiOutput(ns("top_countries_vax_ui")),
     hr(),

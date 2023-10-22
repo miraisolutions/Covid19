@@ -62,10 +62,12 @@ mod_ind_country_ui <- function(id){
     mod_add_table_ui(ns("ind_add_table_country")), # table at country level
 
     hr(),
+    p("In this section there is an analysis at Cantonal level, comparing the swiss geografical areas on the main variables available."),
     actionButton(ns("button_2nd_level"), p("Click to open report:",br(), "Cantonal Level."), class = "button-style"),
     div(h4("Country Report at Cantonal level"), align = "center", class = "sectiontitle"),
     uiOutput(ns("ch_2nd_level_ui")),
     hr(),
+    p("Have a look at a similar report at cantonal level based on Heat Maps."),
     actionButton(ns("button_2nd_level_maps"), p("Click to open Heat Mapsreport:",br(), "Switzerland at Cantonal Level."), class = "button-style"),
     uiOutput(ns("ch_2nd_level_maps_ui")),
 

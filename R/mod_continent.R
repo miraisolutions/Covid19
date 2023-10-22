@@ -79,11 +79,13 @@ mod_continent_ui <- function(id, uicont, nn = 1000){
     ),
    hr(),
    hr(),
+   p("In this section there is an analysis at Country level within the continent examided, comparing the geografical areas on the main variables available."),
    actionButton(ns("button_country_plot"), p("Click to open:",br(), "Country Level report on main variables."), class = "button-style"),
    div(h4("Country Plots within Continent"), align = "center", style = "margin-top:20px; margin-bottom:20px;"),
    uiOutput(ns("country_plots_ui")),
 
    hr(),
+   p("Have a look at a similar report at Country level based on Heat Maps."),
    actionButton(ns("button_cont_maps"),  p("Click to open:",br(),"Country Heat Maps on main variables."), class = "button-style"),
    div(h4("Country Heat Maps within Continent"), align = "center", class = "sectiontitle"),
    uiOutput(ns("continent_maps")),
