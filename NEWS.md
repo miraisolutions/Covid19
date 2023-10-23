@@ -1,3 +1,6 @@
+### Covid19Mirai 3.1.1
+- Added action Buttons to single Country page (#267)
+
 ### Covid19Mirai 3.1.0
 - Added action Buttons (#262)
 - Added data to RDS
