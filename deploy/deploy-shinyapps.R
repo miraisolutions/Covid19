@@ -6,8 +6,14 @@ rsconnect::setAccountInfo(
   Sys.getenv("SHINYAPPS_SECRET")
 )
 
-# to be added since rsconnect >1
-options(rsconnect.packrat = FALSE)
+# Add here any additional files/directories the app needs
+app_files = c(
+  "app.R",
+  "DESCRIPTION",
+  "NAMESPACE",
+  "R/",
+  "inst/"
+)
 
 rsconnect::deployApp(
   account = "miraisolutions",
