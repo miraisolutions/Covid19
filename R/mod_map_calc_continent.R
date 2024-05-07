@@ -37,6 +37,7 @@ mod_map_area_calc_ui <- function(id){
 #' @import tidyr
 #' @import leaflet
 #' @import leaflet.extras
+#' @importFrom sp merge
 #'
 #' @noRd
 mod_map_area_calc_server <- function(input, output, session, df, countries_data_map, area, variable = "confirmed", max.pop = 100000, countrymap = FALSE){

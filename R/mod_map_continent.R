@@ -40,7 +40,7 @@ mod_map_cont_ui <- function(id){
 #' @import dplyr
 #' @import tidyr
 #' @import leaflet
-#' @import sp
+#' @importFrom sp merge
 #'
 #' @noRd
 mod_map_cont_server <- function(input, output, session, orig_data_aggregate, countries_data_map, area, g_palette){

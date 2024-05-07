@@ -22,7 +22,7 @@ jobs:
       # single OS and R version, aligned with the target deployment environment
       matrix:
         config:
-          - {os: ubuntu-latest, r: '4.2.1'}
+          - {os: ubuntu-latest, r: 'renv'}
 
     env:
       # Access token for GitHub
@@ -33,31 +33,33 @@ jobs:
     steps:
 
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
           # Enable RStudio Package Manager to speed up package installation
-          use-public-rspm: true
+          use-public-rspm: false
 
-      # - name: Install system dependencies
-      #   # This is not taken care of (yet) by r-lib/actions/setup-renv
-      #   # Package distro used to get the distro for the used ubuntu-latest
-      #   run: |
-      #     Rscript -e "install.packages(c('remotes', 'distro'))"
-      #     while read -r cmd
-      #     do
-      #       eval sudo $cmd
+      - name: Install system dependencies
+        # This is not taken care of (yet) by r-lib/actions/setup-renv
+        # See https://github.com/r-lib/actions/issues/785
+        run: |
+          # We rely on pkgdepends from the library embedded in pak
+          install.packages("pak", repos = "https://r-lib.github.io/p/pak/stable/")
+          install.packages("jsonlite")
+          .libPaths(c(system.file("library", package = "pak"), .libPaths()))
+          pkgdepends::new_pkg_installation_proposal(
+            names(jsonlite::read_json("renv.lock")$Packages), config = list(dependencies = FALSE)
+          )$solve()$install_sysreqs()
+        shell: Rscript {0}
       #     done < <(Rscript -e 'writeLines(with(distro::distro(), remotes::system_requirements(id, short_version)))')
 
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
 
-      # - name: Install renv Development tools
-      #   run: renv::install()
-      #   shell: Rscript {0}
+
 
       - name: Fetch and rebuild latest data
         if: false && github.event_name == 'schedule' # switched off
