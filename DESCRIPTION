@@ -47,6 +47,4 @@ Suggests:
     rsconnect,
     spelling,
     pkgload,
-    testthat (>= 3.0.0),
-    sf,
-    packrat
+    testthat (>= 3.0.0)
