@@ -22,7 +22,7 @@ jobs:
       # single OS and R version, aligned with the target deployment environment
       matrix:
         config:
-          - {os: ubuntu-latest, r: '4.2.1'}
+          - {os: ubuntu-latest, r: 'renv'}
 
     env:
       # Access token for GitHub
@@ -33,7 +33,7 @@ jobs:
     steps:
 
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
