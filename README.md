@@ -5,9 +5,9 @@
 
 <!-- badges: start -->
 
-[![R build
-status](https://github.com/miraisolutions/Covid19/workflows/CI-CD/badge.svg)](https://github.com/miraisolutions/Covid19/actions)
+[![ci-cd](https://github.com/miraisolutions/Covid19/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/miraisolutions/Covid19/actions/workflows/ci-cd.yml)
 [![eRum2020::CovidR](https://badgen.net/https/runkit.io/erum2020-covidr/badge/branches/master/vitalini-covid19?cache=300)](https://milano-r.github.io/erum2020-covidr-contest/vitalini-covid19.html)
+
 <!-- badges: end -->
 
 The goal of Covid19Mirai is to provide an insight on corona virus data
