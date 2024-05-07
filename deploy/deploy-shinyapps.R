@@ -17,7 +17,7 @@ app_files = c(
 
 rsconnect::deployApp(
   account = "miraisolutions",
-  appName = "covid19-test",
+  appName = "covid19",
   forceUpdate = TRUE # to be added since rsconnect >1
   # exclude hidden files and renv directory (if present)
   # appFiles = setdiff(list.files(), "renv")
