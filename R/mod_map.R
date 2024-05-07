@@ -72,6 +72,7 @@ mod_map_ui <- function(id){
 #' @import tidyr
 #' @import leaflet
 #' @import leaflet.extras
+#' @importFrom sp merge
 #' @noRd
 mod_map_server <- function(input, output, session, orig_data_aggregate, countries_data_map){
   ns <- session$ns
