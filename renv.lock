@@ -1394,7 +1394,7 @@
     },
     "terra": {
       "Package": "terra",
-      "Version": "1.7-76",
+      "Version": "1.7-71",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1402,7 +1402,7 @@
         "Rcpp",
         "methods"
       ],
-      "Hash": "1384a200a959a6efb9cefb4a639d3771"
+      "Hash": "e8611881ab70a4fb7a1f629b31e6fcff"
     },
     "testthat": {
       "Package": "testthat",
