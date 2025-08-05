@@ -2,6 +2,8 @@
 
     #sapply(file.path("R",list.files("R")), source)
     #devtools::load_all()
+    rds_data = "DATA.rds"
+
     ui <- fluidPage(
       tagList(
         Covid19Mirai:::golem_add_external_resources(),
@@ -82,11 +84,6 @@ if (interactive()) {
 
 
 if (interactive()) {
-  library(shiny)
-  library(dplyr)
-  library(tidyr)
-  library(plotly)
-  library(ggplot2)
 
   ui <- fluidPage(
     tagList(
@@ -176,7 +173,6 @@ if (interactive()) {
   }
   runApp(shinyApp(ui = ui, server = server), launch.browser = TRUE)
 }
-
 
 
 if (interactive()) {

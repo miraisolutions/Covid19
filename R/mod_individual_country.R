@@ -66,7 +66,7 @@ mod_ind_country_ui <- function(id){
     div(h4("Country Report at Cantonal level"), align = "center", class = "sectiontitle"),
     uiOutput(ns("ch_2nd_level_ui")),
     hr(),
-    actionButton(ns("button_2nd_level_maps"), p("Click to open Heat Mapsreport:",br(), "Switzerland at Cantonal Level."), class = "button-style"),
+    actionButton(ns("button_2nd_level_maps"), p("Click to open Heat Maps report:",br(), "Switzerland at Cantonal Level."), class = "button-style"),
     uiOutput(ns("ch_2nd_level_maps_ui")),
 
     hr()
