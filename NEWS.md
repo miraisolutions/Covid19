@@ -1,5 +1,8 @@
+### Covid19Mirai 3.1.2
+- Lineplot fix
+
 ### Covid19Mirai 3.1.1
-* Updated status badge
+- Updated status badge
 
 ### Covid19Mirai 3.1.0
 - Added action Buttons (#262)
