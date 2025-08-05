@@ -296,7 +296,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
       if ( areasearch) {
         # Update select_areas
-        areaselect = if (is.null(input$select_areas) || (!input$select_areas %in% df$Country.Region))
+        areaselect = if (is.null(input$select_areas) || (!all(input$select_areas %in% df$Country.Region)))
           selected_countries
         else
           input$select_areas
