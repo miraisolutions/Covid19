@@ -322,7 +322,6 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
         varname = gsub("_rate_1M_pop$","",input$radio_indicator)
       } else
         varname = input$radio_indicator
-      message("Select Var ", varname)
       varname
     })
     # select only needed variables
