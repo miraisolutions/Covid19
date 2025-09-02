@@ -495,18 +495,17 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   } else {
     keeporder = TRUE
 
-      
-  plot_inputs <- reactive({
-    list(
-      var = input$radio_indicator,
-      timeframe = input$time_frame,
-      areas = input$select_areas,
-      pop = input$radio_1Mpop
-    )
-  })
+    plot_inputs <- reactive({
+      list(
+        var = input$radio_indicator,
+        timeframe = input$time_frame,
+        areas = input$select_areas,
+        pop = input$radio_1Mpop
+      )
+    })
 
     #observeEvent(!is.null(req(input$select_areas)),{
-  pp <- eventReactive(plot_inputs(), {
+    pp <- eventReactive(plot_inputs(), {
 
       #if (input$select_areas != "") {
         message("eventReactive select_areas")
