@@ -280,12 +280,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
           }
           choices_plot = intersect(get_aggrvars(), choices_plot)
           names(choices_plot) = names(varsNames(unlist(choices_plot)))
-          message("update radio_indicator ", paste(unlist(choices_plot), collapse = ","))
           if (!(varselect) %in% unlist(choices_plot)) {
             message("update selected to new_confirmed")
             varselect = "new_confirmed"
           }
         }
+        message("update radio_indicator ", paste(unlist(choices_plot), collapse = ","))
         updateSelectInput(
           session,
           inputId = "radio_indicator",
@@ -296,13 +296,12 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
       if ( areasearch) {
         # Update select_areas
-        areaselect = if (is.null(input$select_areas) || (!input$select_areas %in% df$Country.Region))
+        areaselect = if (is.null(input$select_areas) || (!all(input$select_areas %in% df$Country.Region)))
           selected_countries
         else
           input$select_areas
         message("observing select_areas: ", paste(areaselect, collapse = ","))
         updateSelectInput(session, "select_areas", choices = reactive(countries)()$Country.Region, selected = areaselect)
-
       }
 
     })
@@ -319,7 +318,7 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
 
     reactSelectVar = reactive({
 
-      if (grepl("rate_1M_pop$", req(input$radio_indicator)) && (!(req(input$radio_indicator) %in% names(dat)))) {
+      if (grepl("rate_1M_pop$", input$radio_indicator) && (!(input$radio_indicator %in% names(dat)))) {
         varname = gsub("_rate_1M_pop$","",input$radio_indicator)
       } else
         varname = input$radio_indicator
@@ -496,17 +495,26 @@ mod_compare_nth_cases_plot_server <- function(input, output, session, df,
   } else {
     keeporder = TRUE
 
+    plot_inputs <- reactive({
+      list(
+        var = input$radio_indicator,
+        timeframe = input$time_frame,
+        areas = input$select_areas,
+        pop = input$radio_1Mpop
+      )
+    })
+
     #observeEvent(!is.null(req(input$select_areas)),{
-    pp <- eventReactive(!is.null(req(input$select_areas)),{
+    pp <- eventReactive(plot_inputs(), {
 
       #if (input$select_areas != "") {
-        message("Observe event select_areas")
+        message("eventReactive select_areas")
         df_select = df %>% filter(Country.Region %in% input$select_areas)
         idx = order(match(df_select$Country.Region, input$select_areas))
         df_select = df_select[idx,]
         calc_line_plot(df_select, vars, cum_vars)
      # }
-    })
+    }, ignoreInit = TRUE)
   }
 
   output$plot <- renderPlotly({
