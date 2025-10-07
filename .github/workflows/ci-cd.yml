@@ -45,7 +45,8 @@ jobs:
       - name: Install system dependencies
         # This is not taken care of (yet) by r-lib/actions/setup-renv
         # See https://github.com/r-lib/actions/issues/785
-        run: Rscript deploy/install-sysreqs.R
+        # NOTE: we use --vanilla to prevent renv's bootstrapping
+        run: Rscript --vanilla deploy/install-sysreqs.R
 
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
