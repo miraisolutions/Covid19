@@ -194,9 +194,14 @@ golem_add_external_resources <- function(){
     bundle_resources(
       path = app_sys('app/www'),
       app_title = 'Covid19'
-    )
+    ),
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
+    # Support responsive embedding with iframe-resizer
+    tags$script(
+      type = "text/javascript",
+      src = "https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"
+    ),
   )
 }
 
