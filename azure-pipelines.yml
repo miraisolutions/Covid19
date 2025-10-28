@@ -8,7 +8,7 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '80a9d917-fb69-4865-b2f2-e5fb36ade49e'
+  dockerRegistryServiceConnection: 'miraiappregistry'
   imageRepository: 'covid19'
   containerRegistry: 'miraiappregistry.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
