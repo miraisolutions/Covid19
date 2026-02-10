@@ -6,8 +6,8 @@ WORKDIR /home/app
 
 # System dependencies for the locked packages
 COPY renv.lock renv.lock
-COPY deploy/install-sysreqs.R deploy/install-sysreqs.R
-RUN Rscript deploy/install-sysreqs.R
+COPY ci-cd/install-sysreqs.R ci-cd/install-sysreqs.R
+RUN Rscript ci-cd/install-sysreqs.R
 
 # Copy renv configuration and restore dependencies
 # - .Rprofile enables renv's autoload and bootstrapping
@@ -46,7 +46,7 @@ FROM rocker/r-ver:4.3.2 AS main
 # System dependencies for the locked runtime packages
 WORKDIR /tmp/sysreqs
 COPY --from=builder /home/build/renv.lock renv.lock
-COPY deploy/install-sysreqs.R install-sysreqs.R
+COPY ci-cd/install-sysreqs.R install-sysreqs.R
 RUN Rscript install-sysreqs.R && rm -rf /tmp/sysreqs
 WORKDIR /
 

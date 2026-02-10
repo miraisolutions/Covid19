@@ -1,7 +1,7 @@
 Package: Covid19Mirai
 Title: Covid-19 Data Analysis
 Version: 3.1.2
-Authors@R: 
+Authors@R:
     c(person("Riccardo", "Porreca", role = ("aut"),
              email = "riccardo.porreca@mirai-solutions.com"),
       person("Guido", "Maggio", role = c("cre","aut"),
@@ -13,9 +13,9 @@ License: GPL-3
 URL: https://mirai-solutions.ch,
     https://github.com/miraisolutions/Covid19#readme
 BugReports: https://github.com/miraisolutions/Covid19/issues
-Depends: 
+Depends:
     R (>= 3.5.0)
-Imports: 
+Imports:
     config,
     purrr,
     stringr,
@@ -43,8 +43,6 @@ Imports:
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
-Suggests: 
-    rsconnect,
+Suggests:
     spelling,
-    pkgload,
     testthat (>= 3.0.0)
