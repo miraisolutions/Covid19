@@ -6,3 +6,6 @@
 ^README\.Rmd$
 ^man-roxygen$
 ^\.github$
+^azure-pipelines.yml$
+^ci-cd$
+^Dockerfile$
