@@ -4,7 +4,8 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
-^app\.R$
 ^man-roxygen$
 ^\.github$
-^rsconnect$
+^azure-pipelines.yml$
+^ci-cd$
+^Dockerfile$

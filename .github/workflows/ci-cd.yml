@@ -46,7 +46,7 @@ jobs:
         # This is not taken care of (yet) by r-lib/actions/setup-renv
         # See https://github.com/r-lib/actions/issues/785
         # NOTE: we use --vanilla to prevent renv's bootstrapping
-        run: Rscript --vanilla deploy/install-sysreqs.R
+        run: Rscript --vanilla ci-cd/install-sysreqs.R
 
       - name: Activate renv and restore packages with cache
         uses: r-lib/actions/setup-renv@v2
@@ -76,11 +76,3 @@ jobs:
           git commit -m "Update DataHub data" || echo "No changes to commit"
           git pull --ff-only
           git push origin
-      - name: Deploy to shinyapps.io
-        # Continuous deployment only for pushes to the main / master branch
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        env:
-          SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
-          SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
-          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
-        run: Rscript deploy/deploy-shinyapps.R
